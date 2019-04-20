@@ -66,6 +66,23 @@ services:
     volumes:
       - /mnt/spark-apps:/opt/spark-apps
       - /mnt/spark-data:/opt/spark-data
+  spark-dl4j:
+      image: spark-dl4j:latest
+      container_name: spark-dl4j
+      hostname: spark-dl4j
+      depends_on:
+        - spark-master
+      ports:
+        - "8083:8081"
+      env_file: ./env/spark-worker.sh
+      environment:
+        - "SPARK_LOCAL_IP=spark-dl4j"
+      networks:
+        spark-network:
+          ipv4_address: 10.5.0.6
+      volumes:
+        - /mnt/spark-apps:/opt/spark-apps
+        - /mnt/spark-data:/opt/spark-data
 networks:
   spark-network:
     driver: bridge
