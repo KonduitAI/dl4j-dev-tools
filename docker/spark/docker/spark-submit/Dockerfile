@@ -1,6 +1,6 @@
 FROM spark-base:2.3.3
 
-COPY spark-submit.sh /
+COPY start-submit.sh /
 
 ENV SPARK_MASTER_URL="spark://spark-master:7077"
 ENV SPARK_SUBMIT_ARGS=""
