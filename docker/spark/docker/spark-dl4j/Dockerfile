@@ -28,13 +28,13 @@ RUN wget --no-verbose http://apache.mirror.iphh.net/spark/spark-${SPARK_VERSION}
       && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 
 RUN git clone https://github.com/deeplearning4j/deeplearning4j.git && cd deeplearning4j && ./change-scala-versions.sh 2.11 && ./change-spark-versions.sh 2
-RUN cd deeplearning4j/ && git checkout ${DL4J_BRANCH}
+RUN cd deeplearning4j/ && git checkout ${DL4J_BRANCH} && mvn dependency:resolve
 RUN cd deeplearning4j/libnd4j && ./buildnativeoperations.sh -a native -j 6 && cd ../
-RUN cd deeplearning4j/nd4j && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
-RUN cd deeplearning4j/datavec && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
-RUN cd deeplearning4j/deeplearning4j && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
-RUN cd deeplearning4j/rl4j && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
-RUN cd deeplearning4j/arbiter && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+RUN cd deeplearning4j/nd4j && mvn -T 2 clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+RUN cd deeplearning4j/datavec && mvn -T 4 clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+RUN cd deeplearning4j/deeplearning4j && mvn -T 4 clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+RUN cd deeplearning4j/rl4j && mvn clean -T 4 install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+RUN cd deeplearning4j/arbiter && mvn -T 4 clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
 
 RUN git clone https://github.com/deeplearning4j/dl4j-examples.git
 RUN cd dl4j-examples/ && git checkout ${EXAMPLES_BRANCH} && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
