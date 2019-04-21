@@ -18,15 +18,6 @@ ENV SPARK_MASTER_URL="spark://spark-master:7077"
 ENV SPARK_SUBMIT_ARGS=""
 ENV SPARK_APPLICATION_ARGS ""
 
-RUN apt-get update && \
-    apt-get -y --no-install-recommends install \
-            wget git openjdk-8-jdk-headless maven gcc g++ automake cmake build-essential autoconf libtool pkg-config libgflags-dev libgtest-dev clang libc++-dev libgomp1 libprotobuf-dev && \
-    apt-get clean
-
-RUN wget --no-verbose http://apache.mirror.iphh.net/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-      && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
-      && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-
 RUN git clone https://github.com/deeplearning4j/dl4j-examples.git
 RUN git clone https://github.com/deeplearning4j/deeplearning4j.git && cd deeplearning4j && ./change-scala-versions.sh 2.11 && ./change-spark-versions.sh 2
 RUN cd deeplearning4j/ && git checkout ${DL4J_BRANCH} && mvn dependency:resolve
