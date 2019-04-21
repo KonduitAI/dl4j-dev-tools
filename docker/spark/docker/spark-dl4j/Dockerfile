@@ -38,4 +38,4 @@ RUN cd deeplearning4j/rl4j && mvn clean -T 4 install -DskipTests=true -Dmaven.ja
 RUN cd deeplearning4j/arbiter && mvn -T 4 clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
 
 
-RUN cd dl4j-examples/ && git pull && git checkout ${EXAMPLES_BRANCH} && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+# RUN cd dl4j-examples/ && git pull && git checkout ${EXAMPLES_BRANCH} && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
