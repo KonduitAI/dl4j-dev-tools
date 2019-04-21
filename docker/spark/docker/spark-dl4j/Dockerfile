@@ -2,7 +2,7 @@
 #   deeplearning4j docker image
 #
 
-FROM ubuntu:bionic as builder
+FROM spark-base:2.3.3 as builder
 
 LABEL Description="Deeplearning4j Spark snapshots container"  Vendor="SkyMind.ai"  Version="1.0.0-SNAPSHOT"
 

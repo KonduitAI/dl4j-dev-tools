@@ -1,4 +1,4 @@
-FROM ubuntu:bionic as builder
+FROM ubuntu:bionic
 
 ENV DAEMON_RUN=true
 ENV SPARK_VERSION=2.3.3
@@ -7,7 +7,7 @@ ENV SCALA_VERSION=2.11.11
 ENV SCALA_HOME=/usr/share/scala
 
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install \
+    apt-get -y install \
             wget vim inetutils-ping git scala openjdk-8-jdk-headless maven gcc g++ automake cmake build-essential autoconf libtool pkg-config libgflags-dev libgtest-dev clang libc++-dev libgomp1 libprotobuf-dev && \
     apt-get clean
 
