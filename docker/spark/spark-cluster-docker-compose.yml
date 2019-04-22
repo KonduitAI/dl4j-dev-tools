@@ -66,6 +66,40 @@ services:
     volumes:
       - /mnt/spark-apps:/opt/spark-apps
       - /mnt/spark-data:/opt/spark-data
+  spark-worker-4:
+          image: spark-worker:2.3.3
+          container_name: spark-worker-4
+          hostname: spark-worker-4
+          depends_on:
+            - spark-master
+          ports:
+            - "8084:8081"
+          env_file: ./env/spark-worker.sh
+          environment:
+            - "SPARK_LOCAL_IP=spark-worker-4"
+          networks:
+            spark-network:
+              ipv4_address: 10.5.0.6
+          volumes:
+            - /mnt/spark-apps:/opt/spark-apps
+            - /mnt/spark-data:/opt/spark-data
+  spark-worker-5:
+    image: spark-worker:2.3.3
+    container_name: spark-worker-5
+    hostname: spark-worker-5
+    depends_on:
+      - spark-master
+    ports:
+      - "8085:8081"
+    env_file: ./env/spark-worker.sh
+    environment:
+      - "SPARK_LOCAL_IP=spark-worker-5"
+    networks:
+      spark-network:
+        ipv4_address: 10.5.0.7
+    volumes:
+      - /mnt/spark-apps:/opt/spark-apps
+      - /mnt/spark-data:/opt/spark-data
   spark-dl4j:
       image: spark-dl4j:latest
       container_name: spark-dl4j
@@ -79,7 +113,7 @@ services:
         - "SPARK_LOCAL_IP=spark-dl4j"
       networks:
         spark-network:
-          ipv4_address: 10.5.0.6
+          ipv4_address: 10.5.0.12
       volumes:
         - /mnt/spark-apps:/opt/spark-apps
         - /mnt/spark-data:/opt/spark-data
