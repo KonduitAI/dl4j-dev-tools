@@ -32,4 +32,4 @@ RUN cd deeplearning4j/arbiter && mvn -T 4 clean install -DskipTests=true -Dmaven
 # RUN cd dl4j-examples/ && git pull && git checkout ${EXAMPLES_BRANCH} && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
 
 # just sleeping
-CMD ["/bin/sleep", "365d"]
+CMD ["cat"]
