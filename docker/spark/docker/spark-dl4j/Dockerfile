@@ -18,8 +18,8 @@ ENV SPARK_MASTER_URL="spark://spark-master:7077"
 ENV SPARK_SUBMIT_ARGS=""
 ENV SPARK_APPLICATION_ARGS ""
 
-RUN git clone https://github.com/eclipse/deeplearning4j-examples.git
-RUN git clone https://github.com/eclipse/deeplearning4j.git && cd deeplearning4j
+#RUN git clone https://github.com/eclipse/deeplearning4j-examples.git
+RUN git clone https://github.com/KonduitAI/deeplearning4j.git && cd deeplearning4j
 RUN cd deeplearning4j/ && git checkout ${DL4J_BRANCH} && mvn dependency:resolve
 RUN cd deeplearning4j/libnd4j && ./buildnativeoperations.sh -a avx2 -j 6 && cd ../
 RUN cd deeplearning4j/nd4j && mvn -T 2 clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
