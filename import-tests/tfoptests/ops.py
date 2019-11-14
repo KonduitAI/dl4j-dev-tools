@@ -1028,7 +1028,7 @@ class OpCreator:
         return [tf.zeros(shape=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_zeros_like(self):
-        return [tf.zeros_like(tensor=self.vars[0])]
+        return [tf.zeros_like(tensor=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_range(self):
         return [tf.range(start=self.vars[0], limit=self.vars[1], delta=self.vars[2])]
@@ -1076,6 +1076,9 @@ class OpCreator:
 
     def execute_div(self):
         return [tf.math.divide(self.vars[0], self.vars[1])]
+
+    def execute_div_no_nan(self):
+        return [tf.math.divide_no_nan(self.vars[0], self.vars[1])]
 
     def execute_add_n(self):
         return [tf.math.add_n(self.vars)]
@@ -1227,8 +1230,79 @@ class OpCreator:
     def execute_check_numerics(self):
         return [tf.debugging.check_numerics(tensor=self.vars[0], message=self.op["message"])]
 
+    def execute_adjust_contrast(self):
+        return [tf.image.adjust_contrast(self.vars[0],self.op["contrast_factor"])]
+
+    def execute_adjust_contrast_v2(self):
+        return [tf.compat.v2.image.adjust_contrast(self.vars[0],self.vars[1])]
+
     def execute_strings_split(self):
         print("strings.split input: ", self.vars[0])
         out = tf.strings.split(self.vars[0], sep=self.op["split"])
         print("strings.split output: ", out)
         return [out]
+
+    def execute_bitcast(self):
+        return [tf.bitcast(self.vars[0], self.op["output"])]
+
+    def execute_bitwise_or(self):
+        return [tf.bitwise.bitwise_or(self.vars[0], self.vars[1])]
+
+    def execute_bitwise_xor(self):
+        return [tf.bitwise.bitwise_xor(self.vars[0], self.vars[1])]
+
+    def execute_crop_and_resize(self):
+        return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_ind = self.vars[3],\
+                                         method = self.op["method"], extrapolation_value = self.op["ext_value"])]
+
+    def execute_draw_bounding_boxes(self):
+        return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
+
+    def execute_resize_bilinear(self):
+        return [tf.image.resize_bilinear(images = self.vars[0], size = self.vars[1], \
+                align_corners = self.op["align_corners"], half_pixel_centers = self.op["half_pixel_centers"])]
+
+    def execute_resize_nearest_neighbor(self):
+        return [tf.image.resize_nearest_neighbor(images = self.vars[0], size = self.vars[1])]
+
+    def execute_non_max_suppression(self):
+        iou_threshold = 0.5
+        score_threshold = 0.5
+        if("iou_threshold" in self.op):
+            iou_threshold = self.op["iou_threshold"]
+        if("score_threshold" in self.op):
+            score_threshold = self.op["score_threshold"]
+
+        return [tf.image.non_max_suppression(boxes = self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
+                                             iou_threshold=iou_threshold, score_threshold=score_threshold)]
+
+    def execute_non_max_suppression_v2(self):
+        return [tf.image.non_max_suppression(self.vars[0], self.vars[1], self.vars[2])]
+
+    def execute_dropout(self):
+        return [tf.nn.dropout(x = self.vars[0], rate = 0.25)]
+
+    def execute_is_non_decreasing(self):
+        return [tf.math.is_non_decreasing(x = self.vars[0])]
+
+    def execute_is_strictly_increasing(self):
+        return [tf.math.is_strictly_increasing(x = self.vars[0])]
+
+    def execute_leaky_relu(self):
+        return [tf.nn.leaky_relu(features = self.vars[0], alpha=self.op["alpha"])]
+
+    def execute_log_softmax(self):
+        return [tf.nn.log_softmax(logits = self.vars[0], axis = self.op["axis"])]
+
+    def execute_max(self):
+        return [tf.math.maximum(self.vars[0], self.vars[1])]
+
+    def execute_min(self):
+        return [tf.math.minimum(self.vars[0], self.vars[1])]
+
+    def execute_mod(self):
+        return [tf.math.mod(self.vars[0], self.vars[1])]
+
+    def execute_mul(self):
+        return [tf.math.mul(self.vars[0], self.vars[1])]
+

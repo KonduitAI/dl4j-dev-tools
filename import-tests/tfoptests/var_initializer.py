@@ -70,6 +70,12 @@ class VarInitializer:
     def var_uniform10(self, shape, dtype, n):
         return tf.Variable(tf.random_uniform(shape, minval=0, maxval=10, dtype=dtype), dtype, name=n)
 
+    def var_uniform_int2(self, shape, dtype, n):
+        if(dtype == tf.int32 or dtype == tf.int64):
+            return tf.Variable(tf.random_uniform(shape, minval=0, maxval=2, dtype=dtype), dtype, name=n)
+        else:
+            return tf.Variable(tf.floor(tf.random_uniform(shape, minval=0, maxval=2, dtype=dtype)), dtype, name=n)
+
     def var_uniform_int3(self, shape, dtype, n):
         if(dtype == tf.int32 or dtype == tf.int64):
             return tf.Variable(tf.random_uniform(shape, minval=0, maxval=3, dtype=dtype), dtype, name=n)
@@ -194,6 +200,7 @@ class VarInitializer:
         # fill = tf.fill(shape, value=0)
         # var = tf.Variable(tf.cast(fill, dtype=dtype))
         var = tf.constant([], shape=shape, dtype=dtype)
+        dummy = tf.Variable([1], dtype=tf.float32)  #workaround to TF restriction where only graphs with 1 or more variables can be exported
         return [var]
 
     def var_string_scalar(self, shape,  dtype, n):
