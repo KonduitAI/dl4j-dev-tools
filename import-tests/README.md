@@ -31,7 +31,7 @@ python tests/mlp/test_bias_add.py
 
 To generate all test resources, simply run:
 ```python
-python -m pytest
+python tests/test_ops.py
 ```
 
 ## Adding new tests
