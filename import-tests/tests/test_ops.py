@@ -797,9 +797,9 @@ def test_mathtransform():
         # {"opName":"boolean_mask", "outName":"boolean_mask/rank3_mask2", "varShapes":[[5,4,3],[5,4]], "varTypes":["float32", "bool"], "varInit":["uniform", "boolean"]},
         # {"opName":"boolean_mask", "outName":"boolean_mask/rank3_mask2", "varShapes":[[5,4,3],[5,4,3]], "varTypes":["float32", "bool"], "varInit":["uniform", "boolean"]},
         #
-        # {"opName":"where", "outName":"where/cond_only_rank1", "varShapes":[[5]], "varTypes":["float32"], "varInit":["bernoulli"]},
-        # {"opName":"where", "outName":"where/cond_only_rank2", "varShapes":[[2,3]], "varTypes":["float32"], "varInit":["bernoulli"]},
-        # {"opName":"where", "outName":"where/cond_only_rank3", "varShapes":[[2,3,4]], "varTypes":["float32"], "varInit":["bernoulli"]},
+        # {"opName":"where", "outName":"where/cond_only_rank1", "varShapes":[[5]], "varTypes":["float32"], "varInit":["fixed_5"]},
+        # {"opName":"where", "outName":"where/cond_only_rank2", "varShapes":[[2,3]], "varTypes":["float32"], "varInit":["fixed_2_3"]},
+        # {"opName":"where", "outName":"where/cond_only_rank3", "varShapes":[[2,3,4]], "varTypes":["float32"], "varInit":["fixed_2_3_4"]},
         # {"opName":"where", "outName":"where/cond_rank1_xy_rank1", "varShapes":[[5],[5],[5]], "varTypes":["bool", "float32", "float32"], "varInit":["boolean", "uniform", "uniform"]},
         # {"opName":"where", "outName":"where/cond_rank2_xy_rank2", "varShapes":[[3,4],[3,4],[3,4]], "varTypes":["bool", "float32", "float32"], "varInit":["boolean", "uniform", "uniform"]},
         # {"opName":"where", "outName":"where/cond_rank3_xy_rank3", "varShapes":[[2,3,4],[2,3,4],[2,3,4]], "varTypes":["bool", "float32", "float32"], "varInit":["boolean", "uniform", "uniform"]},
