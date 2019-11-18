@@ -98,6 +98,9 @@ class VarInitializer:
         values = tf.random_uniform(shape) * tf.cast((tf.random_uniform(shape) < 0.5), dtype=tf.float32)
         return tf.Variable(values, dtype, name=n)
 
+    def var_fixed_5(self,shape,dtype,n):
+        return tf.constant([0,1.0,1.0,1.0,1.0], dtype=dtype, name=n)
+
     def var_fixed_m1_1(self, shape, dtype, n):
         if(len(shape) is not 1 or shape[0] is not 2):
             raise ValueError("Shape must be exactly [2]")
@@ -112,6 +115,12 @@ class VarInitializer:
         if(len(shape) is not 1 or shape[0] is not 2):
             raise ValueError("Shape must be exactly [2]")
         return tf.Variable([2,1], dtype=dtype, name=n)
+
+    def var_fixed_2_3(self, shape, dtype, n):
+        return tf.constant([1.0,0,0,0,0,1.0],shape=shape,dtype=dtype,name=n)
+
+    def var_fixed_2_3_4(self, shape, dtype, n):
+        return tf.constant([1.0,0,0,0,0,1.0,1.0,0,0,0,0,1.0,1.0,0,0,0,0,1.0,1.0,0,0,0,0,1.0],dtype=dtype,name=n)
 
     def var_fixed_3_1(self, shape, dtype, n):
         if(len(shape) is not 1 or shape[0] is not 2):
