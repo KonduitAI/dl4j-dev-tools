@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 class ConstraintTest {
 
 
-    fun buildConstraint(block: ConstraintBuilder.() -> Expression): Expression {
+    private fun buildConstraint(block: ConstraintBuilder.() -> Expression): Expression {
         return ConstraintBuilder().block()
     }
 

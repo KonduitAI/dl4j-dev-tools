@@ -14,13 +14,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class TestGeneration {
+class TestGeneration {
 
+    @SuppressWarnings("unused")
     @TempDir
-    public File testDir;
+    private File testDir;
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         File f = testDir;
 
         List<NamespaceOps> list = Arrays.asList(BitwiseKt.Bitwise(), RandomKt.Random());

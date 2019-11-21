@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets
 import kotlin.test.assertTrue
 
 class OpBuilderTest {
-    var testDir = createTempDir()
+    private var testDir = createTempDir()
 
     @Test
     fun opBuilderTest() {
@@ -46,7 +46,7 @@ class OpBuilderTest {
 
             }
 
-            val BaseArithmeticOp = Op("BaseArithmeticOp") {
+            val baseArithmeticOp = Op("BaseArithmeticOp") {
                 isAbstract = true
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
@@ -68,11 +68,11 @@ class OpBuilderTest {
 
             }
 
-            Op("sub", extends = BaseArithmeticOp)
+            Op("sub", extends = baseArithmeticOp)
 
-            Op("mul", extends = BaseArithmeticOp)
+            Op("mul", extends = baseArithmeticOp)
 
-            Op("rsub", extends = BaseArithmeticOp) {
+            Op("rsub", extends = baseArithmeticOp) {
                 isAbstract = false
                 javaPackage = "org.nd4j.some.other.package"
                 Doc(Language.ANY, DocScope.CREATORS_ONLY) {
