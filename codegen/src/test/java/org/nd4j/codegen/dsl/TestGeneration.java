@@ -1,9 +1,8 @@
 package org.nd4j.codegen.dsl;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
 import org.nd4j.codegen.ops.BitwiseKt;
@@ -15,14 +14,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class TestGeneration {
+class TestGeneration {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
+    @SuppressWarnings("unused")
+    @TempDir
+    private File testDir;
 
     @Test
-    public void test() throws Exception {
-        File f = testDir.newFolder();
+    void test() throws Exception {
+        File f = testDir;
 
         List<NamespaceOps> list = Arrays.asList(BitwiseKt.Bitwise(), RandomKt.Random());
 

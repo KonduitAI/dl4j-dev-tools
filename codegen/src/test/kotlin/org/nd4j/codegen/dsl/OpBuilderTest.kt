@@ -1,10 +1,7 @@
 package org.nd4j.codegen.dsl
 
-import junit.framework.TestCase
 import org.apache.commons.io.FileUtils
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Test
 import org.nd4j.codegen.api.AtLeast
 import org.nd4j.codegen.api.DataType.INT
 import org.nd4j.codegen.api.DataType.NUMERIC
@@ -14,14 +11,14 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.impl.java.JavaPoetGenerator
 import java.io.File
 import java.nio.charset.StandardCharsets
+import kotlin.test.assertTrue
 
 class OpBuilderTest {
-    @get:Rule
-    public var testDir = TemporaryFolder()
+    private var testDir = createTempDir()
 
     @Test
     fun opBuilderTest() {
-        val outDir = testDir.newFolder()
+        val outDir = testDir
 
         val mathNs = Namespace("math") {
             Op("add") {
@@ -49,7 +46,7 @@ class OpBuilderTest {
 
             }
 
-            val BaseArithmeticOp = Op("BaseArithmeticOp") {
+            val baseArithmeticOp = Op("BaseArithmeticOp") {
                 isAbstract = true
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
@@ -71,11 +68,11 @@ class OpBuilderTest {
 
             }
 
-            Op("sub", extends = BaseArithmeticOp)
+            Op("sub", extends = baseArithmeticOp)
 
-            Op("mul", extends = BaseArithmeticOp)
+            Op("mul", extends = baseArithmeticOp)
 
-            Op("rsub", extends = BaseArithmeticOp) {
+            Op("rsub", extends = baseArithmeticOp) {
                 isAbstract = false
                 javaPackage = "org.nd4j.some.other.package"
                 Doc(Language.ANY, DocScope.CREATORS_ONLY) {
@@ -122,7 +119,7 @@ class OpBuilderTest {
         val generator = JavaPoetGenerator()
         generator.generateNamespaceNd4j(mathNs, null, outDir)
         val exp = File(outDir, "org/nd4j/linalg/api/ops/Nd4jMath.java")
-        TestCase.assertTrue(exp.isFile)
+        assertTrue(exp.isFile)
 
         println(FileUtils.readFileToString(exp, StandardCharsets.UTF_8))
 

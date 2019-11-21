@@ -1,18 +1,18 @@
 package org.nd4j.codegen.dsl
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.nd4j.codegen.api.Arg
 import org.nd4j.codegen.api.DataType
 import org.nd4j.codegen.api.Expression
 import org.nd4j.codegen.api.Input
 import org.nd4j.codegen.impl.java.JavaConstraintCodeGenerator
+import kotlin.test.assertEquals
 
 
 class ConstraintTest {
 
 
-    fun buildConstraint(block: ConstraintBuilder.() -> Expression): Expression {
+    private fun buildConstraint(block: ConstraintBuilder.() -> Expression): Expression {
         return ConstraintBuilder().block()
     }
 
