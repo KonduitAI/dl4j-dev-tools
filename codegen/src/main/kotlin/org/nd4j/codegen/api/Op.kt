@@ -6,6 +6,7 @@ import org.nd4j.codegen.api.doc.DocSection
 class Op @JvmOverloads constructor(
         var opName: String? = null,
         var libnd4jOpName: String? = null,
+        var javaOpClass: String? = null,
         var isAbstract: Boolean = false,
         var extendsOp: Op? = null,
         javaPackage: String? = null,

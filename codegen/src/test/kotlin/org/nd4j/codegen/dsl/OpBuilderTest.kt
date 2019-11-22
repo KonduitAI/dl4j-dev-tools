@@ -107,6 +107,7 @@ class OpBuilderTest {
 
             Op("foo"){
                 javaPackage = "bar"
+                javaOpClass = "FooBarOp"
                 val x = Input(NUMERIC,"x") { description = "First operand to %OPNAME% (%INPUT_TYPE%)" }
                 val y = Input(NUMERIC,"y") { description = "Second operand to div" }
 

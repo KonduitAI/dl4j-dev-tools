@@ -233,7 +233,7 @@ public class Nd4jNamespaceGenerator {
         sb.append("return $T.exec(new ")
                 .append(op.getJavaPackage())
                 .append(".")
-                .append(GenUtil.ensureFirstIsCap(op.getOpName())).append("Op")
+                .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) + "Op" : op.getJavaOpClass())
                 .append("(")
                 .append(String.join(", ", inNames))
                 .append("))");
