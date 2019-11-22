@@ -310,7 +310,9 @@ You can have multiple Doc definitions; they are treated as additive.
 Any instances of the following values will be replaced when generating code:
 
 * `%OPNAME%` -> operation name ("Add", "Sub", etc)
-* `$LIBND4J_OPNAME$` -> libnd4j op name ("add", "sub", etc)
+* `%LIBND4J_OPNAME%` -> libnd4j op name ("add", "sub", etc)
+* `%INPUT_TYPE%` -> input / output type depending on the generated api, i.e. `SDVariable` for SameDiff and `INDArray`
+  for ND4J
 
 See `DocTokens` class for more details. 
 
