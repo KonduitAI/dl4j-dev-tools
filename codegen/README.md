@@ -235,9 +235,10 @@ Note: Op inheritance is only available within a namespace. Allowing cross-namesp
 principle that we want to keep Op definitions as readable as possible.
 
 ### Op properties
+* `javaPackage` (String): Package where the op is to be found in the java implementation.
+* `javaOpClass` (String): Name of java op class if inconsistent with opName. Default: same as opName
 * `libnd4jName` (String): The name the op has in libnd4j. Default: same as opName
 * `isAbstract` (Boolean): Flag that makes ops abstract, i.e. they are only allowed to be inherited from. No code shall be generated for abstract Ops.
-* `javaPackage` (String): Package where the Op is to be found in the java implementation.
 
 
 ## Input
