@@ -9,295 +9,187 @@ import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
 fun SDMath() =  Namespace("SDMath"){
-    val namespaceJavaPackage = "TODO"   //Todo: How to find this automatically.
+    val namespaceJavaPackage = "" //Seem to be different for each funtion here.
     Op("abs") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise absolute value operation: out = abs(x)
-
- @param name Name of the output variable  
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent() // Todo: Should these be moved to the Input/Output descriptions above?
+                 Elementwise absolute value operation: out = abs(x)
+            """.trimIndent()
         }
     }
 
     Op("acos") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise acos (arccosine, inverse cosine) operation: out = arccos(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                 Elementwise acos (arccosine, inverse cosine) operation: out = arccos(x)
+            """.trimIndent()
         }
     }
 
     Op("acosh") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise acosh (inverse hyperbolic cosine) function: out = acosh(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise acosh (inverse hyperbolic cosine) function: out = acosh(x)
+            """.trimIndent()
         }
     }
 
+    // TODO: There are 2 implementations of amax in org.nd4j.linalg.api.ops.impl
     Op("amax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same" // or "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Absolute max array reduction operation, optionally along specified dimensions: out = max(abs(x))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Absolute max array reduction operation, optionally along specified dimensions: out = max(abs(x))
+            """.trimIndent()
         }
     }
 
     Op("amean") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Absolute mean array reduction operation, optionally along specified dimensions: out = mean(abs(x))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Absolute mean array reduction operation, optionally along specified dimensions: out = mean(abs(x))
+            """.trimIndent()
         }
     }
 
+    // TODO: There are 2 implementations of amax in org.nd4j.linalg.api.ops.impl
     Op("amin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"  // ""org.nd4j.linalg.api.ops.impl.reduce.same"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Absolute min array reduction operation, optionally along specified dimensions: out = min(abs(x))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Absolute min array reduction operation, optionally along specified dimensions: out = min(abs(x))
+            """.trimIndent()
         }
     }
 
     Op("and") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.indexing.conditions"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Boolean AND operation: elementwise (x != 0) && (y != 0)<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                 Boolean AND operation: elementwise (x != 0) && (y != 0)<br>
+                 If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
+                 Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
+                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("asin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = " org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise asin (arcsin, inverse sine) operation: out = arcsin(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise asin (arcsin, inverse sine) operation: out = arcsin(x)
+            """.trimIndent()
         }
     }
 
+    // TODO: There are 2 implementations
     Op("asinh") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict" // org.nd4j.linalg.api.ops.impl.transforms.strict
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise asinh (inverse hyperbolic sine) function: out = asinh(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise asinh (inverse hyperbolic sine) function: out = asinh(x)
+            """.trimIndent()
         }
     }
 
     Op("asum") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Absolute sum array reduction operation, optionally along specified dimensions: out = sum(abs(x))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Absolute sum array reduction operation, optionally along specified dimensions: out = sum(abs(x))
+            """.trimIndent()
         }
     }
 
     Op("atan") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise atan (arctangent, inverse tangent) operation: out = arctangent(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise atan (arctangent, inverse tangent) operation: out = arctangent(x)
+            """.trimIndent()
         }
     }
 
     Op("atan2") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "rg.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "y") { description = "Input Y variable" }
+        Input(NUMERIC, "x") { description = "Input X variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise atan (arctangent, inverse tangent) operation: out = atan2(x,y).
- Similar to atan(y/x) but sigts of x and y are used to determine the location of the result
-
- @param name Name of the output variable
- @param y    Input Y variable
- @param x    Input X variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise atan (arctangent, inverse tangent) operation: out = atan2(x,y).
+                Similar to atan(y/x) but sigts of x and y are used to determine the location of the result
+            """.trimIndent()
         }
     }
 
     Op("atanh") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise atanh (inverse hyperbolic tangent) function: out = atanh(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise atanh (inverse hyperbolic tangent) function: out = atanh(x)
+            """.trimIndent()
         }
     }
 
     Op("ceil") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise ceiling function: out = ceil(x).
- Rounds each value up to the nearest integer value (if not already an integer)
-
- @param name Name of the output variable
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise ceiling function: out = ceil(x).
+                Rounds each value up to the nearest integer value (if not already an integer)
+            """.trimIndent()
         }
     }
 
     Op("clipByNorm") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "clipValue") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Clipping by L2 norm<br>
- if l2Norm(x) < clipValue, then input is returned unmodifed<br>
- Otherwise, out[i] = in[i] * clipValue / l2Norm(in)
-
- @param name      Name of the output variable
- @param x         Input variable
- @param clipValue Clipping value (maximum l2 norm)
- @return Output variable
-     
-""".trimIndent()
+                Clipping by L2 norm<br>
+                if l2Norm(x) < clipValue, then input is returned unmodifed<br>
+                Otherwise, out[i] = in[i] * clipValue / l2Norm(in)
+            """.trimIndent()
         }
     }
 
@@ -2054,4 +1946,3 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 }
-
