@@ -107,7 +107,7 @@ class OpBuilderTest {
 
             Op("foo"){
                 javaPackage = "bar"
-                val x = Input(NUMERIC,"x") { description = "First operand to div" }
+                val x = Input(NUMERIC,"x") { description = "First operand to %OPNAME% (%INPUT_TYPE%)" }
                 val y = Input(NUMERIC,"y") { description = "Second operand to div" }
 
                 Constraint("foo bar"){

@@ -105,7 +105,7 @@ public class Nd4jNamespaceGenerator {
         if(doc != null && !doc.isEmpty()){
             for(DocSection ds : doc){
                 if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
-                    String text = DocTokens.processDocText(ds.getText(), op);
+                    String text = DocTokens.processDocText(ds.getText(), op, DocTokens.GenerationType.ND4J);
                     //Add <br> tags at the end of each line, where none already exists
                     String[] lines = text.split("\n");
                     for( int i=0; i<lines.length; i++ ){
@@ -134,7 +134,7 @@ public class Nd4jNamespaceGenerator {
         List<Input> in = op.getInputs();
         if(in != null && !in.isEmpty()){
             for(Input i : in){
-                c.addJavadoc("@param " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(), op)) + " (" + i.getType() + " type)\n");
+                c.addJavadoc("@param " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)\n");
             }
         }
 
@@ -143,9 +143,9 @@ public class Nd4jNamespaceGenerator {
             for (Arg arg : args) {
                 final Count count = arg.getCount();
                 if (count == null || count.equals(exactlyOne)) {
-                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op)) + "\n");
+                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + "\n");
                 } else {
-                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op)) + " (Size: " + count.toString() + ")\n");
+                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() + ")\n");
                 }
             }
         }
@@ -155,7 +155,7 @@ public class Nd4jNamespaceGenerator {
         if(outputs != null && !outputs.isEmpty()){
             if(outputs.size() == 1){
                 Output o = outputs.get(0);
-                c.addJavadoc("@return " + o.getName() + " " + (o.getDescription() == null ? "" : DocTokens.processDocText(o.getDescription(), op)) + " (" + o.getType() + " type)\n");
+                c.addJavadoc("@return " + o.getName() + " " + (o.getDescription() == null ? "" : DocTokens.processDocText(o.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + o.getType() + " type)\n");
             } else {
                 throw new UnsupportedOperationException("Javadoc for multi-output ops not yet implemented");
             }

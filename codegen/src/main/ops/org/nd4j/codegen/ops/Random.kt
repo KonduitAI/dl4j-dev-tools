@@ -12,13 +12,13 @@ fun Random() = Namespace("Random") {
         javaPackage = namespaceJavaPackage
 
         Arg(FLOATING_POINT, "p") { description = "Probability of value 1" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random SDVariable, as a 1D array" }
+        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
 
         Output(NUMERIC, "output") { description = "Tensor with the given shape where values are randomly sampled according to a Bernoulli distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a Bernoulli distribution,
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a Bernoulli distribution,
             with the specified probability. Array values will have value 1 with probability P and value 0 with probability
             1-P.
             """.trimIndent()
@@ -29,13 +29,13 @@ fun Random() = Namespace("Random") {
         javaPackage = namespaceJavaPackage
         Arg(INT, "nTrials") { description = "Number of trials parameter for the binomial distribution" }
         Arg(FLOATING_POINT, "p") { description = "Probability of success for each trial" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random SDVariable, as a 1D array" }
+        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
 
-        Output(NUMERIC, "output") { description = "new random SDVariable, where values are randomly sampled according to a Binomial distribution" }
+        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Binomial distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a Binomial distribution,
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a Binomial distribution,
             with the specified number of trials and probability.
             """.trimIndent()
         }
@@ -48,11 +48,11 @@ fun Random() = Namespace("Random") {
         Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new variable" }
 
 
-        Output(NUMERIC, "output") { description = "ew random SDVariable, where values are randomly sampled according to a exponential distribution" }
+        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a exponential distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a exponential distribution:
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a exponential distribution:
             P(x) = lambda * exp(-lambda * x)
             """.trimIndent()
         }
@@ -62,13 +62,13 @@ fun Random() = Namespace("Random") {
         javaPackage = namespaceJavaPackage
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random SDVariable" }
+        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%" }
 
-        Output(NUMERIC, "output") { description = "new random SDVariable, where values are randomly sampled according to a Log Normal distribution" }
+        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Log Normal distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a Log Normal distribution,
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a Log Normal distribution,
             i.e., {@code log(x) ~ N(mean, stdev)}
             """.trimIndent()
         }
@@ -79,13 +79,13 @@ fun Random() = Namespace("Random") {
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
 
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random SDVariable, as a 1D array" }
+        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
 
-        Output(NUMERIC, "output") { description = "new random SDVariable, where values are randomly sampled according to a Gaussian (normal) distribution" }
+        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Gaussian (normal) distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a Gaussian (normal) distribution,
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a Gaussian (normal) distribution,
             N(mean, stdev)<br>
             """.trimIndent()
         }
@@ -95,13 +95,13 @@ fun Random() = Namespace("Random") {
         javaPackage = namespaceJavaPackage
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "shape of the new random SDVariable" }
+        Arg(INT, "shape") { count = AtLeast(1); description = "shape of the new random %INPUT_TYPE%" }
 
-        Output(NUMERIC, "output") { description = "new random SDVariable, where values are randomly sampled according to a Gaussian (normal) distribution" }
+        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Gaussian (normal) distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a Gaussian (normal) distribution,
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a Gaussian (normal) distribution,
             N(mean, stdev). However, any values more than 1 standard deviation from the mean are dropped and re-sampled
             """.trimIndent()
         }
@@ -111,13 +111,13 @@ fun Random() = Namespace("Random") {
         javaPackage = namespaceJavaPackage
         Arg(FLOATING_POINT, "min") { description = "Minimum value" }
         Arg(FLOATING_POINT, "max") { description = "Maximum value." }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random SDVariable, as a 1D array" }
+        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
 
-        Output(NUMERIC, "output") { description = "new random SDVariable, where values are randomly sampled according to a uniform distribution" }
+        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a uniform distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-            Generate a new random SDVariable, where values are randomly sampled according to a uniform distribution,
+            Generate a new random %INPUT_TYPE%, where values are randomly sampled according to a uniform distribution,
             U(min,max)
             """.trimIndent()
         }

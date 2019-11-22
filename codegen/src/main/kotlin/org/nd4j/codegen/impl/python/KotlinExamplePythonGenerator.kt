@@ -52,12 +52,12 @@ class KotlinExamplePythonGenerator: Generator {
                 |${op.inputs?.let { """
                 |Args: 
                 |${it.joinToString("\n") {
-               "|    ${it.name} (ndarray): ${DocTokens.processDocText(it.description, op)}"
+               "|    ${it.name} (ndarray): ${DocTokens.processDocText(it.description, op, DocTokens.GenerationType.ND4J)}"
                 }}
                 |""".trimMargin() }}
                 |${op.outputs?.let {"""
                 |Returns:
-                |    ndarray: ${it[0].name} ${it[0].description?.let {"- ${DocTokens.processDocText(it, op)}"
+                |    ndarray: ${it[0].name} ${it[0].description?.let {"- ${DocTokens.processDocText(it, op, DocTokens.GenerationType.ND4J)}"
                     }}""".trimMargin()
                 }}
                 |$docStringDelimiter
