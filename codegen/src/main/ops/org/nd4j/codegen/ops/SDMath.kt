@@ -47,7 +47,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("amax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same" // or "org.nd4j.linalg.api.ops.impl.transforms.same"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -59,7 +59,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("amean") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -72,7 +72,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("amin") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"  // ""org.nd4j.linalg.api.ops.impl.reduce.same"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -122,7 +122,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("asum") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(NUMERIC, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -194,326 +194,213 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("clipByNorm") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "clipValue") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
+        Input(INT, "dimensions") { description = "If not specified, all dimensions are used" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
-            """
- Clipping by L2 norm, optionally along dimension(s)<br>
- if l2Norm(x,dimension) < clipValue, then input is returned unmodifed<br>
- Otherwise, out[i] = in[i] * clipValue / l2Norm(in, dimensions) where each value is clipped according
- to the corresponding l2Norm along the specified dimensions
-
- @param name       Output variable name
- @param x          Input variable
- @param clipValue  Clipping value (maximum l2 norm)
- @param dimensions If not specified, all dimensions are used
- @return Output variable
-     
-""".trimIndent()
+            """ 
+                Clipping by L2 norm, optionally along dimension(s)<br>
+                if l2Norm(x,dimension) < clipValue, then input is returned unmodifed<br>
+                Otherwise, out[i] = in[i] * clipValue / l2Norm(in, dimensions) where each value is clipped according
+                to the corresponding l2Norm along the specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("clipByValue") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "clipValueMin") { description = "" }
-        Input(NUMERIC, "clipValueMax") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "clipValueMin") { description = "Minimum value for clipping" }
+        Input(NUMERIC, "clipValueMax") { description = "Maximum value for clipping" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise clipping function:<br>
- out[i] = in[i] if in[i] >= clipValueMin and in[i] <= clipValueMax<br>
- out[i] = clipValueMin if in[i] < clipValueMin<br>
- out[i] = clipValueMax if in[i] > clipValueMax<br>
-
- @param name         Name of the output variable
- @param x            Input variable
- @param clipValueMin Minimum value for clipping
- @param clipValueMax Maximum value for clipping
- @return Output variable
-     
-""".trimIndent()
+                Element-wise clipping function:<br>
+                out[i] = in[i] if in[i] >= clipValueMin and in[i] <= clipValueMax<br>
+                out[i] = clipValueMin if in[i] < clipValueMin<br>
+                out[i] = clipValueMax if in[i] > clipValueMax<br>
+            """.trimIndent()
         }
     }
 
     Op("confusionMatrix") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "labels") { description = "" }
-        Input(NUMERIC, "pred") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
+        Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
+        Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
 
-        Output(NUMERIC, "output"){ description = "" }
+        Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
 
         Doc(Language.ANY, DocScope.ALL){
-            """
- Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
- which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))<br>
- For example, if labels = [0, 1, 1] and predicted = [0, 2, 1] then output is:<br>
- [1, 0, 0]<br>
- [0, 1, 1]<br>
- [0, 0, 0]<br>
-
- @param name   Name of the output variable
- @param labels Labels - 1D array of integer values representing label values
- @param pred   Predictions - 1D array of integer values representing predictions. Same length as labels
- @return Output variable (2D, shape [numClasses, numClasses})
-     
-""".trimIndent()
+            """ 
+                Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
+                which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))<br>
+                For example, if labels = [0, 1, 1] and predicted = [0, 2, 1] then output is:<br>
+                [1, 0, 0]<br>
+                [0, 1, 1]<br>
+                [0, 0, 0]<br>
+            """.trimIndent()
         }
     }
 
     Op("confusionMatrix") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "labels") { description = "" }
-        Input(NUMERIC, "pred") { description = "" }
-        Input(NUMERIC, "numClasses") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
+        Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
+        Input(INT, "numClasses") { description = "Number of classes" }
+        Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
- which are represented as integer values.<br>
- For example, if labels = [0, 1, 1], predicted = [0, 2, 1], and numClasses=4 then output is:<br>
- [1, 0, 0, 0]<br>
- [0, 1, 1, 0]<br>
- [0, 0, 0, 0]<br>
- [0, 0, 0, 0]<br>
-
- @param name       Name of the output variable
- @param labels     Labels - 1D array of integer values representing label values
- @param pred       Predictions - 1D array of integer values representing predictions. Same length as labels
- @param numClasses Number of classes
- @return Output variable (2D, shape [numClasses, numClasses})
-     
-""".trimIndent()
+                Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
+                which are represented as integer values.<br>
+                For example, if labels = [0, 1, 1], predicted = [0, 2, 1], and numClasses=4 then output is:<br>
+                [1, 0, 0, 0]<br>
+                [0, 1, 1, 0]<br>
+                [0, 0, 0, 0]<br>
+                [0, 0, 0, 0]<br>
+            """.trimIndent()
         }
     }
 
     Op("confusionMatrix") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "labels") { description = "" }
-        Input(NUMERIC, "pred") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
+        Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
+        Input(NUMERIC, "weights") { description = "Weights - 1D array of values (may be real/decimal) representing the weight/contribution of each prediction. Must be same length as both labels and predictions arrays" }
+        Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
- which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))<br>
- For example, if labels = [0, 1, 1], predicted = [0, 2, 1] and weights = [1, 2, 3]
- [1, 0, 0]<br>
- [0, 3, 2]<br>
- [0, 0, 0]<br>
-
- @param name    Name of the output variable
- @param labels  Labels - 1D array of integer values representing label values
- @param pred    Predictions - 1D array of integer values representing predictions. Same length as labels
- @param weights Weights - 1D array of values (may be real/decimal) representing the weight/contribution of
-                each prediction. Must be same length as both labels and predictions arrays
- @return Output variable (2D, shape [numClasses, numClasses})
-     
-""".trimIndent()
+                Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
+                which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))<br>
+                For example, if labels = [0, 1, 1], predicted = [0, 2, 1] and weights = [1, 2, 3]
+                [1, 0, 0]<br>
+                [0, 3, 2]<br>
+                [0, 0, 0]<br>
+            """.trimIndent()
         }
     }
 
     Op("confusionMatrix") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "labels") { description = "" }
-        Input(NUMERIC, "pred") { description = "" }
-        Input(NUMERIC, "numClasses") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
+        Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
+        Input(INT, "numClasses") { description = "" }
+        Input(NUMERIC, "weights") { description = "Weights - 1D array of values (may be real/decimal) representing the weight/contribution of each prediction. Must be same length as both labels and predictions arrays" }
+        Output(NUMERIC, "output"){ description = "Output variable (2D, shape [numClasses, numClasses})" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
- which are represented as integer values.<br>
- For example, if labels = [0, 1, 1], predicted = [0, 2, 1], numClasses = 4, and weights = [1, 2, 3]
- [1, 0, 0, 0]<br>
- [0, 3, 2, 0]<br>
- [0, 0, 0, 0]<br>
- [0, 0, 0, 0]<br>
-
- @param name    Name of the output variable
- @param labels  Labels - 1D array of integer values representing label values
- @param pred    Predictions - 1D array of integer values representing predictions. Same length as labels
- @param weights Weights - 1D array of values (may be real/decimal) representing the weight/contribution of
-                each prediction. Must be same length as both labels and predictions arrays
- @return Output variable (2D, shape [numClasses, numClasses})
-     
-""".trimIndent()
+                Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
+                which are represented as integer values.<br>
+                For example, if labels = [0, 1, 1], predicted = [0, 2, 1], numClasses = 4, and weights = [1, 2, 3]
+                [1, 0, 0, 0]<br>
+                [0, 3, 2, 0]<br>
+                [0, 0, 0, 0]<br>
+                [0, 0, 0, 0]<br>
+            """.trimIndent()
         }
     }
 
     Op("cos") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise cosine operation: out = cos(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise cosine operation: out = cos(x)
+            """.trimIndent()
         }
     }
 
     Op("cosh") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise cosh (hyperbolic cosine) operation: out = cosh(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise cosh (hyperbolic cosine) operation: out = cosh(x)
+            """.trimIndent()
         }
     }
 
     Op("cosineDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Input(INT, "dimensions") { description = "Dimensions to calculate cosine similarity over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Cosine distance reduction operation. The output contains the cosine distance for each
- tensor/subset along the specified dimensions:<br>
- out = 1.0 - cosineSimilarity(x,y)<br>
- See {@link #cosineSimilarity(String, SDVariable, SDVariable, int...)}
-
- @param name       Name of the output variable
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions Dimensions to calculate cosine similarity over
- @return Output variable
-     
-""".trimIndent()
+                Cosine distance reduction operation. The output contains the cosine distance for each
+                tensor/subset along the specified dimensions:<br>
+                out = 1.0 - cosineSimilarity(x,y)<br>
+                See {@link #cosineSimilarity(String, SDVariable, SDVariable, int...)}
+            """.trimIndent()
         }
     }
 
     Op("cosineSimilarity") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Input(INT, "dimensions") { description = "Dimensions to calculate cosine similarity over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
-            """
- Cosine similarity pairwise reduction operation. The output contains the cosine similarity for each tensor/subset
- along the specified dimensions:<br>
- out = (sum_i x[i] * y[i]) / ( sqrt(sum_i x[i]^2) * sqrt(sum_i y[i]^2)
-
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions Dimensions to calculate cosine similarity over
- @return Output variable
-     
-""".trimIndent()
+            """ 
+                Cosine similarity pairwise reduction operation. The output contains the cosine similarity for each tensor/subset
+                along the specified dimensions:<br>
+                out = (sum_i x[i] * y[i]) / ( sqrt(sum_i x[i]^2) * sqrt(sum_i y[i]^2)
+            """.trimIndent()
         }
     }
 
     Op("countNonZero") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
+        Input(NUMERIC, "input") { description = "Input variable" }
+        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Count non zero array reduction operation, optionally along specified dimensions: out = count(x != 0)
-
- @param name       Name of the output variable
- @param input      Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Count non zero array reduction operation, optionally along specified dimensions: out = count(x != 0)
+            """.trimIndent()
         }
     }
 
     Op("countZero") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
+        Input(NUMERIC, "input") { description = "Input variable" }
+        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Count zero array reduction operation, optionally along specified dimensions: out = count(x == 0)
-
- @param name       Name of the output variable
- @param input      Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Count zero array reduction operation, optionally along specified dimensions: out = count(x == 0)
+            """.trimIndent()
         }
     }
 
     Op("cross") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "a") { description = "" }
-        Input(NUMERIC, "b") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "a") { description = "First input" }
+        Input(NUMERIC, "b") { description = "Second input" }
+        Output(NUMERIC, "output"){ description = "Element-wise cross product" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns the pair-wise cross product of equal size arrays a and b: a x b = ||a||x||b|| sin(theta).
- Can take rank 1 or above inputs (of equal shapes), but note that the last dimension must have dimension 3
-
- @param a First input
- @param b Second input
- @return Element-wise cross product
-     
-""".trimIndent()
+                Returns the pair-wise cross product of equal size arrays a and b: a x b = ||a||x||b|| sin(theta).
+                Can take rank 1 or above inputs (of equal shapes), but note that the last dimension must have dimension 3
+            """.trimIndent()
         }
     }
 
     Op("cube") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise cube function: out = x^3
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise cube function: out = x^3
+            """.trimIndent()
         }
     }
 
