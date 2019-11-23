@@ -75,7 +75,7 @@ created (i.e. in order to be able to generate code for ND4J, we would need an al
 **Note:** If something is stubbed here and is moved in ND4J, then it also has to be moved to the appropriate place here,
 otherwise the generated code will be wrong.
 
-The `adr` folder contains “Architecture Decision Records”. These files give you more insight into the “why” of some of
+The `adr` folder contains "Architecture Decision Records". These files give you more insight into the "why" of some of
 the bigger decisions within this project.
 
 # DSL for Op Definition
@@ -112,7 +112,7 @@ val mathNs = Namespace("math") {
 ```
 
 This example shows how a namespace is defined. Namespaces are at the top layer, and ops can only be defined within the
-context of a namespace. This example namespace contains only a single op, called “add”. If we wanted to add another op,
+context of a namespace. This example namespace contains only a single op, called "add". If we wanted to add another op,
 we would simply add it below the first.
 
 As you can see, every op has to have a name, if you try to create one without a name, you will get a compile error. 
@@ -211,16 +211,16 @@ will be converted to java like this:
 # Full DSL Description
 ## Namespace
 
-    fun NamespaceName() = Namespace(“name”){ /* Op definitions in namespace context */}
+    fun NamespaceName() = Namespace("name"){ /* Op definitions in namespace context */}
     
 Defines a namespace.
 
 ## Op
 Only available within a namespace context
 
-    Op(“opName”) { /* op properties in op context */ }
-    val opName = Op(“opName”) { /* op properties in op context */ }
-    val anotherOp = Op(“anotherOp”, opName) { /* op properties in op context */ }
+    Op("opName") { /* op properties in op context */ }
+    val opName = Op("opName") { /* op properties in op context */ }
+    val anotherOp = Op("anotherOp", opName) { /* op properties in op context */ }
     
 Every op requires a namespace unique op name.
  
@@ -244,8 +244,8 @@ principle that we want to keep Op definitions as readable as possible.
 ## Input
 Only available within an op context
 
-    Input(FLOATING_POINT, “b”){ /* input properties in input context */ }
-    val a = Input(INT, “a”){ /* input properties in input context */ }
+    Input(FLOATING_POINT, "b"){ /* input properties in input context */ }
+    val a = Input(INT, "a"){ /* input properties in input context */ }
     
 Inputs represent tensors. They are what the op will work on.
 
@@ -253,6 +253,9 @@ Every input requires a data type (either `INT`, `FLOATING_POINT`, `NUMERIC` or `
 
 When defining an input, you can assign it to a variable in order to be able to reference it later on. You might want to
 do this when defining constraints.
+
+If you want an input to represent an array, you will have to set a count accordingly. If no count is set, it is assumed
+that the count is meant to be `Exactly(1)`.
  
 ### Input properties
 * `optional` (Boolean): Flag that marks this input as optional.
@@ -262,8 +265,8 @@ do this when defining constraints.
 ## Argument
 Only available within an op context
 
-    Arg(FLOATING_POINT, “b”){ /* Arg properties in arg context */ }
-    val a = Arg(INT, “a”){ /* Arg properties in arg context */ }
+    Arg(FLOATING_POINT, "b"){ /* Arg properties in arg context */ }
+    val a = Arg(INT, "a"){ /* Arg properties in arg context */ }
     
 Args represent arguments. They modify how the op works on its inputs.
 
@@ -271,6 +274,12 @@ Every arg requires a data type (either `INT`, `FLOATING_POINT`, `NUMERIC` or `BO
 
 When defining an arg, you can assign it to a variable in order to be able to reference it later on. You might want to do
 this when defining constraints.
+
+If you want an arg to represent an array, you will have to set a count accordingly. If no count is set, it is assumed
+that the count is meant to be `Exactly(1)`.
+
+Note (Java specific): If the last arg is defined to represent an array, it will be translated to a vararg parameter, e.g.
+`Arg(INT, "a"){ count = AtLeast(1); description = "..." }` will be turned into `long... a`.
  
 ### Argument properties
 * `optional` (Boolean): Flag that marks this input as optional.
@@ -280,7 +289,7 @@ this when defining constraints.
 ## Output
 Only available within an op context
 
-    Output(FLOATING_POINT, “b”){ /* Arg properties in arg context */ }
+    Output(FLOATING_POINT, "b"){ /* Arg properties in arg context */ }
 
 Every output requires a data type (either `INT`, `FLOATING_POINT`, `NUMERIC` or `BOOLEAN`) and an op unique name.
 
@@ -295,9 +304,9 @@ outputs can not be used in constraints.
 Only available within an op context
 
     Doc(Language.ANY, DocScope.ALL){
-        “”” Some documentation
+        """ Some documentation
         It can be multiline. And indented.
-        “””.trimIndent()
+        """.trimIndent()
     }
     
 Documentation can be language specific, and can be set to be only given at specific places. The documentation itself is
@@ -386,7 +395,7 @@ If you want to contribute to this project other than by adding or improving op d
 be of special interest to you.
 
 ## Extending the DSL
-he DSL is implemented using Kotlin’s type-safe builders feature 
+The DSL is implemented using Kotlin’s type-safe builders feature 
 (see https://kotlinlang.org/docs/reference/type-safe-builders.html). The basic principle is that functions calls can
 receive blocks that can be executed in a specified context. When combined with the fact that we are just looking to
 create an object graph that is then going to be used as input to the code generators, this allows us to create a very 
