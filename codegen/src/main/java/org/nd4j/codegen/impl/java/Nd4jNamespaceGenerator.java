@@ -67,7 +67,7 @@ public class Nd4jNamespaceGenerator {
 
         TypeSpec ts = builder.build();
 
-        JavaFile jf = JavaFile.builder("org.nd4j.linalg.api.ops", ts)
+        JavaFile jf = JavaFile.builder("org.nd4j.linalg.api.ops.experimental", ts)
                 .addFileComment("********** GENERATED CODE - DO NOT MODIFY THIS FILE **********")
                 .build();
 
