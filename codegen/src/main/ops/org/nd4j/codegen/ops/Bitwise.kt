@@ -11,6 +11,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("leftShift") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "ShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -25,6 +27,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("rightShift") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "RShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -39,6 +43,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("leftShiftCyclic") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "CyclicShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -55,6 +61,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("rightShiftCyclic") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "CyclicRShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -71,6 +79,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("bitsHammingDistance") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitsHammingDistance"
+
         val x = Input(INT, "x") { description = "First input array." }
         val y = Input(INT, "y") { description = "Second input array." }
         Constraint("Must be same types"){ sameType(x, y) }
@@ -87,6 +97,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("and") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitwiseAnd"
+
         val x = Input(INT, "x") { description = "First input array" }
         val y = Input(INT, "y") { description = "Second input array" }
         Constraint("Must be same types"){ sameType(x, y) }
@@ -103,6 +115,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("or") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitwiseOr"
+
         val x = Input(INT, "x") { description = "First input array" }
         val y = Input(INT, "y") { description = "First input array" }
         Constraint("Must be same types"){ sameType(x, y) }
@@ -119,6 +133,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("xor") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitwiseXor"
+
         val x = Input(INT, "x") { description = "First input array" }
         val y = Input(INT, "y") { description = "First input array" }
         Constraint("Must be same types"){ sameType(x, y) }

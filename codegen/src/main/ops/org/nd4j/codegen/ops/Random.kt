@@ -7,9 +7,9 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 
 fun Random() = Namespace("Random") {
-    val namespaceJavaPackage = "org.nd4j.linalg.api.ops.random.custom"
-    Op("bernoulli") {
-        javaPackage = namespaceJavaPackage
+        Op("bernoulli") {
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "BernoulliDistribution"
 
         Arg(FLOATING_POINT, "p") { description = "Probability of value 1" }
         Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
@@ -26,7 +26,9 @@ fun Random() = Namespace("Random") {
     }
 
     Op("binomial") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "BinomialDistribution"
+
         Arg(INT, "nTrials") { description = "Number of trials parameter for the binomial distribution" }
         Arg(FLOATING_POINT, "p") { description = "Probability of success for each trial" }
         Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
@@ -42,7 +44,9 @@ fun Random() = Namespace("Random") {
     }
 
     Op("exponential") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.random.custom"
+        javaOpClass = "RandomExponential"
+
         val lambda = Arg(FLOATING_POINT, "lambda") { description = "lambda parameter" }
         Constraint("Must be positive") { lambda gt 0 }
         Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new variable" }
@@ -59,7 +63,9 @@ fun Random() = Namespace("Random") {
     }
 
     Op("logNormal") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "LogNormalDistribution"
+
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
         Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%" }
@@ -75,7 +81,9 @@ fun Random() = Namespace("Random") {
     }
 
     Op("normal") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "GaussianDistribution"
+
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
 
@@ -92,7 +100,9 @@ fun Random() = Namespace("Random") {
     }
 
     Op("normalTruncated") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "TruncatedNormalDistribution"
+
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
         Arg(INT, "shape") { count = AtLeast(1); description = "shape of the new random %INPUT_TYPE%" }
@@ -108,7 +118,9 @@ fun Random() = Namespace("Random") {
     }
 
     Op("uniform") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "UniformDistribution"
+
         Arg(FLOATING_POINT, "min") { description = "Minimum value" }
         Arg(FLOATING_POINT, "max") { description = "Maximum value." }
         Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
