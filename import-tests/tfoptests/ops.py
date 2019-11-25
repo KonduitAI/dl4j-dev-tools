@@ -1230,11 +1230,17 @@ class OpCreator:
     def execute_check_numerics(self):
         return [tf.debugging.check_numerics(tensor=self.vars[0], message=self.op["message"])]
 
+    def execute_adjust_saturation(self):
+        return [tf.image.adjust_saturation(self.vars[0],self.op["factor"])]
+
     def execute_adjust_contrast(self):
         return [tf.image.adjust_contrast(self.vars[0],self.op["contrast_factor"])]
 
     def execute_adjust_contrast_v2(self):
         return [tf.compat.v2.image.adjust_contrast(self.vars[0],self.vars[1])]
+
+    def execute_adjust_hue(self):
+        return [tf.image.adjust_hue(self.vars[0],self.op["delta"])]
 
     def execute_strings_split(self):
         print("strings.split input: ", self.vars[0])

@@ -1256,10 +1256,16 @@ def test_mathtransform():
         # {"opName": "fake_quant_with_min_max_vars_per_channel", "outName": "fake_quant/min_max_args_per_channel/rank2_8bit_narrow", "varShapes":[[3, 5], [5], [5]], "varTypes":["float32", "float32", "float32"], "varInit":["uniform", "uniform_m1_0", "uniform"], "num_bits":8, "narrow_range":True},
         # {"opName": "fake_quant_with_min_max_vars_per_channel", "outName": "fake_quant/min_max_args_per_channel/rank4_6bit", "varShapes":[[3, 2, 2, 5], [5], [5]], "varTypes":["float32", "float32", "float32"], "varInit":["uniform", "uniform_m1_0", "uniform"], "num_bits":6, "narrow_range":False},
 
+        {"opName": "adjust_saturation", "outName": "adjust_saturation/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["uniform"], "factor": 2.0},
+
          #{"opName": "adjust_contrast", "outName": "adjust_contrast/rank3_float32", "varShapes": [[8,8,3]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
          #{"opName": "adjust_contrast", "outName": "adjust_contrast_v/rank3_mixed", "varShapes": [[8,8,3,1]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
          #{"opName": "adjust_contrast", "outName": "adjust_contrast_v/rank4_mixed","varShapes": [[8, 8, 3, 4]], "varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
          #{"opName": "adjust_contrast", "outName": "adjust_contrast/emptyArrayTests/rank3_float32", "varShapes": [[0,0,0]],"varTypes": ["float32"], "varInit": ["empty"],"contrast_factor":0.0},
+
+        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["stdnormal"], "delta": 2.0},
+        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 2.0},
+        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64_zero_delta", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 0.0},
 
          #{"opName": "crop_and_resize", "outName": "crop_and_resize", "varShapes": [[1,2,2,1], [2,4], [2], [2]],"varTypes": ["float32", "float32","int32","int32"], "varInit": ["uniform", "uniform","uniform_int10","uniform_int10"], "method":"bilinear","ext_value":0},
          #{"opName": "crop_and_resize", "outName": "crop_and_resize", "varShapes": [[1,2,2,1], [2,4], [2], [2]],"varTypes": ["float32", "float32","int32","int32"], "varInit": ["uniform", "uniform","uniform_int10","uniform_int10"], "method":"nearest","ext_value":0},
