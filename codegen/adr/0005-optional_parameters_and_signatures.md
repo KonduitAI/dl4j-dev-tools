@@ -2,7 +2,9 @@
 
 ## Status
 
-PROPOSAL
+ACCEPTED
+
+Discussed by: Alex Black, raver 119 and Paul Dubs on 25. November 2019
 
 ## Context
 
