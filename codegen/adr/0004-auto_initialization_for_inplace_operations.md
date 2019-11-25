@@ -2,9 +2,9 @@
 
 ## Status
 
-PROPOSED
+REJECTED
 
-Discussed by: Paul Dubs, Alex Black on 25. November 2019
+Discussed by: Paul Dubs, Alex Black, raver119 on 25. November 2019
 
 
 ## Context
@@ -32,3 +32,13 @@ that takes the appropriate shape and data type information in its stead.
 
 ### Disadvantages
 * Codegen becomes more complex, as it requires us to generate more signatures
+
+
+## Reasons for Rejection
+This feature would only come in handy on legacy ops. However, those ops will not be exposed to frontend languages 
+anymore starting from the next release. 
+
+For the ops that replace them ("Custom Ops"), it is *always* possible to pass an output array, when used in NDArray
+programming mode. Thereby making the in-place initialization support a side-effect of that general design.
+
+For support of both `op(out)` and `op(dataType, shape)` see ADR 0005 "Optional parameters and signatures".
