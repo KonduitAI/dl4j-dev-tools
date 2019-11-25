@@ -20,6 +20,7 @@ We drop the `optional` property on parameters. Instead, parameters get an additi
 set to either a fixed literal value (e.g. `7`, `"something"`, `null`), an Arg, or it may reference the specific methods 
 `shape()` and `dataType()` on inputs and outputs. Parameters with `defaultValue` specified are treated as optional.
 
+To be able to deal with languages that do not support default values for arguments, Signatures will be specified.
 Signatures are specified using a `Signature(a,b,c){ "signature specific documentation" }` section for each signature.
 With the signature specific documentation being optional. 
 
@@ -98,6 +99,7 @@ Op("uniform") {
 ### Advantages
 * We get to explicitly define edge cases
 * We can make Signatures compatible with existing code
+* Even in languages with default value support, the added signatures may become useful parts of the documentation
 
 ### Disadvantages
 * The order of definitions within the op changes to Output first, if inputs need to reference it
