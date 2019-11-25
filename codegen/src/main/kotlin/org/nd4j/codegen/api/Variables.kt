@@ -39,7 +39,9 @@ data class Input (
         var type: DataType? = null,
         var optional: Boolean = false,
         var description: String? = null,
-        var count: Count? = null
+        var count: Count? = null,
+        var inPlace: Boolean = false,
+        var supportsInPlaceInit: Boolean = false
 )
 
 data class Output(
