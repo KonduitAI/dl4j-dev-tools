@@ -3,6 +3,7 @@
  */
 package org.nd4j.codegen.ops
 
+import org.nd4j.codegen.api.AtLeast
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
@@ -47,7 +48,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("amax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same" // or "org.nd4j.linalg.api.ops.impl.transforms.same"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -59,7 +60,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("amean") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -72,7 +73,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("amin") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"  // ""org.nd4j.linalg.api.ops.impl.reduce.same"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -122,7 +123,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("asum") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -197,7 +198,7 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
-        Input(INT, "dimensions") { description = "If not specified, all dimensions are used" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """ 
@@ -328,7 +329,7 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
         Input(NUMERIC, "x") { description = "Input variable x" }
         Input(NUMERIC, "y") { description = "Input variable y" }
-        Input(INT, "dimensions") { description = "Dimensions to calculate cosine similarity over" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -344,7 +345,7 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
         Input(NUMERIC, "x") { description = "Input variable x" }
         Input(NUMERIC, "y") { description = "Input variable y" }
-        Input(INT, "dimensions") { description = "Dimensions to calculate cosine similarity over" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
         Output(NUMERIC, "output"){ description = "Output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -359,7 +360,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("countNonZero") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
         Input(NUMERIC, "input") { description = "Input variable" }
-        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -371,7 +372,7 @@ fun SDMath() =  Namespace("SDMath"){
     Op("countZero") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
         Input(NUMERIC, "input") { description = "Input variable" }
-        Input(INT, "dimensions") { description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -406,299 +407,209 @@ fun SDMath() =  Namespace("SDMath"){
 
     Op("diag") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns an output variable with diagonal values equal to the specified values; off-diagonal values will be set to 0<br>
- For example, if input = [1,2,3], then output is given by:<br>
- [ 1, 0, 0]<br>
- [ 0, 2, 0]<br>
- [ 0, 0, 3]<br>
- <br>
- Higher input ranks are also supported: if input has shape [a,...,R-1] then output[i,...,k,i,...,k] = input[i,...,k].
- i.e., for input rank R, output has rank 2R
-
- @param name Name of the output variable
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Returns an output variable with diagonal values equal to the specified values; off-diagonal values will be set to 0<br>
+                For example, if input = [1,2,3], then output is given by:<br>
+                [ 1, 0, 0]<br>
+                [ 0, 2, 0]<br>
+                [ 0, 0, 3]<br>
+                <br>
+                Higher input ranks are also supported: if input has shape [a,...,R-1] then output[i,...,k,i,...,k] = input[i,...,k].
+                i.e., for input rank R, output has rank 2R
+                """.trimIndent()
         }
     }
 
     Op("diagPart") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Diagonal part of the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Extract the diagonal part from the input array.<br>
- If input is<br>
- [ 1, 0, 0]<br>
- [ 0, 2, 0]<br>
- [ 0, 0, 3]<br>
- then output is [1, 2, 3].<br>
- Supports higher dimensions: in general, out[i,...,k] = in[i,...,k,i,...,k]
-
- @param x Input variable
- @return Diagonal part of the input
- @see #diag(String, SDVariable)
-     
-""".trimIndent()
+                Extract the diagonal part from the input array.<br>
+                If input is<br>
+                [ 1, 0, 0]<br>
+                [ 0, 2, 0]<br>
+                [ 0, 0, 3]<br>
+                then output is [1, 2, 3].<br>
+                Supports higher dimensions: in general, out[i,...,k] = in[i,...,k,i,...,k]
+                """.trimIndent()
         }
     }
 
     Op("entropy") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce on (null/empty for full array)" }
+        Output(NUMERIC, "output"){ description = "Output variable: reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Entropy reduction: -sum(x * log(x))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce on (null/empty for full array)
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Entropy reduction: -sum(x * log(x))
+            """.trimIndent()
         }
     }
 
     Op("erf") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = " Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable name" }
         Doc(Language.ANY, DocScope.ALL){
-            """
- Element-wise Gaussian error function - out = erf(in)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+            """ 
+                Element-wise Gaussian error function - out = erf(in)
+            """.trimIndent()
         }
     }
 
     Op("erfc") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise complementary Gaussian error function - out = erfc(in) = 1 - erf(in)
-
- @param name Name of the output variable
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise complementary Gaussian error function - out = erfc(in) = 1 - erf(in)
+            """.trimIndent()
         }
     }
 
     Op("euclideanDistance") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Euclidean distance (l2 norm, l2 distance) reduction operation. The output contains the Euclidean distance for each
- tensor/subset along the specified dimensions:<br>
- out = sqrt( sum_i (x[i] - y[i])^2 )
-
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions Dimensions to calculate cosine similarity over
- @return Output variable
-     
-""".trimIndent()
+                Euclidean distance (l2 norm, l2 distance) reduction operation. The output contains the Euclidean distance for each
+                tensor/subset along the specified dimensions:<br>
+                out = sqrt( sum_i (x[i] - y[i])^2 )
+                """.trimIndent()
         }
     }
 
     Op("exp") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise exponent function: out = exp(x) = 2.71828...^x
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise exponent function: out = exp(x) = 2.71828...^x
+            """.trimIndent()
         }
     }
 
     Op("expm1") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise 1.0 - exponent function: out = 1.0 - exp(x) = 1.0 - 2.71828...^x
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise 1.0 - exponent function: out = 1.0 - exp(x) = 1.0 - 2.71828...^x
+            """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Generate an identity matrix with the specified number of rows and columns.
-
- @param rows Number of rows
-     
-""".trimIndent()
+                Generate an identity matrix with the specified number of rows and columns.
+            """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-        Input(NUMERIC, "cols") { description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Input(NUMERIC, "cols") { description = "Number of columns" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #eye(String, int, int, DataType)} but with the default datatype, {@link Eye#DEFAULT_DTYPE}
-     
-""".trimIndent()
+                As per {@link #eye(String, int, int, DataType)} but with the default datatype, {@link Eye#DEFAULT_DTYPE}
+            """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-        Input(NUMERIC, "cols") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Generate an identity matrix with the specified number of rows and columns
- Example:<br>
- <pre>
- {@code SDVariable eye = eye(3,2)
- eye:
- [ 1, 0]
- [ 0, 1]
- [ 0, 0]}
- </pre>
-
- @param name Name of the new SDVariable
- @param rows Number of rows
- @param cols Number of columns
- @return SDVaribable identity matrix
-     
-""".trimIndent()
+                Generate an identity matrix with the specified number of rows and columns
+                Example:<br>
+                <pre>
+                {@code SDVariable eye = eye(3,2)
+                eye:
+                [ 1, 0]
+                [ 0, 1]
+                [ 0, 0]}
+                </pre>
+                """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-        Input(NUMERIC, "cols") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-        Input(NUMERIC, "batchDimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
+        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Generate an identity matrix with the specified number of rows and columns, with optional leading dims<br>
- Example:<br>
- batchShape: [3,3]<br>
- numRows: 2<br>
- numCols: 4<br>
- returns a tensor of shape (3, 3, 2, 4) that consists of 3 * 3 batches of (2,4)-shaped identity matrices:<br>
- 1 0 0 0<br>
- 0 1 0 0<br>
-
- @param rows           Number of rows
- @param cols           Number of columns
- @param batchDimension Batch dimensions. May be null
-     
-""".trimIndent()
+                Generate an identity matrix with the specified number of rows and columns, with optional leading dims<br>
+                Example:<br>
+                batchShape: [3,3]<br>
+                numRows: 2<br>
+                numCols: 4<br>
+                returns a tensor of shape (3, 3, 2, 4) that consists of 3 * 3 batches of (2,4)-shaped identity matrices:<br>
+                1 0 0 0<br>
+                0 1 0 0<br>
+            """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-        Input(NUMERIC, "cols") { description = "" }
-        Input(NUMERIC, "batchDimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
+        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #eye(String, int, int, int...)} bit with the number of rows/columns specified as scalar SDVariables,
- and the batch dimension specified as a 1D SDVariable
-     
-""".trimIndent()
+                As per {@link #eye(String, int, int, int...)} bit with the number of rows/columns specified as scalar SDVariables,
+                and the batch dimension specified as a 1D SDVariable
+            """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-        Input(NUMERIC, "cols") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #eye(String, int, int)} bit with the number of rows/columns specified as scalar SDVariables
-     
-""".trimIndent()
+                As per {@link #eye(String, int, int)} bit with the number of rows/columns specified as scalar SDVariables
+            """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "rows") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #eye(String, int)} but with the number of rows specified as a scalar SDVariable
-     
-""".trimIndent()
+                As per {@link #eye(String, int)} but with the number of rows specified as a scalar SDVariable
+            """.trimIndent()
         }
     }
 
