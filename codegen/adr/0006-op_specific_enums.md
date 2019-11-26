@@ -2,14 +2,16 @@
 
 ## Status
 
-Proposal
+ACCEPTED
+
+Discussed by: Alex Black, Robert Altena and Paul Dubs on 26. November 2019
 
 ## Context
 Some ops have an ordinal parameter which switches between a few possible modes. Giving those modes a proper name
 makes usage and documentation easier. 
 
 
-## Proposal
+## Decision
 We allow `Arg` sections to have an `ENUM` data type and add a `possibleValues` property to define the possible values
 for this arg. The ordinal number of the enum is the same as its position within the `possibleValues` list starting from 
 `0`. 
