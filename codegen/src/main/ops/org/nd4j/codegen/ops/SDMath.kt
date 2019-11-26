@@ -406,7 +406,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("diag") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -424,7 +424,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("diagPart") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Diagonal part of the input" }
         Doc(Language.ANY, DocScope.ALL){
@@ -441,7 +441,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("entropy") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         Input(NUMERIC, "in") { description = "Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce on (null/empty for full array)" }
         Output(NUMERIC, "output"){ description = "Output variable: reduced array of rank (input rank - num dimensions)" }
@@ -453,7 +453,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("erf") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
         Input(NUMERIC, "x") { description = " Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable name" }
         Doc(Language.ANY, DocScope.ALL){
@@ -464,7 +464,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("erfc") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -475,7 +475,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("euclideanDistance") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
         Input(NUMERIC, "x") { description = "Input variable x" }
         Input(NUMERIC, "y") { description = "Input variable y" }
         Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
@@ -490,7 +490,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("exp") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -501,7 +501,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("expm1") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -512,7 +512,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
@@ -523,7 +523,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
         Output(NUMERIC, "output"){ description = "" }
@@ -535,7 +535,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
         Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
@@ -556,7 +556,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
         Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
@@ -577,7 +577,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
         Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
@@ -591,7 +591,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
@@ -603,7 +603,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("eye") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
@@ -614,407 +614,271 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("firstIndex") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- First index reduction operation.<br>
- Returns a variable that contains the index of the first element that matches the specified condition (for each
- slice along the specified dimensions)
-
- @param name       Name of the output variable
- @param in         Input variable
- @param condition  Condition to check on input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                First index reduction operation.<br>
+                Returns a variable that contains the index of the first element that matches the specified condition (for each
+                slice along the specified dimensions)
+            """.trimIndent()
         }
     }
 
     Op("firstIndex") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- First index reduction operation.<br>
- Returns a variable that contains the index of the first element that matches the specified condition (for each
- slice along the specified dimensions)<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Name of the output variable
- @param in         Input variable
- @param condition  Condition to check on input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                First index reduction operation.<br>
+                Returns a variable that contains the index of the first element that matches the specified condition (for each
+                slice along the specified dimensions)<br>
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).<br>
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]<br>
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("floor") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise floor function: out = floor(x).
- Rounds each value down to the nearest integer value (if not already an integer)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise floor function: out = floor(x).
+                Rounds each value down to the nearest integer value (if not already an integer)
+            """.trimIndent()
         }
     }
 
     Op("hammingDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate cosine similarity over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Hamming distance reduction operation. The output contains the cosine distance for each
- tensor/subset along the specified dimensions:<br>
- out = count( x[i] != y[i] )
-
- @param name       Name of the output variable
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions Dimensions to calculate cosine similarity over
- @return Output variable
-     
-""".trimIndent()
+                Hamming distance reduction operation. The output contains the cosine distance for each
+                tensor/subset along the specified dimensions:<br>
+                out = count( x[i] != y[i] )
+            """.trimIndent()
         }
     }
 
     Op("iamax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Index of the max absolute value: argmax(abs(in))
-
- @see SameDiff#argmax(String, SDVariable, boolean, int...)
-     
-""".trimIndent()
+                Index of the max absolute value: argmax(abs(in))
+                @see SameDiff#argmax(String, SDVariable, boolean, int...)
+            """.trimIndent()
         }
     }
 
     Op("iamax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Index of the max absolute value: argmax(abs(in))
-
- @see SameDiff#argmax(String, SDVariable, boolean, int...)
-     
-""".trimIndent()
+                Index of the max absolute value: argmax(abs(in))
+                @see SameDiff#argmax(String, SDVariable, boolean, int...)
+            """.trimIndent()
         }
     }
 
     Op("iamin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Index of the min absolute value: argmin(abs(in))
-
- @see SameDiff#argmin(String, SDVariable, boolean, int...)
-     
-""".trimIndent()
+                Index of the min absolute value: argmin(abs(in))
+                @see SameDiff#argmin(String, SDVariable, boolean, int...)
+            """.trimIndent()
         }
     }
 
     Op("iamin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Index of the min absolute value: argmin(abs(in))
-
- @see SameDiff#argmin(String, SDVariable, boolean, int...)
-     
-""".trimIndent()
+                Index of the min absolute value: argmin(abs(in))
+                @see SameDiff#argmin(String, SDVariable, boolean, int...)
+            """.trimIndent()
         }
     }
 
     Op("isFinite") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+        Input(NUMERIC, "x") { description = "Input array" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is finite operation: elementwise isFinite(x)<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Output variable name
- @param x    Input array
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Is finite operation: elementwise isFinite(x)<br>
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("isInfinite") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+        Input(NUMERIC, "x") { description = "Input array" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is infinite operation: elementwise isInfinite(x)<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Output variable name
- @param x    Input array
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Is infinite operation: elementwise isInfinite(x)<br>
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("isMax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.any"
+        Input(NUMERIC, "x") { description = "Input array" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is maximum operation: elementwise x == max(x)<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Is maximum operation: elementwise x == max(x)<br>
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("isNaN") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+        Input(NUMERIC, "x") { description = "Input array" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is Not a Number operation: elementwise isNaN(x)<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Output variable name
- @param x    Input array
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Is Not a Number operation: elementwise isNaN(x)<br>
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("isNonDecreasing") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Scalar variable with value 1 if non-decreasing, or 0 otherwise" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is the array non decreasing?<br>
- An array is non-decreasing if for every valid i, x[i] <= x[i+1]. For Rank 2+ arrays, values are compared
- in 'c' (row major) order
-
- @param name Output name
- @param x    Input variable
- @return Scalar variable with value 1 if non-decreasing, or 0 otherwise
-     
-""".trimIndent()
+                Is the array non decreasing?<br>
+                An array is non-decreasing if for every valid i, x[i] <= x[i+1]. For Rank 2+ arrays, values are compared
+                in 'c' (row major) order
+            """.trimIndent()
         }
     }
 
     Op("isStrictlyIncreasing") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Scalar variable with value 1 if strictly increasing, or 0 otherwise" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is the array strictly increasing?<br>
- An array is strictly increasing if for every valid i, x[i] < x[i+1]. For Rank 2+ arrays, values are compared
- in 'c' (row major) order
-
- @param name Output variable name
- @param x    Input variable
- @return Scalar variable with value 1 if strictly increasing, or 0 otherwise
-     
-""".trimIndent()
+                Is the array strictly increasing?<br>
+                An array is strictly increasing if for every valid i, x[i] < x[i+1]. For Rank 2+ arrays, values are compared
+                in 'c' (row major) order
+            """.trimIndent()
         }
     }
 
     Op("jaccardDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate Jaccard similarity over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
-            """
- Jaccard similarity reduction operation. The output contains the Jaccard distance for each
- tensor along the specified dimensions.
-
- @param name       Name of the output variable
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions Dimensions to calculate Jaccard similarity over
- @return Output variable
-     
-""".trimIndent()
+            """Jaccard similarity reduction operation. The output contains the Jaccard distance for each
+                tensor along the specified dimensions.
+            """.trimIndent()
         }
     }
 
     Op("lastIndex") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Last index reduction operation.<br>
- Returns a variable that contains the index of the last element that matches the specified condition (for each
- slice along the specified dimensions)
-
- @param name       Name of the output variable
- @param in         Input variable
- @param condition  Condition to check on input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Last index reduction operation.<br>
+                Returns a variable that contains the index of the last element that matches the specified condition (for each
+                slice along the specified dimensions)
+            """.trimIndent()
         }
     }
 
     Op("lastIndex") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Last index reduction operation.<br>
- Returns a variable that contains the index of the last element that matches the specified condition (for each
- slice along the specified dimensions)<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Name of the output variable
- @param in         Input variable
- @param condition  Condition to check on input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Last index reduction operation.<br>
+                Returns a variable that contains the index of the last element that matches the specified condition (for each
+                slice along the specified dimensions)<br>
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).<br>
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]<br>
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("log") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise logarithm function (base e - natural logarithm): out = log(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise logarithm function (base e - natural logarithm): out = log(x)
+            """.trimIndent()
         }
     }
 
     Op("log") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "base") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "base") { description = "Logarithm base" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise logarithm function (with specified base): out = log_{base}(x)
-
- @param name Name of the output variable
- @param in   Input variable
- @param base Logarithm base
- @return Output variable
-     
-""".trimIndent()
+                Element-wise logarithm function (with specified base): out = log_{base}(x)
+            """.trimIndent()
         }
     }
 
