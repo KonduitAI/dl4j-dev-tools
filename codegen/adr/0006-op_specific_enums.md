@@ -1,4 +1,4 @@
-# Class specific enums
+# Op specific enums
 
 ## Status
 
