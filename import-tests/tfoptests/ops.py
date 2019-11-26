@@ -23,6 +23,9 @@ class OpCreator:
         else:
             return method()
 
+    def execute_adjust_saturation(self):
+        return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
+
     def execute_reduce_sum(self):
         return [tf.reduce_sum(self.vars[0], axis=self.op["axis"], keepdims=self.op["keepdims"])]
 
@@ -1230,9 +1233,6 @@ class OpCreator:
     def execute_check_numerics(self):
         return [tf.debugging.check_numerics(tensor=self.vars[0], message=self.op["message"])]
 
-    def execute_adjust_saturation(self):
-        return [tf.image.adjust_saturation(self.vars[0],self.op["factor"])]
-
     def execute_adjust_contrast(self):
         return [tf.image.adjust_contrast(self.vars[0],self.op["contrast_factor"])]
 
@@ -1261,6 +1261,9 @@ class OpCreator:
         return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_ind = self.vars[3],\
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
 
+    def execute_random_crop(self):
+        return [tf.image(self.vars[0], self.vars[1])]
+
     def execute_draw_bounding_boxes(self):
         return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
 
@@ -1279,7 +1282,8 @@ class OpCreator:
         if("score_threshold" in self.op):
             score_threshold = self.op["score_threshold"]
 
-        return [tf.image.non_max_suppression(boxes = self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
+        return [tf.image.non_max_suppression(boxes =
+                                             self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
                                              iou_threshold=iou_threshold, score_threshold=score_threshold)]
 
     def execute_non_max_suppression_v2(self):
@@ -1311,4 +1315,14 @@ class OpCreator:
 
     def execute_mul(self):
         return [tf.math.mul(self.vars[0], self.vars[1])]
+
+    def execute_betainc(self):
+        return [tf.math.betainc(self.vars[0], self.vars[1], self.vars[2])]
+
+    def execute_fused_batch_norm(self):
+        return [tf.math.betainc(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
+                                data_format = self.op["data_format"], is_training = True)]
+
+    def execute_matrix_band_part(self):
+        return [tf.linalg.band_part(input = self.vars[0], num_lower = self.op["num_lower"], num_upper = self.op["num_upper"])]
 

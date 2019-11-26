@@ -1,11 +1,10 @@
-import numpy as np
+
 import tensorflow as tf
 from tfoptests.persistor import TensorFlowPersistor
 from tfoptests.test_graph import TestGraph
 from tfoptests.reduce_ops import ReduceOps
 from tfoptests.ops import OpCreator
 from tfoptests.var_initializer import VarInitializer
-
 
 class OpTest(TestGraph):
     def __init__(self, op, *args, **kwargs):
@@ -415,6 +414,8 @@ def test_mathtransform():
         # {"opName":"max_pooling1d", "outName":"max_pooling1d/channels_last_b2_k2_s1_SAME", "varShapes":[[2, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":1, "padding":"SAME", "data_format":"channels_last"},
         # {"opName":"max_pooling1d", "outName":"max_pooling1d/channels_last_b2_k2_s1_VALID", "varShapes":[[2, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":1, "padding":"VALID", "data_format":"channels_last"},
         # {"opName":"max_pooling1d", "outName":"max_pooling1d/channels_last_b1_k2_s2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":2, "padding":"SAME", "data_format":"channels_last"},
+
+        #{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/rank1", "varShapes":[[1, 2, 2, 5]], "varTypes":["float32"], "varInit":["uniform"], "ksizes":[1,2],"strides":[1,1], "padding":"SAME", "data_format":"NHWC", "output_dtype":tf.int32},
 
         #Default AvgPoolingOp only supports NHWC on device type CPU
         # {"opName":"avg_pooling1d", "outName":"avg_pooling1d/channels_first_b1_k2_s1_SAME", "varShapes":[[1, 2, 5]], "varTypes":["float32"], "pooling_size":2, "stride":1, "padding":"SAME", "data_format":"channels_first"},
@@ -1256,7 +1257,7 @@ def test_mathtransform():
         # {"opName": "fake_quant_with_min_max_vars_per_channel", "outName": "fake_quant/min_max_args_per_channel/rank2_8bit_narrow", "varShapes":[[3, 5], [5], [5]], "varTypes":["float32", "float32", "float32"], "varInit":["uniform", "uniform_m1_0", "uniform"], "num_bits":8, "narrow_range":True},
         # {"opName": "fake_quant_with_min_max_vars_per_channel", "outName": "fake_quant/min_max_args_per_channel/rank4_6bit", "varShapes":[[3, 2, 2, 5], [5], [5]], "varTypes":["float32", "float32", "float32"], "varInit":["uniform", "uniform_m1_0", "uniform"], "num_bits":6, "narrow_range":False},
 
-        {"opName": "adjust_saturation", "outName": "adjust_saturation/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["uniform"], "factor": 2.0},
+        #{"opName": "adjust_saturation", "outName": "adjust_saturation/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["uniform"], "factor": 2.0},
 
          #{"opName": "adjust_contrast", "outName": "adjust_contrast/rank3_float32", "varShapes": [[8,8,3]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
          #{"opName": "adjust_contrast", "outName": "adjust_contrast_v/rank3_mixed", "varShapes": [[8,8,3,1]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
@@ -2051,6 +2052,33 @@ def test_mathtransform():
         #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.2, "score_threshold": 0.5},
         #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float16_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
         #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds",  "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+
+         #{"opName": "betainc", "outName": "betainc/rank1_float32", "varShapes":[[4],[4],[4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
+         #{"opName": "betainc", "outName": "betainc/rank2_float32", "varShapes": [[3,4],[3,4],[3,4]], "varTypes": ["float32","float32","float32"], "varInit": ["uniform","uniform","uniform"]},
+         #{"opName": "betainc", "outName": "betainc/rank1_float64", "varShapes": [[4], [4], [4]], "varTypes": ["float64", "float64", "float64"], "varInit": ["uniform", "uniform", "uniform"]},
+         #{"opName": "betainc", "outName": "betainc/rank2_float64", "varShapes": [[3, 4], [3, 4], [3, 4]], "varTypes": ["float64", "float64", "float64"], "varInit": ["uniform", "uniform", "uniform"]},
+         #{"opName": "betainc", "outName": "betainc/emptyArrayTest/float64", "varShapes": [[], [], []],  "varTypes": ["float64", "float64", "float64"], "varInit": ["empty", "empty", "empty"]},
+         #{"opName": "betainc", "outName": "betainc/emptyArrayTest/float32", "varShapes": [[], [], []],  "varTypes": ["float64", "float64", "float64"], "varInit": ["empty", "empty", "empty"]},
+
+         #'TF 1.15 - throws error : float32' has type str, but expected one of: int, long, bool
+         #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32", "varShapes": [[2,2,3,4],[4],[4]],  "varTypes": ["float32","float32","float32"], "varInit": ["uniform","uniform","uniform"], "epsilon":0.5, "data_format":"NHWC"},
+
+         #{"opName": "matrix_band_part", "outName": "matrix_band_part/float32", "varShapes": [[3,4]],  "varTypes": ["float32"], "varInit": ["uniform"],"num_lower":1, "num_upper":-1},
+         #{"opName": "matrix_band_part", "outName": "matrix_band_part/float64", "varShapes": [[3, 4]],  "varTypes": ["float64"], "varInit": ["uniform"], "num_lower": 1, "num_upper": -1},
+         #{"opName": "matrix_band_part", "outName": "matrix_band_part/float32_reverse_limits", "varShapes": [[3, 4]],   "varTypes": ["float32"], "varInit": ["uniform"], "num_lower": 0, "num_upper": 1},
+
+         #{"opName": "polygamma", "outName": "polygamma/float32", "varShapes": [[3,4],[3,4]],  "varTypes": ["float32","float32"], "varInit": ["uniform","uniform"]},
+         #{"opName": "polygamma", "outName": "polygamma/float64", "varShapes": [[3, 4], [3, 4]], "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"]},
+         #{"opName": "polygamma", "outName": "polygamma/emptyArrayTest/float32", "varShapes": [[0, 0], [3, 4]],  "varTypes": ["float32", "float32"], "varInit": ["empty", "uniform"]},
+
+         #{"opName": "random_crop", "outName": "random_crop/float32", "varShapes": [[2,2],[2]],"varTypes": ["float32", "int32"], "varInit": ["uniform", "uniform_int2"]},
+         #{"opName": "random_crop", "outName": "random_crop/float64", "varShapes": [[2, 2], [2]],  "varTypes": ["float64", "int32"], "varInit": ["uniform", "uniform_int2"]},
+
+         #{"opName": "roll", "outName": "roll/rank1_float32", "varShapes": [[4]],"varTypes": ["float32"], "varInit": ["uniform"], "shift":2, "axis":0},
+         #{"opName": "roll", "outName": "roll/rank1_float64", "varShapes": [[4]], "varTypes": ["float64"], "varInit": ["uniform"], "shift": 2, "axis": 0},
+         #{"opName": "roll", "outName": "roll/rank2_float32", "varShapes": [[2,4]], "varTypes": ["float32"],  "varInit": ["uniform"], "shift": 2, "axis": 0},
+         #{"opName": "roll", "outName": "roll/rank2_float32_zeroshift", "varShapes": [[2, 4]], "varTypes": ["float32"],  "varInit": ["uniform"], "shift": 0, "axis": 1},
+
      ]
 
     '''
