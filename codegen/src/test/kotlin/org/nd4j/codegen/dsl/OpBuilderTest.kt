@@ -118,7 +118,7 @@ class OpBuilderTest {
         }
 
         val generator = JavaPoetGenerator()
-        generator.generateNamespaceNd4j(mathNs, null, outDir)
+        generator.generateNamespaceNd4j(mathNs, null, outDir, "Nd4jMath.java")
         val exp = File(outDir, "org/nd4j/linalg/api/ops/Nd4jMath.java")
         assertTrue(exp.isFile)
 
