@@ -1,4 +1,4 @@
-package org.nd4j.linalg.api;
+package org.nd4j.linalg.factory;
 
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -17,7 +17,7 @@ public class NDValidation {
      * @param opName Operation name to print in the exception
      * @param v      Variable to perform operation on
      */
-    protected static void validateNumerical(String opName, INDArray v) {
+    public static void validateNumerical(String opName, INDArray v) {
         if (v == null)
             return;
         if (v.dataType() == DataType.BOOL || v.dataType() == DataType.UTF8)
@@ -31,7 +31,7 @@ public class NDValidation {
      * @param opName Operation name to print in the exception
      * @param v      Variable to validate datatype for (input to operation)
      */
-    protected static void validateNumerical(String opName, String inputName, INDArray v) {
+    public static void validateNumerical(String opName, String inputName, INDArray v) {
         if (v == null)
             return;
         if (v.dataType() == DataType.BOOL || v.dataType() == DataType.UTF8)
@@ -47,7 +47,7 @@ public class NDValidation {
      * @param v1     Variable to validate datatype for (input to operation)
      * @param v2     Variable to validate datatype for (input to operation)
      */
-    protected static void validateNumerical(String opName, INDArray v1, INDArray v2) {
+    public static void validateNumerical(String opName, INDArray v1, INDArray v2) {
         if (v1.dataType() == DataType.BOOL || v1.dataType() == DataType.UTF8 || v2.dataType() == DataType.BOOL || v2.dataType() == DataType.UTF8)
             throw new IllegalStateException("Cannot perform operation \"" + opName + "\" on arrays if one or both variables" +
                     " are non-numerical: got " + v1.dataType() + " and " + v2.dataType());
@@ -59,7 +59,7 @@ public class NDValidation {
      * @param opName Operation name to print in the exception
      * @param v      Variable to validate datatype for (input to operation)
      */
-    protected static void validateInteger(String opName, INDArray v) {
+    public static void validateInteger(String opName, INDArray v) {
         if (v == null)
             return;
         if (!v.dataType().isIntType())
@@ -73,7 +73,7 @@ public class NDValidation {
      * @param inputName Name of the input to the op to validate
      * @param v         Variable to validate datatype for (input to operation)
      */
-    protected static void validateInteger(String opName, String inputName, INDArray v) {
+    public static void validateInteger(String opName, String inputName, INDArray v) {
         if (v == null)
             return;
         if (!v.dataType().isIntType())
@@ -87,7 +87,7 @@ public class NDValidation {
      * @param opName Operation name to print in the exception
      * @param v      Variable to validate datatype for (input to operation)
      */
-    protected static void validateFloatingPoint(String opName, INDArray v) {
+    public static void validateFloatingPoint(String opName, INDArray v) {
         if (v == null)
             return;
         if (!v.dataType().isFPType())
@@ -101,7 +101,7 @@ public class NDValidation {
      * @param inputName Name of the input to the op to validate
      * @param v         Variable to validate datatype for (input to operation)
      */
-    protected static void validateFloatingPoint(String opName, String inputName, INDArray v) {
+    public static void validateFloatingPoint(String opName, String inputName, INDArray v) {
         if (v == null)
             return;
         if (!v.dataType().isFPType())
@@ -115,7 +115,7 @@ public class NDValidation {
      * @param opName Operation name to print in the exception
      * @param v      Variable to validate datatype for (input to operation)
      */
-    protected static void validateBool(String opName, INDArray v) {
+    public static void validateBool(String opName, INDArray v) {
         if (v == null)
             return;
         if (v.dataType() != DataType.BOOL)
@@ -129,7 +129,7 @@ public class NDValidation {
      * @param inputName Name of the input to the op to validate
      * @param v         Variable to validate datatype for (input to operation)
      */
-    protected static void validateBool(String opName, String inputName, INDArray v) {
+    public static void validateBool(String opName, String inputName, INDArray v) {
         if (v == null)
             return;
         if (v.dataType() != DataType.BOOL)
@@ -144,7 +144,7 @@ public class NDValidation {
      * @param v1     Variable to validate datatype for (input to operation)
      * @param v2     Variable to validate datatype for (input to operation)
      */
-    protected static void validateBool(String opName, INDArray v1, INDArray v2) {
+    public static void validateBool(String opName, INDArray v1, INDArray v2) {
         if (v1.dataType() != DataType.BOOL || v2.dataType() != DataType.BOOL)
             throw new IllegalStateException("Cannot perform operation \"" + opName + "\" on array if one or both variables are non-boolean: "
                     + v1.dataType() + " and " + v2.dataType());
@@ -158,7 +158,7 @@ public class NDValidation {
      * @param numericalOnly If true, the variables must all be the same type, and must be numerical (not boolean/utf8)
      * @param vars          Variable to perform operation on
      */
-    protected static void validateSameType(String opName, boolean numericalOnly, INDArray... vars) {
+    public static void validateSameType(String opName, boolean numericalOnly, INDArray... vars) {
         if (vars.length == 0)
             return;
         if (vars.length == 1) {
@@ -180,5 +180,9 @@ public class NDValidation {
                 }
             }
         }
+    }
+
+    public static boolean isSameType(INDArray x, INDArray y){
+        return x.dataType() == y.dataType();
     }
 }

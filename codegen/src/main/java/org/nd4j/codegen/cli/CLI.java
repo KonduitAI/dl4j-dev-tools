@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Slf4j
 public class CLI {
-    private static final String relativePath = "nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/org/nd4j/linalg/factory/ops";
+    private static final String relativePath = "nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/";
 
 
     @Parameter(names = "-dir", description = "Root directory of deeplearning4j mono repo", required = true)
@@ -66,17 +66,19 @@ public class CLI {
             if(ns == null){
                 throw new IllegalStateException("Invalid/unknown namespace provided: " + s);
             }
+            n.add(ns);
         }
 
         for(Namespace ns : n){
             log.info("Starting generation of namespace: {}", ns);
 
-            File outputPath = new File(dir, ns.javaClassName() + ".java");
+            NamespaceOps ops = ns.getNamespace();
+            File outputPath = new File(outputDir,  "org/nd4j/linalg/factory/ops/" + ns.javaClassName() + ".java");
             log.info("Output path: {}", outputPath.getAbsolutePath());
 
-            NamespaceOps ops = ns.getNamespace();
 
-            Nd4jNamespaceGenerator.generate(ops, null, dir, ns.javaClassName());
+
+            Nd4jNamespaceGenerator.generate(ops, null, outputDir, ns.javaClassName());
         }
 
         log.info("Complete - generated {} namespaces", n.size());
