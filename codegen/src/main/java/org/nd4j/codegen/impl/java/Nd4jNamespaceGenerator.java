@@ -49,14 +49,10 @@ public class Nd4jNamespaceGenerator {
 
     private Nd4jNamespaceGenerator() { }
 
-    public static void generate(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
-
-        String className = "Nd4j" + GenUtil.ensureFirstIsCap(namespace.getName());
+    public static void generate(NamespaceOps namespace, GeneratorConfig config, File directory, String className) throws IOException {
 
         TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC);
-
-
 
         addDefaultConstructor(builder);
 

@@ -9,8 +9,8 @@ interface Generator {
     fun language(): Language?
 
     @Throws(IOException::class)
-    fun generateNamespaceNd4j(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?)
+    fun generateNamespaceNd4j(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?, className: String?)
 
     @Throws(IOException::class)
-    fun generateNamespaceSameDiff(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?)
+    fun generateNamespaceSameDiff(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?, className: String?)
 }
