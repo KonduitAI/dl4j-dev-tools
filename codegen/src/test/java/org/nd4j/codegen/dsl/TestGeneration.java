@@ -18,7 +18,7 @@ class TestGeneration {
 
     @SuppressWarnings("unused")
     @TempDir
-    private File testDir;
+    public File testDir;
 
     @Test
     void test() throws Exception {
