@@ -17,7 +17,7 @@ Even though some parameters may be optional, they might become required in the p
 We need a way to explicitly define what combinations are possible.
 
 
-## Proposal
+## Decision
 We drop the `optional` property on parameters. Instead, parameters get an additional property `defaultValue`. It can be 
 set to either a fixed literal value (e.g. `7`, `"something"`, `null`), an Arg, or it may reference the specific methods 
 `shape()` and `dataType()` on inputs and outputs. Parameters with `defaultValue` specified are treated as optional.
