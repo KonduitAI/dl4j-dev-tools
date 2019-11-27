@@ -1164,282 +1164,183 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("sinh") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise sinh (hyperbolic sine) operation: out = sinh(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise sinh (hyperbolic sine) operation: out = sinh(x)
+            """.trimIndent()
         }
     }
 
     Op("sqrt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.floating"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise square root function: out = sqrt(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise square root function: out = sqrt(x)
+            """.trimIndent()
         }
     }
 
     Op("square") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise square function: out = x^2
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise square function: out = x^2
+            """.trimIndent()
         }
     }
 
     Op("step") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "cutoff") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "cutoff") { description = "Cutoff value for step function" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise step function:<br>
- out(x) = 1 if x >= cutoff<br>
- out(x) = 0 otherwise<br>
-
- @param name   Name of the output variable
- @param in     Input variable
- @param cutoff Cutoff value for step function
- @return Output variable
-     
-""".trimIndent()
+                Elementwise step function:<br>
+                out(x) = 1 if x >= cutoff<br>
+                out(x) = 0 otherwise<br>
+            """.trimIndent()
         }
     }
 
     Op("standardize") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "" } //TODO: Missing description for dimension.
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Standardize input variable along given axis
- <p>
- out = (x - mean) / stdev
- <p>
- with mean and stdev being calculated along the given dimension.
-
- <p>
- For example: given x as a mini batch of the shape [numExamples, exampleLength]:
- <ul>
-  <li>use dimension 1 too use the statistics (mean, stdev) for each example</li>
-  <li>use dimension 0 if you want to use the statistics for each column across all examples</li>
-  <li>use dimensions 0,1 if you want to use the statistics across all columns and examples</li>
- </ul>
-
- @param name Name of the output variable
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Standardize input variable along given axis
+                <p>
+                out = (x - mean) / stdev
+                <p>
+                with mean and stdev being calculated along the given dimension.
+                <p>
+                For example: given x as a mini batch of the shape [numExamples, exampleLength]:
+                <ul> 
+                <li>use dimension 1 too use the statistics (mean, stdev) for each example</li>
+                <li>use dimension 0 if you want to use the statistics for each column across all examples</li>
+                <li>use dimensions 0,1 if you want to use the statistics across all columns and examples</li>
+                </ul>
+            """.trimIndent()
         }
     }
 
     Op("tan") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise tangent operation: out = tan(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise tangent operation: out = tan(x)
+            """.trimIndent()
         }
     }
 
     Op("tanh") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise tanh (hyperbolic tangent) operation: out = tanh(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise tanh (hyperbolic tangent) operation: out = tanh(x)
+            """.trimIndent()
         }
     }
 
     Op("trace") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Trace" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Matrix trace operation
- For rank 2 matrices, the output is a scalar vith the trace - i.e., sum of the main diagonal.<br>
- For higher rank inputs, output[a,b,c] = trace(in[a,b,c,:,:])
-
- @param name Name of the output variable. May be null.
- @param in   Input variable
- @return Trace
-     
-""".trimIndent()
+                Matrix trace operation
+                For rank 2 matrices, the output is a scalar vith the trace - i.e., sum of the main diagonal.<br>
+                For higher rank inputs, output[a,b,c] = trace(in[a,b,c,:,:])
+            """.trimIndent()
         }
     }
 
     Op("xor") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Boolean XOR (exclusive OR) operation: elementwise (x != 0) XOR (y != 0)<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Boolean XOR (exclusive OR) operation: elementwise (x != 0) XOR (y != 0)<br>
+                If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("bitShift") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shift") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
+        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Shift integer bits to the left, i.e. var << 4
-
- @param name Name of the output variable
- @param x    Input 1
- @return Output SDVariable with shifted bits
-     
-""".trimIndent()
+                Shift integer bits to the left, i.e. var << 4
+            """.trimIndent()
         }
     }
 
     Op("bitShiftRight") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shift") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
+        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Shift integer bits to the right, i.e. var >> 4
-
- @param name Name of the output variable
- @param x    Input 1
- @return Output SDVariable with shifted bits
-     
-""".trimIndent()
+                Shift integer bits to the right, i.e. var >> 4
+            """.trimIndent()
         }
     }
 
     Op("bitRotl") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shift") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
+        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Roll integer bits to the left, i.e. var << 4 | var >> (32 - 4)
-
- @param name Name of the output variable
- @param x    Input 1
- @return Output SDVariable with shifted bits
-     
-""".trimIndent()
+                Roll integer bits to the left, i.e. var << 4 | var >> (32 - 4)
+            """.trimIndent()
         }
     }
 
     Op("bitRotr") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shift") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
+        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Roll integer bits to the right, i.e. var >> 4 | var << (32 - 4)
-
- @param name Name of the output variable
- @param x    Input 1
- @return Output SDVariable with shifted bits
-     
-""".trimIndent()
+                Roll integer bits to the right, i.e. var >> 4 | var << (32 - 4)
+            """.trimIndent()
         }
     }
 
     Op("zeroFraction") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
+        Input(NUMERIC, "input") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank 0 (scalar)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Full array zero fraction array reduction operation, optionally along specified dimensions: out = (count(x == 0) / length(x))
-
- @param name  Name of the output variable
- @param input Input variable
- @return Reduced array of rank 0 (scalar)
-     
-""".trimIndent()
+                Full array zero fraction array reduction operation, optionally along specified dimensions: out = (count(x == 0) / length(x))
+            """.trimIndent()
         }
     }
 }
