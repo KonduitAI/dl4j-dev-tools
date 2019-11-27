@@ -4,7 +4,6 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
-import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
@@ -13,8 +12,8 @@ import org.nd4j.codegen.api.doc.DocTokens;
 import org.nd4j.codegen.api.generator.ConstraintCodeGenerator;
 import org.nd4j.codegen.api.generator.GeneratorConfig;
 import org.nd4j.codegen.util.GenUtil;
+import org.nd4j.linalg.factory.NDValidation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.experimental.NDValidation;
 import org.nd4j.linalg.factory.Nd4j;
 
 import javax.lang.model.element.Modifier;
@@ -49,14 +48,10 @@ public class Nd4jNamespaceGenerator {
 
     private Nd4jNamespaceGenerator() { }
 
-    public static void generate(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
-
-        String className = "Nd4j" + GenUtil.ensureFirstIsCap(namespace.getName());
+    public static void generate(NamespaceOps namespace, GeneratorConfig config, File directory, String className) throws IOException {
 
         TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC);
-
-
 
         addDefaultConstructor(builder);
 
@@ -70,25 +65,18 @@ public class Nd4jNamespaceGenerator {
 
         TypeSpec ts = builder.build();
 
-        JavaFile jf = JavaFile.builder("org.nd4j.linalg.api.ops.experimental", ts)
+        JavaFile jf = JavaFile.builder("org.nd4j.linalg.factory.ops", ts)
                 .addFileComment("********** GENERATED CODE - DO NOT MODIFY THIS FILE **********")
                 .addStaticImport(NDValidation.class, "isSameType")
                 .build();
 
         jf.writeTo(directory);
-
-        // Copy Utilities that haven't yet landed in ND4J too
-        final InputStream resource = Nd4jNamespaceGenerator.class.getClassLoader().getResourceAsStream("java/utilClasses/NDValidation.java");
-        final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(directory.toPath().resolve("org/nd4j/linalg/api/ops/experimental/NDValidation.java").toFile()));
-        IOUtils.copy(resource, outputStream);
-        outputStream.close();
-        resource.close();
     }
 
     private static void addDefaultConstructor(TypeSpec.Builder builder) {
         //Add private no-arg constructor
         MethodSpec noArg = MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PRIVATE)
+                .addModifiers(Modifier.PUBLIC)
                 .build();
 
         builder.addMethod(noArg);
@@ -96,7 +84,7 @@ public class Nd4jNamespaceGenerator {
 
     private static MethodSpec creatorMethod(Op op){
         MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()))
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+                .addModifiers(Modifier.PUBLIC);
 
         enableVarargsOnLastArg(c, op);
 
@@ -192,7 +180,7 @@ public class Nd4jNamespaceGenerator {
                     c.addParameter(INDArray[].class, inputName);
                 }
                 // Check for parameter types
-                c.addStatement(CodeBlock.of("$T.$L($S, $L, $S)", NDValidation.class, validationMapping.get(i.getType()), op.getOpName(), inputName, inputName));
+                c.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(i.getType()), op.getOpName(), inputName, inputName));
                 checkParameterCount(c, count, inputName);
             }
         }

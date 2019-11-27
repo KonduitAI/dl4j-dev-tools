@@ -19,12 +19,12 @@ public class JavaPoetGenerator implements Generator {
     }
 
     @Override
-    public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
-        Nd4jNamespaceGenerator.generate(namespace, config, directory);
+    public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory, String className) throws IOException {
+        Nd4jNamespaceGenerator.generate(namespace, config, directory, className);
     }
 
     @Override
-    public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
+    public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory, String classname) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }
