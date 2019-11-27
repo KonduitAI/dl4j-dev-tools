@@ -114,12 +114,16 @@ class OpBuilderTest {
                 Constraint("foo bar"){
                     x.sizeAt(7) eq 7 and y.isScalar()
                 }
+
+                Doc(Language.ANY, DocScope.ALL) {
+                    "op doc text that will appear everywhere - classes, constructors, op creators"
+                }
             }
         }
 
         val generator = JavaPoetGenerator()
-        generator.generateNamespaceNd4j(mathNs, null, outDir, "Nd4jMath.java")
-        val exp = File(outDir, "org/nd4j/linalg/api/ops/Nd4jMath.java")
+        generator.generateNamespaceNd4j(mathNs, null, outDir, "Nd4jMath")
+        val exp = File(outDir, "org/nd4j/linalg/factory/ops/Nd4jMath.java")
         assertTrue(exp.isFile)
 
         println(FileUtils.readFileToString(exp, StandardCharsets.UTF_8))
