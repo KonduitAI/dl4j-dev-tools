@@ -2,8 +2,9 @@
 
 ## Status
 
-Proposal
+ACCEPTED
 
+Discussed by Alex Black, raver119 and Paul Dubs on 27. November 2019.
 
 ## Context
 Some Ops (esp. convolution) have many parameters. Many of them can have reasonable defaults, but even then creating
@@ -19,7 +20,7 @@ config holder with builder pattern in languages that do not support named or def
 In our current codebase those configurations are often used across several related ops. 
 
 
-## Proposal
+## Decision
 We add a `Config("name"){ ... }` section to the namespace context. It supports `Input` and `Arg` definitions in the same
 way that `Op` does.
 
