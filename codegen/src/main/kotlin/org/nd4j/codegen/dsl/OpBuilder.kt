@@ -17,6 +17,8 @@ fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
 
     op.block()
 
+    op.checkInvariants()
+
     this.ops!!.add(op)
     return op
 }
