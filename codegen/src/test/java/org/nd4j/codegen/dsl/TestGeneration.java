@@ -18,7 +18,7 @@ class TestGeneration {
 
     @SuppressWarnings("unused")
     @TempDir
-    private File testDir;
+    public File testDir;
 
     @Test
     void test() throws Exception {
@@ -27,7 +27,7 @@ class TestGeneration {
         List<NamespaceOps> list = Arrays.asList(BitwiseKt.Bitwise(), RandomKt.Random());
 
         for(NamespaceOps ops : list) {
-            Nd4jNamespaceGenerator.generate(ops, null, f);
+            Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java");
         }
 
         File[] files = f.listFiles();

@@ -30,7 +30,7 @@ public class PythonGenerator implements Generator {
     }
 
     @Override
-    public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
+    public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory, String fileName) throws IOException {
 
 
         StringBuilder sb = new StringBuilder();
@@ -102,7 +102,7 @@ public class PythonGenerator implements Generator {
             for(Input i : op.getInputs()){
                 sb.append(I4).append(i.getName()).append(" (ndarray): ");
                 if(i.getDescription() != null)
-                    sb.append(DocTokens.processDocText(i.getDescription(), op));
+                    sb.append(DocTokens.processDocText(i.getDescription(), op, DocTokens.GenerationType.ND4J));
                 sb.append("\n");
             }
         }
@@ -117,7 +117,7 @@ public class PythonGenerator implements Generator {
                 sb.append(I4).append("ndarray: ").append(o.get(0).getName());
                 String d = o.get(0).getDescription();
                 if(d != null){
-                    sb.append(" - ").append(DocTokens.processDocText(d, op));
+                    sb.append(" - ").append(DocTokens.processDocText(d, op, DocTokens.GenerationType.ND4J));
                 }
                 sb.append("\n");
             } else {
@@ -138,7 +138,7 @@ public class PythonGenerator implements Generator {
 
 
     @Override
-    public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
+    public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory, String fileName) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

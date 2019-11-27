@@ -11,6 +11,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("leftShift") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "ShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -25,6 +27,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("rightShift") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "RShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -39,6 +43,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("leftShiftCyclic") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "CyclicShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -47,7 +53,7 @@ fun Bitwise() = Namespace("Bitwise"){
         Doc(Language.ANY, DocScope.ALL){
             """
             Bitwise left cyclical shift operation. Supports broadcasting.
-            Unlike {@link #leftShift(String, SDVariable, SDVariable)} the bits will "wrap around":
+            Unlike {@link #leftShift(%INPUT_TYPE%, %INPUT_TYPE%)} the bits will "wrap around":
             {@code leftShiftCyclic(01110000, 2) -> 11000001}
             """.trimIndent()
         }
@@ -55,6 +61,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("rightShiftCyclic") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "CyclicRShiftBits"
+
         Input(INT, "x") { description = "Input to be bit shifted" }
         Input(INT, "y") { description = "Amount to shift elements of x array" }
 
@@ -63,7 +71,7 @@ fun Bitwise() = Namespace("Bitwise"){
         Doc(Language.ANY, DocScope.ALL){
             """
             Bitwise right cyclical shift operation. Supports broadcasting.
-            Unlike {@link #rightShift(String, SDVariable, SDVariable)} the bits will "wrap around":
+            Unlike {@link #rightShift(%INPUT_TYPE%, %INPUT_TYPE%)} the bits will "wrap around":
             {@code rightShiftCyclic(00001110, 2) -> 10000011}
             """.trimIndent()
         }
@@ -71,6 +79,8 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("bitsHammingDistance") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitsHammingDistance"
+
         val x = Input(INT, "x") { description = "First input array." }
         val y = Input(INT, "y") { description = "Second input array." }
         Constraint("Must be same types"){ sameType(x, y) }
@@ -87,10 +97,12 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("and") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitwiseAnd"
+
         val x = Input(INT, "x") { description = "First input array" }
         val y = Input(INT, "y") { description = "Second input array" }
         Constraint("Must be same types"){ sameType(x, y) }
-        Constraint("Must have broadcastable shapes"){ broadcastableShapes(x, y) }
+        BackendConstraint("Must have broadcastable shapes"){ broadcastableShapes(x, y) }
 
         Output(INT, "output"){ description = "Bitwise AND array" }
 
@@ -103,10 +115,12 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("or") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitwiseOr"
+
         val x = Input(INT, "x") { description = "First input array" }
         val y = Input(INT, "y") { description = "First input array" }
         Constraint("Must be same types"){ sameType(x, y) }
-        Constraint("Must have broadcastable shapes"){ broadcastableShapes(x, y) }
+        BackendConstraint("Must have broadcastable shapes"){ broadcastableShapes(x, y) }
 
         Output(INT, "output"){ description = "Bitwise OR array" }
 
@@ -119,10 +133,12 @@ fun Bitwise() = Namespace("Bitwise"){
 
     Op("xor") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "BitwiseXor"
+
         val x = Input(INT, "x") { description = "First input array" }
         val y = Input(INT, "y") { description = "First input array" }
         Constraint("Must be same types"){ sameType(x, y) }
-        Constraint("Must have broadcastable shapes"){ broadcastableShapes(x, y) }
+        BackendConstraint("Must have broadcastable shapes"){ broadcastableShapes(x, y) }
 
         Output(INT, "output"){ description = "Bitwise XOR array" }
 

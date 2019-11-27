@@ -16,7 +16,7 @@ class KotlinExamplePythonGenerator: Generator {
     override fun language() = Language.PYTHON
 
     @Throws(IOException::class)
-    override fun generateNamespaceNd4j(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?) {
+    override fun generateNamespaceNd4j(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?, className: String?) {
         val f = File(directory, GenUtil.ensureFirstIsCap(namespace!!.name) + ".py")
         val content =
         """
@@ -52,12 +52,12 @@ class KotlinExamplePythonGenerator: Generator {
                 |${op.inputs?.let { """
                 |Args: 
                 |${it.joinToString("\n") {
-               "|    ${it.name} (ndarray): ${DocTokens.processDocText(it.description, op)}"
+               "|    ${it.name} (ndarray): ${DocTokens.processDocText(it.description, op, DocTokens.GenerationType.ND4J)}"
                 }}
                 |""".trimMargin() }}
                 |${op.outputs?.let {"""
                 |Returns:
-                |    ndarray: ${it[0].name} ${it[0].description?.let {"- ${DocTokens.processDocText(it, op)}"
+                |    ndarray: ${it[0].name} ${it[0].description?.let {"- ${DocTokens.processDocText(it, op, DocTokens.GenerationType.ND4J)}"
                     }}""".trimMargin()
                 }}
                 |$docStringDelimiter
@@ -65,7 +65,7 @@ class KotlinExamplePythonGenerator: Generator {
     }
 
     @Throws(IOException::class)
-    override fun generateNamespaceSameDiff(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?) {
+    override fun generateNamespaceSameDiff(namespace: NamespaceOps?, config: GeneratorConfig?, directory: File?, className: String?) {
         throw UnsupportedOperationException("Not yet implemented")
     }
 
