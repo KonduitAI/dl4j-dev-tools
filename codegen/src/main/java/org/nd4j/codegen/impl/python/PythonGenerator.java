@@ -30,7 +30,7 @@ public class PythonGenerator implements Generator {
     }
 
     @Override
-    public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
+    public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory, String fileName) throws IOException {
 
 
         StringBuilder sb = new StringBuilder();
@@ -138,7 +138,7 @@ public class PythonGenerator implements Generator {
 
 
     @Override
-    public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory) throws IOException {
+    public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory, String fileName) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

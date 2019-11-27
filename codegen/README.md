@@ -54,6 +54,32 @@ TODO: Show how to use from mvn
 TODO:add picocli based cli to run things: Output ALL namespaces to specific directory; Output selected namespace to
 specific directory; Output specific namespace to stdout; Use specified generator instead of default
 
+## Generating Code - ND4J Namespaces
+
+A script - `generate.sh` - is provided in the project root. This can be used (at present) to generate ND4J namespace classes.
+It is assumed that the deeplearning4j mono repo and the dl4j-dev-tools repo both exist and have a common parent directory
+i.e., `somedir/deeplearning4j` and `somedir/dl4j-dev-tools` both exist.
+
+The script takes as argument the name (or names) of the ND4J namespaces to generate (not case sensitive).
+
+As of 26/11, namespaces names (and hence valid args) include: `bitwise`, `neuralnetwork`, `random`, and `math`
+Note also that `all` may be passed to the script to generate all namespaces.
+
+For example, to generate both bitwise and random namespaces:
+```
+./generate.sh bitwise,random
+```
+Or to generate all namespaces, use:
+```
+./generate.sh all
+``` 
+
+The script will first compile the project, before running.
+Internally, the `org.nd4j.codegen.cli.CLI` class is used.
+Classes are written to `deeplearning4j/nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/org/nd4j/linalg/factory/ops/`
+
+
+
 # Code structure
 The project is implemented using a mix of Java and Kotlin. The DSL definition and the accompanying data structures are
 implemented in Kotlin. At the moment the code generators are implemented in Java, in order to allow people who are not

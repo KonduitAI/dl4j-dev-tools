@@ -11,6 +11,6 @@ fun main() {
 
     listOf(Bitwise(), Random()).forEach {
         val generator = JavaPoetGenerator()
-        generator.generateNamespaceNd4j(it, null, outDir)
+        generator.generateNamespaceNd4j(it, null, outDir, it.name + ".java")
     }
 }
