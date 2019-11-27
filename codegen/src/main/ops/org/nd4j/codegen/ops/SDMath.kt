@@ -883,448 +883,283 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("log1p") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise natural logarithm function: out = log_e (1 + x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise natural logarithm function: out = log_e (1 + x)
+            """.trimIndent()
         }
     }
 
     Op("logEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce on (null for full array)" }
+        Output(NUMERIC, "output"){ description = "variable: reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Log entropy reduction: log(-sum(x * log(x)))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce on (null for full array)
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Log entropy reduction: log(-sum(x * log(x)))
+            """.trimIndent()
         }
     }
 
     Op("logSumExp") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.custom"
+        Input(NUMERIC, "input") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Optional dimensions to reduce along" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Log-sum-exp reduction (optionally along dimension).
- Computes log(sum(exp(x))
-
- @param name       Name of the output variable
- @param input      Input variable
- @param dimensions Optional dimensions to reduce along
- @return Output variable
-     
-""".trimIndent()
+                Log-sum-exp reduction (optionally along dimension).
+                Computes log(sum(exp(x))
+            """.trimIndent()
         }
     }
 
     Op("manhattanDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate cosine similarity over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Manhattan distance (l1 norm, l1 distance) reduction operation. The output contains the Manhattan distance for each
- tensor/subset along the specified dimensions:<br>
- out = sum_i abs(x[i]-y[i])
-
- @param name       Name of the output variable
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions Dimensions to calculate cosine similarity over
- @return Output variable
-     
-""".trimIndent()
+                Manhattan distance (l1 norm, l1 distance) reduction operation. The output contains the Manhattan distance for each
+                tensor/subset along the specified dimensions:<br>
+                out = sum_i abs(x[i]-y[i])
+            """.trimIndent()
         }
     }
 
     Op("matrixDeterminant") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "in") { description = "Input" }
+        Output(NUMERIC, "output"){ description = "Matrix determinant variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Matrix determinant op. For 2D input, this returns the standard matrix determinant.
- For higher dimensional input with shape [..., m, m] the matrix determinant is returned for each
- shape [m,m] sub-matrix.
-
- @param name Name of the output variable
- @param in   Input
- @return Matrix determinant variable
-     
-""".trimIndent()
+                Matrix determinant op. For 2D input, this returns the standard matrix determinant.
+                For higher dimensional input with shape [..., m, m] the matrix determinant is returned for each 
+                shape [m,m] sub-matrix.
+            """.trimIndent()
         }
     }
 
     Op("matrixInverse") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "in") { description = "Input" }
+        Output(NUMERIC, "output"){ description = "Matrix inverse variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Matrix inverse op. For 2D input, this returns the standard matrix inverse.
- For higher dimensional input with shape [..., m, m] the matrix inverse is returned for each
- shape [m,m] sub-matrix.
-
- @param name Name of the output variable
- @param in   Input
- @return Matrix inverse variable
-     
-""".trimIndent()
+                Matrix inverse op. For 2D input, this returns the standard matrix inverse.
+                For higher dimensional input with shape [..., m, m] the matrix inverse is returned for each
+                shape [m,m] sub-matrix.
+            """.trimIndent()
         }
     }
 
     Op("mergeAdd") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "inputs") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
+        Arg(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Merge add function: merges an arbitrary number of equal shaped arrays using element-wise addition:
- out = sum_i in[i]
-
- @param name   Name of the output variable
- @param inputs Input variables
- @return Output variable
-     
-""".trimIndent()
+                Merge add function: merges an arbitrary number of equal shaped arrays using element-wise addition:
+                out = sum_i in[i]
+            """.trimIndent()
         }
     }
 
     Op("mergeAvg") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "inputs") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Arg(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Merge average function: merges an arbitrary number of equal shaped arrays using element-wise mean operation:
- out = mean_i in[i]
-
- @param name   Name of the output variable
- @param inputs Input variables
- @return Output variable
-     
-""".trimIndent()
+                Merge average function: merges an arbitrary number of equal shaped arrays using element-wise mean operation:
+                out = mean_i in[i]
+            """.trimIndent()
         }
     }
 
     Op("mergeMax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "inputs") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Arg(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Merge max function: merges an arbitrary number of equal shaped arrays using element-wise maximum operation:
- out = max_i in[i]
-
- @param inputs Input variables
- @return Output variable
-     
-""".trimIndent()
+                Merge max function: merges an arbitrary number of equal shaped arrays using element-wise maximum operation:
+                out = max_i in[i]
+            """.trimIndent()
         }
     }
 
     Op("moments") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "axes") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
+        Input(NUMERIC, "input") { description = "Input to calculate moments for" }
+        Arg(INT, "axes"){ count = AtLeast(0); description = "Dimensions to perform calculation over" }
+        Output(NUMERIC, "output"){ description = "Mean and variance variables" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Calculate the mean and (population) variance for the input variable, for the specified axis
-
- @param name  Name of the output variables. Can be null; if non-null, must be length 2
- @param input Input to calculate moments for
- @param axes  Dimensions to perform calculation over
- @return Mean and variance variables
-     
-""".trimIndent()
+                Calculate the mean and (population) variance for the input variable, for the specified axis
+            """.trimIndent()
         }
     }
 
     Op("neg") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise negative operation: out = -x
-
- @param name Name of the output variable
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise negative operation: out = -x
+            """.trimIndent()
         }
     }
 
     Op("normalizeMoments") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "counts") { description = "" }
-        Input(NUMERIC, "means") { description = "" }
-        Input(NUMERIC, "variances") { description = "" }
-        Input(NUMERIC, "shift") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
+        Input(NUMERIC, "counts") { description = "Rank 0 (scalar) value with the total number of values used to calculate the sufficient statistics" }
+        Input(NUMERIC, "means") { description = "Mean-value sufficient statistics: this is the SUM of all data values" }
+        Input(NUMERIC, "variances") { description = "Variaance sufficient statistics: this is the squared sum of all data values" }
+        Input(NUMERIC, "shift") { description = "Shift value, possibly 0, used when calculating the sufficient statistics (for numerical stability)" }
+        Output(NUMERIC, "output"){ description = "Output variables: mean and population variance" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Calculate the mean and variance from the sufficient statistics
-
- @param name      Name of the output variables. Can be null; if non-null, must be length 2
- @param counts    Rank 0 (scalar) value with the total number of values used to calculate the sufficient statistics
- @param means     Mean-value sufficient statistics: this is the SUM of all data values
- @param variances Variaance sufficient statistics: this is the squared sum of all data values
- @param shift     Shift value, possibly 0, used when calculating the sufficient statistics (for numerical stability)
- @return Output variables: mean and population variance
-     
-""".trimIndent()
+                Calculate the mean and variance from the sufficient statistics
+            """.trimIndent()
         }
     }
 
     Op("or") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Boolean OR operation: elementwise (x != 0) || (y != 0)<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Boolean OR operation: elementwise (x != 0) || (y != 0)<br>
+                If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("pow") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "value") { description = "Power to raise each element to" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise power function: out = x^value
-
- @param name  Output variable name
- @param x     Input variable
- @param value Power to raise each element to
- @return Output variable
-     
-""".trimIndent()
+                Element-wise power function: out = x^value
+            """.trimIndent()
         }
     }
 
     Op("pow") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "y") { description = "Power" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise (broadcastable) power function: out = x[i]^y[i]
-
- @param name Output variable name
- @param x    Input variable
- @param y    Power
- @return Output variable
-     
-""".trimIndent()
+                Element-wise (broadcastable) power function: out = x[i]^y[i]
+            """.trimIndent()
         }
     }
 
     Op("reciprocal") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "a") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "a") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise reciprocal (inverse) function: out[i] = 1 / in[i]
-
- @param name Name of the output variable
- @param a    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise reciprocal (inverse) function: out[i] = 1 / in[i]
+            """.trimIndent()
         }
     }
 
     Op("round") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise round function: out = round(x).
- Rounds (up or down depending on value) to the nearest integer value.
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise round function: out = round(x).
+                Rounds (up or down depending on value) to the nearest integer value.
+            """.trimIndent()
         }
     }
 
     Op("rsqrt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.floating"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise reciprocal (inverse) of square root: out = 1.0 / sqrt(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise reciprocal (inverse) of square root: out = 1.0 / sqrt(x)
+            """.trimIndent()
         }
     }
 
     Op("setDiag") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "diag") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Input(NUMERIC, "diag") { description = "Diagonal" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Set the diagonal value to the specified values<br>
- If input is<br>
- [ a, b, c]<br>
- [ d, e, f]<br>
- [ g, h, i]<br>
- and diag = [ 1, 2, 3] then output is<br>
- [ 1, b, c]<br>
- [ d, 2, f]<br>
- [ g, h, 3]<br>
-
- @param name Name of the output variable
- @param in   Input variable
- @param diag Diagonal
- @return Output variable
-     
-""".trimIndent()
+                Set the diagonal value to the specified values<br>
+                If input is<br>
+                [ a, b, c]<br>
+                [ d, e, f]<br>
+                [ g, h, i]<br>
+                and diag = [ 1, 2, 3] then output is<br>
+                [ 1, b, c]<br>
+                [ d, 2, f]<br>
+                [ g, h, 3]<br>
+            """.trimIndent()
         }
     }
 
     Op("shannonEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce on (null/empty for full array)" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Shannon Entropy reduction: -sum(x * log2(x))
-
- @param name       Name of the output variable
- @param in         Input variable
- @param dimensions Dimensions to reduce on (null/empty for full array)
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Shannon Entropy reduction: -sum(x * log2(x))
+            """.trimIndent()
         }
     }
 
     Op("sign") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise sign (signum) function:<br>
- out = -1 if in < 0<br>
- out = 0 if in = 0<br>
- out = 1 if in > 0
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Element-wise sign (signum) function:<br>
+                out = -1 if in < 0<br>
+                out = 0 if in = 0<br>
+                out = 1 if in > 0
+            """.trimIndent()
         }
     }
 
     Op("sin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise sine operation: out = sin(x)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise sine operation: out = sin(x)
+            """.trimIndent()
         }
     }
 
