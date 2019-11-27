@@ -71,15 +71,6 @@ public class Nd4jNamespaceGenerator {
                 .build();
 
         jf.writeTo(directory);
-
-        // Copy Utilities that haven't yet landed in ND4J too
-//        final InputStream resource = Nd4jNamespaceGenerator.class.getClassLoader().getResourceAsStream("java/org/nd4j/linalg/api/NDValidation.java");
-//        final InputStream resource = Nd4jNamespaceGenerator.class.getClassLoader().getResourceAsStream("org/nd4j/linalg/api/NDValidation.java");
-//        File f = new File(directory, "NDValidation.java");
-//        final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(f));
-//        IOUtils.copy(resource, outputStream);
-//        outputStream.close();
-//        resource.close();
     }
 
     private static void addDefaultConstructor(TypeSpec.Builder builder) {
