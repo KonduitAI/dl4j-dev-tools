@@ -103,7 +103,7 @@ class Op @JvmOverloads constructor(
      * Check that all required properties are set
      */
     fun checkInvariants() {
-        if(doc?.size == 0 || doc?.all { it.text.isNullOrBlank() } != false ){
+        if( !isAbstract && (doc?.size == 0 || doc?.all { it.text.isNullOrBlank() } != false )){
             throw IllegalStateException("$opName: Ops must be documented!")
         }
 
