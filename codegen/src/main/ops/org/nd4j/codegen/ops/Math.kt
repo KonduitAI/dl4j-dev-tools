@@ -4,10 +4,10 @@
 package org.nd4j.codegen.ops
 
 import org.nd4j.codegen.api.AtLeast
+import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
-import org.nd4j.codegen.api.DataType.*
 
 fun Math() =  Namespace("Math"){
     val namespaceJavaPackage = "" //Seem to be different for each funtion here.
@@ -20,26 +20,32 @@ fun Math() =  Namespace("Math"){
     }
 
     val transformStrict = Op("transformStrict", transform){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
     }
 
     val transformSame = Op("transformSame", transform){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
     }
 
     val transformBool = Op("transformBool", transform){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
     }
 
     val transformAny = Op("transformAny", transform){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.any"
     }
 
     val transformFloating = Op("transformFloating", transform){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.fl"
     }
 
     val scalar = Op("scalar"){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "value") { description = "Scalar value for op" }
@@ -55,14 +61,17 @@ fun Math() =  Namespace("Math"){
     }
 
     val reduceFloating = Op("reduceFloating", reduce){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
     }
 
     val reduceSame = Op("reduceSame", reduce){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
     }
 
     val reduceLong = Op("reduceLong", reduce){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
     }
 
