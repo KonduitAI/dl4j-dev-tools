@@ -31,19 +31,22 @@ public class Nd4jNamespaceGenerator {
         typeMapping.put(DataType.BOOL, boolean.class);
         typeMapping.put(DataType.FLOATING_POINT, double.class);
         typeMapping.put(DataType.NUMERIC, double.class);
-        typeMapping.put(DataType.INT, long.class);
+        typeMapping.put(DataType.INT, int.class);
+        typeMapping.put(DataType.LONG, long.class);
         typeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType.class);
 
         arrayTypeMapping.put(DataType.BOOL, boolean[].class);
         arrayTypeMapping.put(DataType.FLOATING_POINT, double[].class);
         arrayTypeMapping.put(DataType.NUMERIC, double[].class);
-        arrayTypeMapping.put(DataType.INT, long[].class);
+        arrayTypeMapping.put(DataType.INT, int[].class);
+        arrayTypeMapping.put(DataType.LONG, long[].class);
         arrayTypeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType[].class);
 
         validationMapping.put(DataType.BOOL, "validateBool");
         validationMapping.put(DataType.FLOATING_POINT, "validateFloatingPoint");
         validationMapping.put(DataType.NUMERIC, "validateNumerical");
         validationMapping.put(DataType.INT, "validateInteger");
+        validationMapping.put(DataType.LONG, "validateInteger");
     }
 
     private static ConstraintCodeGenerator constraintCodeGenerator = new JavaConstraintCodeGenerator();

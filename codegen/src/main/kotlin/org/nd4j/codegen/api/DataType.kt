@@ -2,7 +2,8 @@ package org.nd4j.codegen.api
 
 enum class DataType {
     FLOATING_POINT, // Any floating point data type
-    INT, // any integer data type
+    INT, // integer data type
+    LONG, //long, signed int64 datatype
     NUMERIC, // any floating point or integer data type
     BOOL, // boolean data type
     DATA_TYPE, // tensor data type
