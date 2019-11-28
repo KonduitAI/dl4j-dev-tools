@@ -144,7 +144,9 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("and") {
-        javaPackage = "org.nd4j.linalg.indexing.conditions"
+        legacy = true
+        javaOpClass = "And"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
         Input(NUMERIC, "x") { description = "Input 1" }
         Input(NUMERIC, "y") { description = "Input 2" }
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
@@ -195,8 +197,8 @@ fun Math() =  Namespace("Math"){
         }
     }
 
-    Op("atan2") {
-        javaPackage = "rg.nd4j.linalg.api.ops.impl.transforms.custom"
+    Op("atan2") {// TODO: We need to generate a constructor that includes SameDiff().
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "ATan2"
         Input(NUMERIC, "y") { description = "Input Y variable" }
         Input(NUMERIC, "x") { description = "Input X variable" }
@@ -1151,6 +1153,7 @@ fun Math() =  Namespace("Math"){
 
     Op("bitRotl") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicRShiftBits"
         Input(NUMERIC, "x") { description = "Input 1" }
         Input(NUMERIC, "shift") { description = "Number of bits to shift." }
         Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
