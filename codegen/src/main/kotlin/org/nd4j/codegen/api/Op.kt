@@ -9,7 +9,7 @@ class Op @JvmOverloads constructor(
         var javaOpClass: String? = null,
         var isAbstract: Boolean = false,
         var extendsOp: Op? = null,
-        var legacy: Boolean = false,
+        legacy: Boolean? = null,
         javaPackage: String? = null,
         inputs: MutableList<Input>? = null,
         outputs: MutableList<Output>? = null,
@@ -18,6 +18,9 @@ class Op @JvmOverloads constructor(
         doc: MutableList<DocSection>? = null) {
     var javaPackage: String? = javaPackage
         get() = field ?: extendedOp { javaPackage }
+
+    var legacy: Boolean? = legacy
+        get() = field ?: extendedOp { legacy }
 
     fun addInput(input: Input) = addToList({inputs}, {this.inputs = it}, input)
     var inputs: MutableList<Input>? = inputs

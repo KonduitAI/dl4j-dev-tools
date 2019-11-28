@@ -14,7 +14,7 @@ fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
     op.doc = mutableListOf()
     op.constraints = mutableListOf()
     op.args = mutableListOf()
-    op.legacy = false
+    op.legacy = null
 
     op.block()
 
