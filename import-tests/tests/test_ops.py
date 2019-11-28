@@ -1264,9 +1264,9 @@ def test_mathtransform():
          #{"opName": "adjust_contrast", "outName": "adjust_contrast_v/rank4_mixed","varShapes": [[8, 8, 3, 4]], "varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
          #{"opName": "adjust_contrast", "outName": "adjust_contrast/emptyArrayTests/rank3_float32", "varShapes": [[0,0,0]],"varTypes": ["float32"], "varInit": ["empty"],"contrast_factor":0.0},
 
-        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["stdnormal"], "delta": 2.0},
-        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 2.0},
-        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64_zero_delta", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 0.0},
+        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["stdnormal"], "delta": 0.5},
+        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 0.5},
+        #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64_zero_delta", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 0.5},
 
          #{"opName": "crop_and_resize", "outName": "crop_and_resize", "varShapes": [[1,2,2,1], [2,4], [2], [2]],"varTypes": ["float32", "float32","int32","int32"], "varInit": ["uniform", "uniform","uniform_int10","uniform_int10"], "method":"bilinear","ext_value":0},
          #{"opName": "crop_and_resize", "outName": "crop_and_resize", "varShapes": [[1,2,2,1], [2,4], [2], [2]],"varTypes": ["float32", "float32","int32","int32"], "varInit": ["uniform", "uniform","uniform_int10","uniform_int10"], "method":"nearest","ext_value":0},
@@ -2071,14 +2071,23 @@ def test_mathtransform():
          #{"opName": "polygamma", "outName": "polygamma/float64", "varShapes": [[3, 4], [3, 4]], "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"]},
          #{"opName": "polygamma", "outName": "polygamma/emptyArrayTest/float32", "varShapes": [[0, 0], [3, 4]],  "varTypes": ["float32", "float32"], "varInit": ["empty", "uniform"]},
 
-         #{"opName": "random_crop", "outName": "random_crop/float32", "varShapes": [[2,2],[2]],"varTypes": ["float32", "int32"], "varInit": ["uniform", "uniform_int2"]},
-         #{"opName": "random_crop", "outName": "random_crop/float64", "varShapes": [[2, 2], [2]],  "varTypes": ["float64", "int32"], "varInit": ["uniform", "uniform_int2"]},
+         #{"opName": "random_crop", "outName": "random_crop/float32", "varShapes": [[4,2],[2]],"varTypes": ["float32", "int32"], "varInit": ["stdnormal", "uniform_int2"]},
+         #{"opName": "random_crop", "outName": "random_crop/float64", "varShapes": [[4, 2], [2]],  "varTypes": ["float64", "int32"], "varInit": ["stdnormal", "uniform_int2"]},
 
          #{"opName": "roll", "outName": "roll/rank1_float32", "varShapes": [[4]],"varTypes": ["float32"], "varInit": ["uniform"], "shift":2, "axis":0},
          #{"opName": "roll", "outName": "roll/rank1_float64", "varShapes": [[4]], "varTypes": ["float64"], "varInit": ["uniform"], "shift": 2, "axis": 0},
          #{"opName": "roll", "outName": "roll/rank2_float32", "varShapes": [[2,4]], "varTypes": ["float32"],  "varInit": ["uniform"], "shift": 2, "axis": 0},
          #{"opName": "roll", "outName": "roll/rank2_float32_zeroshift", "varShapes": [[2, 4]], "varTypes": ["float32"],  "varInit": ["uniform"], "shift": 0, "axis": 1},
 
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int8", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int16", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int32", "varShapes": [[4]],"varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int8", "varShapes": [[4,2]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int16", "varShapes": [[4,2]], "varTypes": ["int32"],"varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int32", "varShapes": [[4,2]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank3_int8", "varShapes": [[4, 2, 3]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank3_int16", "varShapes": [[4, 2, 3]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int32", "varShapes": [[4, 2, 3]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
      ]
 
     '''

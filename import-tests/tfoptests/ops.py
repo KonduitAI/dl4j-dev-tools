@@ -1326,3 +1326,6 @@ class OpCreator:
     def execute_matrix_band_part(self):
         return [tf.linalg.band_part(input = self.vars[0], num_lower = self.op["num_lower"], num_upper = self.op["num_upper"])]
 
+    def execute_toggle_bits(self):
+        return [tf.bitwise.invert(self.vars[0])]
+
