@@ -17,18 +17,11 @@ fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
     val op = Op()
     op.opName = name
     op.libnd4jOpName = name
-    op.isAbstract = false
-    op.inputs = mutableListOf()
-    op.outputs = mutableListOf()
-    op.doc = mutableListOf()
-    op.constraints = mutableListOf()
-    op.args = mutableListOf()
-    op.signatures = mutableListOf()
-    op.legacy = null
+
 
     op.block()
 
-    if(!op.isAbstract && op.signatures!!.isEmpty()){
+    if(!op.isAbstract && op.signatures.isEmpty()){
         op.AllParamSignature()
         op.AllDefaultsSignature()
     }
@@ -39,16 +32,40 @@ fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
     return op
 }
 
-fun NamespaceOps.Op(name: String, extends: Op, block: (Op.() -> Unit)? = null): Op {
-    return Op(name) {
-        extendsOp = extends
-        inputs = null
-        outputs = null
-        doc = null
-        constraints = null
-        args = null
-        signatures = null
-        if (block != null) block()
+fun NamespaceOps.Op(name: String,
+                    extends: Op,
+                    keepArgs: Boolean = true,
+                    keepInputs: Boolean = true,
+                    keepOutputs: Boolean = true,
+                    keepConstraints: Boolean = true,
+                    keepSignatures: Boolean = true,
+                    keepDocs: Boolean = true,
+                    block: (Op.() -> Unit)? = null): Op {
+    return this.Op(name){
+        legacy = extends.legacy
+        javaPackage = extends.javaPackage
+        if(keepArgs){
+            args.addAll(extends.args)
+        }
+        if(keepInputs){
+            inputs.addAll(extends.inputs)
+        }
+        if(keepOutputs){
+            outputs.addAll(extends.outputs)
+        }
+        if(keepConstraints){
+            constraints.addAll(extends.constraints)
+        }
+        if(keepSignatures){
+            signatures.addAll(extends.signatures)
+        }
+        if(keepDocs){
+            doc.addAll(extends.doc)
+        }
+
+        if(block != null){
+            this.block()
+        }
     }
 }
 

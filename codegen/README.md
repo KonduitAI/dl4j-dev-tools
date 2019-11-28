@@ -247,15 +247,16 @@ Only available within a namespace context
     Op("opName") { /* op properties in op context */ }
     val opName = Op("opName") { /* op properties in op context */ }
     val anotherOp = Op("anotherOp", opName) { /* op properties in op context */ }
+    Op("anotherOp2", opName, keepInputs=false) { /* op properties in op context */ }
     
 Every op requires a namespace unique op name.
  
 When defining an op, you can assign it to a variable in order to be able to reference it later on. You might want to do
 this to inherit the properties of that op when defining another op.
  
-Note: When using op inheritance, you will replace inputs, args, outputs and documentation as soon as you define one of
-them. If you want to change one input, you will have to define all of the inputs. If you want to change one argument,
-you will have to define all arguments.
+Note: When using op inheritance, you will add to inputs, args, outputs, signatures and documentation. If you want to 
+replace them instead, you can set any of the following `keepInputs`, `keepArgs`, `keepOutputs`, `keepSignatures`, 
+`keepDoc`, `keepConstraints` to `false`.
  
 Note: Op inheritance is only available within a namespace. Allowing cross-namespace inheritance would violate the 
 principle that we want to keep Op definitions as readable as possible.

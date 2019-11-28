@@ -236,7 +236,7 @@ public class Nd4jNamespaceGenerator {
                 .append("(")
                 .append(String.join(", ", inNames))
                 .append("))");
-        if((op.getLegacy() == null || !op.getLegacy()) && singleOut)        //Note: legacy ops Nd4j.exec(Op) returns INDArray; Nd4j.exec(CustomOp) returns INDArray[]
+        if(!op.getLegacy() && singleOut)        //Note: legacy ops Nd4j.exec(Op) returns INDArray; Nd4j.exec(CustomOp) returns INDArray[]
             sb.append("[0]");
 
         c.addStatement(sb.toString(), Nd4j.class);
