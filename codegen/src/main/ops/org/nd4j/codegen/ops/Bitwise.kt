@@ -150,7 +150,8 @@ fun Bitwise() = Namespace("Bitwise"){
     }
 
     Op("bitShift") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "ShiftBits"
         Input(INT, "x") { description = "Input 1" }
         Input(INT, "shift") { description = "Number of bits to shift." }
         Output(INT, "output"){ description = "SDVariable with shifted bits" }
@@ -162,7 +163,8 @@ fun Bitwise() = Namespace("Bitwise"){
     }
 
     Op("bitShiftRight") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "RShiftBits"
         Input(INT, "x") { description = "Input 1" }
         Input(INT, "shift") { description = "Number of bits to shift." }
         Output(INT, "output"){ description = "SDVariable with shifted bits" }
@@ -174,8 +176,8 @@ fun Bitwise() = Namespace("Bitwise"){
     }
 
     Op("bitRotl") {
-        javaPackage = namespaceJavaPackage
-        javaOpClass = "CyclicRShiftBits"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicShiftBits"
         Input(INT, "x") { description = "Input 1" }
         Input(INT, "shift") { description = "Number of bits to shift." }
         Output(INT, "output"){ description = "SDVariable with shifted bits" }
@@ -188,7 +190,8 @@ fun Bitwise() = Namespace("Bitwise"){
     }
 
     Op("bitRotr") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicRShiftBits"
         Input(INT, "x") { description = "Input 1" }
         Input(INT, "shift") { description = "Number of bits to shift." }
         Output(INT, "output"){ description = "SDVariable with shifted bits" }

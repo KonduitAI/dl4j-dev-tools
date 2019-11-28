@@ -22,34 +22,40 @@ fun Math() =  Namespace("Math"){
     val transformStrict = Op("transformStrict", transform){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+        isAbstract = true
     }
 
     val transformSame = Op("transformSame", transform){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        isAbstract = true
     }
 
     val transformBool = Op("transformBool", transform){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+        isAbstract = true
     }
 
     val transformAny = Op("transformAny", transform){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.any"
+        isAbstract = true
     }
 
     val transformFloating = Op("transformFloating", transform){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.fl"
+        isAbstract = true
     }
 
     val scalar = Op("scalar"){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "value") { description = "Scalar value for op" }
+        Arg(NUMERIC, "value") { description = "Scalar value for op" }
         Output(NUMERIC, "output"){ description = "Output variable" }
+        isAbstract = true
     }
 
     val reduce = Op("reduce"){
@@ -63,16 +69,19 @@ fun Math() =  Namespace("Math"){
     val reduceFloating = Op("reduceFloating", reduce){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        isAbstract = true
     }
 
     val reduceSame = Op("reduceSame", reduce){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        isAbstract = true
     }
 
     val reduceLong = Op("reduceLong", reduce){
         isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
+        isAbstract = true
     }
 
     val reduce3 = Op("reduce3"){
@@ -258,6 +267,7 @@ fun Math() =  Namespace("Math"){
 
     Op("clipByValue") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
+        javaOpClass = "ClipByValue"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "clipValueMin") { description = "Minimum value for clipping" }
         Input(NUMERIC, "clipValueMax") { description = "Maximum value for clipping" }
@@ -359,8 +369,6 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("cosh", transformStrict) {
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise cosh (hyperbolic cosine) operation: out = cosh(x)
@@ -513,7 +521,7 @@ fun Math() =  Namespace("Math"){
     //TODO consolidate eye ops into one and use different signatures?
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Arg(INT, "rows") { description = "Number of rows" }
         Output(NUMERIC, "output"){ description = "Identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -524,8 +532,8 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Arg(INT, "rows") { description = "Number of rows" }
+        Arg(INT, "cols") { description = "Number of columns" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -536,9 +544,9 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
-        Input(DATA_TYPE, "dataType") { description = "Data type" }
+        Arg(INT, "rows") { description = "Number of rows" }
+        Arg(INT, "cols") { description = "Number of columns" }
+        Arg(DATA_TYPE, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -693,6 +701,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("isInfinite", transformBool) {
+        javaOpClass = "IsInf"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is infinite operation: elementwise isInfinite(x)
@@ -703,6 +712,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("isMax", transformAny) {
+        legacy = false
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is maximum operation: elementwise x == max(x)
@@ -858,7 +868,8 @@ fun Math() =  Namespace("Math"){
 
     Op("mergeAdd") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
-        Arg(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
+        javaOpClass = "MergeAddOp"
+        Input(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -870,7 +881,7 @@ fun Math() =  Namespace("Math"){
 
     Op("mergeAvg") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Arg(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
+        Input(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -882,7 +893,7 @@ fun Math() =  Namespace("Math"){
 
     Op("mergeMax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Arg(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
+        Input(NUMERIC, "inputs"){ count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -905,6 +916,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("neg", transformSame) {
+        javaOpClass = "Neg"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise negative operation: out = -x
@@ -931,6 +943,7 @@ fun Math() =  Namespace("Math"){
         Input(BOOL, "x") { description = "Input 1" }
         Input(BOOL, "y") { description = "Input 2" }
         Output(BOOL, "output"){ description = "%INPUT_TYPE% with values 0 and 1 based on where the condition is satisfied" }
+        legacy = true
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean OR operation: elementwise (x != 0) || (y != 0)
