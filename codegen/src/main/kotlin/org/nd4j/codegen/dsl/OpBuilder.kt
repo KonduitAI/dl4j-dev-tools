@@ -28,7 +28,7 @@ fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
 
     op.block()
 
-    if(op.signatures!!.isEmpty()){
+    if(!op.isAbstract && op.signatures!!.isEmpty()){
         op.AllParamSignature()
         op.AllDefaultsSignature()
     }
