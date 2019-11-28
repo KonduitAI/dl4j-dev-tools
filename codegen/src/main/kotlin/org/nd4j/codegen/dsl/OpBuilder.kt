@@ -122,7 +122,7 @@ fun Op.AllDefaultsSignature(withOutput: Boolean = true) {
     }
 }
 
-fun Op.Signature(vararg params: Parameter, block: (Signature.() -> String)?): Signature {
+fun Op.Signature(vararg params: Parameter, block: (Signature.() -> String)? = null): Signature {
     if(params.toSet().size < params.size){
         throw IllegalArgumentException("A parameter may not be used twice in a signature!")
     }
