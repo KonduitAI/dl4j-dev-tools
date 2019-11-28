@@ -148,4 +148,55 @@ fun Bitwise() = Namespace("Bitwise"){
             """.trimIndent()
         }
     }
+
+    Op("bitShift") {
+        javaPackage = namespaceJavaPackage
+        Input(INT, "x") { description = "Input 1" }
+        Input(INT, "shift") { description = "Number of bits to shift." }
+        Output(INT, "output"){ description = "SDVariable with shifted bits" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Shift integer bits to the left, i.e. var << 4
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRight") {
+        javaPackage = namespaceJavaPackage
+        Input(INT, "x") { description = "Input 1" }
+        Input(INT, "shift") { description = "Number of bits to shift." }
+        Output(INT, "output"){ description = "SDVariable with shifted bits" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Shift integer bits to the right, i.e. var >> 4
+            """.trimIndent()
+        }
+    }
+
+    Op("bitRotl") {
+        javaPackage = namespaceJavaPackage
+        javaOpClass = "CyclicRShiftBits"
+        Input(INT, "x") { description = "Input 1" }
+        Input(INT, "shift") { description = "Number of bits to shift." }
+        Output(INT, "output"){ description = "SDVariable with shifted bits" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Roll integer bits to the left, i.e. var << 4 | var >> (32 - 4)
+            """.trimIndent()
+        }
+    }
+
+    Op("bitRotr") {
+        javaPackage = namespaceJavaPackage
+        Input(INT, "x") { description = "Input 1" }
+        Input(INT, "shift") { description = "Number of bits to shift." }
+        Output(INT, "output"){ description = "SDVariable with shifted bits" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Roll integer bits to the right, i.e. var >> 4 | var << (32 - 4)
+            """.trimIndent()
+        }
+    }
 }

@@ -91,7 +91,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
         Input(NUMERIC, "in") { description = "Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" /*; default = false //TODO */}
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
     }
 
@@ -156,9 +156,9 @@ fun Math() =  Namespace("Math"){
         legacy = true
         javaOpClass = "And"
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "y") { description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Input(BOOL, "x") { description = "Input 1" }
+        Input(BOOL, "y") { description = "Input 2" }
+        Output(BOOL, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                  Boolean AND operation: elementwise (x != 0) && (y != 0)
@@ -277,7 +277,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
         Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
-        Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Input(DATA_TYPE, "dataType") { description = "Data type" }
 
         Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
 
@@ -539,7 +539,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
-        Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Input(DATA_TYPE, "dataType") { description = "Data type" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -560,7 +560,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
         Input(NUMERIC, "cols") { description = "Number of columns" }
-        Input(INT, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Input(DATA_TYPE, "dataType") { description = "Data type" }
         Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
@@ -615,7 +615,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("firstIndex", indexAccum) {
-        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 First index reduction operation.
@@ -626,7 +626,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("firstIndex", indexAccum) {
-        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
         //Signature(in, condition, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -758,7 +758,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("lastIndex", indexAccum) {
-        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
+        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
         //Signature(in, condition, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -929,9 +929,9 @@ fun Math() =  Namespace("Math"){
 
     Op("or") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "y") { description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Input(BOOL, "x") { description = "Input 1" }
+        Input(BOOL, "y") { description = "Input 2" }
+        Output(BOOL, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean OR operation: elementwise (x != 0) || (y != 0)
@@ -1122,67 +1122,15 @@ fun Math() =  Namespace("Math"){
 
     Op("xor") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "y") { description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Input(BOOL, "x") { description = "Input 1" }
+        Input(BOOL, "y") { description = "Input 2" }
+        Output(BOOL, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean XOR (exclusive OR) operation: elementwise (x != 0) XOR (y != 0)
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
                 Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-            """.trimIndent()
-        }
-    }
-
-    //TODO these bit ops should go to bitwise namespace, not math
-    Op("bitShift") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
-        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Shift integer bits to the left, i.e. var << 4
-            """.trimIndent()
-        }
-    }
-
-    Op("bitShiftRight") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
-        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Shift integer bits to the right, i.e. var >> 4
-            """.trimIndent()
-        }
-    }
-
-    Op("bitRotl") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        javaOpClass = "CyclicRShiftBits"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
-        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Roll integer bits to the left, i.e. var << 4 | var >> (32 - 4)
-            """.trimIndent()
-        }
-    }
-
-    Op("bitRotr") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "x") { description = "Input 1" }
-        Input(NUMERIC, "shift") { description = "Number of bits to shift." }
-        Output(NUMERIC, "output"){ description = "SDVariable with shifted bits" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Roll integer bits to the right, i.e. var >> 4 | var << (32 - 4)
             """.trimIndent()
         }
     }
