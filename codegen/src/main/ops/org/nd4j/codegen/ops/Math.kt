@@ -158,7 +158,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
         Input(BOOL, "x") { description = "Input 1" }
         Input(BOOL, "y") { description = "Input 2" }
-        Output(BOOL, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(BOOL, "output"){ description = "%INPUT_TYPE% with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                  Boolean AND operation: elementwise (x != 0) && (y != 0)
@@ -374,7 +374,6 @@ fun Math() =  Namespace("Math"){
                 Cosine distance reduction operation. The output contains the cosine distance for each
                 tensor/subset along the specified dimensions:
                 out = 1.0 - cosineSimilarity(x,y)
-                See {@link #cosineSimilarity(String, SDVariable, SDVariable, int...)}
             """.trimIndent()
         }
     }
@@ -546,7 +545,7 @@ fun Math() =  Namespace("Math"){
                 Generate an identity matrix with the specified number of rows and columns
                 Example:
                 <pre>
-                {@code SDVariable eye = eye(3,2)
+                {@code %INPUT_TYPE% eye = eye(3,2)
                 eye:
                 [ 1, 0]
                 [ 0, 1]
@@ -585,8 +584,8 @@ fun Math() =  Namespace("Math"){
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #eye(String, int, int, int...)} bit with the number of rows/columns specified as scalar SDVariables,
-                and the batch dimension specified as a 1D SDVariable
+                As per {@link #eye(int, int, int...)} bit with the number of rows/columns specified as scalar %INPUT_TYPE%s,
+                and the batch dimension specified as a 1D %INPUT_TYPE%
             """.trimIndent()
         }
     }
@@ -598,7 +597,7 @@ fun Math() =  Namespace("Math"){
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #eye(String, int, int)} bit with the number of rows/columns specified as scalar SDVariables
+                As per {@link #eye(String, int, int)} bit with the number of rows/columns specified as scalar %INPUT_TYPE%s
             """.trimIndent()
         }
     }
@@ -609,7 +608,7 @@ fun Math() =  Namespace("Math"){
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #eye(String, int)} but with the number of rows specified as a scalar SDVariable
+                As per {@link #eye(String, int)} but with the number of rows specified as a scalar %INPUT_TYPE%
             """.trimIndent()
         }
     }
@@ -668,7 +667,7 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the max absolute value: argmax(abs(in))
-                @see SameDiff#argmax(String, SDVariable, boolean, int...)
+                @see SameDiff#argmax(String, %INPUT_TYPE%, boolean, int...)
             """.trimIndent()
         }
     }
@@ -678,7 +677,7 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the min absolute value: argmin(abs(in))
-                @see SameDiff#argmin(String, SDVariable, boolean, int...)
+                @see SameDiff#argmin(String, %INPUT_TYPE%, boolean, int...)
             """.trimIndent()
         }
     }
@@ -931,7 +930,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
         Input(BOOL, "x") { description = "Input 1" }
         Input(BOOL, "y") { description = "Input 2" }
-        Output(BOOL, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(BOOL, "output"){ description = "%INPUT_TYPE% with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean OR operation: elementwise (x != 0) || (y != 0)
@@ -1124,7 +1123,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
         Input(BOOL, "x") { description = "Input 1" }
         Input(BOOL, "y") { description = "Input 2" }
-        Output(BOOL, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(BOOL, "output"){ description = "%INPUT_TYPE% with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean XOR (exclusive OR) operation: elementwise (x != 0) XOR (y != 0)
