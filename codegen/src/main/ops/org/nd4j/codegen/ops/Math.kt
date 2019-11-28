@@ -27,6 +27,14 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
     }
 
+    val transformBool = Op("transformBool", transform){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+    }
+
+    val transformAny = Op("transformAny", transform){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.any"
+    }
+
     val reduce = Op("reduce"){
         isAbstract = true
         legacy = true
@@ -39,8 +47,32 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
     }
 
-    val reduceSame = Op("reduceSame", transform){
+    val reduceSame = Op("reduceSame", reduce){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+    }
+
+    val reduceLong = Op("reduceLong", reduce){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
+    }
+
+    val reduce3 = Op("reduce3"){
+        isAbstract = true
+        legacy = true
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate %OPNAME% over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+    }
+
+    val indexAccum = Op("indexAccum"){
+        isAbstract = true
+        legacy = true
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }\
+        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions", default = false}
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
     }
 
     Op("abs", transformSame) {
@@ -218,6 +250,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
+    //TODO consolidate these confusionMatrix ops into one?
     Op("confusionMatrix") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
@@ -295,10 +328,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("cos") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("cos", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise cosine operation: out = cos(x)
@@ -306,8 +336,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("cosh") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+    Op("cosh", transformStrict) {
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -317,12 +346,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("cosineDistance") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
-        Input(NUMERIC, "x") { description = "Input variable x" }
-        Input(NUMERIC, "y") { description = "Input variable y" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("cosineDistance", reduce3) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Cosine distance reduction operation. The output contains the cosine distance for each
@@ -333,13 +357,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("cosineSimilarity") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
-        Input(NUMERIC, "x") { description = "Input variable x" }
-        Input(NUMERIC, "y") { description = "Input variable y" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-
+    Op("cosineSimilarity", reduce3) {
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Cosine similarity pairwise reduction operation. The output contains the cosine similarity for each tensor/subset
@@ -349,11 +367,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("countNonZero") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
-        Input(NUMERIC, "input") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    Op("countNonZero", reduceLong) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Count non zero array reduction operation, optionally along specified dimensions: out = count(x != 0)
@@ -361,11 +375,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("countZero") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
-        Input(NUMERIC, "input") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    Op("countZero", reduceLong) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Count zero array reduction operation, optionally along specified dimensions: out = count(x == 0)
@@ -386,10 +396,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("cube") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("cube", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise cube function: out = x^3
@@ -432,11 +439,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("entropy") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce on (null/empty for full array)" }
-        Output(NUMERIC, "output"){ description = "Output variable: reduced array of rank (input rank - num dimensions)" }
+    Op("entropy", reduceFloating) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Entropy reduction: -sum(x * log(x))
@@ -444,10 +447,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("erf") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = " Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable name" }
+    Op("erf", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Element-wise Gaussian error function - out = erf(in)
@@ -455,10 +455,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("erfc") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("erfc", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise complementary Gaussian error function - out = erfc(in) = 1 - erf(in)
@@ -466,12 +463,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("euclideanDistance") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
-        Input(NUMERIC, "x") { description = "Input variable x" }
-        Input(NUMERIC, "y") { description = "Input variable y" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate cosine similarity over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("euclideanDistance", reduce3) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Euclidean distance (l2 norm, l2 distance) reduction operation. The output contains the Euclidean distance for each
@@ -481,10 +473,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("exp") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("exp", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise exponent function: out = exp(x) = 2.71828...^x
@@ -492,10 +481,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("expm1") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("expm1", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise 1.0 - exponent function: out = 1.0 - exp(x) = 1.0 - 2.71828...^x
@@ -503,10 +489,11 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
+    //TODO consolidate eye ops into one and use different signatures?
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "rows") { description = "Number of rows" }
-        Output(NUMERIC, "output"){ description = "" }
+        Output(NUMERIC, "output"){ description = "Identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Generate an identity matrix with the specified number of rows and columns.
@@ -605,12 +592,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("firstIndex") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
+    Op("firstIndex", indexAccum) {
         Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 First index reduction operation.
@@ -620,13 +603,9 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("firstIndex") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
+    Op("firstIndex", indexAccum) {
         Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
-        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+        //Signature(in, condition, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
                 First index reduction operation.
@@ -642,10 +621,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("floor") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("floor", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise floor function: out = floor(x).
@@ -654,12 +630,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("hammingDistance") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
-        Input(NUMERIC, "x") { description = "Input variable x" }
-        Input(NUMERIC, "y") { description = "Input variable y" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate cosine similarity over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("hammingDistance", reduce3) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Hamming distance reduction operation. The output contains the cosine distance for each
@@ -669,11 +640,9 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("iamax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("iamax", indexAccum) {
+        javaOpClass = "IAMax"
+        //Signature(in, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the max absolute value: argmax(abs(in))
@@ -682,25 +651,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("iamax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Index of the max absolute value: argmax(abs(in))
-                @see SameDiff#argmax(String, SDVariable, boolean, int...)
-            """.trimIndent()
-        }
-    }
-
-    Op("iamin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("iamin", indexAccum) {
+        javaOpClass = "IAMin"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the min absolute value: argmin(abs(in))
@@ -709,24 +661,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("iamin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Index of the min absolute value: argmin(abs(in))
-                @see SameDiff#argmin(String, SDVariable, boolean, int...)
-            """.trimIndent()
-        }
-    }
-
-    Op("isFinite") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
-        Input(NUMERIC, "x") { description = "Input array" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+    Op("isFinite", transformBool) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is finite operation: elementwise isFinite(x)
@@ -736,10 +671,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("isInfinite") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
-        Input(NUMERIC, "x") { description = "Input array" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+    Op("isInfinite", transformBool) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is infinite operation: elementwise isInfinite(x)
@@ -749,10 +681,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("isMax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.any"
-        Input(NUMERIC, "x") { description = "Input array" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+    Op("isMax", transformAny) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is maximum operation: elementwise x == max(x)
@@ -762,10 +691,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("isNaN") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
-        Input(NUMERIC, "x") { description = "Input array" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+    Op("isNaN", transformBool) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is Not a Number operation: elementwise isNaN(x)
@@ -801,12 +727,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("jaccardDistance") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
-        Input(NUMERIC, "x") { description = "Input variable x" }
-        Input(NUMERIC, "y") { description = "Input variable y" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate Jaccard similarity over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("jaccardDistance", reduce3) {
         Doc(Language.ANY, DocScope.ALL){
             """Jaccard similarity reduction operation. The output contains the Jaccard distance for each
                 tensor along the specified dimensions.
