@@ -274,6 +274,10 @@ class OpCreator:
     def execute_avg_pooling1d(self):
         return [tf.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
+    def execute_max_pool_with_argmax(self):
+        return [tf.nn.max_pool_with_argmax(input = self.vars[0], ksize = self.op["ksizes"], strides = self.op["strides"],\
+                                           padding = self.op["padding"],  data_format = self.op["data_format"], output_dtype = self.op["output_dtype"])]
+
     def execute_dense(self):
         kr = self.op.get("kernel_regularizer",None)
         br = self.op.get("bias_regularizer",None)
@@ -1262,7 +1266,7 @@ class OpCreator:
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
 
     def execute_random_crop(self):
-        return [tf.image(self.vars[0], self.vars[1])]
+        return [tf.image.random_crop(self.vars[0], self.vars[1])]
 
     def execute_draw_bounding_boxes(self):
         return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
@@ -1329,3 +1333,8 @@ class OpCreator:
     def execute_toggle_bits(self):
         return [tf.bitwise.invert(self.vars[0])]
 
+    def execute_polygamma(self):
+        return [tf.math.polygamma(self.vars[0], self.vars[1])]
+
+    def execute_roll(self):
+        return [tf.roll(self.vars[0], self.op["shift"], self.op["axis"])]
