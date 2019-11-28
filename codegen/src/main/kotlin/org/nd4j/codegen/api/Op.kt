@@ -9,6 +9,7 @@ class Op @JvmOverloads constructor(
         var javaOpClass: String? = null,
         var isAbstract: Boolean = false,
         var extendsOp: Op? = null,
+        var legacy: Boolean = false,
         javaPackage: String? = null,
         inputs: MutableList<Input>? = null,
         outputs: MutableList<Output>? = null,
