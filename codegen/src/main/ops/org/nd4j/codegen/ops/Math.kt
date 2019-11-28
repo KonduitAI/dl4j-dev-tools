@@ -247,12 +247,12 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
-                which are represented as integer values.<br>
-                For example, if labels = [0, 1, 1], predicted = [0, 2, 1], and numClasses=4 then output is:<br>
-                [1, 0, 0, 0]<br>
-                [0, 1, 1, 0]<br>
-                [0, 0, 0, 0]<br>
-                [0, 0, 0, 0]<br>
+                which are represented as integer values.
+                For example, if labels = [0, 1, 1], predicted = [0, 2, 1], and numClasses=4 then output is:
+                [1, 0, 0, 0]
+                [0, 1, 1, 0]
+                [0, 0, 0, 0]
+                [0, 0, 0, 0]
             """.trimIndent()
         }
     }
@@ -266,11 +266,11 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
-                which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))<br>
+                which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))
                 For example, if labels = [0, 1, 1], predicted = [0, 2, 1] and weights = [1, 2, 3]
-                [1, 0, 0]<br>
-                [0, 3, 2]<br>
-                [0, 0, 0]<br>
+                [1, 0, 0]
+                [0, 3, 2]
+                [0, 0, 0]
             """.trimIndent()
         }
     }
@@ -285,12 +285,12 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
-                which are represented as integer values.<br>
+                which are represented as integer values.
                 For example, if labels = [0, 1, 1], predicted = [0, 2, 1], numClasses = 4, and weights = [1, 2, 3]
-                [1, 0, 0, 0]<br>
-                [0, 3, 2, 0]<br>
-                [0, 0, 0, 0]<br>
-                [0, 0, 0, 0]<br>
+                [1, 0, 0, 0]
+                [0, 3, 2, 0]
+                [0, 0, 0, 0]
+                [0, 0, 0, 0]
             """.trimIndent()
         }
     }
@@ -326,8 +326,8 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Cosine distance reduction operation. The output contains the cosine distance for each
-                tensor/subset along the specified dimensions:<br>
-                out = 1.0 - cosineSimilarity(x,y)<br>
+                tensor/subset along the specified dimensions:
+                out = 1.0 - cosineSimilarity(x,y)
                 See {@link #cosineSimilarity(String, SDVariable, SDVariable, int...)}
             """.trimIndent()
         }
@@ -343,7 +343,7 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Cosine similarity pairwise reduction operation. The output contains the cosine similarity for each tensor/subset
-                along the specified dimensions:<br>
+                along the specified dimensions:
                 out = (sum_i x[i] * y[i]) / ( sqrt(sum_i x[i]^2) * sqrt(sum_i y[i]^2)
             """.trimIndent()
         }
@@ -403,12 +403,12 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Returns an output variable with diagonal values equal to the specified values; off-diagonal values will be set to 0<br>
-                For example, if input = [1,2,3], then output is given by:<br>
-                [ 1, 0, 0]<br>
-                [ 0, 2, 0]<br>
-                [ 0, 0, 3]<br>
-                <br>
+                Returns an output variable with diagonal values equal to the specified values; off-diagonal values will be set to 0
+                For example, if input = [1,2,3], then output is given by:
+                [ 1, 0, 0]
+                [ 0, 2, 0]
+                [ 0, 0, 3]
+                
                 Higher input ranks are also supported: if input has shape [a,...,R-1] then output[i,...,k,i,...,k] = input[i,...,k].
                 i.e., for input rank R, output has rank 2R
                 """.trimIndent()
@@ -421,12 +421,12 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Diagonal part of the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Extract the diagonal part from the input array.<br>
-                If input is<br>
-                [ 1, 0, 0]<br>
-                [ 0, 2, 0]<br>
-                [ 0, 0, 3]<br>
-                then output is [1, 2, 3].<br>
+                Extract the diagonal part from the input array.
+                If input is
+                [ 1, 0, 0]
+                [ 0, 2, 0]
+                [ 0, 0, 3]
+                then output is [1, 2, 3].
                 Supports higher dimensions: in general, out[i,...,k] = in[i,...,k,i,...,k]
                 """.trimIndent()
         }
@@ -475,7 +475,7 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Euclidean distance (l2 norm, l2 distance) reduction operation. The output contains the Euclidean distance for each
-                tensor/subset along the specified dimensions:<br>
+                tensor/subset along the specified dimensions:
                 out = sqrt( sum_i (x[i] - y[i])^2 )
                 """.trimIndent()
         }
@@ -535,7 +535,7 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Generate an identity matrix with the specified number of rows and columns
-                Example:<br>
+                Example:
                 <pre>
                 {@code SDVariable eye = eye(3,2)
                 eye:
@@ -556,14 +556,14 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Generate an identity matrix with the specified number of rows and columns, with optional leading dims<br>
-                Example:<br>
-                batchShape: [3,3]<br>
-                numRows: 2<br>
-                numCols: 4<br>
-                returns a tensor of shape (3, 3, 2, 4) that consists of 3 * 3 batches of (2,4)-shaped identity matrices:<br>
-                1 0 0 0<br>
-                0 1 0 0<br>
+                Generate an identity matrix with the specified number of rows and columns, with optional leading dims
+                Example:
+                batchShape: [3,3]
+                numRows: 2
+                numCols: 4
+                returns a tensor of shape (3, 3, 2, 4) that consists of 3 * 3 batches of (2,4)-shaped identity matrices:
+                1 0 0 0
+                0 1 0 0
             """.trimIndent()
         }
     }
@@ -613,7 +613,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                First index reduction operation.<br>
+                First index reduction operation.
                 Returns a variable that contains the index of the first element that matches the specified condition (for each
                 slice along the specified dimensions)
             """.trimIndent()
@@ -629,14 +629,14 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                First index reduction operation.<br>
+                First index reduction operation.
                 Returns a variable that contains the index of the first element that matches the specified condition (for each
-                slice along the specified dimensions)<br>
+                slice along the specified dimensions)
                 Note that if keepDims = true, the output variable has the same rank as the input variable,
                 with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).<br>
+                the mean along a dimension).
                 Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]<br>
+                keepDims = true: [a,1,c]
                 keepDims = false: [a,c]
             """.trimIndent()
         }
@@ -663,7 +663,7 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Hamming distance reduction operation. The output contains the cosine distance for each
-                tensor/subset along the specified dimensions:<br>
+                tensor/subset along the specified dimensions:
                 out = count( x[i] != y[i] )
             """.trimIndent()
         }
@@ -729,7 +729,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Is finite operation: elementwise isFinite(x)<br>
+                Is finite operation: elementwise isFinite(x)
                 Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
                 value 0 otherwise
             """.trimIndent()
@@ -742,7 +742,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Is infinite operation: elementwise isInfinite(x)<br>
+                Is infinite operation: elementwise isInfinite(x)
                 Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
                 value 0 otherwise
             """.trimIndent()
@@ -755,7 +755,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Is maximum operation: elementwise x == max(x)<br>
+                Is maximum operation: elementwise x == max(x)
                 Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
                 value 0 otherwise
             """.trimIndent()
@@ -768,7 +768,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Is Not a Number operation: elementwise isNaN(x)<br>
+                Is Not a Number operation: elementwise isNaN(x)
                 Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
                 value 0 otherwise
             """.trimIndent()
@@ -781,7 +781,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Scalar variable with value 1 if non-decreasing, or 0 otherwise" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Is the array non decreasing?<br>
+                Is the array non decreasing?
                 An array is non-decreasing if for every valid i, x[i] <= x[i+1]. For Rank 2+ arrays, values are compared
                 in 'c' (row major) order
             """.trimIndent()
@@ -794,7 +794,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Scalar variable with value 1 if strictly increasing, or 0 otherwise" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Is the array strictly increasing?<br>
+                Is the array strictly increasing?
                 An array is strictly increasing if for every valid i, x[i] < x[i+1]. For Rank 2+ arrays, values are compared
                 in 'c' (row major) order
             """.trimIndent()
@@ -822,7 +822,7 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Last index reduction operation.<br>
+                Last index reduction operation.
                 Returns a variable that contains the index of the last element that matches the specified condition (for each
                 slice along the specified dimensions)
             """.trimIndent()
@@ -838,14 +838,14 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Last index reduction operation.<br>
+                Last index reduction operation.
                 Returns a variable that contains the index of the last element that matches the specified condition (for each
-                slice along the specified dimensions)<br>
+                slice along the specified dimensions)
                 Note that if keepDims = true, the output variable has the same rank as the input variable,
                 with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).<br>
+                the mean along a dimension).
                 Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]<br>
+                keepDims = true: [a,1,c]
                 keepDims = false: [a,c]
             """.trimIndent()
         }
@@ -919,7 +919,7 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Manhattan distance (l1 norm, l1 distance) reduction operation. The output contains the Manhattan distance for each
-                tensor/subset along the specified dimensions:<br>
+                tensor/subset along the specified dimensions:
                 out = sum_i abs(x[i]-y[i])
             """.trimIndent()
         }
@@ -1031,9 +1031,9 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Boolean OR operation: elementwise (x != 0) || (y != 0)<br>
-                If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
+                Boolean OR operation: elementwise (x != 0) || (y != 0)
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
@@ -1104,15 +1104,15 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Set the diagonal value to the specified values<br>
-                If input is<br>
-                [ a, b, c]<br>
-                [ d, e, f]<br>
-                [ g, h, i]<br>
-                and diag = [ 1, 2, 3] then output is<br>
-                [ 1, b, c]<br>
-                [ d, 2, f]<br>
-                [ g, h, 3]<br>
+                Set the diagonal value to the specified values
+                If input is
+                [ a, b, c]
+                [ d, e, f]
+                [ g, h, i]
+                and diag = [ 1, 2, 3] then output is
+                [ 1, b, c]
+                [ d, 2, f]
+                [ g, h, 3]
             """.trimIndent()
         }
     }
@@ -1136,9 +1136,9 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Element-wise sign (signum) function:<br>
-                out = -1 if in < 0<br>
-                out = 0 if in = 0<br>
+                Element-wise sign (signum) function:
+                out = -1 if in < 0
+                out = 0 if in = 0
                 out = 1 if in > 0
             """.trimIndent()
         }
@@ -1195,9 +1195,9 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Elementwise step function:<br>
-                out(x) = 1 if x >= cutoff<br>
-                out(x) = 0 otherwise<br>
+                Elementwise step function:
+                out(x) = 1 if x >= cutoff
+                out(x) = 0 otherwise
             """.trimIndent()
         }
     }
@@ -1254,7 +1254,7 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Matrix trace operation
-                For rank 2 matrices, the output is a scalar vith the trace - i.e., sum of the main diagonal.<br>
+                For rank 2 matrices, the output is a scalar vith the trace - i.e., sum of the main diagonal.
                 For higher rank inputs, output[a,b,c] = trace(in[a,b,c,:,:])
             """.trimIndent()
         }
@@ -1267,9 +1267,9 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Boolean XOR (exclusive OR) operation: elementwise (x != 0) XOR (y != 0)<br>
-                If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
+                Boolean XOR (exclusive OR) operation: elementwise (x != 0) XOR (y != 0)
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
