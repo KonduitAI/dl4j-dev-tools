@@ -11,10 +11,40 @@ import org.nd4j.codegen.api.DataType.*
 
 fun SDMath() =  Namespace("SDMath"){
     val namespaceJavaPackage = "" //Seem to be different for each funtion here.
-    Op("abs") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+
+    val transform = Op("transform"){
+        isAbstract = true
+        legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
+    }
+
+    val transformStrict = Op("transformStrict", transform){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
+    }
+
+    val transformSame = Op("transformSame", transform){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+    }
+
+    val reduce = Op("reduce"){
+        isAbstract = true
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    }
+
+    val reduceFloating = Op("reduceFloating", reduce){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+    }
+
+    val reduceSame = Op("reduceSame", transform){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+    }
+
+    Op("abs", transformSame) {
+        javaOpClass = "Abs"
         Doc(Language.ANY, DocScope.ALL){
             """
                  Elementwise absolute value operation: out = abs(x)
@@ -22,10 +52,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("acos") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("acos", transformStrict) {
+        javaOpClass = "ACos"
         Doc(Language.ANY, DocScope.ALL){
             """
                  Elementwise acos (arccosine, inverse cosine) operation: out = arccos(x)
@@ -33,10 +61,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("acosh") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("acosh", transformStrict) {
+        javaOpClass = "ACosh"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise acosh (inverse hyperbolic cosine) function: out = acosh(x)
@@ -44,12 +70,10 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
+    // TODO should we call these "reduceAMax", "reduceAMean", "reduceMin" etc?
     // TODO: There are 2 implementations of amax in org.nd4j.linalg.api.ops.impl
-    Op("amax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same" // or "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    Op("amax", reduceSame) {
+        javaOpClass = "AMax"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Absolute max array reduction operation, optionally along specified dimensions: out = max(abs(x))
@@ -57,11 +81,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("amean") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    Op("amean", reduceFloating) {
+        javaOpClass = "AMean"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Absolute mean array reduction operation, optionally along specified dimensions: out = mean(abs(x))
@@ -70,11 +91,8 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     // TODO: There are 2 implementations of amax in org.nd4j.linalg.api.ops.impl
-    Op("amin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"  // ""org.nd4j.linalg.api.ops.impl.reduce.same"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    Op("amin", reduceSame) {
+        javaOpClass = "AMin"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Absolute min array reduction operation, optionally along specified dimensions: out = min(abs(x))
@@ -89,18 +107,16 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                 Boolean AND operation: elementwise (x != 0) && (y != 0)<br>
-                 If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
-                 Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
+                 Boolean AND operation: elementwise (x != 0) && (y != 0)
+                 If x and y arrays have equal shape, the output shape is the same as these inputs.
+                 Note: supports broadcasting if x and y have different shapes and are broadcastable.
                  Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
     }
 
-    Op("asin") {
-        javaPackage = " org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("asin", transformStrict) {
+        javaOpClass = "ASin"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise asin (arcsin, inverse sine) operation: out = arcsin(x)
@@ -109,10 +125,8 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     // TODO: There are 2 implementations
-    Op("asinh") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict" // org.nd4j.linalg.api.ops.impl.transforms.strict
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("asinh", transformStrict) {
+        javaOpClass = "ASinh"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise asinh (inverse hyperbolic sine) function: out = asinh(x)
@@ -120,11 +134,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("asum") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+    Op("asum", reduceSame) {
+        javaOpClass = "ASum"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Absolute sum array reduction operation, optionally along specified dimensions: out = sum(abs(x))
@@ -132,10 +143,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("atan") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("atan", transformStrict) {
+        javaOpClass = "ATan"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise atan (arctangent, inverse tangent) operation: out = arctangent(x)
@@ -145,6 +154,7 @@ fun SDMath() =  Namespace("SDMath"){
 
     Op("atan2") {
         javaPackage = "rg.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "ATan2"
         Input(NUMERIC, "y") { description = "Input Y variable" }
         Input(NUMERIC, "x") { description = "Input X variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
@@ -156,10 +166,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("atanh") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("atanh", transformStrict) {
+        javaOpClass = "ATanh"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise atanh (inverse hyperbolic tangent) function: out = atanh(x)
@@ -167,10 +175,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("ceil") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("ceil", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise ceiling function: out = ceil(x).
@@ -183,27 +188,14 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
+        Arg(INT, "dimensions"){ description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed"; defaultValue = null }
         Output(NUMERIC, "output"){ description = "Output variable" }
 
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Clipping by L2 norm<br>
-                if l2Norm(x) < clipValue, then input is returned unmodifed<br>
-                Otherwise, out[i] = in[i] * clipValue / l2Norm(in)
-            """.trimIndent()
-        }
-    }
-
-    Op("clipByNorm") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+        //Signature(x, clipValue)
         Doc(Language.ANY, DocScope.ALL){
             """ 
-                Clipping by L2 norm, optionally along dimension(s)<br>
-                if l2Norm(x,dimension) < clipValue, then input is returned unmodifed<br>
+                Clipping by L2 norm, optionally along dimension(s)
+                if l2Norm(x,dimension) < clipValue, then input is returned unmodifed
                 Otherwise, out[i] = in[i] * clipValue / l2Norm(in, dimensions) where each value is clipped according
                 to the corresponding l2Norm along the specified dimensions
             """.trimIndent()
@@ -218,10 +210,10 @@ fun SDMath() =  Namespace("SDMath"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Element-wise clipping function:<br>
-                out[i] = in[i] if in[i] >= clipValueMin and in[i] <= clipValueMax<br>
-                out[i] = clipValueMin if in[i] < clipValueMin<br>
-                out[i] = clipValueMax if in[i] > clipValueMax<br>
+                Element-wise clipping function:
+                out[i] = in[i] if in[i] >= clipValueMin and in[i] <= clipValueMax
+                out[i] = clipValueMin if in[i] < clipValueMin
+                out[i] = clipValueMax if in[i] > clipValueMax
             """.trimIndent()
         }
     }
@@ -237,11 +229,11 @@ fun SDMath() =  Namespace("SDMath"){
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Compute the 2d confusion matrix of size [numClasses, numClasses] from a pair of labels and predictions, both of
-                which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))<br>
-                For example, if labels = [0, 1, 1] and predicted = [0, 2, 1] then output is:<br>
-                [1, 0, 0]<br>
-                [0, 1, 1]<br>
-                [0, 0, 0]<br>
+                which are represented as integer values. This version assumes the number of classes is 1 + max(max(labels), max(pred))
+                For example, if labels = [0, 1, 1] and predicted = [0, 2, 1] then output is:
+                [1, 0, 0]
+                [0, 1, 1]
+                [0, 0, 0]
             """.trimIndent()
         }
     }
