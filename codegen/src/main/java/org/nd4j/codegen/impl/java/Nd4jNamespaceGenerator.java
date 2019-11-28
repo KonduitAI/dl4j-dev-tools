@@ -32,11 +32,13 @@ public class Nd4jNamespaceGenerator {
         typeMapping.put(DataType.FLOATING_POINT, double.class);
         typeMapping.put(DataType.NUMERIC, double.class);
         typeMapping.put(DataType.INT, long.class);
+        typeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType.class);
 
         arrayTypeMapping.put(DataType.BOOL, boolean[].class);
         arrayTypeMapping.put(DataType.FLOATING_POINT, double[].class);
         arrayTypeMapping.put(DataType.NUMERIC, double[].class);
         arrayTypeMapping.put(DataType.INT, long[].class);
+        arrayTypeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType[].class);
 
         validationMapping.put(DataType.BOOL, "validateBool");
         validationMapping.put(DataType.FLOATING_POINT, "validateFloatingPoint");
@@ -191,14 +193,23 @@ public class Nd4jNamespaceGenerator {
         if(args != null && !args.isEmpty()){
             for (Arg arg : args) {
                 final String argName = arg.getName();
+                if(argName == null || argName.isEmpty()){
+                    throw new IllegalStateException("Got null argument name for op " + op.getOpName());
+                }
                 inNames.add(argName);
 
                 final Count count = arg.getCount();
                 if (count == null || count.equals(exactlyOne)) {
                     // single arg
+                    if(!typeMapping.containsKey(arg.getType())){
+                        throw new IllegalStateException("No type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
+                    }
                     c.addParameter(typeMapping.get(arg.getType()), argName);
                 } else {
                     // array Arg
+                    if(!arrayTypeMapping.containsKey(arg.getType())){
+                        throw new IllegalStateException("No array type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
+                    }
                     c.addParameter(arrayTypeMapping.get(arg.getType()), argName);
                 }
 
