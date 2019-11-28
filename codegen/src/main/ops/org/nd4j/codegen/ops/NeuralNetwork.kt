@@ -7,6 +7,7 @@ import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
 fun SDNN() = Namespace("SDNN") {
+    val namespaceJavaPackage = "TODO"
     val convPkg = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
     val transform = Op("transform"){
@@ -130,7 +131,6 @@ fun SDNN() = Namespace("SDNN") {
     }
 
     Op("hardTanhDerivative", transformStrict) {
-        javaPackage = namespaceJavaPackage
         Doc(Language.ANY, DocScope.ALL) {
             """
              Derivative (dOut/dIn) of the element-wise hard Tanh function - {@link #hardTanh(SDVariable)}
@@ -300,81 +300,42 @@ fun SDNN() = Namespace("SDNN") {
         }
     }
 
-    Op("sigmoid") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
+    Op("sigmoid", scalar) {
         Doc(Language.ANY, DocScope.ALL) {
             """
- Element-wise sigmoid function: out[i] = 1.0/(1+exp(-in[i]))
-
- @param name Output variable name
- @param x    Input Variable
- @return Output variable
-     
-""".trimIndent()
+             Element-wise sigmoid function: out[i] = 1.0/(1+exp(-in[i]))
+            """.trimIndent()
         }
     }
 
     Op("sigmoidDerivative") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "wrt") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
+        Input(NUMERIC, "x") { description = "Input Variable" }
+        Input(NUMERIC, "wrt") { description = "Gradient at the output - dL/dOut. Must have same shape as the input" }
+        Output(NUMERIC, "output") { description = "Output (gradient at input of sigmoid)" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
- Element-wise sigmoid function derivative: dL/dIn given input and dL/dOut
-
- @param name Output variable name
- @param x    Input Variable
- @param wrt  Gradient at the output - dL/dOut. Must have same shape as the input
- @return Output variable
-     
-""".trimIndent()
+             Element-wise sigmoid function derivative: dL/dIn given input and dL/dOut
+            """.trimIndent()
         }
     }
 
     Op("softmax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "SoftMax"
+        Input(NUMERIC, "x") { description = "Input" }
+        Arg(INT, "dimension") { description = "Dimension along which to apply softmax" }
+        Output(NUMERIC, "output") { description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL) {
             """
- Softmax activation on dimension 1.
-
- @param x Input variable
- @return Output variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("softmax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
-        Doc(Language.ANY, DocScope.ALL) {
-            """
- Softmax activation
-
- @param x Input variable
- @return Output variable
-     
-""".trimIndent()
+             Softmax activation, along the specified dimension
+            """.trimIndent()
         }
     }
 
     Op("softmaxDerivative") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
         Input(NUMERIC, "x") { description = "" }
         Input(NUMERIC, "wrt") { description = "" }
 
@@ -382,53 +343,31 @@ fun SDNN() = Namespace("SDNN") {
 
         Doc(Language.ANY, DocScope.ALL) {
             """
- @param x
- @return
-     
-""".trimIndent()
+                Softmax derivative function
+            """.trimIndent()
         }
     }
 
-    Op("softplus") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
+    Op("softplus", transformStrict) {
         Doc(Language.ANY, DocScope.ALL) {
             """
- Element-wise softplus function: out = log(exp(x) + 1)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+             Element-wise softplus function: out = log(exp(x) + 1)
+            """.trimIndent()
         }
     }
 
-    Op("softsign") {
+    Op("softsign", transformStrict) {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
         Doc(Language.ANY, DocScope.ALL) {
             """
- Element-wise softsign function: out = x / (abs(x) + 1)
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+             Element-wise softsign function: out = x / (abs(x) + 1)
+            """.trimIndent()
         }
     }
 
     Op("softsignDerivative") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
+        Input(NUMERIC, "x") { description = "Input" }
         Output(NUMERIC, "output") { description = "" }
 
         Doc(Language.ANY, DocScope.ALL) {
