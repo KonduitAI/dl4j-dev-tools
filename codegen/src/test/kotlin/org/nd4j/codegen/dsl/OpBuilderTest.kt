@@ -24,7 +24,7 @@ class OpBuilderTest {
             Op("add") {
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
-                Input(NUMERIC, "x") { optional = true; description = "First input to add" }
+                Input(NUMERIC, "x") { description = "First input to add" }
                 Input(NUMERIC,"y") { count = AtLeast(1); description = "Second input to add" }
                 Arg(INT,"shape") { count = AtLeast(1); description = "shape" }
 
