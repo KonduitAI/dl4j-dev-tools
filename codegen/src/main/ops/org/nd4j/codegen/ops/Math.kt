@@ -9,7 +9,7 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
-fun SDMath() =  Namespace("SDMath"){
+fun Math() =  Namespace("Math"){
     val namespaceJavaPackage = "" //Seem to be different for each funtion here.
 
     val transform = Op("transform"){

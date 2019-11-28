@@ -47,7 +47,7 @@ public enum Namespace {
             case RANDOM:
                 return RandomKt.Random();
             case MATH:
-                return MathKt.SDMath();
+                return MathKt.Math();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
