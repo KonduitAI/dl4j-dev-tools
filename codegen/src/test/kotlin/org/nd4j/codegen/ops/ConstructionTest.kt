@@ -16,6 +16,6 @@ class ConstructionTest {
     fun random() { Random() }
 
     @Test
-    fun math() { SDMath() }
+    fun math() { Math() }
 
 }
