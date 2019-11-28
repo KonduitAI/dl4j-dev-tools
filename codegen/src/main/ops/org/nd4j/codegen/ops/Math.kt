@@ -81,8 +81,8 @@ fun Math() =  Namespace("Math"){
         legacy = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
         Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }\
-        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions", default = false}
+        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" /*; default = false //TODO */}
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
     }
 
@@ -231,7 +231,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
-        Arg(INT, "dimensions"){ description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed"; defaultValue = null }
+        Arg(INT, "dimensions"){ description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" /*; defaultValue = null //TODO */ }
         Output(NUMERIC, "output"){ description = "Output variable" }
 
         //Signature(x, clipValue)
