@@ -55,7 +55,6 @@ interface Tensor: Parameter
 data class Arg(
         var name: String? = null,
         var type: DataType? = null,
-        var optional: Boolean = false,
         var description: String? = null,
         var count: Count? = null
 ) : Reference(), Parameter {
@@ -92,7 +91,6 @@ data class Arg(
 data class Input (
         var name: String? = null,
         var type: DataType? = null,
-        var optional: Boolean = false,
         var description: String? = null,
         var count: Count? = null
 ) : Parameter, Tensor {
