@@ -2,9 +2,8 @@ package org.nd4j.codegen;
 
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.ops.BitwiseKt;
-import org.nd4j.codegen.ops.NeuralNetworkKt;
 import org.nd4j.codegen.ops.RandomKt;
-import org.nd4j.codegen.ops.SDMathKt;
+import org.nd4j.codegen.ops.MathKt;
 
 public enum Namespace {
     BITWISE,
@@ -48,7 +47,7 @@ public enum Namespace {
             case RANDOM:
                 return RandomKt.Random();
             case MATH:
-                return SDMathKt.SDMath();
+                return MathKt.Math();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
