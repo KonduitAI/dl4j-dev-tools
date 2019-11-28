@@ -119,7 +119,7 @@ class OpBuilderTest {
                     "op doc text that will appear everywhere - classes, constructors, op creators"
                 }
 
-                Signature(x)
+                Signature(x, y)
             }
         }
 
