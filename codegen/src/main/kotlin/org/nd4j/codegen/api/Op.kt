@@ -14,6 +14,7 @@ class Op @JvmOverloads constructor(
         outputs: MutableList<Output>? = null,
         args: MutableList<Arg>? = null,
         constraints: MutableList<Constraint>? = null,
+        signatures: MutableList<Signature>? = null,
         doc: MutableList<DocSection>? = null) {
     var javaPackage: String? = javaPackage
         get() = field ?: extendedOp { javaPackage }
@@ -39,6 +40,10 @@ class Op @JvmOverloads constructor(
     fun addDoc(value: DocSection) = addToList({doc!!}, {this.doc = it}, value)
     var doc: MutableList<DocSection>? = doc
         get() = field ?: extendedOp { doc }
+
+    fun addSignature(value: Signature) = addToList({signatures!!}, {this.signatures = it}, value)
+    var signatures: MutableList<Signature>? = signatures
+        get() = field ?: extendedOp { signatures }
 
     private fun extendedOp(): Op? {
         return extendsOp
@@ -90,5 +95,29 @@ class Op @JvmOverloads constructor(
         setter(map!!)
     }
 
+    /**
+     * Check that all required properties are set
+     */
+    fun checkInvariants() {
+        if(doc?.size == 0 || doc?.all { it.text.isNullOrBlank() } != false ){
+            throw IllegalStateException("$opName: Ops must be documented!")
+        }
 
-}
+        signatures?.forEach {
+            val opParameters = mutableListOf<Parameter>()
+            opParameters.addAll(inputs!!)
+            opParameters.addAll(args!!)
+
+            val notCovered = opParameters.fold(mutableListOf<Parameter>()){acc, parameter ->
+                if(!(it.parameters.contains(parameter) || parameter.defaultValueIsApplicable(it.parameters))){
+                    acc.add(parameter)
+                }
+                acc
+            }
+
+            if(notCovered.size > 0){
+                throw IllegalStateException("$opName: $it does not cover all parameters! Missing: ${notCovered.joinToString(", ") { it.name() }}")
+            }
+        }
+    }
+    }

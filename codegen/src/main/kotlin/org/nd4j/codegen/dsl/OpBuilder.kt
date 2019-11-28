@@ -4,6 +4,15 @@ import org.nd4j.codegen.api.*
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.api.doc.DocSection
 
+fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
+    val ns = NamespaceOps()
+    ns.name = name
+    ns.ops = mutableListOf()
+    ns.block()
+
+    return ns;
+}
+
 fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
     val op = Op()
     op.opName = name
@@ -14,8 +23,14 @@ fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
     op.doc = mutableListOf()
     op.constraints = mutableListOf()
     op.args = mutableListOf()
+    op.signatures = mutableListOf()
 
     op.block()
+
+    if(op.signatures!!.isEmpty()){
+        op.AllParamSignature()
+        op.AllDefaultsSignature()
+    }
 
     op.checkInvariants()
 
@@ -31,6 +46,7 @@ fun NamespaceOps.Op(name: String, extends: Op, block: (Op.() -> Unit)? = null): 
         doc = null
         constraints = null
         args = null
+        signatures = null
         if (block != null) block()
     }
 }
@@ -74,13 +90,47 @@ fun Op.Doc(language: Language, scope: DocScope, block: DocSection.() -> String):
     return doc
 }
 
-fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
-    val ns = NamespaceOps()
-    ns.name = name
-    ns.ops = mutableListOf()
-    ns.block()
+fun Op.AllParamSignature(withOutput: Boolean = true) {
+    val allParameters = mutableListOf<Parameter>()
+    allParameters.addAll(this.inputs!!)
+    allParameters.addAll(this.args!!)
+    this.addSignature(Signature(allParameters))
+    if(withOutput){
+        val withOutputParams = mutableListOf<Parameter>()
+        withOutputParams.addAll(this.outputs!!)
+        withOutputParams.addAll(allParameters)
+        this.addSignature(Signature(withOutputParams))
+    }
+}
 
-    return ns;
+fun Op.AllDefaultsSignature(withOutput: Boolean = true) {
+    val allParameters = mutableListOf<Parameter>().also{
+        it.addAll(this.inputs!!)
+        it.addAll(this.args!!)
+    }
+
+    if (!allParameters.all { it.defaultValue() == null }) {
+        val params = allParameters.filter{ it.defaultValue() == null }
+        this.addSignature(Signature(params))
+        if(withOutput){
+            val withOutputParams = mutableListOf<Parameter>()
+            withOutputParams.addAll(this.outputs!!)
+            withOutputParams.addAll(params)
+            this.addSignature(Signature(withOutputParams))
+        }
+    }
+}
+
+fun Op.Signature(vararg params: Parameter, block: (Signature.() -> String)?): Signature {
+    if(params.toSet().size < params.size){
+        throw IllegalArgumentException("A parameter may not be used twice in a signature!")
+    }
+    val signature = Signature(params.toList())
+    if(block != null){
+        signature.block()
+    }
+    this.addSignature(signature)
+    return signature
 }
 
 fun Op.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {

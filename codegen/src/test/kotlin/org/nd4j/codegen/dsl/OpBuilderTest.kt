@@ -105,7 +105,7 @@ class OpBuilderTest {
                 }
             }
 
-            Op("foo"){
+            Op("zfoo"){
                 javaPackage = "bar"
                 javaOpClass = "FooBarOp"
                 val x = Input(NUMERIC,"x") { description = "First operand to %OPNAME% (%INPUT_TYPE%)" }
@@ -118,6 +118,8 @@ class OpBuilderTest {
                 Doc(Language.ANY, DocScope.ALL) {
                     "op doc text that will appear everywhere - classes, constructors, op creators"
                 }
+
+                Signature(x)
             }
         }
 
