@@ -176,7 +176,7 @@ fun SDNN() = Namespace("SDNN") {
         javaOpClass = "XwPlusB"
         Input(NUMERIC, "input") { description = "Input data" }
         Input(NUMERIC, "weights") { description = "Weights variable, shape [nIn, nOut]" }
-        Input(NUMERIC, "bias") { description = "Optional bias variable (may be null)"; optional = true }
+        Input(NUMERIC, "bias") { description = "Optional bias variable (may be null)" /*; optional = true*/ }
 
         Output(NUMERIC, "output") { description = "Output variable" }
 
@@ -254,7 +254,7 @@ fun SDNN() = Namespace("SDNN") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms"
         Input(NUMERIC, "input") { description = "Input data" }
         Input(NUMERIC, "weights") { description = "Weights variable" }
-        Input(NUMERIC, "bias") { description = "Optional bias variable (may be null)"; optional = true }
+        Input(NUMERIC, "bias") { description = "Optional bias variable (may be null)" /*; optional = true*/ }
         Output(NUMERIC, "output") { description = "Output variable" }
 
         Doc(Language.ANY, DocScope.ALL) {
