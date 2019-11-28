@@ -114,7 +114,7 @@ val mathNs = Namespace("math") {
     Op("add") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
-        Input(NUMERIC, "x") { optional = true; description = "First input to add" }
+        Input(NUMERIC, "x") { description = "First input to add" }
         Input(NUMERIC,"y") { count = AtLeast(1); description = "Second input to add" }
         Arg(INT,"shape") { count = AtLeast(1); description = "shape" }
 
@@ -284,9 +284,10 @@ If you want an input to represent an array, you will have to set a count accordi
 that the count is meant to be `Exactly(1)`.
  
 ### Input properties
-* `optional` (Boolean): Flag that marks this input as optional.
 * `description` (String): A short description what this input represents. Setting this is recommended.
 * `count` (Count): Can take one of `Exactly(n)`; `AtLeast(n)`; `AtMost(n)`; `Range(from, to)`
+* `defaultValue` (Input): use another input as the default if this isn't set explicitly. The data type of the other 
+  input has to match the data type of this input. The other input may also have a default value.
 
 ## Argument
 Only available within an op context
@@ -308,9 +309,12 @@ Note (Java specific): If the last arg is defined to represent an array, it will 
 `Arg(INT, "a"){ count = AtLeast(1); description = "..." }` will be turned into `long... a`.
  
 ### Argument properties
-* `optional` (Boolean): Flag that marks this input as optional.
 * `description` (String): A short description what this argument represents. Setting this is recommended.
 * `count` (Count): Can take one of `Exactly(n)`; `AtLeast(n)`; `AtMost(n)`; `Range(from, to)`
+* `defaultValue` (Number|Boolean|Arg|TensorShapeValue|TensorDataTypeValue): Use given value as default value, if this 
+  isn't explicitly set. Can refer to *inputs* and *outputs* using `x.shape()` and `x.dataType()`. The given default 
+  values has to match the data type for this argument. May also refer to another Arg, and that Arg may also have a 
+  default value. Default values based on outputs are treated like without a default in SameDiff mode.
 
 ## Output
 Only available within an op context
@@ -325,6 +329,34 @@ outputs can not be used in constraints.
 ### Output properties
 * `description` (String): A short description what this argument represents. Setting this is recommended.
 
+
+## Signature
+Only available within an op context
+
+    Signature(a,b,c)
+    Signature(a,b,c) { "Some Documentation" }
+    AllParamSignature()
+    AllDefaultParamSignature()
+
+For some ops only specific signatures make sense, as for example some optional parameters may become required in the
+presence of other optional parameters. This feature is mainly meant to help with the fact that not all programming
+languages (e.g. Java) support default parameters. Each signature is meant to describe one overload in those languages.   
+
+See also [ADR 0005 "Optional parameters and signatures"](adr/0005-optional_parameters_and_signatures.md).
+
+Signatures can also reference the output(s) of an op. Those signatures are only relevant in NDArray programming mode.
+They are not to be generated in SameDiff mode.
+
+`AllParamSignature()` and `AllDefaultParamSignature()` are short hands for `Signature(...all parameters...)` and 
+`Signature(...only parameters with no default values...)`. Their parameters include references to outputs unless
+disabled using `withOutput=false` (e.g. `AllParamSignature(withOutput=false)`).
+
+If no signature is specified for an op, it is treated as if `AllParamSignature()` and `AllDefaultParamSignature()` are
+both specified. 
+
+Each signature must satisfy the condition, that all required parameters are listed there. If this condition is not
+satisfied, an `IllegalStateException` will be thrown on construction. 
+  
 
 ## Documentation
 Only available within an op context
