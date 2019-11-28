@@ -35,6 +35,17 @@ fun SDMath() =  Namespace("SDMath"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.any"
     }
 
+    val transformFloating = Op("transformFloating", transform){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.fl"
+    }
+
+    val scalar = Op("scalar"){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "value") { description = "Scalar value for op" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+    }
+
     val reduce = Op("reduce"){
         isAbstract = true
         legacy = true
@@ -735,28 +746,9 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("lastIndex") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
+    Op("lastIndex", indexAccum) {
         Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Last index reduction operation.
-                Returns a variable that contains the index of the last element that matches the specified condition (for each
-                slice along the specified dimensions)
-            """.trimIndent()
-        }
-    }
-
-    Op("lastIndex") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Input(NUMERIC, "condition") { description = "Condition to check on input variable" } //TODO: How to map the "Condition" object.
-        Input(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+        //Signature(in, condition, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Last index reduction operation.
@@ -772,10 +764,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("log") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("log", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise logarithm function (base e - natural logarithm): out = log(x)
@@ -783,11 +772,8 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("log") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "in") { description = "Input variable" }
+    Op("log", transformStrict) {
         Input(NUMERIC, "base") { description = "Logarithm base" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise logarithm function (with specified base): out = log_{base}(x)
@@ -795,10 +781,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("log1p") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("log1p", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise natural logarithm function: out = log_e (1 + x)
@@ -806,11 +789,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("logEntropy") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce on (null for full array)" }
-        Output(NUMERIC, "output"){ description = "variable: reduced array of rank (input rank - num dimensions)" }
+    Op("logEntropy", reduceFloating) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Log entropy reduction: log(-sum(x * log(x)))
@@ -831,12 +810,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("manhattanDistance") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
-        Input(NUMERIC, "x") { description = "Input variable x" }
-        Input(NUMERIC, "y") { description = "Input variable y" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate cosine similarity over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("manhattanDistance", reduce3) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Manhattan distance (l1 norm, l1 distance) reduction operation. The output contains the Manhattan distance for each
@@ -920,10 +894,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("neg") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("neg", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise negative operation: out = -x
@@ -960,11 +931,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("pow") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "value") { description = "Power to raise each element to" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("pow", scalar) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise power function: out = x^value
@@ -973,7 +940,7 @@ fun SDMath() =  Namespace("SDMath"){
     }
 
     Op("pow") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "y") { description = "Power" }
         Output(NUMERIC, "output"){ description = "Output variable" }
@@ -984,10 +951,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("reciprocal") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "a") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("reciprocal", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise reciprocal (inverse) function: out[i] = 1 / in[i]
@@ -995,10 +959,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("round") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("round", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise round function: out = round(x).
@@ -1007,10 +968,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("rsqrt") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.floating"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("rsqrt", transformFloating) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise reciprocal (inverse) of square root: out = 1.0 / sqrt(x)
@@ -1038,12 +996,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("shannonEntropy") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce on (null/empty for full array)" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
-
+    Op("shannonEntropy", reduceFloating) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Shannon Entropy reduction: -sum(x * log2(x))
@@ -1051,10 +1004,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("sign") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("sign", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise sign (signum) function:
@@ -1065,10 +1015,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("sin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("sin", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise sine operation: out = sin(x)
@@ -1076,10 +1023,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("sinh") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("sinh", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise sinh (hyperbolic sine) operation: out = sinh(x)
@@ -1087,10 +1031,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("sqrt") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.floating"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("sqrt", transformFloating) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise square root function: out = sqrt(x)
@@ -1098,10 +1039,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("square") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("square", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise square function: out = x^2
@@ -1109,11 +1047,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("step") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Input(NUMERIC, "cutoff") { description = "Cutoff value for step function" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("step", scalar) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise step function:
@@ -1146,10 +1080,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("tan") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("tan", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise tangent operation: out = tan(x)
@@ -1157,10 +1088,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
-    Op("tanh") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+    Op("tanh", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise tanh (hyperbolic tangent) operation: out = tanh(x)
@@ -1196,6 +1124,7 @@ fun SDMath() =  Namespace("SDMath"){
         }
     }
 
+    //TODO these bit ops should go to bitwise namespace, not math
     Op("bitShift") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input 1" }
