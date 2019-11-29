@@ -129,8 +129,6 @@ public class Nd4jNamespaceGenerator {
         return c.build();
     }
 
-
-
     private static void  buildJavaDoc(Op op, Signature s, MethodSpec.Builder c) {
         //Method javadoc:
         List<DocSection> doc = op.getDoc();
@@ -288,16 +286,6 @@ public class Nd4jNamespaceGenerator {
             sb.append("[0]");
 
         c.addStatement(sb.toString(), Nd4j.class);
-    }
-
-    private static void enableVarargsOnLastArg(MethodSpec.Builder c, Op op) {
-        if(op.getArgs() != null && !op.getArgs().isEmpty()){
-            final Arg lastArg = op.getArgs().get(op.getArgs().size() - 1);
-            final Count count = lastArg.getCount();
-            if(count != null && !count.equals(exactlyOne)){
-                c.varargs(true);
-            }
-        }
     }
 
     private static void enableVarargsOnLastArg(MethodSpec.Builder c, Op op, Signature s) {
