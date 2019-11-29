@@ -136,7 +136,7 @@ fun Op.AllDefaultsSignature(withOutput: Boolean = false) {
         it.addAll(this.args!!)
     }
 
-    if (allParameters.all { !it.hasDefaultValue() }) {
+    if (allParameters.find { it.hasDefaultValue() } != null) {
         val params = allParameters.filterNot{ it.hasDefaultValue() }
         this.addSignature(Signature(params))
         if(withOutput){
