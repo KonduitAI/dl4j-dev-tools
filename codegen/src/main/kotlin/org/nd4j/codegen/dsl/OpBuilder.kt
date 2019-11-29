@@ -127,8 +127,8 @@ fun Op.AllDefaultsSignature(withOutput: Boolean = true) {
         it.addAll(this.args!!)
     }
 
-    if (!allParameters.all { it.defaultValue() == null }) {
-        val params = allParameters.filter{ it.defaultValue() == null }
+    if (allParameters.all { !it.hasDefaultValue() }) {
+        val params = allParameters.filterNot{ it.hasDefaultValue() }
         this.addSignature(Signature(params))
         if(withOutput){
             val withOutputParams = mutableListOf<Parameter>()

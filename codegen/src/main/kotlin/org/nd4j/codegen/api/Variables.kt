@@ -1,5 +1,7 @@
 package org.nd4j.codegen.api
 
+import java.util.*
+
 
 open class Constraint (
         var message: String? = null,
@@ -34,24 +36,25 @@ interface Parameter {
     fun name(): String
     fun defaultValue() : Any?
 
+    fun hasDefaultValue(): Boolean
+
     /**
      * A default value only is applicable if it is a literal value, or the referenced value is either directly a part of
      * the signature, or there is a reference chain that ends in something that is actually a part of the signature
      */
-    fun defaultValueIsApplicable(otherParams: List<Parameter>): Boolean {
-        val defaultValue = this.defaultValue()
-        return when(defaultValue){
-            null -> false
-            is Number, is Boolean -> true
+    fun defaultValueIsApplicable(otherParams: List<Parameter>): Boolean = if(hasDefaultValue()){
+        when(val defaultValue = this.defaultValue()){
+            is Number, is Boolean, null -> true
             is Parameter -> otherParams.contains(defaultValue) || defaultValue.defaultValueIsApplicable(otherParams)
             is TensorDataTypeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
             is TensorShapeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
             else -> false
         }
+    }else{
+        false
     }
 }
 interface Tensor: Parameter
-
 data class Arg(
         var name: String? = null,
         var type: DataType? = null,
@@ -60,12 +63,15 @@ data class Arg(
 ) : Reference(), Parameter {
     override fun name(): String = name!!
     override fun defaultValue(): Any? = defaultValue
+    override fun hasDefaultValue(): Boolean = defaultValueIsSet
 
-    var defaultValue: Any? = null
+    private var defaultValueIsSet = false
+    var defaultValue: Any? = 777
         set(value) = if(isAssignableFrom(value)){
             field = value
+            defaultValueIsSet = true
         }else{
-            throw IllegalArgumentException("Illegal default value for Arg($type, $name). Got $value (${value?.javaClass?.name})")
+            throw IllegalArgumentException("Illegal default value for Arg($type, $name)${if(count != null) "{ count = $count }" else "" }. Got ${value.toDescriptiveString()} (${value?.javaClass?.name})")
         }
 
     private fun matchesDataType(value: Any?) = when(type){
@@ -77,11 +83,23 @@ data class Arg(
     }
 
     private fun isAssignableFrom(value: Any?) = when(value){
-        is TensorShapeValue -> count != Exactly(1) && count != null && type == DataType.INT
+        is TensorShapeValue -> isArray() && type == DataType.INT
         is TensorDataTypeValue -> type == DataType.DATA_TYPE
         is Number, is Boolean -> matchesDataType(value)
+        is IntArray -> isArray() && (type == DataType.INT || type == DataType.NUMERIC) && countMatches(value.size)
+        is DoubleArray -> isArray() && (type == DataType.FLOATING_POINT || type == DataType.NUMERIC) && countMatches(value.size)
+        is BooleanArray -> isArray() && type == DataType.BOOL && countMatches(value.size)
         is Arg -> value.count == count && value.type == type
+        null -> true
         else -> false
+    }
+
+    fun isArray() = count != Exactly(1) && count != null
+    fun countMatches(size: Int) = when(val c = count!!){
+        is Range -> c.from <= size && size <= c.to
+        is AtLeast -> c.min <= size
+        is AtMost -> size <= c.max
+        is Exactly -> c.count == size
     }
 
     fun Tensor.shape() = TensorShapeValue(this)
@@ -96,12 +114,15 @@ data class Input (
 ) : Parameter, Tensor {
     override fun name(): String = name!!
     override fun defaultValue(): Any? = defaultValue
+    override fun hasDefaultValue(): Boolean = defaultValueIsSet
 
+    private var defaultValueIsSet = false
     var defaultValue: Input? = null
         set(value) = if(matchesDataType(value)){
             field = value
+            defaultValueIsSet = true
         }else{
-            throw IllegalArgumentException("Illegal default value for Input($name). Allowed values have to match data type $type, but got $value (${value?.javaClass?.name})")
+            throw IllegalArgumentException("Illegal default value for Input($name). Allowed values have to match data type $type, but got ${value.toDescriptiveString()} (${value?.javaClass?.name})")
         }
 
     private fun matchesDataType(value: Input?) = value?.type == type
@@ -114,6 +135,7 @@ data class Output(
 ) : Parameter, Tensor{
     override fun name(): String = name!!
     override fun defaultValue(): Any? = null
+    override fun hasDefaultValue(): Boolean = false
 }
 
 data class Signature(
@@ -131,4 +153,15 @@ data class TensorShapeValue(val tensor: Tensor) {
 }
 data class TensorDataTypeValue(val tensor: Tensor){
     override fun toString(): String = "${tensor.name()}.dataType()"
+}
+
+fun Any?.toDescriptiveString() = when(this){
+    null -> "null"
+    is IntArray -> Arrays.toString(this)
+    is LongArray -> Arrays.toString(this)
+    is DoubleArray -> Arrays.toString(this)
+    is FloatArray -> Arrays.toString(this)
+    is BooleanArray -> Arrays.toString(this)
+    is Array<*> -> Arrays.toString(this)
+    else -> this.toString()
 }

@@ -2,9 +2,7 @@ package org.nd4j.codegen.dsl
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.nd4j.codegen.api.AtLeast
-import org.nd4j.codegen.api.DataType
-import org.nd4j.codegen.api.Language
+import org.nd4j.codegen.api.*
 import org.nd4j.codegen.api.doc.DocScope
 import kotlin.test.assertEquals
 
@@ -327,6 +325,23 @@ class OpInvariantTest {
     }
 
     @Test
+    fun opSignatureNullDefaults() {
+        Namespace("math") {
+            Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.INT, "y") {
+                    count = AtLeast(1)
+                    defaultValue = null
+                }
+
+                AllDefaultsSignature()
+            }
+        }
+    }
+
+    @Test
     fun opSignatureShorthandDefaultParams() {
         Namespace("math") {
             Op("foo") {
@@ -344,6 +359,89 @@ class OpInvariantTest {
                 AllDefaultsSignature()
             }
         }
+    }
+
+    @Test
+    fun opSignatureSupportsArrayDefaults() {
+        Namespace("math") {
+            Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.INT, "y") { count = AtLeast(0); defaultValue = intArrayOf() }
+                val z = Arg(DataType.FLOATING_POINT, "z") { count = Range(2, 5); defaultValue = doubleArrayOf(1.0, 2.0, 3.0) }
+                val a = Arg(DataType.BOOL, "a") { count = AtLeast(1); defaultValue = booleanArrayOf(true) }
+
+                AllDefaultsSignature()
+            }
+        }
+    }
+
+
+    @Test
+    fun opSignatureSupportsArrayDefaultsAtLeast() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    Output(DataType.NUMERIC, "out")
+                    Input(DataType.NUMERIC, "x")
+                    Arg(DataType.INT, "y") { count = AtLeast(1); defaultValue = intArrayOf() }
+                }
+            }
+        }
+
+        assertEquals("Illegal default value for Arg(INT, y){ count = AtLeast(min=1) }. Got [] ([I)", thrown.message)
+
+    }
+
+    @Test
+    fun opSignatureSupportsArrayDefaultsAtMost() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    Output(DataType.NUMERIC, "out")
+                    Input(DataType.NUMERIC, "x")
+                    Arg(DataType.INT, "y") { count = AtMost(1); defaultValue = intArrayOf(1, 2) }
+                }
+            }
+        }
+
+        assertEquals("Illegal default value for Arg(INT, y){ count = AtMost(max=1) }. Got [1, 2] ([I)", thrown.message)
+
+    }
+
+    @Test
+    fun opSignatureSupportsArrayDefaultsRange() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    Output(DataType.NUMERIC, "out")
+                    Input(DataType.NUMERIC, "x")
+                    Arg(DataType.INT, "y") { count = Range(3, 7); defaultValue = intArrayOf() }
+                }
+            }
+        }
+
+        assertEquals("Illegal default value for Arg(INT, y){ count = Range(from=3, to=7) }. Got [] ([I)", thrown.message)
+    }
+
+    @Test
+    fun opSignatureSupportsArrayDefaultsExactly() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    Output(DataType.NUMERIC, "out")
+                    Input(DataType.NUMERIC, "x")
+                    Arg(DataType.INT, "y") { count = Exactly(7); defaultValue = intArrayOf() }
+                }
+            }
+        }
+
+        assertEquals("Illegal default value for Arg(INT, y){ count = Exactly(count=7) }. Got [] ([I)", thrown.message)
 
     }
 }

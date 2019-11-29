@@ -312,7 +312,7 @@ Note (Java specific): If the last arg is defined to represent an array, it will 
 ### Argument properties
 * `description` (String): A short description what this argument represents. Setting this is recommended.
 * `count` (Count): Can take one of `Exactly(n)`; `AtLeast(n)`; `AtMost(n)`; `Range(from, to)`
-* `defaultValue` (Number|Boolean|Arg|TensorShapeValue|TensorDataTypeValue): Use given value as default value, if this 
+* `defaultValue` (null|Number|Boolean|int[]|double[]|boolean[]|Arg|TensorShapeValue|TensorDataTypeValue): Use given value as default value, if this 
   isn't explicitly set. Can refer to *inputs* and *outputs* using `x.shape()` and `x.dataType()`. The given default 
   values has to match the data type for this argument. May also refer to another Arg, and that Arg may also have a 
   default value. Default values based on outputs are treated like without a default in SameDiff mode.
