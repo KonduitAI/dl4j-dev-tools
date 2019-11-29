@@ -329,6 +329,9 @@ fun Math() =  Namespace("Math"){
         }
     }
 */
+    //TODO add to ConfusionMatrix.java or delete this from Math.kt.
+    //public ConfusionMatrix(SameDiff sameDiff, SDVariable labels, SDVariable pred, Integer numClasses, SDVariable weights){
+/*
     Op("confusionMatrix") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
@@ -346,7 +349,11 @@ fun Math() =  Namespace("Math"){
             """.trimIndent()
         }
     }
+*/
 
+    //TODO add to ConfusionMatrix.java or delete this from Math.kt.
+    //public ConfusionMatrix(SameDiff sameDiff, SDVariable labels, SDVariable pred, Integer numClasses, SDVariable weights){
+/*
     Op("confusionMatrix") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
@@ -366,7 +373,7 @@ fun Math() =  Namespace("Math"){
             """.trimIndent()
         }
     }
-
+*/
     Op("cos", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
