@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
 import org.nd4j.codegen.ops.BitwiseKt;
+import org.nd4j.codegen.ops.MathKt;
 import org.nd4j.codegen.ops.RandomKt;
 
 import java.io.File;
@@ -24,7 +25,8 @@ class TestGeneration {
     void test() throws Exception {
         File f = testDir;
 
-        List<NamespaceOps> list = Arrays.asList(BitwiseKt.Bitwise(), RandomKt.Random());
+//        List<NamespaceOps> list = Arrays.asList(BitwiseKt.Bitwise(), RandomKt.Random());
+        List<NamespaceOps> list = Arrays.asList(MathKt.Math());
 
         for(NamespaceOps ops : list) {
             Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java");

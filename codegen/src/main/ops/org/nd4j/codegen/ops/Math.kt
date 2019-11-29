@@ -45,17 +45,17 @@ fun Math() =  Namespace("Math"){
 
     val transformFloating = Op("transformFloating", transform){
         isAbstract = true
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.fl"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.floating"
         isAbstract = true
     }
 
     val scalar = Op("scalar"){
         isAbstract = true
+        legacy = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         Input(NUMERIC, "x") { description = "Input variable" }
         Arg(NUMERIC, "value") { description = "Scalar value for op" }
         Output(NUMERIC, "output"){ description = "Output variable" }
-        isAbstract = true
     }
 
     val reduce = Op("reduce"){
@@ -98,10 +98,13 @@ fun Math() =  Namespace("Math"){
         isAbstract = true
         legacy = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
+        val input = Input(NUMERIC, "in") { description = "Input variable" }
+        val keepDims = Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
+        val dims = Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+
+        Signature(input, dims)
+        AllParamSignature(withOutput = false)
     }
 
     Op("abs", transformSame) {
@@ -249,12 +252,13 @@ fun Math() =  Namespace("Math"){
 
     Op("clipByNorm") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
-        Arg(INT, "dimensions"){ description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" /*; defaultValue = null //TODO */ }
+        val x = Input(NUMERIC, "x") { description = "Input variable" }
+        val clipValue = Arg(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed"}  //; defaultValue = intArrayOf(0) }   //TODO
         Output(NUMERIC, "output"){ description = "Output variable" }
 
-        //Signature(x, clipValue)
+//        AllParamSignature(withOutput = false)
+//        Signature(x, clipValue)
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Clipping by L2 norm, optionally along dimension(s)
@@ -269,8 +273,8 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
         javaOpClass = "ClipByValue"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "clipValueMin") { description = "Minimum value for clipping" }
-        Input(NUMERIC, "clipValueMax") { description = "Maximum value for clipping" }
+        Arg(NUMERIC, "clipValueMin") { description = "Minimum value for clipping" }
+        Arg(NUMERIC, "clipValueMax") { description = "Maximum value for clipping" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -287,7 +291,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
         Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
-        Input(DATA_TYPE, "dataType") { description = "Data type" }
+        Arg(DATA_TYPE, "dataType") { description = "Data type" }
 
         Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
 
@@ -307,7 +311,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
         Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
-        Input(INT, "numClasses") { description = "Number of classes" }
+        Arg(INT, "numClasses") { description = "Number of classes" }
         Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -344,7 +348,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
         Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
-        Input(INT, "numClasses") { description = "" }
+        Arg(INT, "numClasses") { description = "" }
         Input(NUMERIC, "weights") { description = "Weights - 1D array of values (may be real/decimal) representing the weight/contribution of each prediction. Must be same length as both labels and predictions arrays" }
         Output(NUMERIC, "output"){ description = "Output variable (2D, shape [numClasses, numClasses})" }
         Doc(Language.ANY, DocScope.ALL){
@@ -537,7 +541,7 @@ fun Math() =  Namespace("Math"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #eye(String, int, int, DataType)} but with the default datatype, {@link Eye#DEFAULT_DTYPE}
+                As per eye(String, int, int, DataType) but with the default datatype, Eye.DEFAULT_DTYPE
             """.trimIndent()
         }
     }
@@ -547,7 +551,7 @@ fun Math() =  Namespace("Math"){
         Arg(INT, "rows") { description = "Number of rows" }
         Arg(INT, "cols") { description = "Number of columns" }
         Arg(DATA_TYPE, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
-        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
+        Output(NUMERIC, "output"){ description = "Identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Generate an identity matrix with the specified number of rows and columns
@@ -565,76 +569,32 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
-        Input(DATA_TYPE, "dataType") { description = "Data type" }
-        Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
-        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
+        Input(INT, "rows") { description = "Number of rows" }
+        Input(INT, "cols") { description = "Number of columns" }
+        Output(NUMERIC, "output"){ description = "Identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Generate an identity matrix with the specified number of rows and columns, with optional leading dims
-                Example:
-                batchShape: [3,3]
-                numRows: 2
-                numCols: 4
-                returns a tensor of shape (3, 3, 2, 4) that consists of 3 * 3 batches of (2,4)-shaped identity matrices:
-                1 0 0 0
-                0 1 0 0
+                As per eye(int, int) bit with the number of rows/columns specified as scalar %INPUT_TYPE%s
             """.trimIndent()
         }
     }
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
-        Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
+        Input(INT, "rows") { description = "Number of rows" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #eye(int, int, int...)} bit with the number of rows/columns specified as scalar %INPUT_TYPE%s,
-                and the batch dimension specified as a 1D %INPUT_TYPE%
+                As per eye(String, int) but with the number of rows specified as a scalar %INPUT_TYPE%
             """.trimIndent()
         }
     }
 
-    Op("eye") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
-        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                As per {@link #eye(String, int, int)} bit with the number of rows/columns specified as scalar %INPUT_TYPE%s
-            """.trimIndent()
-        }
-    }
+    Op("firstIndex", indexAccum, keepSignatures=false) {
+        var c = Arg(CONDITION, "condition") { description = "Condition to check on input variable" }
+        Signature(this.inputs.get(0), c, this.args.get(1))                      //in, condition, dimensions - for vararg
+        Signature(this.inputs.get(0), c, this.args.get(0), this.args.get(1))    //in, condition, keepDims, dimensions
 
-    Op("eye") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                As per {@link #eye(String, int)} but with the number of rows specified as a scalar %INPUT_TYPE%
-            """.trimIndent()
-        }
-    }
-
-    Op("firstIndex", indexAccum) {
-        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                First index reduction operation.
-                Returns a variable that contains the index of the first element that matches the specified condition (for each
-                slice along the specified dimensions)
-            """.trimIndent()
-        }
-    }
-
-    Op("firstIndex", indexAccum) {
-        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
-        //Signature(in, condition, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
                 First index reduction operation.
@@ -675,7 +635,7 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the max absolute value: argmax(abs(in))
-                @see SameDiff#argmax(String, %INPUT_TYPE%, boolean, int...)
+                see argmax(String, %INPUT_TYPE%, boolean, int...)
             """.trimIndent()
         }
     }
@@ -685,7 +645,7 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the min absolute value: argmin(abs(in))
-                @see SameDiff#argmin(String, %INPUT_TYPE%, boolean, int...)
+                see argmin(String, %INPUT_TYPE%, boolean, int...)
             """.trimIndent()
         }
     }
@@ -766,9 +726,10 @@ fun Math() =  Namespace("Math"){
         }
     }
 
-    Op("lastIndex", indexAccum) {
-        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
-        //Signature(in, condition, dimensions)
+    Op("lastIndex", indexAccum, keepSignatures=false) {
+        var c = Arg(CONDITION, "condition") { description = "Condition to check on input variable" }
+        Signature(this.inputs.get(0), c, this.args.get(1))                      //in, condition, dimensions - for vararg
+        Signature(this.inputs.get(0), c, this.args.get(0), this.args.get(1))    //in, condition, keepDims, dimensions
         Doc(Language.ANY, DocScope.ALL){
             """
                 Last index reduction operation.
@@ -916,7 +877,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("neg", transformSame) {
-        javaOpClass = "Neg"
+        javaOpClass = "Negative"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Elementwise negative operation: out = -x
@@ -929,7 +890,7 @@ fun Math() =  Namespace("Math"){
         Input(NUMERIC, "counts") { description = "Rank 0 (scalar) value with the total number of values used to calculate the sufficient statistics" }
         Input(NUMERIC, "means") { description = "Mean-value sufficient statistics: this is the SUM of all data values" }
         Input(NUMERIC, "variances") { description = "Variaance sufficient statistics: this is the squared sum of all data values" }
-        Input(NUMERIC, "shift") { description = "Shift value, possibly 0, used when calculating the sufficient statistics (for numerical stability)" }
+        Arg(NUMERIC, "shift") { description = "Shift value, possibly 0, used when calculating the sufficient statistics (for numerical stability)" }
         Output(NUMERIC, "output"){ description = "Output variables: mean and population variance" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -992,6 +953,7 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("rsqrt", transformFloating) {
+        javaOpClass = "RSqrt"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise reciprocal (inverse) of square root: out = 1.0 / sqrt(x)
@@ -1001,6 +963,7 @@ fun Math() =  Namespace("Math"){
 
     Op("setDiag") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "MatrixSetDiag"
         Input(NUMERIC, "in") { description = "Input variable" }
         Input(NUMERIC, "diag") { description = "Diagonal" }
         Output(NUMERIC, "output"){ description = "Output variable" }
@@ -1134,6 +1097,7 @@ fun Math() =  Namespace("Math"){
 
     Op("xor") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.bool"
+        legacy = true
         Input(BOOL, "x") { description = "Input 1" }
         Input(BOOL, "y") { description = "Input 2" }
         Output(BOOL, "output"){ description = "%INPUT_TYPE% with values 0 and 1 based on where the condition is satisfied" }
