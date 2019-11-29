@@ -66,8 +66,8 @@ data class Arg(
     override fun hasDefaultValue(): Boolean = defaultValueIsSet
 
     private var defaultValueIsSet = false
-    var defaultValue: Any? = 777
-        set(value) = if(isAssignableFrom(value)){
+    var defaultValue: Any? = null
+        set(value) = if(isAssignableFrom(value)) {
             field = value
             defaultValueIsSet = true
         }else{

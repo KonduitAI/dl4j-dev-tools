@@ -75,6 +75,10 @@ fun Op.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null
     input.type = dataType
     if (block != null) input.block()
 
+    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
+        throw IllegalArgumentException("Invalid datatype for input \"$name\" of op ${this.opName}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
+    }
+
     this.addInput(input)
     return input
 }
@@ -94,6 +98,11 @@ fun Op.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? = nu
     output.name = name
     output.type = dataType
     if (block != null) output.block()
+
+    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
+        throw IllegalArgumentException("Invalid datatype for output \"$name\" of op ${this.opName}: output arrays cannot have type $dataType");
+    }
+
     this.addOutput(output)
     return output
 }
@@ -108,7 +117,7 @@ fun Op.Doc(language: Language, scope: DocScope, block: DocSection.() -> String):
     return doc
 }
 
-fun Op.AllParamSignature(withOutput: Boolean = true) {
+fun Op.AllParamSignature(withOutput: Boolean = false) {
     val allParameters = mutableListOf<Parameter>()
     allParameters.addAll(this.inputs!!)
     allParameters.addAll(this.args!!)
@@ -121,7 +130,7 @@ fun Op.AllParamSignature(withOutput: Boolean = true) {
     }
 }
 
-fun Op.AllDefaultsSignature(withOutput: Boolean = true) {
+fun Op.AllDefaultsSignature(withOutput: Boolean = false) {
     val allParameters = mutableListOf<Parameter>().also{
         it.addAll(this.inputs!!)
         it.addAll(this.args!!)
@@ -176,7 +185,7 @@ class ConstraintBuilder {
 
     fun Input.sizeAt(i: Int) = InputShapeReference(this, i)
     fun Input.rank() = InputRankReference(this)
-    fun Input.isScalar() = this.rank() eq 1
+    fun Input.isScalar() = this.rank() eq 0
 
     fun some(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, {acc, cur -> acc or cur} )
     fun all(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, {acc, cur -> acc and cur} )
