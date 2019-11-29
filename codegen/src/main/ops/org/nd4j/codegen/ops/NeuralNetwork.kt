@@ -6,7 +6,7 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
-fun SDNN() = Namespace("SDNN") {
+fun NN() = Namespace("SDNN") {
     val namespaceJavaPackage = "TODO"
     val convPkg = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
@@ -18,10 +18,12 @@ fun SDNN() = Namespace("SDNN") {
     }
 
     val transformStrict = Op("transformStrict", transform){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
     }
 
     val scalar = Op("scalar"){
+        isAbstract = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "value") { description = "Scalar value for op" }
@@ -367,158 +369,85 @@ fun SDNN() = Namespace("SDNN") {
 
     Op("softsignDerivative") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
-        Input(NUMERIC, "x") { description = "Input" }
-        Output(NUMERIC, "output") { description = "" }
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output") { description = "Output" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
- Element-wise derivative (dOut/dIn) of the softsign function {@link #softsign(SDVariable)}
-
- @param name Output variable name
- @param x    Input variable
- @return Output varible
-     
-""".trimIndent()
+             Element-wise derivative (dOut/dIn) of the softsign function {@link #softsign(%INPUT_TYPE%)}
+            """.trimIndent()
         }
     }
 
-    Op("swish") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
+    Op("swish", transformStrict) {
         Doc(Language.ANY, DocScope.ALL) {
             """
- Element-wise "swish" function: out = x * sigmoid(b*x) with b=1.0
- See: <a href="https://arxiv.org/abs/1710.05941">https://arxiv.org/abs/1710.05941</a>
-
- @param name Name of the output variable
- @param x    Input variable
- @return Output variable
-     
-""".trimIndent()
+             Element-wise "swish" function: out = x * sigmoid(b*x) with b=1.0
+             See: <a href="https://arxiv.org/abs/1710.05941">https://arxiv.org/abs/1710.05941</a>
+            """.trimIndent()
         }
     }
 
     Op("layerNorm") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "gain") { description = "" }
-        Input(NUMERIC, "bias") { description = "" }
-        Input(NUMERIC, "channelsFirst") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
+        val input = Input(NUMERIC, "input") { description = "Input variable" }
+        val g = Input(NUMERIC, "gain") { description = "Gain" }
+        Input(NUMERIC, "bias") { description = "Bias"; defaultValue = null}
+        val ch = Arg(BOOL, "channelsFirst") { description = "For 2D input - unused. True for NCHW (minibatch, channels, height, width), false for NHWC data" }
+        val dim = Arg(NUMERIC, "dimensions") { count = AtLeast(1); description = "Dimensions to perform layer norm over - dimension=1 for 2d/MLP data, dimension=1,2,3 for CNNs" }
 
-        Output(NUMERIC, "output") { description = "" }
+        Output(NUMERIC, "output") { description = "Output variable" }
 
-        Doc(Language.ANY, DocScope.ALL) {
-            """
- Apply Layer Normalization
-
- y = gain * standardize(x) + bias
-
- @param name Name of the output variable
- @param input Input variable
- @param gain gain
- @param bias bias
- @param channelsFirst For 2D input - unused. True for NCHW (minibatch, channels, height, width), false for NHWC data
- @param dimensions Dimensions to perform layer norm over - dimension=1 for 2d/MLP data, dimension=1,2,3 for CNNs
- @return Output variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("layerNorm") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "gain") { description = "" }
-        Input(NUMERIC, "channelsFirst") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
+        AllParamSignature()
+        Signature(input, g, ch, dim)      //TODO:
 
         Doc(Language.ANY, DocScope.ALL) {
             """
- Apply Layer Normalization
-
- y = gain * standardize(x)
-
- @param name Name of the output variable
- @param input Input variable
- @param gain gain
- @return Output variable
-     
-""".trimIndent()
+             Apply Layer Normalization
+            
+             y = gain * standardize(x) + bias
+            """.trimIndent()
         }
     }
 
     Op("dotProductAttention") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "queries") { description = "" }
-        Input(NUMERIC, "keys") { description = "" }
-        Input(NUMERIC, "values") { description = "" }
-        Input(NUMERIC, "mask") { description = "" }
-        Input(NUMERIC, "scaled") { description = "" }
+        val q = Input(NUMERIC, "queries") { description = "input 3D array \"queries\" of shape [batchSize, featureKeys, queryCount]\n" +
+                "or 4D array of shape [batchSize, numHeads, featureKeys, queryCount]" }
+        val k = Input(NUMERIC, "keys") { description = "input 3D array \"keys\" of shape [batchSize, featureKeys, timesteps]\n" +
+                "or 4D array of shape [batchSize, numHeads, featureKeys, timesteps]" }
+        val v = Input(NUMERIC, "values") { description = "input 3D array \"values\" of shape [batchSize, featureValues, timesteps]\n" +
+                "or 4D array of shape [batchSize, numHeads, featureValues, timesteps]" }
+        val m = Input(NUMERIC, "mask") { description = "OPTIONAL; array that defines which values should be skipped of shape [batchSize, timesteps]" }
+        val s = Arg(BOOL, "scaled") { description = "normalization, false -> do not apply normalization, true -> apply normalization" }
+        Arg(BOOL, "withWeights") { defaultValue = false; description = "withWeights return attention weights as well, false -> only one output, true -> two outputs" }
 
-        Output(NUMERIC, "output") { description = "" }
+        Output(NUMERIC, "output") { description = " Attention result arrays of shape [batchSize, featureValues, queryCount] or [batchSize, numHeads, featureValues, queryCount],\n" +
+                "(optionally) Attention Weights of shape [batchSize, timesteps, queryCount] or [batchSize, numHeads, timesteps, queryCount]" }
 
-        Doc(Language.ANY, DocScope.ALL) {
-            """
- This operation performs dot product attention on the given timeseries input with the given queries
- @see #dotProductAttention(String, SDVariable, SDVariable, SDVariable, SDVariable, boolean, boolean)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("dotProductAttention") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "queries") { description = "" }
-        Input(NUMERIC, "keys") { description = "" }
-        Input(NUMERIC, "values") { description = "" }
-        Input(NUMERIC, "mask") { description = "" }
-        Input(NUMERIC, "scaled") { description = "" }
-        Input(NUMERIC, "withWeights") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
+        Signature(q, k, v, m, s)
 
         Doc(Language.ANY, DocScope.ALL) {
             """
- This operation performs dot product attention on the given timeseries input with the given queries
- out = sum(similarity(k_i, q) * v_i)
-
- similarity(k, q) = softmax(k * q) where x * q is the dot product of x and q
-
- Optionally with normalization step:
- similarity(k, q) = softmax(k * q / sqrt(size(q))
-
- See also "Attention is all you need" (https://arxiv.org/abs/1706.03762, p. 4, eq. 1)
-
- Note: This supports multiple queries at once, if only one query is available the queries vector still has to
- be 3D but can have queryCount = 1
-
- Note: keys and values usually is the same array. If you want to use it as the same array, simply pass it for
- both.
-
- Note: Queries, keys and values must either be all rank 3 or all rank 4 arrays. Mixing them doesn't work. The
- output rank will depend on the input rank.
-
- @param queries input 3D array "queries" of shape [batchSize, featureKeys, queryCount]
-                or 4D array of shape [batchSize, numHeads, featureKeys, queryCount]
- @param keys input 3D array "keys" of shape [batchSize, featureKeys, timesteps]
-             or 4D array of shape [batchSize, numHeads, featureKeys, timesteps]
- @param values input 3D array "values" of shape [batchSize, featureValues, timesteps]
-               or 4D array of shape [batchSize, numHeads, featureValues, timesteps]
- @param mask OPTIONAL; array that defines which values should be skipped of shape [batchSize, timesteps]
- @param scaled normalization, false -> do not apply normalization, true -> apply normalization
- @param withWeights return attention weights as well, false -> only one output, true -> two outputs
-
- Output Arrays:
- @return [ Attention result arrays of shape [batchSize, featureValues, queryCount] or [batchSize, numHeads, featureValues, queryCount],
-           (optionally) Attention Weights of shape [batchSize, timesteps, queryCount] or [batchSize, numHeads, timesteps, queryCount]]
-     
-""".trimIndent()
+             This operation performs dot product attention on the given timeseries input with the given queries
+             out = sum(similarity(k_i, q) * v_i)
+            
+             similarity(k, q) = softmax(k * q) where x * q is the dot product of x and q
+            
+             Optionally with normalization step:
+             similarity(k, q) = softmax(k * q / sqrt(size(q))
+            
+             See also "Attention is all you need" (https://arxiv.org/abs/1706.03762, p. 4, eq. 1)
+            
+             Note: This supports multiple queries at once, if only one query is available the queries vector still has to
+             be 3D but can have queryCount = 1
+            
+             Note: keys and values usually is the same array. If you want to use it as the same array, simply pass it for
+             both.
+            
+             Note: Queries, keys and values must either be all rank 3 or all rank 4 arrays. Mixing them doesn't work. The
+             output rank will depend on the input rank.
+            """.trimIndent()
         }
     }
 
@@ -547,48 +476,35 @@ fun SDNN() = Namespace("SDNN") {
 
     Op("multiHeadDotProductAttention") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "queries") { description = "" }
-        Input(NUMERIC, "keys") { description = "" }
-        Input(NUMERIC, "values") { description = "" }
-        Input(NUMERIC, "Wq") { description = "" }
-        Input(NUMERIC, "Wk") { description = "" }
-        Input(NUMERIC, "Wv") { description = "" }
-        Input(NUMERIC, "Wo") { description = "" }
-        Input(NUMERIC, "mask") { description = "" }
-        Input(NUMERIC, "scaled") { description = "" }
-        Input(NUMERIC, "withWeights") { description = "" }
+        val q = Input(NUMERIC, "queries") { description = "input 3D array \"queries\" of shape [batchSize, featureKeys, queryCount]" }
+        val k = Input(NUMERIC, "keys") { description = "input 3D array \"keys\" of shape [batchSize, featureKeys, timesteps]" }
+        val v = Input(NUMERIC, "values") { description = "input 3D array \"values\" of shape [batchSize, featureValues, timesteps]" }
+        val wq = Input(NUMERIC, "Wq") { description = "input query projection weights of shape [numHeads, projectedKeys, featureKeys]" }
+        val wk = Input(NUMERIC, "Wk") { description = "input key projection weights of shape [numHeads, projectedKeys, featureKeys]" }
+        val wv = Input(NUMERIC, "Wv") { description = "input value projection weights of shape [numHeads, projectedValues, featureValues]" }
+        val wo = Input(NUMERIC, "Wo") { description = "output projection weights of shape [numHeads * projectedValues, outSize]" }
+        val m = Input(NUMERIC, "mask") { description = "OPTIONAL; array that defines which values should be skipped of shape [batchSize, timesteps]" }
+        val s = Arg(BOOL, "scaled") { description = "normalization, false -> do not apply normalization, true -> apply normalization" }
+        Arg(BOOL, "withWeights") { defaultValue = false; description = "return attention weights as well, false -> only one output, true -> two outputs" }
 
-        Output(NUMERIC, "output") { description = "" }
+        Output(NUMERIC, "output") { description = "Attention result arrays of shape [batchSize, outSize, queryCount]\n" +
+                "(optionally) Attention Weights of shape [batchSize, numHeads, timesteps, queryCount]" }
+
+        Signature(q, k, v, wq, wk, wv, wo, m, s)
 
         Doc(Language.ANY, DocScope.ALL) {
             """
- This performs multi-headed dot product attention on the given timeseries input
- out = concat(head_1, head_2, ..., head_n) * Wo
- head_i = dot_product_attention(Wq_i*q, Wk_i*k, Wv_i*v)
-
- Optionally with normalization when calculating the attention for each head.
-
- See also "Attention is all you need" (https://arxiv.org/abs/1706.03762, pp. 4,5, "3.2.2 Multi-Head Attention")
-
- This makes use of dot_product_attention OP support for rank 4 inputs.
- @see #dotProductAttention(String, SDVariable, SDVariable, SDVariable, SDVariable, boolean, boolean)
-
- @param queries input 3D array "queries" of shape [batchSize, featureKeys, queryCount]
- @param keys input 3D array "keys" of shape [batchSize, featureKeys, timesteps]
- @param values input 3D array "values" of shape [batchSize, featureValues, timesteps]
- @param Wq input query projection weights of shape [numHeads, projectedKeys, featureKeys]
- @param Wk input key projection weights of shape [numHeads, projectedKeys, featureKeys]
- @param Wv: input value projection weights of shape [numHeads, projectedValues, featureValues]
- @param Wo: output projection weights of shape [numHeads * projectedValues, outSize]
- @param mask OPTIONAL; array that defines which values should be skipped of shape [batchSize, timesteps]
- @param scaled normalization, false -> do not apply normalization, true -> apply normalization
- @param withWeights return attention weights as well, false -> only one output, true -> two outputs
-
- Output Arrays:
- @return [ Attention result arrays of shape [batchSize, outSize, queryCount]
-           (optionally) Attention Weights of shape [batchSize, numHeads, timesteps, queryCount]
-     
-""".trimIndent()
+             This performs multi-headed dot product attention on the given timeseries input
+             out = concat(head_1, head_2, ..., head_n) * Wo
+             head_i = dot_product_attention(Wq_i*q, Wk_i*k, Wv_i*v)
+            
+             Optionally with normalization when calculating the attention for each head.
+            
+             See also "Attention is all you need" (https://arxiv.org/abs/1706.03762, pp. 4,5, "3.2.2 Multi-Head Attention")
+            
+             This makes use of dot_product_attention OP support for rank 4 inputs.
+             @see #dotProductAttention(String, SDVariable, SDVariable, SDVariable, SDVariable, boolean, boolean)
+            """.trimIndent()
         }
     }
 }
