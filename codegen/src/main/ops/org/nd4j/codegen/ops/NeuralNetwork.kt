@@ -7,7 +7,6 @@ import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
 fun NN() = Namespace("SDNN") {
-    val namespaceJavaPackage = "TODO"
     val convPkg = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
     val transform = Op("transform"){
@@ -58,7 +57,7 @@ fun NN() = Namespace("SDNN") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.broadcast"
         Input(NUMERIC, "input") { description = "4d input variable" }
         Input(NUMERIC, "bias") { description = "1d bias" }
-        Input(BOOL, "nchw") { description = "The format - nchw=true means [minibatch, channels, height, width] format; nchw=false - [minibatch, height, width, channels].\n" +
+        Arg(BOOL, "nchw") { description = "The format - nchw=true means [minibatch, channels, height, width] format; nchw=false - [minibatch, height, width, channels].\n" +
                 "Unused for 2d inputs" }
 
         Output(NUMERIC, "output") { description = "Output variable, after applying bias add operation" }
@@ -86,6 +85,7 @@ fun NN() = Namespace("SDNN") {
 
     Op("elu", transformStrict) {
         javaOpClass = "ELU"
+        legacy = false
         Doc(Language.ANY, DocScope.ALL) {
             """
              Element-wise exponential linear unit (ELU) function:
@@ -359,7 +359,6 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("softsign", transformStrict) {
-        javaPackage = namespaceJavaPackage
         Doc(Language.ANY, DocScope.ALL) {
             """
              Element-wise softsign function: out = x / (abs(x) + 1)
@@ -389,7 +388,7 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("layerNorm") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         val input = Input(NUMERIC, "input") { description = "Input variable" }
         val g = Input(NUMERIC, "gain") { description = "Gain" }
         Input(NUMERIC, "bias") { description = "Bias"; defaultValue = null}
@@ -399,7 +398,7 @@ fun NN() = Namespace("SDNN") {
         Output(NUMERIC, "output") { description = "Output variable" }
 
         AllParamSignature()
-        Signature(input, g, ch, dim)      //TODO:
+        Signature(input, g, ch, dim)
 
         Doc(Language.ANY, DocScope.ALL) {
             """
