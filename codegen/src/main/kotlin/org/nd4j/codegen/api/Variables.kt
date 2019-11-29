@@ -125,7 +125,10 @@ data class Input (
             throw IllegalArgumentException("Illegal default value for Input($name). Allowed values have to match data type $type, but got ${value.toDescriptiveString()} (${value?.javaClass?.name})")
         }
 
-    private fun matchesDataType(value: Input?) = value?.type == type
+    private fun matchesDataType(value: Input?) = when(value){
+        null -> true
+        else -> value.type == type
+    }
 }
 
 data class Output(

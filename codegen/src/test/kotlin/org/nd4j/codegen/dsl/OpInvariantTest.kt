@@ -342,6 +342,19 @@ class OpInvariantTest {
     }
 
     @Test
+    fun opSignatureNullDefaultsForInputs() {
+        Namespace("math") {
+            Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x"){ defaultValue = null }
+
+                AllDefaultsSignature()
+            }
+        }
+    }
+
+    @Test
     fun opSignatureShorthandDefaultParams() {
         Namespace("math") {
             Op("foo") {
