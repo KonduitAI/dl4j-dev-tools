@@ -7,14 +7,21 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 
 fun Random() = Namespace("Random") {
-        Op("bernoulli") {
+
+
+    var legacyRandom = Op("legacyRandom"){
         javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        Arg(DATA_TYPE, "datatype"){ description = "Data type of the output variable"}
+        Arg(INT, "shape") { count = AtLeast(0); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
+        Output(NUMERIC, "output") { description = "Tensor with the given shape where values are randomly sampled according to a %OP_NAME% distribution" }
+    }
+
+
+    Op("bernoulli", legacyRandom) {
         javaOpClass = "BernoulliDistribution"
 
         Arg(FLOATING_POINT, "p") { description = "Probability of value 1" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
 
-        Output(NUMERIC, "output") { description = "Tensor with the given shape where values are randomly sampled according to a Bernoulli distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -25,15 +32,11 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("binomial") {
-        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+    Op("binomial", legacyRandom) {
         javaOpClass = "BinomialDistribution"
 
         Arg(INT, "nTrials") { description = "Number of trials parameter for the binomial distribution" }
         Arg(FLOATING_POINT, "p") { description = "Probability of success for each trial" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
-
-        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Binomial distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -49,10 +52,7 @@ fun Random() = Namespace("Random") {
 
         val lambda = Arg(FLOATING_POINT, "lambda") { description = "lambda parameter" }
         Constraint("Must be positive") { lambda gt 0 }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new variable" }
 
-
-        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a exponential distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -62,15 +62,11 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("logNormal") {
-        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+    Op("logNormal", legacyRandom) {
         javaOpClass = "LogNormalDistribution"
 
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%" }
-
-        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Log Normal distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -80,16 +76,12 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("normal") {
+    Op("normal", legacyRandom) {
         javaPackage = "org.nd4j.linalg.api.ops.random.impl"
         javaOpClass = "GaussianDistribution"
 
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
-
-        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Gaussian (normal) distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -99,15 +91,10 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("normalTruncated") {
-        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+    Op("normalTruncated", legacyRandom) {
         javaOpClass = "TruncatedNormalDistribution"
-
         Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
         Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-        Arg(INT, "shape") { count = AtLeast(1); description = "shape of the new random %INPUT_TYPE%" }
-
-        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a Gaussian (normal) distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -117,15 +104,11 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("uniform") {
-        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+    Op("uniform", legacyRandom) {
         javaOpClass = "UniformDistribution"
 
         Arg(FLOATING_POINT, "min") { description = "Minimum value" }
         Arg(FLOATING_POINT, "max") { description = "Maximum value." }
-        Arg(INT, "shape") { count = AtLeast(1); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
-
-        Output(NUMERIC, "output") { description = "new random %INPUT_TYPE%, where values are randomly sampled according to a uniform distribution" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """

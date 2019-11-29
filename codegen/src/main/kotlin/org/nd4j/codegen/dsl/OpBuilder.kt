@@ -176,7 +176,7 @@ class ConstraintBuilder {
 
     fun Input.sizeAt(i: Int) = InputShapeReference(this, i)
     fun Input.rank() = InputRankReference(this)
-    fun Input.isScalar() = this.rank() eq 1
+    fun Input.isScalar() = this.rank() eq 0
 
     fun some(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, {acc, cur -> acc or cur} )
     fun all(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, {acc, cur -> acc and cur} )
