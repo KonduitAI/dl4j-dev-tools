@@ -75,6 +75,10 @@ fun Op.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null
     input.type = dataType
     if (block != null) input.block()
 
+    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
+        throw IllegalArgumentException("Invalid datatype for input \"$name\" of op ${this.opName}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
+    }
+
     this.addInput(input)
     return input
 }
@@ -94,6 +98,11 @@ fun Op.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? = nu
     output.name = name
     output.type = dataType
     if (block != null) output.block()
+
+    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
+        throw IllegalArgumentException("Invalid datatype for output \"$name\" of op ${this.opName}: output arrays cannot have type $dataType");
+    }
+
     this.addOutput(output)
     return output
 }

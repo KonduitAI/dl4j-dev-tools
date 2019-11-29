@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.indexing.condition;
+package org.nd4j.linalg.indexing.conditions;
 
 public interface Condition {
     // This is a stub!

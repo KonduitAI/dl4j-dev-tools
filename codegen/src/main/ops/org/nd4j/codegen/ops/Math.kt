@@ -273,8 +273,8 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
         javaOpClass = "ClipByValue"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "clipValueMin") { description = "Minimum value for clipping" }
-        Input(NUMERIC, "clipValueMax") { description = "Maximum value for clipping" }
+        Arg(NUMERIC, "clipValueMin") { description = "Minimum value for clipping" }
+        Arg(NUMERIC, "clipValueMax") { description = "Maximum value for clipping" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -291,7 +291,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "labels") { description = "Labels - 1D array of integer values representing label values" }
         Input(NUMERIC, "pred") { description = "Predictions - 1D array of integer values representing predictions. Same length as labels" }
-        Input(DATA_TYPE, "dataType") { description = "Data type" }
+        Arg(DATA_TYPE, "dataType") { description = "Data type" }
 
         Output(NUMERIC, "output"){ description = "variable (2D, shape [numClasses, numClasses})" }
 
@@ -569,9 +569,9 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
-        Input(DATA_TYPE, "dataType") { description = "Data type" }
+        Input(INT, "rows") { description = "Number of rows" }
+        Input(INT, "cols") { description = "Number of columns" }
+        Arg(DATA_TYPE, "dataType") { description = "Data type" }
         Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
@@ -590,8 +590,8 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Input(INT, "rows") { description = "Number of rows" }
+        Input(INT, "cols") { description = "Number of columns" }
         Arg(INT, "batchDimension"){ count = AtLeast(0); description = "Batch dimensions. May be null" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
@@ -604,8 +604,8 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
-        Input(NUMERIC, "cols") { description = "Number of columns" }
+        Input(INT, "rows") { description = "Number of rows" }
+        Input(INT, "cols") { description = "Number of columns" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -616,7 +616,7 @@ fun Math() =  Namespace("Math"){
 
     Op("eye") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "rows") { description = "Number of rows" }
+        Input(INT, "rows") { description = "Number of rows" }
         Output(NUMERIC, "output"){ description = "SDVaribable identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """

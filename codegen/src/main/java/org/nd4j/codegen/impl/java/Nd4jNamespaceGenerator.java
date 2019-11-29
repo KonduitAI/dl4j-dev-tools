@@ -5,7 +5,6 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
 import org.nd4j.codegen.api.doc.DocSection;
@@ -16,7 +15,7 @@ import org.nd4j.codegen.util.GenUtil;
 import org.nd4j.linalg.factory.NDValidation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.condition.Condition;
+import org.nd4j.linalg.indexing.conditions.Condition;
 
 import javax.lang.model.element.Modifier;
 import java.io.*;
@@ -97,7 +96,7 @@ public class Nd4jNamespaceGenerator {
         sb.append("\n//================== GENERATED CODE - DO NOT MODIFY THIS FILE ==================\n\n");
         jf.writeTo(sb);
 
-        File outFile = new File(directory, className + ".java");
+        File outFile = new File(directory, "org/nd4j/linalg/factory/ops/" + className + ".java");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
@@ -199,7 +198,6 @@ public class Nd4jNamespaceGenerator {
         }
     }
 
-    @NotNull
     private static List<String> buildParameters(MethodSpec.Builder c, Op op, Signature s) {
         List<String> inNames = new ArrayList<>();
 
@@ -256,74 +254,16 @@ public class Nd4jNamespaceGenerator {
         return inNames;
     }
 
-    @NotNull
-    private static List<String> buildParameters(MethodSpec.Builder c, Op op) {
-        //Inputs:
-        List<Input> in = op.getInputs();
-        List<String> inNames = new ArrayList<>();
-        if(in != null && !in.isEmpty()){
-            for(Input i : in){
-                final String inputName = i.getName();
-                inNames.add(inputName);
-
-                final Count count = i.getCount();
-                if(count == null || count.equals(exactlyOne)) {
-                    //Single input
-                    c.addParameter(INDArray.class, inputName);
-                } else {
-                    //Array input
-                    c.addParameter(INDArray[].class, inputName);
-                }
-                // Check for parameter types
-                c.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(i.getType()), op.getOpName(), inputName, inputName));
-                checkParameterCount(c, count, inputName);
-            }
-        }
-
-        //Args:
-        List<Arg> args = op.getArgs();
-
-        if(args != null && !args.isEmpty()){
-            for (Arg arg : args) {
-                final String argName = arg.getName();
-                if(argName == null || argName.isEmpty()){
-                    throw new IllegalStateException("Got null argument name for op " + op.getOpName());
-                }
-                inNames.add(argName);
-
-                final Count count = arg.getCount();
-                if (count == null || count.equals(exactlyOne)) {
-                    // single arg
-                    if(!typeMapping.containsKey(arg.getType())){
-                        throw new IllegalStateException("No type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
-                    }
-                    c.addParameter(typeMapping.get(arg.getType()), argName);
-                } else {
-                    // array Arg
-                    if(!arrayTypeMapping.containsKey(arg.getType())){
-                        throw new IllegalStateException("No array type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
-                    }
-                    c.addParameter(arrayTypeMapping.get(arg.getType()), argName);
-                }
-
-                checkParameterCount(c, count, argName);
-            }
-        }
-        return inNames;
-    }
-
     private static void buildConstraints(MethodSpec.Builder c, Op op, Signature s) {
-        // TODO
-    }
+        if(op.getConstraints() == null || op.getConstraints().isEmpty())
+            return;
 
-    private static void buildConstraints(MethodSpec.Builder c, Op op) {
-        // Constraints:
+        //TODO not all contsraints apply to all signatures?
+
+        // Don't materialize the Backend Constraints
         final List<Constraint> constraints = op.getConstraints();
-        if(constraints != null && !constraints.isEmpty()){
-            // Don't materialize the Backend Constraints
-            for (Constraint constraint : constraints.stream().filter(it -> !(it instanceof BackendConstraint)).collect(Collectors.toList())) {
-                c.addStatement(CodeBlock.of("$T.checkArgument($L, $S)", Preconditions.class, constraintCodeGenerator.generateExpression(constraint.getCheck()), constraint.getMessage()));
-            }
+        for (Constraint constraint : constraints.stream().filter(it -> !(it instanceof BackendConstraint)).collect(Collectors.toList())) {
+            c.addStatement(CodeBlock.of("$T.checkArgument($L, $S)", Preconditions.class, constraintCodeGenerator.generateExpression(constraint.getCheck()), constraint.getMessage()));
         }
     }
 
