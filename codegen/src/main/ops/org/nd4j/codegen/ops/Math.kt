@@ -98,10 +98,13 @@ fun Math() =  Namespace("Math"){
         isAbstract = true
         legacy = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
+        val input = Input(NUMERIC, "in") { description = "Input variable" }
+        val keepDims = Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
+        val dims = Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+
+        Signature(input, dims)
+        AllParamSignature(withOutput = false)
     }
 
     Op("abs", transformSame) {
@@ -249,12 +252,13 @@ fun Math() =  Namespace("Math"){
 
     Op("clipByNorm") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
-        Arg(INT, "dimensions"){ description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" /*; defaultValue = null //TODO */ }
+        val x = Input(NUMERIC, "x") { description = "Input variable" }
+        val clipValue = Arg(NUMERIC, "clipValue") { description = "Clipping value (maximum l2 norm)" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed"}  //; defaultValue = intArrayOf(0) }   //TODO
         Output(NUMERIC, "output"){ description = "Output variable" }
 
-        //Signature(x, clipValue)
+//        AllParamSignature(withOutput = false)
+//        Signature(x, clipValue)
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Clipping by L2 norm, optionally along dimension(s)
@@ -621,20 +625,11 @@ fun Math() =  Namespace("Math"){
         }
     }
 
-    Op("firstIndex", indexAccum) {
-        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                First index reduction operation.
-                Returns a variable that contains the index of the first element that matches the specified condition (for each
-                slice along the specified dimensions)
-            """.trimIndent()
-        }
-    }
+    Op("firstIndex", indexAccum, keepSignatures=false) {
+        var c = Arg(CONDITION, "condition") { description = "Condition to check on input variable" }
+        Signature(this.inputs.get(0), c, this.args.get(1))                      //in, condition, dimensions - for vararg
+        Signature(this.inputs.get(0), c, this.args.get(0), this.args.get(1))    //in, condition, keepDims, dimensions
 
-    Op("firstIndex", indexAccum) {
-        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
-        //Signature(in, condition, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
                 First index reduction operation.
@@ -766,9 +761,10 @@ fun Math() =  Namespace("Math"){
         }
     }
 
-    Op("lastIndex", indexAccum) {
-        Input(CONDITION, "condition") { description = "Condition to check on input variable" }
-        //Signature(in, condition, dimensions)
+    Op("lastIndex", indexAccum, keepSignatures=false) {
+        var c = Arg(CONDITION, "condition") { description = "Condition to check on input variable" }
+        Signature(this.inputs.get(0), c, this.args.get(1))                      //in, condition, dimensions - for vararg
+        Signature(this.inputs.get(0), c, this.args.get(0), this.args.get(1))    //in, condition, keepDims, dimensions
         Doc(Language.ANY, DocScope.ALL){
             """
                 Last index reduction operation.

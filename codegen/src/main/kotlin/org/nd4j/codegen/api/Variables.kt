@@ -62,7 +62,7 @@ data class Arg(
     override fun defaultValue(): Any? = defaultValue
 
     var defaultValue: Any? = null
-        set(value) = if(isAssignableFrom(value)){
+        set(value) = if(isAssignableFrom(value) /*|| value == null*/) {
             field = value
         }else{
             throw IllegalArgumentException("Illegal default value for Arg($type, $name). Got $value (${value?.javaClass?.name})")

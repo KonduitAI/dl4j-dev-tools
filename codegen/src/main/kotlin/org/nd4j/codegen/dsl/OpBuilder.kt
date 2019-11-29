@@ -108,7 +108,7 @@ fun Op.Doc(language: Language, scope: DocScope, block: DocSection.() -> String):
     return doc
 }
 
-fun Op.AllParamSignature(withOutput: Boolean = true) {
+fun Op.AllParamSignature(withOutput: Boolean = false) {
     val allParameters = mutableListOf<Parameter>()
     allParameters.addAll(this.inputs!!)
     allParameters.addAll(this.args!!)
@@ -121,7 +121,7 @@ fun Op.AllParamSignature(withOutput: Boolean = true) {
     }
 }
 
-fun Op.AllDefaultsSignature(withOutput: Boolean = true) {
+fun Op.AllDefaultsSignature(withOutput: Boolean = false) {
     val allParameters = mutableListOf<Parameter>().also{
         it.addAll(this.inputs!!)
         it.addAll(this.args!!)
