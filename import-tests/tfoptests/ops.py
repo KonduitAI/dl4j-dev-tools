@@ -156,22 +156,13 @@ class OpCreator:
             raise ValueError("Only square inputs currently supported due to multiple outputs issue")
 
         svd = tf.svd(tensor=self.vars[0], full_matrices=self.op["full_matrices"], compute_uv=self.op["compute_uv"])
-        #Outputs: If compute_uv is false, only one output
-        if(self.op["compute_uv"] is False or len(svd) == 1):
-            if(isinstance(svd, list)):
-                return svd
-            return [svd]
 
-        #Multiple outputs issue: s, shape [..., P], u shape [..., M, P] or [..., M, M]
-        # v shape [..., N,P] or [..., N, N]
-        # Where P is min(M,N)
-        #Workaround for multiple outputs saving issue: if m=n, can add u and v... then need to reshape s to [..., M, 1] and broadcast add...
-        s = svd[0]
-        u = svd[1]
-        v = svd[2]
-        if(self.op["full_matrices"] is False):
-            s = tf.expand_dims(s, -1)
-        return [s + u + v]
+        # Note that SVD has multiple solutions, that differ only by sign
+        if(isinstance(svd, list) or isinstance(svd, tuple)):
+            return [tf.math.abs(svd[0]), tf.math.abs(svd[1]), tf.math.abs(svd[2])]
+        else:
+            return [tf.math.abs(svd)]
+
 
     def execute_mean_squared_error(self):
         weights = 1.0
