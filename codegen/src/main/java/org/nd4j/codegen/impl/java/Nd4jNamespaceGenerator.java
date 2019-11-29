@@ -4,6 +4,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
@@ -19,6 +20,7 @@ import org.nd4j.linalg.indexing.condition.Condition;
 
 import javax.lang.model.element.Modifier;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,11 +75,30 @@ public class Nd4jNamespaceGenerator {
         TypeSpec ts = builder.build();
 
         JavaFile jf = JavaFile.builder("org.nd4j.linalg.factory.ops", ts)
-                .addFileComment("********** GENERATED CODE - DO NOT MODIFY THIS FILE **********")
                 .addStaticImport(NDValidation.class, "isSameType")
                 .build();
 
-        jf.writeTo(directory);
+        StringBuilder sb = new StringBuilder();
+        sb.append("/* ******************************************************************************\n" +
+                " * Copyright (c) 2019 Konduit K.K.\n" +
+                " *\n" +
+                " * This program and the accompanying materials are made available under the\n" +
+                " * terms of the Apache License, Version 2.0 which is available at\n" +
+                " * https://www.apache.org/licenses/LICENSE-2.0.\n" +
+                " *\n" +
+                " * Unless required by applicable law or agreed to in writing, software\n" +
+                " * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n" +
+                " * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n" +
+                " * License for the specific language governing permissions and limitations\n" +
+                " * under the License.\n" +
+                " *\n" +
+                " * SPDX-License-Identifier: Apache-2.0\n" +
+                " ******************************************************************************/\n");
+        sb.append("\n//================== GENERATED CODE - DO NOT MODIFY THIS FILE ==================\n\n");
+        jf.writeTo(sb);
+
+        File outFile = new File(directory, className + ".java");
+        FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
     private static void addDefaultConstructor(TypeSpec.Builder builder) {
