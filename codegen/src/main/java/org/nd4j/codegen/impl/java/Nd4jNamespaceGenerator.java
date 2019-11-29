@@ -90,14 +90,9 @@ public class Nd4jNamespaceGenerator {
     }
 
     private static void generateMethods(TypeSpec.Builder builder, Op op ){
-        if(op.getSignatures() == null || op.getSignatures().isEmpty()){
-            //No signatures specified -> generate the all-arg method only
-            builder.addMethod(allArgCreatorMethod(op));
-        } else {
-            List<Signature> l = op.getSignatures();
-            for(Signature s : l){
-                builder.addMethod(signatureCreatorMethod(op, s));
-            }
+        List<Signature> l = op.getSignatures();
+        for(Signature s : l){
+            builder.addMethod(signatureCreatorMethod(op, s));
         }
     }
 
@@ -109,20 +104,6 @@ public class Nd4jNamespaceGenerator {
         buildJavaDoc(op, s, c);
         List<String> inNames = buildParameters(c, op, s);
         buildConstraints(c, op, s);
-        buildExecution(c, op, inNames);
-
-        return c.build();
-    }
-
-    private static MethodSpec allArgCreatorMethod(Op op){
-        MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()))
-                .addModifiers(Modifier.PUBLIC);
-
-        enableVarargsOnLastArg(c, op);
-
-        buildJavaDoc(op, c);
-        List<String> inNames = buildParameters(c, op);
-        buildConstraints(c, op);
         buildExecution(c, op, inNames);
 
         return c.build();
@@ -183,90 +164,6 @@ public class Nd4jNamespaceGenerator {
             }
 
 
-        }
-//
-//        List<Input> in = op.getInputs();
-//        if(in != null && !in.isEmpty()){
-//            for(Input i : in){
-//                c.addJavadoc("@param " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)\n");
-//            }
-//        }
-//
-//        List<Arg> args = op.getArgs();
-//        if(args != null && !args.isEmpty()){
-//            for (Arg arg : args) {
-//                final Count count = arg.getCount();
-//                if (count == null || count.equals(exactlyOne)) {
-//                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + "\n");
-//                } else {
-//                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() + ")\n");
-//                }
-//            }
-//        }
-
-        //Outputs:
-        List<Output> outputs = op.getOutputs();
-        if(outputs != null && !outputs.isEmpty()){
-            if(outputs.size() == 1){
-                Output o = outputs.get(0);
-                c.addJavadoc("@return " + o.getName() + " " + (o.getDescription() == null ? "" : DocTokens.processDocText(o.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + o.getType() + " type)\n");
-            } else {
-                throw new UnsupportedOperationException("Javadoc for multi-output ops not yet implemented");
-            }
-        }
-    }
-
-
-
-    private static void  buildJavaDoc(Op op, MethodSpec.Builder c) {
-        //Method javadoc:
-        List<DocSection> doc = op.getDoc();
-        if(doc != null && !doc.isEmpty()){
-            for(DocSection ds : doc){
-                if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
-                    String text = DocTokens.processDocText(ds.getText(), op, DocTokens.GenerationType.ND4J);
-                    //Add <br> tags at the end of each line, where none already exists
-                    String[] lines = text.split("\n");
-                    for( int i=0; i<lines.length; i++ ){
-                        if(!lines[i].endsWith("<br>")){
-                            lines[i] = lines[i] + "<br>";
-                        }
-                    }
-                    text = String.join("\n", lines);
-                    c.addJavadoc(text + "\n\n");
-                }
-            }
-        }
-
-
-        // Document Constraints:
-        final List<Constraint> constraints = op.getConstraints();
-        if(constraints != null && !constraints.isEmpty()){
-            c.addJavadoc("Inputs must satisfy the following constraints: <br>\n");
-            for (Constraint constraint : constraints) {
-                c.addJavadoc(constraint.getMessage() +": " + constraintCodeGenerator.generateExpression(constraint.getCheck()) + "<br>\n");
-            }
-
-            c.addJavadoc("\n");
-        }
-
-        List<Input> in = op.getInputs();
-        if(in != null && !in.isEmpty()){
-            for(Input i : in){
-                c.addJavadoc("@param " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)\n");
-            }
-        }
-
-        List<Arg> args = op.getArgs();
-        if(args != null && !args.isEmpty()){
-            for (Arg arg : args) {
-                final Count count = arg.getCount();
-                if (count == null || count.equals(exactlyOne)) {
-                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + "\n");
-                } else {
-                    c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() + ")\n");
-                }
-            }
         }
 
         //Outputs:
