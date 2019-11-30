@@ -53,11 +53,9 @@ public class CLI {
             throw new IllegalStateException("No namespaces were provided");
         }
 
-        boolean all = false;
         List<Namespace> n = new ArrayList<>();
         for(String s : namespaces){
             if("all".equalsIgnoreCase(s)){
-                all = true;
                 Collections.addAll(n, Namespace.values());
                 break;
             }
