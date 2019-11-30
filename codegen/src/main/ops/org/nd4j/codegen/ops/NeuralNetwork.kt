@@ -23,6 +23,7 @@ fun NN() = Namespace("SDNN") {
 
     val scalar = Op("scalar"){
         isAbstract = true
+        legacy = true
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "value") { description = "Scalar value for op" }
@@ -37,7 +38,7 @@ fun NN() = Namespace("SDNN") {
         Input(NUMERIC, "gamma") { description = "Gamma value. For 1d axis, this should match input.size(axis)" }
         Input(NUMERIC, "beta") { description = "Beta value. For 1d axis, this should match input.size(axis)" }
         Arg(NUMERIC, "epsilon") { description = "Epsilon constant for numerical stability (to avoid division by 0)" }
-        Arg(NUMERIC, "axis") {
+        Arg(INT, "axis") {
             count = AtLeast(1)
             description = "For 2d CNN activations: 1 for NCHW format activations, or 3 for NHWC format activations.\n" +
                     "For 3d CNN activations: 1 for NCDHW format, 4 for NDHWC\n" +
@@ -72,6 +73,8 @@ fun NN() = Namespace("SDNN") {
 
     Op("dropout") {
         javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        javaOpClass = "DropOut"
+        legacy = true
         Input(NUMERIC, "input") { description = "Input array" }
         Arg(NUMERIC, "inputRetainProbability") { description = "Probability of retaining an input (set to 0 with probability 1-p)" }
 
@@ -133,10 +136,14 @@ fun NN() = Namespace("SDNN") {
         }
     }
 
-    Op("hardTanhDerivative", transformStrict) {
+    Op("hardTanhDerivative") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL) {
             """
-             Derivative (dOut/dIn) of the element-wise hard Tanh function - {@link #hardTanh(SDVariable)}
+             Derivative (dOut/dIn) of the element-wise hard Tanh function - hardTanh(%INPUT_TYPE%)
             """.trimIndent()
         }
     }
@@ -144,6 +151,7 @@ fun NN() = Namespace("SDNN") {
     Op("leakyRelu") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         javaOpClass = "LeakyReLU"
+        legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "alpha") { description = "Cutoff - commonly 0.01" }
 
@@ -160,8 +168,9 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("leakyReluDerivative") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
         javaOpClass = "LeakyReLUDerivative"
+        legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "alpha") { description = "Cutoff - commonly 0.01" }
 
@@ -200,7 +209,8 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("logSoftmax") {
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "LogSoftMax"
         Input(NUMERIC, "x") { description = "" }
         Output(NUMERIC, "output") { description = "" }
         Doc(Language.ANY, DocScope.ALL) {
@@ -212,6 +222,7 @@ fun NN() = Namespace("SDNN") {
 
     Op("logSoftmax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "LogSoftMax"
         Input(NUMERIC, "x") { description = "Input" }
         Arg(INT, "dimension") { description = "Dimension along which to apply log softmax" }
         Output(NUMERIC, "output") { description = "Output - log(softmax(input))" }
@@ -226,6 +237,7 @@ fun NN() = Namespace("SDNN") {
     Op("relu") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         javaOpClass = "RectifiedLinear"
+        legacy = true
         Input(NUMERIC, "x") { description = "Input" }
         Arg(NUMERIC, "cutoff") { description = "Cutoff value for ReLU operation - x > cutoff ? x : 0. Usually 0" }
         Output(NUMERIC, "output") { description = "Output" }
@@ -241,6 +253,7 @@ fun NN() = Namespace("SDNN") {
 
     Op("relu6") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        legacy = true
         Input(NUMERIC, "x") { description = "Input" }
         Arg(NUMERIC, "cutoff") { description = "Cutoff value for ReLU operation. Usually 0" }
         Output(NUMERIC, "output") { description = "Output" }
@@ -303,7 +316,7 @@ fun NN() = Namespace("SDNN") {
         }
     }
 
-    Op("sigmoid", scalar) {
+    Op("sigmoid", transformStrict) {
         Doc(Language.ANY, DocScope.ALL) {
             """
              Element-wise sigmoid function: out[i] = 1.0/(1+exp(-in[i]))
@@ -339,8 +352,10 @@ fun NN() = Namespace("SDNN") {
 
     Op("softmaxDerivative") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "wrt") { description = "" }
+        javaOpClass = "SoftmaxBp"
+        Input(NUMERIC, "x") { description = "Softmax input" }
+        Input(NUMERIC, "wrt") { description = "Gradient at output, dL/dx" }
+        Arg(INT, "dimension"){description = "Softmax dimension"}
 
         Output(NUMERIC, "output") { description = "" }
 
@@ -352,6 +367,7 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("softplus", transformStrict) {
+        javaOpClass = "SoftPlus"
         Doc(Language.ANY, DocScope.ALL) {
             """
              Element-wise softplus function: out = log(exp(x) + 1)
@@ -360,6 +376,7 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("softsign", transformStrict) {
+        javaOpClass = "SoftSign"
         Doc(Language.ANY, DocScope.ALL) {
             """
              Element-wise softsign function: out = x / (abs(x) + 1)
@@ -369,12 +386,14 @@ fun NN() = Namespace("SDNN") {
 
     Op("softsignDerivative") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.gradient"
+        javaOpClass = "SoftSignDerivative"
+        legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output") { description = "Output" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-             Element-wise derivative (dOut/dIn) of the softsign function {@link #softsign(%INPUT_TYPE%)}
+             Element-wise derivative (dOut/dIn) of the softsign function softsign(%INPUT_TYPE%)
             """.trimIndent()
         }
     }
@@ -394,7 +413,7 @@ fun NN() = Namespace("SDNN") {
         val g = Input(NUMERIC, "gain") { description = "Gain" }
         Input(NUMERIC, "bias") { description = "Bias"; defaultValue = null}
         val ch = Arg(BOOL, "channelsFirst") { description = "For 2D input - unused. True for NCHW (minibatch, channels, height, width), false for NHWC data" }
-        val dim = Arg(NUMERIC, "dimensions") { count = AtLeast(1); description = "Dimensions to perform layer norm over - dimension=1 for 2d/MLP data, dimension=1,2,3 for CNNs" }
+        val dim = Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to perform layer norm over - dimension=1 for 2d/MLP data, dimension=1,2,3 for CNNs" }
 
         Output(NUMERIC, "output") { description = "Output variable" }
 
@@ -453,29 +472,6 @@ fun NN() = Namespace("SDNN") {
 
     Op("multiHeadDotProductAttention") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "queries") { description = "" }
-        Input(NUMERIC, "keys") { description = "" }
-        Input(NUMERIC, "values") { description = "" }
-        Input(NUMERIC, "Wq") { description = "" }
-        Input(NUMERIC, "Wk") { description = "" }
-        Input(NUMERIC, "Wv") { description = "" }
-        Input(NUMERIC, "Wo") { description = "" }
-        Input(NUMERIC, "mask") { description = "" }
-        Input(NUMERIC, "scaled") { description = "" }
-
-        Output(NUMERIC, "output") { description = "" }
-
-        Doc(Language.ANY, DocScope.ALL) {
-            """
- This performs multi-headed dot product attention on the given timeseries input
- @see #multiHeadDotProductAttention(String, SDVariable, SDVariable, SDVariable, SDVariable, SDVariable, SDVariable, SDVariable, SDVariable, boolean, boolean)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("multiHeadDotProductAttention") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         val q = Input(NUMERIC, "queries") { description = "input 3D array \"queries\" of shape [batchSize, featureKeys, queryCount]" }
         val k = Input(NUMERIC, "keys") { description = "input 3D array \"keys\" of shape [batchSize, featureKeys, timesteps]" }
         val v = Input(NUMERIC, "values") { description = "input 3D array \"values\" of shape [batchSize, featureValues, timesteps]" }
@@ -503,7 +499,7 @@ fun NN() = Namespace("SDNN") {
              See also "Attention is all you need" (https://arxiv.org/abs/1706.03762, pp. 4,5, "3.2.2 Multi-Head Attention")
             
              This makes use of dot_product_attention OP support for rank 4 inputs.
-             @see #dotProductAttention(String, SDVariable, SDVariable, SDVariable, SDVariable, boolean, boolean)
+             see dotProductAttention(%INPUT_TYPE%, %INPUT_TYPE%, %INPUT_TYPE%, %INPUT_TYPE%, boolean, boolean)
             """.trimIndent()
         }
     }
