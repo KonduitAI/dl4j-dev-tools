@@ -2,6 +2,7 @@ package org.nd4j.codegen;
 
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.ops.BitwiseKt;
+import org.nd4j.codegen.ops.NeuralNetworkKt;
 import org.nd4j.codegen.ops.RandomKt;
 import org.nd4j.codegen.ops.MathKt;
 
@@ -15,6 +16,7 @@ public enum Namespace {
         switch (in.toLowerCase()){
             case "bitwise":
                 return BITWISE;
+            case "nn":
             case "neuralnetwork":
                 return NEURALNETWORK;
             case "random":
@@ -48,6 +50,8 @@ public enum Namespace {
                 return RandomKt.Random();
             case MATH:
                 return MathKt.Math();
+            case NEURALNETWORK:
+                return NeuralNetworkKt.NN();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
