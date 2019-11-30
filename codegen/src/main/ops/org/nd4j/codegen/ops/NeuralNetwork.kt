@@ -36,8 +36,9 @@ fun NN() = Namespace("SDNN") {
         Input(NUMERIC, "variance") { description = "Variance value. For 1d axis, this should match input.size(axis)" }
         Input(NUMERIC, "gamma") { description = "Gamma value. For 1d axis, this should match input.size(axis)" }
         Input(NUMERIC, "beta") { description = "Beta value. For 1d axis, this should match input.size(axis)" }
-        Input(NUMERIC, "epsilon") { description = "Epsilon constant for numerical stability (to avoid division by 0)" }
-        Input(NUMERIC, "axis") {
+        Arg(NUMERIC, "epsilon") { description = "Epsilon constant for numerical stability (to avoid division by 0)" }
+        Arg(NUMERIC, "axis") {
+            count = AtLeast(1)
             description = "For 2d CNN activations: 1 for NCHW format activations, or 3 for NHWC format activations.\n" +
                     "For 3d CNN activations: 1 for NCDHW format, 4 for NDHWC\n" +
                     "For 1d/RNN activations: 1 for NCW format, 2 for NWC"
@@ -410,7 +411,7 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("dotProductAttention") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         val q = Input(NUMERIC, "queries") { description = "input 3D array \"queries\" of shape [batchSize, featureKeys, queryCount]\n" +
                 "or 4D array of shape [batchSize, numHeads, featureKeys, queryCount]" }
         val k = Input(NUMERIC, "keys") { description = "input 3D array \"keys\" of shape [batchSize, featureKeys, timesteps]\n" +
@@ -451,7 +452,7 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("multiHeadDotProductAttention") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "queries") { description = "" }
         Input(NUMERIC, "keys") { description = "" }
         Input(NUMERIC, "values") { description = "" }
@@ -474,7 +475,7 @@ fun NN() = Namespace("SDNN") {
     }
 
     Op("multiHeadDotProductAttention") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         val q = Input(NUMERIC, "queries") { description = "input 3D array \"queries\" of shape [batchSize, featureKeys, queryCount]" }
         val k = Input(NUMERIC, "keys") { description = "input 3D array \"keys\" of shape [batchSize, featureKeys, timesteps]" }
         val v = Input(NUMERIC, "values") { description = "input 3D array \"values\" of shape [batchSize, featureValues, timesteps]" }
