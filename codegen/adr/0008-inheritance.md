@@ -141,7 +141,8 @@ Namespace("math"){
 ### Advantages
 * We can have multiple inheritance 
 * We can share op similarities across namespaces
-* We get explicit access to parameters defined in mixins
+* We get explicit access to parameters defined in base ops
+* The existing usage pattern stays intact
 
 ### Disadvantages
 * We don't get fine grained control over what to take from each base op 
