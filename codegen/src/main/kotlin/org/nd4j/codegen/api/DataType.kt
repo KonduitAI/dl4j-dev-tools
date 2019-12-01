@@ -6,7 +6,9 @@ enum class DataType {
     LONG, //long, signed int64 datatype
     NUMERIC, // any floating point or integer data type
     BOOL, // boolean data type
+    // Arg only
     DATA_TYPE, // tensor data type
     CONDITION, // A condition
-    LOSS_REDUCE // Loss reduction mode
+    LOSS_REDUCE, // Loss reduction mode
+    ENUM // defines an enum along with possibleValues property in Arg
 }

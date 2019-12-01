@@ -46,6 +46,7 @@ interface Parameter {
         when(val defaultValue = this.defaultValue()){
             is Number, is Boolean, null -> true
             is IntArray, is BooleanArray, is DoubleArray -> true
+            is String -> true
             is Parameter -> otherParams.contains(defaultValue) || defaultValue.defaultValueIsApplicable(otherParams)
             is TensorDataTypeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
             is TensorShapeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
@@ -59,8 +60,7 @@ interface Tensor: Parameter
 data class Arg(
         var name: String? = null,
         var type: DataType? = null,
-        var description: String? = null,
-        var count: Count? = null
+        var description: String? = null
 ) : Reference(), Parameter {
     override fun name(): String = name!!
     override fun defaultValue(): Any? = defaultValue
@@ -72,7 +72,23 @@ data class Arg(
             field = value
             defaultValueIsSet = true
         }else{
-            throw IllegalArgumentException("Illegal default value for Arg($type, $name)${if(count != null) "{ count = $count }" else "" }. Got ${value.toDescriptiveString()} (${value?.javaClass?.name})")
+            throw IllegalArgumentException("Illegal default value for $this. Got ${value.toDescriptiveString()} (${value?.javaClass?.name})")
+        }
+
+    var possibleValues: List<String>? = null
+        set(value) = if(type == DataType.ENUM) when {
+            value == null -> field = null
+            value.isEmpty() -> throw IllegalArgumentException("$this: Can not set empty possibleValues.")
+            else -> field = value
+        } else {
+            throw IllegalArgumentException("$this: Can not set possibleValues on non ENUM typed Arg.")
+        }
+
+    var count: Count? = null
+        set(value) = if(type == DataType.ENUM && value != Exactly(1)) {
+            throw IllegalArgumentException("$this: ENUM typed Arg can not be array")
+        }else{
+            field = value
         }
 
     private fun matchesDataType(value: Any?) = when(type){
@@ -91,6 +107,7 @@ data class Arg(
         is DoubleArray -> isArray() && (type == DataType.FLOATING_POINT || type == DataType.NUMERIC) && countMatches(value.size)
         is BooleanArray -> isArray() && type == DataType.BOOL && countMatches(value.size)
         is Arg -> value.count == count && value.type == type
+        is String -> type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
         null -> true
         else -> false
     }
@@ -105,6 +122,8 @@ data class Arg(
 
     fun Tensor.shape() = TensorShapeValue(this)
     fun Tensor.dataType() = TensorDataTypeValue(this)
+
+    override fun toString() = "Arg(${if(type == DataType.ENUM){"ENUM(${possibleValues?.joinToString(", ")})"}else{type}}, $name)${if(count != null) "{ count = $count }" else "" }"
 }
 
 data class Input (

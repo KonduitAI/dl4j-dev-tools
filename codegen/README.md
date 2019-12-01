@@ -52,8 +52,6 @@ TODO: Show usage output of the project itself
 
 TODO: Show how to use from mvn
 
-TODO:add picocli based cli to run things: Output ALL namespaces to specific directory; Output selected namespace to
-specific directory; Output specific namespace to stdout; Use specified generator instead of default
 
 ## Generating Code - ND4J Namespaces
 
@@ -313,10 +311,13 @@ Note (Java specific): If the last arg is defined to represent an array, it will 
 ### Argument properties
 * `description` (String): A short description what this argument represents. Setting this is recommended.
 * `count` (Count): Can take one of `Exactly(n)`; `AtLeast(n)`; `AtMost(n)`; `Range(from, to)`
-* `defaultValue` (null|Number|Boolean|int[]|double[]|boolean[]|Arg|TensorShapeValue|TensorDataTypeValue): Use given value as default value, if this 
-  isn't explicitly set. Can refer to *inputs* and *outputs* using `x.shape()` and `x.dataType()`. The given default 
-  values has to match the data type for this argument. May also refer to another Arg, and that Arg may also have a 
-  default value. Default values based on outputs are treated like without a default in SameDiff mode.
+* `defaultValue` (null|Number|Boolean|int[]|double[]|boolean[]|Arg|TensorShapeValue|TensorDataTypeValue|String): 
+  Use given value as default value, if this isn't explicitly set. Can refer to *inputs* and *outputs* using `x.shape()`
+  and `x.dataType()`. The given default values has to match the data type for this argument. May also refer to another
+  Arg, and that Arg may also have a default value. Default values based on outputs are treated like without a default 
+  in SameDiff mode.
+* `possibleValues` (String[]): only available when ENUM data type is used for the argument. Takes a list of possible
+  values for the Enum. If used in in abstract base op, the enum will only be created once. 
 
 ## Output
 Only available within an op context

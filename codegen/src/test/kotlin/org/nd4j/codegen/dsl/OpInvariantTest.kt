@@ -347,7 +347,7 @@ class OpInvariantTest {
             Op("foo") {
                 Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
                 val out = Output(DataType.NUMERIC, "out")
-                val x = Input(DataType.NUMERIC, "x"){ defaultValue = null }
+                val x = Input(DataType.NUMERIC, "x") { defaultValue = null }
 
                 AllDefaultsSignature()
             }
@@ -523,5 +523,135 @@ class OpInvariantTest {
 
             assertEquals(2, op.signatures.size)
         }
+    }
+
+    @Test
+    fun argEnum() {
+        Namespace("math") {
+            Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.ENUM, "y") { possibleValues = listOf("FOO", "BAR", "BAZ") }
+
+            }
+        }
+    }
+
+    @Test
+    fun argEnumDefaultValue() {
+        Namespace("math") {
+            Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.ENUM, "y") {
+                    possibleValues = listOf("FOO", "BAR", "BAZ")
+                    defaultValue = "BAZ"
+                }
+
+                AllDefaultsSignature()
+            }
+        }
+    }
+
+    @Test
+    fun argEnumBadDefaultValue() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    val out = Output(DataType.NUMERIC, "out")
+                    val x = Input(DataType.NUMERIC, "x")
+                    val y = Arg(DataType.ENUM, "y") {
+                        possibleValues = listOf("FOO", "BAR", "BAZ")
+                        defaultValue = "SPAM"
+                    }
+
+                    AllDefaultsSignature()
+                }
+            }
+        }
+
+        assertEquals("Illegal default value for Arg(ENUM(FOO, BAR, BAZ), y). Got SPAM (java.lang.String)", thrown.message)
+    }
+
+    @Test
+    fun argEnumEmptyPossibleValues() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    val out = Output(DataType.NUMERIC, "out")
+                    val x = Input(DataType.NUMERIC, "x")
+                    val y = Arg(DataType.ENUM, "y") {
+                        possibleValues = listOf()
+                    }
+
+                }
+            }
+        }
+
+        assertEquals("Arg(ENUM(null), y): Can not set empty possibleValues.", thrown.message)
+    }
+
+    @Test
+    fun argEnumBadType() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    val out = Output(DataType.NUMERIC, "out")
+                    val x = Input(DataType.NUMERIC, "x")
+                    val y = Arg(DataType.NUMERIC, "y") {
+                        possibleValues = listOf("FOO", "BAR", "BAZ")
+                        defaultValue = "SPAM"
+                    }
+
+                    AllDefaultsSignature()
+                }
+            }
+        }
+
+        assertEquals("Arg(NUMERIC, y): Can not set possibleValues on non ENUM typed Arg.", thrown.message)
+    }
+
+    @Test
+    fun argEnumBadCount() {
+        val thrown = assertThrows<java.lang.IllegalArgumentException> {
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    val out = Output(DataType.NUMERIC, "out")
+                    val x = Input(DataType.NUMERIC, "x")
+                    val y = Arg(DataType.ENUM, "y") {
+                        count = AtLeast(1)
+                        possibleValues = listOf("FOO", "BAR", "BAZ")
+                    }
+
+                    AllDefaultsSignature()
+                }
+            }
+        }
+
+        assertEquals("Arg(ENUM(null), y): ENUM typed Arg can not be array", thrown.message)
+    }
+
+    @Test
+    fun argEnumGoodCount() {
+        Namespace("math") {
+            Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.ENUM, "y") {
+                    count = Exactly(1)
+                    possibleValues = listOf("FOO", "BAR", "BAZ")
+                }
+
+                AllDefaultsSignature()
+            }
+        }
+
     }
 }
