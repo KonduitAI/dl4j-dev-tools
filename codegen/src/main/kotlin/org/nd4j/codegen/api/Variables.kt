@@ -45,6 +45,7 @@ interface Parameter {
     fun defaultValueIsApplicable(otherParams: List<Parameter>): Boolean = if(hasDefaultValue()){
         when(val defaultValue = this.defaultValue()){
             is Number, is Boolean, null -> true
+            is IntArray, is BooleanArray, is DoubleArray -> true
             is Parameter -> otherParams.contains(defaultValue) || defaultValue.defaultValueIsApplicable(otherParams)
             is TensorDataTypeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
             is TensorShapeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
