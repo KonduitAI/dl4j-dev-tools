@@ -390,7 +390,6 @@ class OpInvariantTest {
         }
     }
 
-
     @Test
     fun opSignatureSupportsArrayDefaultsAtLeast() {
         val thrown = assertThrows<java.lang.IllegalArgumentException> {
@@ -456,5 +455,73 @@ class OpInvariantTest {
 
         assertEquals("Illegal default value for Arg(INT, y){ count = Exactly(count=7) }. Got [] ([I)", thrown.message)
 
+    }
+
+    @Test
+    fun opSignatureHasExpectedNumberOfSignatures() {
+        Namespace("math") {
+            val op = Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.INT, "y") { count = AtLeast(0); defaultValue = intArrayOf() }
+
+                AllParamSignature()
+                AllDefaultsSignature()
+            }
+
+            assertEquals(2, op.signatures.size)
+        }
+    }
+
+    @Test
+    fun opSignatureHasExpectedNumberOfSignaturesWithOutput() {
+        Namespace("math") {
+            val op = Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.INT, "y") { count = AtLeast(0); defaultValue = intArrayOf() }
+
+                AllParamSignature(true)
+                AllDefaultsSignature(true)
+            }
+
+            assertEquals(4, op.signatures.size)
+        }
+    }
+
+    @Test
+    fun opSignatureHasExpectedNumberOfSignaturesNoDefaults() {
+        Namespace("math") {
+            val op = Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.INT, "y") { count = AtLeast(0); }
+
+                AllParamSignature()
+                AllDefaultsSignature()
+            }
+
+            assertEquals(1, op.signatures.size)
+        }
+    }
+
+    @Test
+    fun opSignatureHasExpectedNumberOfSignaturesWithOutputNoDefaults() {
+        Namespace("math") {
+            val op = Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+                val y = Arg(DataType.INT, "y") { count = AtLeast(0); }
+
+                AllParamSignature(true)
+                AllDefaultsSignature(true)
+            }
+
+            assertEquals(2, op.signatures.size)
+        }
     }
 }
