@@ -72,25 +72,19 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("concat") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "dimension") { description = "" }
-        Input(NUMERIC, "inputs") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "Concat"
+        //TODO: The generator flips the order of dimension and inputs.
+        Arg(INT, "dimension"){ description = "Dimension to concatenate on" }
+        Input(NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Concatenate a set of inputs along the specified dimension.<br>
- Note that inputs must have identical rank and identical dimensions, other than the dimension to stack on.<br>
- For example, if 2 inputs have shape [a, x, c] and [a, y, c] and dimension = 1, then the output has shape [a, x+y, c]
-
- @param name      Name of the output variable
- @param dimension Dimension to concatenate on
- @param inputs    Input variables
- @return Output variable
- @see #stack(String, int, SDVariable...)
-     
-""".trimIndent()
+                Concatenate a set of inputs along the specified dimension.
+                Note that inputs must have identical rank and identical dimensions, other than the dimension to stack on.
+                For example, if 2 inputs have shape [a, x, c] and [a, y, c] and dimension = 1, then the output has shape [a, x+y, c]
+            """.trimIndent()
         }
     }
 
