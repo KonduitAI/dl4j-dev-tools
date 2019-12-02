@@ -3,6 +3,7 @@
  */
 package org.nd4j.codegen.ops
 
+import org.nd4j.codegen.api.AtLeast
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
@@ -11,53 +12,41 @@ import org.nd4j.codegen.api.DataType.*
 fun SDBaseOps() =  Namespace("SDBaseOps"){
     val namespaceJavaPackage = "TODO"
     Op("argmax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        legacy = true
+        javaOpClass = "IMax"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        val keepDims = Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue = false }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
 
-        Output(NUMERIC, "output"){ description = "" }
-
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or\n" +
+                " of rank (input rank) if keepdims = true" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Argmax array reduction operation, optionally along specified dimensions.<br>
- Output values are the index of the maximum value of each slice along the specified dimension.<br>
- <br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Name of the output variable
- @param in         Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions) if keepDims = false, or
- of rank (input rank) if keepdims = true
-     
-""".trimIndent()
+                Argmax array reduction operation, optionally along specified dimensions.
+                Output values are the index of the maximum value of each slice along the specified dimension.
+                
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("argmax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Argmax array reduction operation, optionally along specified dimensions.<br>
- Output values are the index of the maximum value of each slice along the specified dimension
-
- @param in         Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Argmax array reduction operation, optionally along specified dimensions.
+                Output values are the index of the maximum value of each slice along the specified dimension
+            """.trimIndent()
         }
     }
 
@@ -2830,42 +2819,28 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("any") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
+        legacy = true
+        Input(NUMERIC, "x") { description = " Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Boolean or array reduction operation, optionally along specified dimensions
-
- @param name   Name of the output variable
- @param x   Input variable
- @param dimensions    Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Boolean or array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("all") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Boolean and array reduction operation, optionally along specified dimensions
-
- @param name   Name of the output variable
- @param x   Input variable
- @param dimensions    Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Boolean and array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 }
