@@ -16,7 +16,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         javaOpClass = "IMax"
         Input(NUMERIC, "in") { description = "Input variable" }
-        val keepDims = Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue = false }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue = false }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
 
         Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or\n" +
@@ -36,111 +36,41 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
-    Op("argmax") {
+    Op("argmin") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
         legacy = true
+        javaOpClass = "IMin"
         Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue = false }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or of rank (input rank) if keepdims = true" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Argmax array reduction operation, optionally along specified dimensions.
-                Output values are the index of the maximum value of each slice along the specified dimension
+                Argmin array reduction operation, optionally along specified dimensions.
+                Output values are the index of the minimum value of each slice along the specified dimension.
+                
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
             """.trimIndent()
         }
     }
 
-    Op("argmin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Argmin array reduction operation, optionally along specified dimensions.<br>
- Output values are the index of the minimum value of each slice along the specified dimension
-
- @param in         Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("argmin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Argmin array reduction operation, optionally along specified dimensions.<br>
- Output values are the index of the minimum value of each slice along the specified dimension.<br>
- <br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Name of the output variable
- @param in         Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions) if keepDims = false, or
- of rank (input rank) if keepdims = true
-     
-""".trimIndent()
-        }
-    }
-
     Op("assign") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variable x" }
+        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input variable y" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Assign/copy op: out = x.assign(y). Supports broadcasting
-
- @param name Name of the output variable
- @param x    Input variable x
- @param y    Input variable y
- @return Output variable
-     
-""".trimIndent()
+                Assign/copy op: out = x.assign(y). Supports broadcasting
+            """.trimIndent()
         }
     }
-
-    Op("assign") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Return an array with equal shape to the input, but all elements set to 'value'
-
- @param name  Name of the output variable
- @param in    Input variable
- @param value Value to set
- @return Output variable
-     
-""".trimIndent()
-        }
-    }
-
+    
     Op("concat") {
         javaPackage = namespaceJavaPackage
         Input(NUMERIC, "dimension") { description = "" }
