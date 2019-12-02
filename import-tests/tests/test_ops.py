@@ -1980,6 +1980,11 @@ def test_mathtransform():
         #{"opName": "bitcast", "outName": "bitcast/from_int64_to_float64", "varShapes": [[2]], "varTypes": ["int64"], "varInit": ["uniform_int2"], "output": tf.float64},
         #{"opName": "bitcast", "outName": "bitcast/emptyArrayTest/from_uint32_to_float64", "varShapes": [[0]], "varTypes": ["uint32"], "varInit": ["empty"], "output": tf.float64},
 
+         {"opName": "bitwise_and", "outName": "bitwise_and/rank2_int32", "varShapes":[[1,2], [1,2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
+         {"opName": "bitwise_and", "outName": "bitwise_and/rank2_int64", "varShapes": [[1, 2], [1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
+         {"opName": "bitwise_and", "outName": "bitwise_and/rank3_int32", "varShapes":[[1,1, 2], [1,1, 2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
+         {"opName": "bitwise_and", "outName": "bitwise_and/rank3_int64", "varShapes": [[1, 1, 2], [1, 1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
+
         # {"opName": "bitwise_or", "outName": "bitwise_or/rank2_int32", "varShapes":[[1,2], [1,2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
         # {"opName": "bitwise_or", "outName": "bitwise_or/rank2_int64", "varShapes": [[1, 2], [1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
         # {"opName": "bitwise_or", "outName": "bitwise_or/rank3_int32", "varShapes":[[1,1, 2], [1,1, 2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
