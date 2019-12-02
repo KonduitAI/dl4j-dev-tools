@@ -15,7 +15,9 @@ data class Op (
         val args: MutableList<Arg> = mutableListOf(),
         val constraints: MutableList<Constraint> = mutableListOf(),
         val signatures: MutableList<Signature> = mutableListOf(),
-        val doc: MutableList<DocSection> = mutableListOf()) {
+        val doc: MutableList<DocSection> = mutableListOf(),
+        val configs: MutableList<Config> = mutableListOf()
+) {
 
     override fun toString(): String {
         return "Op(opName=$opName, libnd4jOpName=$libnd4jOpName, isAbstract=$isAbstract)"
@@ -27,6 +29,7 @@ data class Op (
     fun addDoc(docs: DocSection){ doc.add(docs) }
     fun addSignature(signature: Signature){ signatures.add(signature) }
     fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
+    fun addConfig(config: Config) { configs.add(config) }
 
     /**
      * Check that all required properties are set
@@ -53,4 +56,8 @@ data class Op (
             }
         }
     }
+
+    fun Config.input(name: String) = inputs.find { it.name == name }
+    fun Config.arg(name: String) = args.find { it.name == name }
+
 }

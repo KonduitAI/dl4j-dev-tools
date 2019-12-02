@@ -57,6 +57,7 @@ interface Parameter {
     }
 }
 interface Tensor: Parameter
+
 data class Arg(
         var name: String? = null,
         var type: DataType? = null,
@@ -187,4 +188,19 @@ fun Any?.toDescriptiveString() = when(this){
     is BooleanArray -> Arrays.toString(this)
     is Array<*> -> Arrays.toString(this)
     else -> this.toString()
+}
+
+data class Config(
+        val name: String,
+        val inputs: MutableList<Input> = mutableListOf(),
+        val args: MutableList<Arg> = mutableListOf(),
+        val constraints: MutableList<Constraint> = mutableListOf()
+): Parameter {
+    override fun name(): String = name
+    override fun defaultValue(): Any? = null
+    override fun hasDefaultValue(): Boolean = false
+
+    fun addInput(input: Input) { inputs.add(input) }
+    fun addArgument(arg: Arg) { args.add(arg) }
+    fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
 }

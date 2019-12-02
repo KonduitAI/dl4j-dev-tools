@@ -21,4 +21,6 @@ class ConstructionTest {
     @Test
     fun base() { SDBaseOps() }
 
+    @Test
+    fun nn() { NN() }
 }

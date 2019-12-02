@@ -5,11 +5,10 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.api.doc.DocSection
 
 fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
-    val ns = NamespaceOps()
-    ns.name = name
-    ns.ops = mutableListOf()
+    val ns = NamespaceOps(name)
     ns.block()
 
+    ns.checkInvariants()
     return ns;
 }
 
@@ -68,6 +67,7 @@ fun NamespaceOps.Op(name: String,
         }
     }
 }
+
 
 fun Op.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null): Input {
     val input = Input()
@@ -216,4 +216,58 @@ class ConstraintBuilder {
 
     infix fun <T: Number> Reference.lte(other: T) = this lte NumberReference(other)
     infix fun Reference.lte(other: Reference) = BooleanExpression(this, other, BooleanOperation.LTE)
+}
+
+fun NamespaceOps.Config(name: String, block: (Config.() -> Unit)): Config {
+    val config = Config(name)
+    config.block()
+    this.addConfig(config)
+    return config
+}
+
+fun Config.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null): Input {
+    val input = Input()
+    input.name = name
+    input.type = dataType
+    if (block != null) input.block()
+
+    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
+        throw IllegalArgumentException("Invalid datatype for input \"$name\" of config ${this.name}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
+    }
+
+    this.addInput(input)
+    return input
+}
+
+fun Config.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null): Arg {
+    val input = Arg()
+    input.name = name
+    input.type = dataType
+    if (block != null) input.block()
+
+    this.addArgument(input)
+    return input
+}
+
+fun Config.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
+    val check = ConstraintBuilder().block()
+    val constraint = Constraint()
+    constraint.message = desc
+    constraint.check = check
+    this.addConstraint(constraint)
+    return constraint
+}
+
+fun Config.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
+    val check = ConstraintBuilder().block()
+    val constraint = BackendConstraint()
+    constraint.message = desc
+    constraint.check = check
+    this.addConstraint(constraint)
+    return constraint
+}
+
+fun Op.useConfig(config: Config): Config {
+    this.addConfig(config)
+    return config
 }

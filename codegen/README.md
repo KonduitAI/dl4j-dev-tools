@@ -267,8 +267,35 @@ principle that we want to keep Op definitions as readable as possible.
 * `isAbstract` (Boolean): Flag that makes ops abstract, i.e. they are only allowed to be inherited from. No code shall be generated for abstract Ops.
 
 
+## Config
+Only available within a namespace context
+
+    val nameConfig = Config("Name"){
+        /* input, arg, constraint properties */
+    }
+
+Every config requires a namespace unique name.
+
+A config allows to define a configuration class, that can be used as a holder for complex properties of specific ops 
+which will be passed to an op as a parameter.
+
+Similar to an op itself, it supports `Input`, `Arg` and `Constraint` definitions. 
+
+in order to use the config within an op you either use `useConfig(cfg)` or `val configRef = useConfig(cfg)`. The second
+form allows you to reference the config.
+
+Referencing the config allows to you reference its inputs and args by name: `configRef.input("name")` and 
+`configRef.arg("name")`. Also it allows you to use a config in a signature `Signature(a, b, c, configRef)`.
+
+When default and shorthand signatures are used, configs will be always placed at the end.
+
+If a config is defined but not used, an `IllegalStateException` will be thrown.
+
+See also [ADR 0007 "Configuration Objects"](adr/0007-configuration_objects.md).
+
+
 ## Input
-Only available within an op context
+Available within an op and a config context
 
     Input(FLOATING_POINT, "b"){ /* input properties in input context */ }
     val a = Input(INT, "a"){ /* input properties in input context */ }
@@ -290,7 +317,7 @@ that the count is meant to be `Exactly(1)`.
   input has to match the data type of this input. The other input may also have a default value.
 
 ## Argument
-Only available within an op context
+Available within an op and config context
 
     Arg(FLOATING_POINT, "b"){ /* Arg properties in arg context */ }
     val a = Arg(INT, "a"){ /* Arg properties in arg context */ }
@@ -317,7 +344,9 @@ Note (Java specific): If the last arg is defined to represent an array, it will 
   Arg, and that Arg may also have a default value. Default values based on outputs are treated like without a default 
   in SameDiff mode.
 * `possibleValues` (String[]): only available when ENUM data type is used for the argument. Takes a list of possible
-  values for the Enum. If used in in abstract base op, the enum will only be created once. 
+  values for the Enum. If used in in abstract base op, the enum will only be created once. See also 
+  [ADR 0006 "Op specific enums"](adr/0006-op_specific_enums.md).
+ 
 
 ## Output
 Only available within an op context
@@ -388,7 +417,7 @@ Any instances of the following values will be replaced when generating code:
 See `DocTokens` class for more details. 
 
 ## Constraints
-Only available within an op context.
+Available within an op and a config context.
 
     Constraint("Error Message if constraint isn't satisfied"){ /* constraint definition */ }
     BackendConstraint("Error Message if constraint isn't satisfied"){ /* constraint definition */ }
