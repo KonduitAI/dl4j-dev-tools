@@ -23,6 +23,9 @@ class OpCreator:
         else:
             return method()
 
+    def execute_adjust_saturation(self):
+        return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
+
     def execute_reduce_sum(self):
         return [tf.reduce_sum(self.vars[0], axis=self.op["axis"], keepdims=self.op["keepdims"])]
 
@@ -270,6 +273,10 @@ class OpCreator:
 
     def execute_avg_pooling1d(self):
         return [tf.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
+
+    def execute_max_pool_with_argmax(self):
+        return [tf.nn.max_pool_with_argmax(input = self.vars[0], ksize = self.op["ksizes"], strides = self.op["strides"],\
+                                           padding = self.op["padding"],  data_format = self.op["data_format"], output_dtype = self.op["output_dtype"])]
 
     def execute_dense(self):
         kr = self.op.get("kernel_regularizer",None)
@@ -1236,6 +1243,9 @@ class OpCreator:
     def execute_adjust_contrast_v2(self):
         return [tf.compat.v2.image.adjust_contrast(self.vars[0],self.vars[1])]
 
+    def execute_adjust_hue(self):
+        return [tf.image.adjust_hue(self.vars[0],self.op["delta"])]
+
     def execute_strings_split(self):
         print("strings.split input: ", self.vars[0])
         out = tf.strings.split(self.vars[0], sep=self.op["split"])
@@ -1255,6 +1265,9 @@ class OpCreator:
         return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_ind = self.vars[3],\
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
 
+    def execute_random_crop(self):
+        return [tf.image.random_crop(self.vars[0], self.vars[1])]
+
     def execute_draw_bounding_boxes(self):
         return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
 
@@ -1273,7 +1286,8 @@ class OpCreator:
         if("score_threshold" in self.op):
             score_threshold = self.op["score_threshold"]
 
-        return [tf.image.non_max_suppression(boxes = self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
+        return [tf.image.non_max_suppression(boxes =
+                                             self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
                                              iou_threshold=iou_threshold, score_threshold=score_threshold)]
 
     def execute_non_max_suppression_v2(self):
@@ -1306,3 +1320,21 @@ class OpCreator:
     def execute_mul(self):
         return [tf.math.mul(self.vars[0], self.vars[1])]
 
+    def execute_betainc(self):
+        return [tf.math.betainc(self.vars[0], self.vars[1], self.vars[2])]
+
+    def execute_fused_batch_norm(self):
+        return [tf.math.betainc(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
+                                data_format = self.op["data_format"], is_training = True)]
+
+    def execute_matrix_band_part(self):
+        return [tf.linalg.band_part(input = self.vars[0], num_lower = self.op["num_lower"], num_upper = self.op["num_upper"])]
+
+    def execute_toggle_bits(self):
+        return [tf.bitwise.invert(self.vars[0])]
+
+    def execute_polygamma(self):
+        return [tf.math.polygamma(self.vars[0], self.vars[1])]
+
+    def execute_roll(self):
+        return [tf.roll(self.vars[0], self.op["shift"], self.op["axis"])]
