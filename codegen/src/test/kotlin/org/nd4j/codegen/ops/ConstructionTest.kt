@@ -18,4 +18,7 @@ class ConstructionTest {
     @Test
     fun math() { Math() }
 
+    @Test
+    fun base() { SDBaseOps() }
+
 }

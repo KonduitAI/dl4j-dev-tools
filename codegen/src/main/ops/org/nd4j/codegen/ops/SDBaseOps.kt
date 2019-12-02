@@ -70,7 +70,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """.trimIndent()
         }
     }
-    
+
     Op("concat") {
         javaPackage = namespaceJavaPackage
         Input(NUMERIC, "dimension") { description = "" }
