@@ -7,23 +7,28 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 
 fun Random() = Namespace("Random") {
-
-
-    var legacyRandom = Op("legacyRandom"){
-        isAbstract = true
-        legacy = true
-        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+    val random = Mixin("random"){
         Arg(DATA_TYPE, "datatype"){ description = "Data type of the output variable"}
         Arg(LONG, "shape") { count = AtLeast(0); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
         Output(NUMERIC, "output") { description = "Tensor with the given shape where values are randomly sampled according to a %OP_NAME% distribution" }
     }
 
+    val legacyRandom = Mixin("legacyRandom"){
+        useMixin(random)
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        legacy = true
+    }
 
-    Op("bernoulli", legacyRandom) {
+    val normalRandom = Mixin("normalRandom"){
+        Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
+        Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
+        useMixin(legacyRandom)
+    }
+
+    Op("bernoulli") {
         javaOpClass = "BernoulliDistribution"
-        val p = Arg(FLOATING_POINT, "p") { description = "Probability of value 1" }
-
-        Signature(p, args.get(0), args.get(1))      //probability, datatype, shape
+        Arg(FLOATING_POINT, "p") { description = "Probability of value 1" }
+        useMixin(legacyRandom)
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -34,13 +39,12 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("binomial", legacyRandom) {
+    Op("binomial") {
         javaOpClass = "BinomialDistribution"
 
-        val n = Arg(INT, "nTrials") { description = "Number of trials parameter for the binomial distribution" }
-        val p = Arg(FLOATING_POINT, "p") { description = "Probability of success for each trial" }
-
-        Signature(n, p, args.get(0), args.get(1))      //trials, probability, datatype, shape
+        Arg(INT, "nTrials") { description = "Number of trials parameter for the binomial distribution" }
+        Arg(FLOATING_POINT, "p") { description = "Probability of success for each trial" }
+        useMixin(legacyRandom)
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -56,10 +60,7 @@ fun Random() = Namespace("Random") {
 
         val lambda = Arg(FLOATING_POINT, "lambda") { description = "lambda parameter" }
         Constraint("Must be positive") { lambda gt 0 }
-        Arg(DATA_TYPE, "datatype"){ description = "Data type of the output variable"}
-        Arg(LONG, "shape") { count = AtLeast(0); description = "Shape of the new random %INPUT_TYPE%, as a 1D array" }
-
-        AllParamSignature()
+        useMixin(random)
 
 
         Doc(Language.ANY, DocScope.ALL) {
@@ -70,13 +71,8 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("logNormal", legacyRandom) {
+    Op("logNormal", normalRandom) {
         javaOpClass = "LogNormalDistribution"
-
-        val m = Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
-        val s = Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-
-        Signature(m, s, args.get(0), args.get(1))      //mean, stddev, datatype, shape
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -86,14 +82,9 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("normal", legacyRandom) {
+    Op("normal", normalRandom) {
         javaPackage = "org.nd4j.linalg.api.ops.random.impl"
         javaOpClass = "GaussianDistribution"
-
-        val m = Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
-        val s = Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-
-        Signature(m, s, args.get(0), args.get(1))      //mean, stddev, datatype, shape
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -103,12 +94,8 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("normalTruncated", legacyRandom) {
+    Op("normalTruncated", normalRandom) {
         javaOpClass = "TruncatedNormalDistribution"
-        val m = Arg(FLOATING_POINT, "mean") { description = "Mean value for the random array" }
-        val s = Arg(FLOATING_POINT, "stddev") { description = "Standard deviation for the random array" }
-
-        Signature(m, s, args.get(0), args.get(1))      //mean, stddev, datatype, shape
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -118,13 +105,12 @@ fun Random() = Namespace("Random") {
         }
     }
 
-    Op("uniform", legacyRandom) {
+    Op("uniform") {
         javaOpClass = "UniformDistribution"
 
-        val min = Arg(FLOATING_POINT, "min") { description = "Minimum value" }
-        val max = Arg(FLOATING_POINT, "max") { description = "Maximum value." }
-
-        Signature(min, max, args.get(0), args.get(1))      //min, max, datatype, shape
+        Arg(FLOATING_POINT, "min") { description = "Minimum value" }
+        Arg(FLOATING_POINT, "max") { description = "Maximum value." }
+        useMixin(legacyRandom)
 
         Doc(Language.ANY, DocScope.ALL) {
             """

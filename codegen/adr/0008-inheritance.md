@@ -1,7 +1,9 @@
 # Inheritance 
 
 ## Status
-Proposal
+ACCEPTED
+
+Discussed by Alex Black and Paul Dubs on 29. November 2019 and 2. December 2019. 
 
 ## Context
 In many cases ops have a similar interface. For example all transform ops take a single input, but some of them take
@@ -20,7 +22,7 @@ definition of an abstract base op. The new op based on it, can copy any of the g
 own properties. This approach has the problem that we can't inherit from multiple base ops, and that we do not get any
 direct access to its fields for ease of use.
 
-# Proposal 1
+# Decision
 We introduce an explicit mixin mechanism `Mixin("name") {...}` which can define any parts of any op, but isn't an Op
 definition on its own. Mixins can be defined at top-level, thereby being usable across namespaces.
 
@@ -85,64 +87,3 @@ Namespace("math"){
 
 ### Disadvantages
 * We have to adapt our current usage
-
-
-# Proposal 2
-We extend our existing inheritance mechanism to allow multiple base ops. 
-
-We allow abstract ops to be defined at top level. 
-
-We put convenience functions on ops that allow named access to parameters.
-
-If there is a naming conflict between ops the last definition wins.
-
-
-### Example
-```kotlin
-
-Namespace("math"){
-    val indexAccum = Op("indexAccum"){
-        isAbstract = true
-        legacy = true
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        val input = Input(NUMERIC, "in") { description = "Input variable" }
-        val keepDims = Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
-        val dims = Arg(INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
-
-        Signature(input, dims)
-        AllParamSignature(withOutput = false)
-    }
-
-    Op("firstIndex", indexAccum, keepSignatures=false) {
-        var c = Arg(CONDITION, "condition") { description = "Condition to check on input variable" }
-        Signature(indexAccum.input("in"), c, indexAccum.arg("dimensions"))
-        Signature(indexAccum.input("in"), c, indexAccum.arg("keepDims"), indexAccum.arg("dimensions"))
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                First index reduction operation.
-                Returns a variable that contains the index of the first element that matches the specified condition (for each
-                slice along the specified dimensions)
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
-            """.trimIndent()
-        }
-    }
-}
-```
- 
-  
-## Consequences
-### Advantages
-* We can have multiple inheritance 
-* We can share op similarities across namespaces
-* We get explicit access to parameters defined in base ops
-* The existing usage pattern stays intact
-
-### Disadvantages
-* We don't get fine grained control over what to take from each base op 
