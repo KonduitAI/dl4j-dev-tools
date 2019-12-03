@@ -89,112 +89,83 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("cumprod") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "exclusive") { description = "" }
-        Input(NUMERIC, "reverse") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CumProd"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(BOOL, "exclusive") { description = "If true: exclude the first value" }
+        Arg(BOOL, "reverse") { description = "If true: reverse the direction of the accumulation" }
+        Arg(INT, "axis") { count = AtLeast(1); description = "Scalar axis argument for dimension to perform cumululative sum operations along" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Cumulative product operation.<br>
- For input: [ a, b, c], output is:<br>
- exclusize=false, reverse=false: [a, a*b, a*b*c]<br>
- exclusive=true, reverse=false, [0, a, a*b]<br>
- exclusive=false, reverse=true: [a*b*c, b*c, c]<br>
- exclusive=true, reverse=true: [b*c, c, 0]<br><br>
-
- @param name      Name of the output variable
- @param in        Input variable
- @param axis      Scalar axis argument for dimension to perform cumululative sum operations along
- @param exclusive If true: exclude the first value
- @param reverse   If true: reverse the direction of the accumulation
- @return Output variable
-     
-""".trimIndent()
+                Cumulative product operation.
+                For input: [ a, b, c], output is:
+                exclusize=false, reverse=false: [a, a*b, a*b*c]
+                exclusive=true, reverse=false, [0, a, a*b]
+                exclusive=false, reverse=true: [a*b*c, b*c, c]
+                exclusive=true, reverse=true: [b*c, c, 0]
+            """.trimIndent()
         }
     }
 
     Op("cumsum") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "exclusive") { description = "" }
-        Input(NUMERIC, "reverse") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CumSum"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(BOOL, "exclusive") { description = "If true: exclude the first value" }
+        Arg(BOOL,  "reverse") { description = "If true: reverse the direction of the accumulation" }
+        Arg(INT, "axis") { count = AtLeast(1); description = "Scalar axis argument for dimension to perform cumululative sum operations along" }
         Output(NUMERIC, "output"){ description = "" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Cumulative sum operation.<br>
- For input: [ a, b, c], output is:<br>
- exclusize=false, reverse=false: [a, a+b, a+b+c]<br>
- exclusive=true, reverse=false, [0, a, a+b]<br>
- exclusive=false, reverse=true: [a+b+c, b+c, c]<br>
- exclusive=true, reverse=true: [b+c, c, 0]<br><br>
-
- @param name      Name of the output variable
- @param in        Input variable
- @param axis      Scalar axis argument for dimension to perform cumululative sum operations along
- @param exclusive If true: exclude the first value
- @param reverse   If true: reverse the direction of the accumulation
- @return Output variable
-     
-""".trimIndent()
+                Cumulative sum operation.
+                For input: [ a, b, c], output is:
+                exclusize=false, reverse=false: [a, a+b, a+b+c]
+                exclusive=true, reverse=false, [0, a, a+b]
+                exclusive=false, reverse=true: [a+b+c, b+c, c]
+                exclusive=true, reverse=true: [b+c, c, 0]
+            """.trimIndent()
         }
     }
 
     Op("dot") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
+        javaOpClass = "Dot"
+        legacy = true
         Input(NUMERIC, "x") { description = "" }
         Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
+        Arg(INT, "dimensions") {count = AtLeast(1); description = "" }
 
         Output(NUMERIC, "output"){ description = "" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- TODO doc string
-
- @param name
- @param x
- @param y
- @param dimensions
- @return
-     
-""".trimIndent()
+                TODO doc string
+            """.trimIndent()
         }
     }
 
     Op("dynamicPartition") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "partitions") { description = "" }
-        Input(NUMERIC, "numPartitions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "DynamicPartition"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "partitions") { description = "1D input with values 0 to numPartitions-1" }
+        Arg(INT, "numPartitions") { description = "Number of partitions, >= 1" }
+        Output(NUMERIC, "output"){ description = "Output variables (equal in number to numPartitions)" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Dynamically partition the input variable values into the specified number of paritions, using the indices.<br>
- Example:<br>
- <pre>
- {@code input = [1,2,3,4,5]
- numPartitions = 2
- partitions = [1,0,0,1,0]
- out[0] = [2,3,5]
- out[1] = [1,4] }
- </pre>
-
- @param name          Names for the output variables. Length must be equal to numPartitions
- @param x             Input variable
- @param partitions    1D input with values 0 to numPartitions-1
- @param numPartitions Number of partitions, >= 1
- @return Output variables (equal in number to numPartitions)
-     
-""".trimIndent()
+                Dynamically partition the input variable values into the specified number of paritions, using the indices.
+                Example:
+                <pre>
+                {@code input = [1,2,3,4,5]
+                numPartitions = 2
+                partitions = [1,0,0,1,0]
+                out[0] = [2,3,5]
+                out[1] = [1,4] }
+                </pre>
+            """.trimIndent()
         }
     }
 
