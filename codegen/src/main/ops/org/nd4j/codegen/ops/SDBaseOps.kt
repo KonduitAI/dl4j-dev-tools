@@ -170,269 +170,188 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("dynamicStitch") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "DynamicStitch"
+        Input(NUMERIC, "indices") {count = AtLeast(1); description = "Indices to use when merging. Must be >= 1, same length as input variables" }
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variables." }
+        Output(NUMERIC, "output"){ description = "Merged output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Dynamically merge the specified input arrays into a single array, using the specified indices
-
- @param name    Name of the output variable
- @param indices Indices to use when merging. Must be >= 1, same length as input variables
- @param x       Input variables.
- @return Merged output variable
-     
-""".trimIndent()
+                Dynamically merge the specified input arrays into a single array, using the specified indices
+            """.trimIndent()
         }
     }
 
     Op("eq") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar.comparison"
+        javaOpClass = "ScalarEquals"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input array" }
+        Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Equals operation: elementwise x == y<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @param y    Double value argument to use in operation
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Equals operation: elementwise x == y
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("eq") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "EqualTo"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
+        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Equal to operation: elementwise x == y<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Equal to operation: elementwise x == y
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("expandDims") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "ExpandDims"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "axis") { description = "Axis to expand" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Reshape the input by adding a 1 at the specified location.<br>
- For example, if input has shape [a, b], then output shape is:<br>
- axis = 0: [1, a, b]<br>
- axis = 1: [a, 1, b]<br>
- axis = 2: [a, b, 1]<br>
-
- @param name Name of the output variable
- @param x    Input variable
- @param axis Axis to expand
- @return Output variable
- @see #squeeze(String, SDVariable, int)
-     
-""".trimIndent()
+                Reshape the input by adding a 1 at the specified location.
+                For example, if input has shape [a, b], then output shape is:
+                axis = 0: [1, a, b]
+                axis = 1: [a, 1, b]
+                axis = 2: [a, b, 1]
+            """.trimIndent()
         }
     }
 
     Op("fill") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "shape") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "Fill"
+        Input(NUMERIC, "shape") { description = "Shape: must be a 1D array/variable" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
+        Arg(NUMERIC, "value") { description = "Value to set all elements to" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Generate an output variable with the specified (dynamic) shape with all elements set to the specified value
-
- @param name  Name of the output variable
- @param shape Shape: must be a 1D array/variable
- @param value Value to set all elements to
- @return Output variable
-     
-""".trimIndent()
+                Generate an output variable with the specified (dynamic) shape with all elements set to the specified value
+            """.trimIndent()
         }
     }
 
     Op("gather") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "df") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "Gather"
+        Input(NUMERIC, "df") { description = "Input variable" }
+        Arg(INT, "indices") { count = AtLeast(1); description = "Indices to get" }
+        Arg(INT, "axis") { description = "Axis that the indices refer to" }
+        Output(NUMERIC, "output"){ description = "Output variable with slices pulled from the specified axis" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Gather slices from the input variable where the indices are specified as fixed int[] values.<br>
- Output shape is same as input shape, except for axis dimension, which has size equal to indices.length.
-
- @param name    name of the output variable
- @param df      Input variable
- @param indices Indices to get
- @param axis    Axis that the indices refer to
- @return Output variable with slices pulled from the specified axis
-     
-""".trimIndent()
+                Gather slices from the input variable where the indices are specified as fixed int[] values.<br>
+                Output shape is same as input shape, except for axis dimension, which has size equal to indices.length.
+            """.trimIndent()
         }
     }
 
     Op("gather") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "df") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "Gather"
+        Input(NUMERIC, "df") { description = "Input variable" }
+        Input(NUMERIC, "indices") { description = "Indices to get slices for. Rank 0 or 1 input" }
+        Arg(INT, "axis") { description = "Axis that the indices refer to" }
+        Output(NUMERIC, "output"){ description = "Output variable with slices pulled from the specified axis" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Gather slices from the input variable where the indices are specified as dynamic SDVariable values.<br>
- Output shape is same as input shape, except for axis dimension, which has size equal to indices.length.
-
- @param name    name of the output variable
- @param df      Input variable
- @param indices Indices to get slices for. Rank 0 or 1 input
- @param axis    Axis that the indices refer to
- @return Output variable with slices pulled from the specified axis
-     
-""".trimIndent()
+                Gather slices from the input variable where the indices are specified as dynamic SDVariable values.
+                Output shape is same as input shape, except for axis dimension, which has size equal to indices.length.
+            """.trimIndent()
         }
     }
 
     Op("gatherNd") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "df") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "GatherNd"
+        Input(NUMERIC, "df") {count = AtLeast(1); description = "" }
+        Input(NUMERIC, "indices") {count = AtLeast(1); description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- TODO doc string
-
- @param name
- @param df
- @param indices
- @return
-     
-""".trimIndent()
+                TODO doc string
+            """.trimIndent()
         }
     }
 
     Op("gt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar.comparison"
+        javaOpClass = "ScalarGreaterThan"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input array" }
+        Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Greater than operation: elementwise x > y<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @param y    Double value argument to use in operation
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Greater than operation: elementwise x > y
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("gt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "GreaterThan"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
+        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Greater than operation: elementwise x > y<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Greater than operation: elementwise x > y
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("gte") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar.comparison"
+        javaOpClass = "ScalarGreaterThanOrEqual"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input array" }
+        Arg(NUMERIC, "y") {  description = "Double value argument to use in operation" }
+        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Greater than or equals operation: elementwise x >= y<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @param y    Double value argument to use in operation
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Greater than or equals operation: elementwise x >= y
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("gte") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "GreaterThanOrEqual"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
+        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Greater than or equal to operation: elementwise x >= y<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Greater than or equal to operation: elementwise x >= y
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
