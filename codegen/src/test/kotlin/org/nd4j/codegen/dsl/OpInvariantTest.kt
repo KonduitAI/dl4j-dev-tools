@@ -652,6 +652,44 @@ class OpInvariantTest {
                 AllDefaultsSignature()
             }
         }
+    }
 
+    @Test
+    fun onlyValidParametersAreUsedInSignaturesBadCase() {
+        val thrown = assertThrows<IllegalArgumentException> {
+            val mixin = Mixin("Bar") {
+                Input(DataType.NUMERIC, "a")
+                Arg(DataType.BOOL, "b")
+            }
+
+            Namespace("math") {
+                Op("foo") {
+                    Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                    val out = Output(DataType.NUMERIC, "out")
+                    val x = Input(DataType.NUMERIC, "x")
+
+                    Signature(out, x, mixin.input("a"), mixin.arg("b"))
+                }
+            }
+        }
+        assertEquals("You can only use parameters in a signature that are actually defined in Op(opName=foo, libnd4jOpName=foo, isAbstract=false)! Did you forget to useMixin(...) a mixin?", thrown.message)
+    }
+
+    @Test
+    fun onlyValidParametersAreUsedInSignaturesGoodCase() {
+        val mixin = Mixin("Bar") {
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        Namespace("math") {
+            Op("foo", mixin) {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                val out = Output(DataType.NUMERIC, "out")
+                val x = Input(DataType.NUMERIC, "x")
+
+                Signature(out, x, mixin.input("a"), mixin.arg("b"))
+            }
+        }
     }
 }

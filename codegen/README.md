@@ -244,27 +244,57 @@ Defines a namespace.
 Only available within a namespace context
 
     Op("opName") { /* op properties in op context */ }
-    val opName = Op("opName") { /* op properties in op context */ }
-    val anotherOp = Op("anotherOp", opName) { /* op properties in op context */ }
-    Op("anotherOp2", opName, keepInputs=false) { /* op properties in op context */ }
+    Op("anotherOp", mixin) { /* op properties in op context */ }
+    Op("anotherOp2", mixin, keepInputs=false) { /* op properties in op context */ }
     
 Every op requires a namespace unique op name.
  
-When defining an op, you can assign it to a variable in order to be able to reference it later on. You might want to do
-this to inherit the properties of that op when defining another op.
+When defining an op, you can also pass a mixin that it should inherit initial properties from. This has the same effect
+as using `useMixin(mixin)` as the very first thing in the op definition. If you don't want to inherit all of the
+parameters of the mixin, you can pass the same additional configuration as you would pass to
+`useMixin(mixin, ...options..)`. See [Mixin](#mixin) for more information.
  
-Note: When using op inheritance, you will add to inputs, args, outputs, signatures and documentation. If you want to 
-replace them instead, you can set any of the following `keepInputs`, `keepArgs`, `keepOutputs`, `keepSignatures`, 
-`keepDoc`, `keepConstraints` to `false`.
- 
-Note: Op inheritance is only available within a namespace. Allowing cross-namespace inheritance would violate the 
-principle that we want to keep Op definitions as readable as possible.
-
 ### Op properties
 * `javaPackage` (String): Package where the op is to be found in the java implementation.
 * `javaOpClass` (String): Name of java op class if inconsistent with opName. Default: same as opName
 * `libnd4jName` (String): The name the op has in libnd4j. Default: same as opName
-* `isAbstract` (Boolean): Flag that makes ops abstract, i.e. they are only allowed to be inherited from. No code shall be generated for abstract Ops.
+
+
+## Mixin
+Available in global context.
+
+    val mixin = Mixin("name"){ /* op properties in op context */ }
+    // within an op context:
+    useMixin(mixin)
+    useMixin(mixin, ...options...)
+    
+    // When needing to access something from within the mixin
+    mixin.input("name")
+    mixin.arg("name")
+    mixin.config("name")
+    mixin.output("name")
+    
+Mixins provide the facility to share commonalities between Ops. You can define almost all the same things within a mixin
+that you can within an Op. The only things that *can not* be configured within a mixin are Op `name`, `libnd4jName` and
+`javaOpClass`.
+
+As mixins can be configured within the global context, you can share them across namespaces by defining them in their
+own file. If a mixin is namespace specific, you can also define it within the namespace context. 
+
+Mixins are used either on definition as a parameter `Op("opname", mixin){...}`, or with `useMixin(mixin)` within the op
+definition. While the former version only supports a single mixin, the latter version allows you to use as many mixins
+as are required. 
+
+You can also build up mixins by using `useMixin(mixin)` inside a Mixin itself.
+
+When using `useMixin(mixin)`, all definitions within the mixin are applied as if this invocation was replaced with the
+content of the mixin itself. This means, that if you have already defined anything prior to using a mixin, the mixin's
+definitions will be **after** the previously defined things. This can be very useful if the commonality between ops is
+that they have a few trailing options.
+
+`useMixin(mixin, ...options...)` supports a few additional options: `keepInputs`, `keepArgs`, `keepConfigs`, 
+`keepOutputs`, `keepSignatures`,  `keepDoc`, `keepConstraints`. They default to `true`. If you want to skip including
+some of them, you simply set the parameter for it to `false`, e.g. `useMixin(mixin, keepDoc=false)`. 
 
 
 ## Config
@@ -295,7 +325,7 @@ See also [ADR 0007 "Configuration Objects"](adr/0007-configuration_objects.md).
 
 
 ## Input
-Available within an op and a config context
+Available within an op, mixin and a config context
 
     Input(FLOATING_POINT, "b"){ /* input properties in input context */ }
     val a = Input(INT, "a"){ /* input properties in input context */ }
@@ -317,7 +347,7 @@ that the count is meant to be `Exactly(1)`.
   input has to match the data type of this input. The other input may also have a default value.
 
 ## Argument
-Available within an op and config context
+Available within an op, mixin and config context
 
     Arg(FLOATING_POINT, "b"){ /* Arg properties in arg context */ }
     val a = Arg(INT, "a"){ /* Arg properties in arg context */ }
@@ -349,7 +379,7 @@ Note (Java specific): If the last arg is defined to represent an array, it will 
  
 
 ## Output
-Only available within an op context
+Only available within an op and mixin context
 
     Output(FLOATING_POINT, "b"){ /* Arg properties in arg context */ }
 
@@ -363,7 +393,7 @@ outputs can not be used in constraints.
 
 
 ## Signature
-Only available within an op context
+Only available within an op and mixin context
 
     Signature(a,b,c)
     Signature(a,b,c) { "Some Documentation" }
@@ -391,7 +421,7 @@ satisfied, an `IllegalStateException` will be thrown on construction.
   
 
 ## Documentation
-Only available within an op context
+Only available within an op and mixin context
 
     Doc(Language.ANY, DocScope.ALL){
         """ Some documentation
@@ -417,7 +447,7 @@ Any instances of the following values will be replaced when generating code:
 See `DocTokens` class for more details. 
 
 ## Constraints
-Available within an op and a config context.
+Available within an op, mixin and a config context.
 
     Constraint("Error Message if constraint isn't satisfied"){ /* constraint definition */ }
     BackendConstraint("Error Message if constraint isn't satisfied"){ /* constraint definition */ }
