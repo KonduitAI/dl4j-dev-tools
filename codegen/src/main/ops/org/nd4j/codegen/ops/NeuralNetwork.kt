@@ -1,34 +1,14 @@
 package org.nd4j.codegen.ops
 
 import org.nd4j.codegen.api.AtLeast
+import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
-import org.nd4j.codegen.api.DataType.*
+import org.nd4j.codegen.mixins.transformStrict
 
 fun NN() = Namespace("SDNN") {
     val convPkg = "org.nd4j.linalg.api.ops.impl.layers.convolution"
-
-    val transform = Op("transform"){
-        isAbstract = true
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-    }
-
-    val transformStrict = Op("transformStrict", transform){
-        isAbstract = true
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.strict"
-    }
-
-    val scalar = Op("scalar"){
-        isAbstract = true
-        legacy = true
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "value") { description = "Scalar value for op" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-    }
 
     Op("batchNorm") {
         javaPackage = convPkg

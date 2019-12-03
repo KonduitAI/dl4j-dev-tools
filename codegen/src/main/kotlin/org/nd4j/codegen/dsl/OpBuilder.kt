@@ -9,30 +9,32 @@ fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
     ns.block()
 
     ns.checkInvariants()
-    return ns;
+    return ns
+}
+
+fun Mixin(name: String, block: Mixin.() -> Unit): Mixin {
+    return Mixin(name).apply(block)
 }
 
 fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
-    val op = Op()
-    op.opName = name
+    val op = Op(name)
     op.libnd4jOpName = name
-
 
     op.block()
 
-    if(!op.isAbstract && op.signatures.isEmpty()){
+    if (!op.isAbstract && op.signatures.isEmpty()) {
         op.AllParamSignature()
         op.AllDefaultsSignature()
     }
 
     op.checkInvariants()
 
-    this.ops!!.add(op)
+    this.ops.add(op)
     return op
 }
 
 fun NamespaceOps.Op(name: String,
-                    extends: Op,
+                    extends: Mixin,
                     keepArgs: Boolean = true,
                     keepInputs: Boolean = true,
                     keepOutputs: Boolean = true,
@@ -40,50 +42,31 @@ fun NamespaceOps.Op(name: String,
                     keepSignatures: Boolean = true,
                     keepDocs: Boolean = true,
                     block: (Op.() -> Unit)? = null): Op {
-    return this.Op(name){
-        legacy = extends.legacy
-        javaPackage = extends.javaPackage
-        if(keepArgs){
-            args.addAll(extends.args)
-        }
-        if(keepInputs){
-            inputs.addAll(extends.inputs)
-        }
-        if(keepOutputs){
-            outputs.addAll(extends.outputs)
-        }
-        if(keepConstraints){
-            constraints.addAll(extends.constraints)
-        }
-        if(keepSignatures){
-            signatures.addAll(extends.signatures)
-        }
-        if(keepDocs){
-            doc.addAll(extends.doc)
-        }
+    return this.Op(name) {
+        useMixin(extends, keepArgs = keepArgs, keepInputs = keepInputs, keepOutputs = keepOutputs, keepConstraints = keepConstraints, keepSignatures = keepSignatures, keepDocs = keepDocs)
 
-        if(block != null){
+        if (block != null) {
             this.block()
         }
     }
 }
 
 
-fun Op.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null): Input {
+fun OpLike.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null): Input {
     val input = Input()
     input.name = name
     input.type = dataType
     if (block != null) input.block()
 
-    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
-        throw IllegalArgumentException("Invalid datatype for input \"$name\" of op ${this.opName}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
+    if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
+        throw IllegalArgumentException("Invalid datatype for input \"$name\" of op ${this.name()}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
     }
 
     this.addInput(input)
     return input
 }
 
-fun Op.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null): Arg {
+fun OpLike.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null): Arg {
     val input = Arg()
     input.name = name
     input.type = dataType
@@ -93,21 +76,21 @@ fun Op.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null): A
     return input
 }
 
-fun Op.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? = null): Output {
+fun OpLike.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? = null): Output {
     val output = Output()
     output.name = name
     output.type = dataType
     if (block != null) output.block()
 
-    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
-        throw IllegalArgumentException("Invalid datatype for output \"$name\" of op ${this.opName}: output arrays cannot have type $dataType");
+    if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
+        throw IllegalArgumentException("Invalid datatype for output \"$name\" of op ${this.name()}: output arrays cannot have type $dataType");
     }
 
     this.addOutput(output)
     return output
 }
 
-fun Op.Doc(language: Language, scope: DocScope, block: DocSection.() -> String): DocSection {
+fun OpLike.Doc(language: Language, scope: DocScope, block: DocSection.() -> String): DocSection {
     val doc = DocSection().apply {
         this.language = language
         this.scope = scope
@@ -117,50 +100,53 @@ fun Op.Doc(language: Language, scope: DocScope, block: DocSection.() -> String):
     return doc
 }
 
-fun Op.AllParamSignature(withOutput: Boolean = false) {
-    val allParameters = mutableListOf<Parameter>()
-    allParameters.addAll(this.inputs!!)
-    allParameters.addAll(this.args!!)
+fun OpLike.AllParamSignature(withOutput: Boolean = false) {
+    val allParameters = allParameters()
+
     this.addSignature(Signature(allParameters))
-    if(withOutput){
-        val withOutputParams = mutableListOf<Parameter>()
-        withOutputParams.addAll(this.outputs!!)
-        withOutputParams.addAll(allParameters)
+    if (withOutput) {
+        val withOutputParams = mutableListOf<Parameter>().also {
+            it.addAll(this.outputs())
+            it.addAll(allParameters)
+        }
         this.addSignature(Signature(withOutputParams))
     }
 }
 
-fun Op.AllDefaultsSignature(withOutput: Boolean = false) {
-    val allParameters = mutableListOf<Parameter>().also{
-        it.addAll(this.inputs!!)
-        it.addAll(this.args!!)
-    }
+fun OpLike.AllDefaultsSignature(withOutput: Boolean = false) {
+    val allParameters = allParameters()
 
     if (allParameters.find { it.hasDefaultValue() } != null) {
-        val params = allParameters.filterNot{ it.hasDefaultValue() }
+        val params = allParameters.filterNot { it.hasDefaultValue() }
         this.addSignature(Signature(params))
-        if(withOutput){
-            val withOutputParams = mutableListOf<Parameter>()
-            withOutputParams.addAll(this.outputs!!)
-            withOutputParams.addAll(params)
+        if (withOutput) {
+            val withOutputParams = mutableListOf<Parameter>().also {
+                it.addAll(this.outputs())
+                it.addAll(allParameters)
+            }
             this.addSignature(Signature(withOutputParams))
         }
     }
 }
 
-fun Op.Signature(vararg params: Parameter, block: (Signature.() -> String)? = null): Signature {
-    if(params.toSet().size < params.size){
+fun OpLike.Signature(vararg params: Parameter, block: (Signature.() -> String)? = null): Signature {
+    if (params.toSet().size < params.size) {
         throw IllegalArgumentException("A parameter may not be used twice in a signature!")
     }
+    val paramsAndOutputs = allParameters() + outputs()
+    if (!paramsAndOutputs.containsAll(params.toList())) {
+        throw IllegalArgumentException("You can only use parameters in a signature that are actually defined in $this! Did you forget to useMixin(...) a mixin?")
+    }
+
     val signature = Signature(params.toList())
-    if(block != null){
+    if (block != null) {
         signature.block()
     }
     this.addSignature(signature)
     return signature
 }
 
-fun Op.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
+fun OpLike.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
     val check = ConstraintBuilder().block()
     val constraint = Constraint()
     constraint.message = desc
@@ -169,7 +155,7 @@ fun Op.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Cons
     return constraint
 }
 
-fun Op.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
+fun OpLike.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
     val check = ConstraintBuilder().block()
     val constraint = BackendConstraint()
     constraint.message = desc
@@ -187,8 +173,8 @@ class ConstraintBuilder {
     fun Input.rank() = InputRankReference(this)
     fun Input.isScalar() = this.rank() eq 0
 
-    fun some(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, {acc, cur -> acc or cur} )
-    fun all(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, {acc, cur -> acc and cur} )
+    fun some(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, { acc, cur -> acc or cur })
+    fun all(expr: BooleanExpression, vararg exprs: BooleanExpression) = exprs.fold(expr, { acc, cur -> acc and cur })
     fun not(expr: BooleanExpression) = expr eq false
 
     infix fun BooleanExpression.and(other: BooleanExpression) = BooleanExpression(this, other, BooleanOperation.AND)
@@ -201,20 +187,20 @@ class ConstraintBuilder {
 
 
     infix fun Reference.neq(other: Reference) = BooleanExpression(this, other, BooleanOperation.NEQ)
-    infix fun <T: Number> Reference.neq(other: T) = this neq NumberReference(other)
+    infix fun <T : Number> Reference.neq(other: T) = this neq NumberReference(other)
     infix fun Reference.neq(other: Boolean) = this neq BooleanReference(other)
 
     infix fun Reference.gt(other: Reference) = BooleanExpression(this, other, BooleanOperation.GT)
-    infix fun <T: Number> Reference.gt(other: T) = this gt NumberReference(other)
+    infix fun <T : Number> Reference.gt(other: T) = this gt NumberReference(other)
 
     infix fun Reference.lt(other: Reference) = BooleanExpression(this, other, BooleanOperation.LT)
-    infix fun <T: Number> Reference.lt(other: T) = this lt NumberReference(other)
+    infix fun <T : Number> Reference.lt(other: T) = this lt NumberReference(other)
 
 
-    infix fun <T: Number> Reference.gte(other: T) = this gte NumberReference(other)
+    infix fun <T : Number> Reference.gte(other: T) = this gte NumberReference(other)
     infix fun Reference.gte(other: Reference) = BooleanExpression(this, other, BooleanOperation.GTE)
 
-    infix fun <T: Number> Reference.lte(other: T) = this lte NumberReference(other)
+    infix fun <T : Number> Reference.lte(other: T) = this lte NumberReference(other)
     infix fun Reference.lte(other: Reference) = BooleanExpression(this, other, BooleanOperation.LTE)
 }
 
@@ -231,7 +217,7 @@ fun Config.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = 
     input.type = dataType
     if (block != null) input.block()
 
-    if(dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE){
+    if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
         throw IllegalArgumentException("Invalid datatype for input \"$name\" of config ${this.name}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
     }
 
@@ -267,7 +253,74 @@ fun Config.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expres
     return constraint
 }
 
-fun Op.useConfig(config: Config): Config {
+fun OpLike.useConfig(config: Config): Config {
     this.addConfig(config)
     return config
+}
+
+fun Op.useMixin(mixin: Mixin,
+                keepArgs: Boolean = true,
+                keepInputs: Boolean = true,
+                keepOutputs: Boolean = true,
+                keepConstraints: Boolean = true,
+                keepSignatures: Boolean = true,
+                keepDocs: Boolean = true,
+                keepConfigs: Boolean = true
+) {
+    legacy = mixin.legacy
+    javaPackage = mixin.javaPackage
+    if (keepArgs) {
+        args.addOrReplaceAll(mixin.args)
+    }
+    if (keepInputs) {
+        inputs.addOrReplaceAll(mixin.inputs)
+    }
+    if (keepOutputs) {
+        outputs.addOrReplaceAll(mixin.outputs)
+    }
+    if (keepConstraints) {
+        constraints.addAll(mixin.constraints)
+    }
+    if (keepSignatures) {
+        signatures.addAll(mixin.signatures)
+    }
+    if (keepDocs) {
+        doc.addAll(mixin.doc)
+    }
+    if(keepConfigs){
+        configs.addOrReplaceAll(mixin.configs)
+    }
+}
+
+fun Mixin.useMixin(mixin: Mixin,
+                   keepArgs: Boolean = true,
+                   keepInputs: Boolean = true,
+                   keepOutputs: Boolean = true,
+                   keepConstraints: Boolean = true,
+                   keepSignatures: Boolean = true,
+                   keepDocs: Boolean = true,
+                   keepConfigs: Boolean = true) {
+    legacy = mixin.legacy
+    javaPackage = mixin.javaPackage
+    if (keepArgs) {
+        args.addOrReplaceAll(mixin.args)
+    }
+    if (keepInputs) {
+        inputs.addOrReplaceAll(mixin.inputs)
+    }
+    if (keepOutputs) {
+        outputs.addOrReplaceAll(mixin.outputs)
+    }
+    if (keepConstraints) {
+        constraints.addAll(mixin.constraints)
+    }
+    if (keepSignatures) {
+        signatures.addAll(mixin.signatures)
+    }
+    if (keepDocs) {
+        doc.addAll(mixin.doc)
+    }
+    if(keepConfigs){
+        configs.addOrReplaceAll(mixin.configs)
+    }
 }

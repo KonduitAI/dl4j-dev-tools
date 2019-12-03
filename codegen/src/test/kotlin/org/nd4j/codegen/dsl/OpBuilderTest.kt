@@ -46,8 +46,7 @@ class OpBuilderTest {
 
             }
 
-            val baseArithmeticOp = Op("BaseArithmeticOp") {
-                isAbstract = true
+            val baseArithmeticOp = Mixin("BaseArithmeticOp") {
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
                 Input(NUMERIC,"x") { count = Exactly(1); description = "First operand to %OPNAME%" }
@@ -93,9 +92,6 @@ class OpBuilderTest {
                 Constraint("Compatible Shapes"){
                     sameShape(x,y)
                 }
-
-
-                // namespaces: sdbitwise, sdrandom
 
 
                 Output(NUMERIC,"z") { description = "Output" }
