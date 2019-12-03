@@ -133,7 +133,8 @@ fun OpLike.Signature(vararg params: Parameter, block: (Signature.() -> String)? 
     if (params.toSet().size < params.size) {
         throw IllegalArgumentException("A parameter may not be used twice in a signature!")
     }
-    if (!(allParameters() + outputs()).containsAll(params.toList())) {
+    val paramsAndOutputs = allParameters() + outputs()
+    if (!paramsAndOutputs.containsAll(params.toList())) {
         throw IllegalArgumentException("You can only use parameters in a signature that are actually defined in $this! Did you forget to useMixin(...) a mixin?")
     }
 
@@ -269,13 +270,13 @@ fun Op.useMixin(mixin: Mixin,
     legacy = mixin.legacy
     javaPackage = mixin.javaPackage
     if (keepArgs) {
-        args.addAll(mixin.args)
+        args.addOrReplaceAll(mixin.args)
     }
     if (keepInputs) {
-        inputs.addAll(mixin.inputs)
+        inputs.addOrReplaceAll(mixin.inputs)
     }
     if (keepOutputs) {
-        outputs.addAll(mixin.outputs)
+        outputs.addOrReplaceAll(mixin.outputs)
     }
     if (keepConstraints) {
         constraints.addAll(mixin.constraints)
@@ -287,7 +288,7 @@ fun Op.useMixin(mixin: Mixin,
         doc.addAll(mixin.doc)
     }
     if(keepConfigs){
-        configs.addAll(mixin.configs)
+        configs.addOrReplaceAll(mixin.configs)
     }
 }
 
@@ -302,13 +303,13 @@ fun Mixin.useMixin(mixin: Mixin,
     legacy = mixin.legacy
     javaPackage = mixin.javaPackage
     if (keepArgs) {
-        args.addAll(mixin.args)
+        args.addOrReplaceAll(mixin.args)
     }
     if (keepInputs) {
-        inputs.addAll(mixin.inputs)
+        inputs.addOrReplaceAll(mixin.inputs)
     }
     if (keepOutputs) {
-        outputs.addAll(mixin.outputs)
+        outputs.addOrReplaceAll(mixin.outputs)
     }
     if (keepConstraints) {
         constraints.addAll(mixin.constraints)
@@ -320,6 +321,6 @@ fun Mixin.useMixin(mixin: Mixin,
         doc.addAll(mixin.doc)
     }
     if(keepConfigs){
-        configs.addAll(mixin.configs)
+        configs.addOrReplaceAll(mixin.configs)
     }
 }

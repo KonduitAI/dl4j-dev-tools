@@ -1,10 +1,12 @@
 package org.nd4j.codegen.dsl
 
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.nd4j.codegen.api.*
 import org.nd4j.codegen.api.doc.DocScope
 import kotlin.test.assertEquals
+import kotlin.test.assertNotSame
 
 
 class OpInvariantTest {
@@ -691,5 +693,44 @@ class OpInvariantTest {
                 Signature(out, x, mixin.input("a"), mixin.arg("b"))
             }
         }
+    }
+
+    @Test
+    fun lastMixinDefinitionWins(){
+        val mixin = Mixin("Bar") {
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        Namespace("math") {
+            val op = Op("foo", mixin) {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                Output(DataType.NUMERIC, "out")
+                Input(DataType.NUMERIC, "a") { count=Exactly(1)}
+            }
+
+            assertNotSame(mixin.inputs.find { it.name == "a"}, op.inputs.find { it.name == "a"})
+        }
+
+    }
+
+    @Test
+    fun lastMixinDefinitionWins2(){
+        val mixin = Mixin("Bar") {
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        Namespace("math") {
+            val op = Op("foo") {
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                Output(DataType.NUMERIC, "out")
+                Input(DataType.NUMERIC, "a")
+                useMixin(mixin)
+            }
+
+            assertSame(mixin.inputs.find { it.name == "a"}, op.inputs.find { it.name == "a"})
+        }
+
     }
 }

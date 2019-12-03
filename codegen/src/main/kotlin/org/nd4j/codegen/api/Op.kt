@@ -55,13 +55,13 @@ data class Op (
         return "Op(opName=$opName, libnd4jOpName=$libnd4jOpName, isAbstract=$isAbstract)"
     }
 
-    override fun addInput(input: Input) { inputs.add(input) }
-    override fun addArgument(arg: Arg) { args.add(arg) }
-    override fun addOutput(output: Output) { outputs.add(output) }
+    override fun addInput(input: Input) { inputs.addOrReplace(input) }
+    override fun addArgument(arg: Arg) { args.addOrReplace(arg) }
+    override fun addOutput(output: Output) { outputs.addOrReplace(output) }
     override fun addDoc(docs: DocSection){ doc.add(docs) }
     override fun addSignature(signature: Signature){ signatures.add(signature) }
     override fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
-    override fun addConfig(config: Config) { configs.add(config) }
+    override fun addConfig(config: Config) { configs.addOrReplace(config) }
 
     /**
      * Check that all required properties are set
@@ -113,13 +113,13 @@ data class Mixin (
         return "Mixin($name)"
     }
 
-    override fun addInput(input: Input) { inputs.add(input) }
-    override fun addArgument(arg: Arg) { args.add(arg) }
-    override fun addOutput(output: Output) { outputs.add(output) }
+    override fun addInput(input: Input) { inputs.addOrReplace(input) }
+    override fun addArgument(arg: Arg) { args.addOrReplace(arg) }
+    override fun addOutput(output: Output) { outputs.addOrReplace(output) }
     override fun addDoc(docs: DocSection){ doc.add(docs) }
     override fun addSignature(signature: Signature){ signatures.add(signature) }
     override fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
-    override fun addConfig(config: Config) { configs.add(config) }
+    override fun addConfig(config: Config) { configs.addOrReplace(config) }
 
 
     /**
@@ -142,5 +142,20 @@ data class Mixin (
                 throw IllegalStateException("$this: $it does not cover all parameters! Missing: ${notCovered.joinToString(", ") { it.name() }}")
             }
         }
+    }
+}
+
+fun <T: Parameter> MutableList<T>.addOrReplaceAll(params: List<T>){
+    params.forEach {
+        this.addOrReplace(it)
+    }
+}
+
+fun <T: Parameter> MutableList<T>.addOrReplace(param: T){
+    val found = this.find { it.name() == param.name() }
+    if(found != null){
+        this.replaceAll { if(it.name() == param.name()){ param } else { it } }
+    }else{
+        this.add(param)
     }
 }

@@ -274,9 +274,12 @@ Available in global context.
     mixin.config("name")
     mixin.output("name")
     
-Mixins provide the facility to share commonalities between Ops. You can define almost all the same things within a mixin
-that you can within an Op. The only things that *can not* be configured within a mixin are Op `name`, `libnd4jName` and
-`javaOpClass`.
+Mixins provide the facility to share commonalities between Ops. You can think of it like inheritance, especially when
+you declare the use of a mixin on Op definition. In contrast to normal (single) inheritance where only a single super
+class is possible, the mixin mechanism allows to "inherit" from multiple sources. 
+ 
+You can define almost all the same things within a mixin that you can within an Op. The only things that *can not* be
+configured within a mixin are Op `name`, `libnd4jName` and `javaOpClass`.
 
 As mixins can be configured within the global context, you can share them across namespaces by defining them in their
 own file. If a mixin is namespace specific, you can also define it within the namespace context. 
@@ -287,15 +290,61 @@ as are required.
 
 You can also build up mixins by using `useMixin(mixin)` inside a Mixin itself.
 
-When using `useMixin(mixin)`, all definitions within the mixin are applied as if this invocation was replaced with the
-content of the mixin itself. This means, that if you have already defined anything prior to using a mixin, the mixin's
-definitions will be **after** the previously defined things. This can be very useful if the commonality between ops is
-that they have a few trailing options.
-
 `useMixin(mixin, ...options...)` supports a few additional options: `keepInputs`, `keepArgs`, `keepConfigs`, 
 `keepOutputs`, `keepSignatures`,  `keepDoc`, `keepConstraints`. They default to `true`. If you want to skip including
 some of them, you simply set the parameter for it to `false`, e.g. `useMixin(mixin, keepDoc=false)`. 
 
+When using `useMixin(mixin)`, all definitions within the mixin are applied as if this invocation was replaced with the
+content of the mixin itself. This means, that if you have already defined anything prior to using a mixin, the mixin's
+definitions will be **after** the previously defined things. This can be very useful if the commonality  between ops is 
+that they have a few trailing options.
+                                                              
+If a named property or section is defined in both a mixin (or multiple mixins) and the op, then the **last** to define it will
+win. Named properties are `legacy`, `javaPackage`, named sections are `Input`, `Arg`, `Output`, `Config`.
+
+For example, assume you have `javaPackage` defined in both an op and a mixin. Then you can have the following two
+cases:
+
+First case:
+```kotlin
+    Op("foo"){
+        useMixin(exampleMixin)
+        javaPackage = "some.example.package"
+    }
+``` 
+
+Second case:
+```kotlin
+    Op("foo"){
+        javaPackage = "some.example.package"
+        useMixin(exampleMixin)
+    }
+``` 
+
+In the first case, the op will have the `javaPackage` value that is defined within the op. In the second case it will 
+have the `javaPackage` value defined in the mixin.
+
+For inputs, args, outputs, it works similarly. Assume you have `Input(dataType, "a")` defined in both the mixin and the
+op. Again you can have two cases:
+
+First case:
+```kotlin
+    Op("foo"){
+        useMixin(exampleMixin)
+        Input(NUMERIC, "a")
+    }
+``` 
+
+Second case:
+```kotlin
+    Op("foo"){
+        Input(NUMERIC, "a")
+        useMixin(exampleMixin)
+    }
+``` 
+
+In the first case, it will overwrite the input from the mixin. In the second case, the mixin will overwrite that the
+input from the op.
 
 ## Config
 Only available within a namespace context
