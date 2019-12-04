@@ -356,217 +356,132 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("identity") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.same"
+        Input(NUMERIC, "input") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Elementwise identity operation: out = x
-
- @param name  name of the output variable
- @param input Input variable
- @return Output variable
-     
-""".trimIndent()
+                Elementwise identity operation: out = x
+            """.trimIndent()
         }
     }
 
     Op("invertPermutation") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "input") { count = AtLeast(1); description = "1D indices for permutation" }
+        Output(NUMERIC, "output"){ description = "1D inverted permutation" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Compute the inverse permutation indices for a permutation operation<br>
- Example: if input is [2, 0, 1] then output is [1, 2, 0]<br>
- The idea is that x.permute(input).permute(invertPermutation(input)) == x
-
- @param name  name of the output variable
- @param input 1D indices for permutation
- @return 1D inverted permutation
-     
-""".trimIndent()
+                Compute the inverse permutation indices for a permutation operation
+                Example: if input is [2, 0, 1] then output is [1, 2, 0]
+                The idea is that x.permute(input).permute(invertPermutation(input)) == x
+            """.trimIndent()
         }
     }
 
     Op("isNumericTensor") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Scalar variable with value 1" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Is the director a numeric tensor? In the current version of ND4J/SameDiff, this always returns true/1
-
- @param name Output variable name
- @param x    Input variable
- @return Scalar variable with value 1
-     
-""".trimIndent()
+                Is the director a numeric tensor? In the current version of ND4J/SameDiff, this always returns true/1
+            """.trimIndent()
         }
     }
 
     Op("linspace") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "dataType") { description = "" }
-        Input(NUMERIC, "start") { description = "" }
-        Input(NUMERIC, "stop") { description = "" }
-        Input(NUMERIC, "number") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Create a new 1d array with values evenly spaced between values 'start' and 'stop'
- For example, linspace(start=3.0, stop=4.0, number=3) will generate [3.0, 3.5, 4.0]
-
- @param name     Name of the new variable
- @param dataType Data type of the output array
- @param start    Start value
- @param stop     Stop value
- @param number   Number of values to generate
- @return SDVariable with linearly spaced elements
-     
-""".trimIndent()
-        }
-    }
-
-    Op("linspace") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "from") { description = "" }
-        Input(NUMERIC, "to") { description = "" }
-        Input(NUMERIC, "length") { description = "" }
-        Input(NUMERIC, "dt") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Arg(DATA_TYPE, "dataType") { description = "Data type of the output array" }
+        Arg(NUMERIC, "start") { description = "Start value" }
+        Arg(NUMERIC, "stop") { description = "Stop value" }
+        Arg(NUMERIC, "number") { description = "Number of values to generate" }
+        Output(NUMERIC, "output"){ description = "SDVariable with linearly spaced elements" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Create a new 1d array with values evenly spaced between values 'start' and 'stop'
- For example, linspace(start=3.0, stop=4.0, number=3) will generate [3.0, 3.5, 4.0]
-
- @param name   Name of the new variable
- @param from   Start value
- @param to     Stop value
- @param length Number of values to generate
- @param dt     Data type of the output array
- @return SDVariable with linearly spaced elements
-     
-""".trimIndent()
+                Create a new 1d array with values evenly spaced between values 'start' and 'stop'
+                For example, linspace(start=3.0, stop=4.0, number=3) will generate [3.0, 3.5, 4.0
+            """.trimIndent()
         }
     }
 
     Op("lt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar.comparison"
+        javaOpClass = "ScalarLessThan"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input array" }
+        Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Less than operation: elementwise x < y<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @param y    Double value argument to use in operation
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Less than operation: elementwise x < y<br>
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("lt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "LessThan"
+        Input(NUMERIC, "x") {count = AtLeast(1); description = "Input 1" }
+        Input(NUMERIC, "y") {count = AtLeast(1); description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
-            """
- Less than operation: elementwise x < y<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+            """ 
+                Less than operation: elementwise x < y
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("lte") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar.comparison"
+        javaOpClass = "ScalarLessThanOrEqual"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input array" }
+        Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Less than or equals operation: elementwise x <= y<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @param y    Double value argument to use in operation
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Less than or equals operation: elementwise x <= y
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("lte") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "LessThanOrEqual"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
+        Input(NUMERIC, "y") { count = AtLeast(1);description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
-            """
- Less than or equal to operation: elementwise x <= y<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+            """ 
+                Less than or equal to operation: elementwise x <= y
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("matchCondition") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+        javaOpClass = "MatchConditionTransform"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input" }
+        Arg(CONDITION, "condition") { description = "Condition" }
+        Output(NUMERIC, "output"){ description = "Boolean mask" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns a boolean mask of equal shape to the input, where the condition is satisfied - value 1 where satisfied, 0 otherwise
-
- @param in        Input
- @param condition Condition
- @return Boolean mask
-     
-""".trimIndent()
+                Returns a boolean mask of equal shape to the input, where the condition is satisfied - value 1 where satisfied, 0 otherwise
+            """.trimIndent()
         }
     }
 
