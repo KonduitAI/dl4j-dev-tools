@@ -486,281 +486,189 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("matchConditionCount") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
+        javaOpClass = "MatchCondition"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input" }
+        Arg(CONDITION, "condition") { description = "Condition" }
+        Output(NUMERIC, "output"){ description = "Number of elements that the condition is satisfied for" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns a count of the number of elements that satisfy the condition
-
- @param name      Name of the output variable
- @param in        Input
- @param condition Condition
- @return Number of elements that the condition is satisfied for
-     
-""".trimIndent()
+                Returns a count of the number of elements that satisfy the condition
+            """.trimIndent()
         }
     }
 
     Op("matchConditionCount") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-        Input(NUMERIC, "keepDim") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
+        javaOpClass = "MatchCondition"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(CONDITION, "condition") { description = "Condition" }
+        Arg(BOOL, "keepDim") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") {count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Number of elements that the condition is satisfied for" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns a count of the number of elements that satisfy the condition (for each slice along the specified dimensions)<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Name of the output variable
- @param in         Input variable
- @param condition  Condition
- @param keepDim    If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Number of elements that the condition is satisfied for
-     
-""".trimIndent()
+                Returns a count of the number of elements that satisfy the condition (for each slice along the specified dimensions)
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]<br>
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("max") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") {count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Max array reduction operation, optionally along specified dimensions
-
- @param name       Output variable name
- @param x          Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Max array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("max") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Max array reduction operation, optionally along specified dimensions<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Max array reduction operation, optionally along specified dimensions
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("max") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "first") { description = "" }
-        Input(NUMERIC, "second") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "first") { description = "First input array" }
+        Input(NUMERIC, "second") { description = "Second input array" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise maximum operation: out[i] = max(first[i], second[i])<br>
- Supports broadcasting
-
- @param name   Name of the output variable
- @param first  First input array
- @param second Second input array
- @return Output variable
-     
-""".trimIndent()
+                Element-wise maximum operation: out[i] = max(first[i], second[i])
+                Supports broadcasting
+            """.trimIndent()
         }
     }
 
     Op("mean") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1);  description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Mean (average) array reduction operation, optionally along specified dimensions
-
- @param name      Output variable name
- @param x         Input variable
- @param dimension Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Mean (average) array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("mean") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Mean (average) array reduction operation, optionally along specified dimensions<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name      Output variable name
- @param x         Input variable
- @param keepDims  If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimension Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Mean (average) array reduction operation, optionally along specified dimensions
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("min") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Minimum array reduction operation, optionally along specified dimensions. out = min(in)
-
- @param name       Output variable name
- @param x          Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Minimum array reduction operation, optionally along specified dimensions. out = min(in)
+            """.trimIndent()
         }
     }
 
     Op("min") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Minimum array reduction operation, optionally along specified dimensions. out = min(in)<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Minimum array reduction operation, optionally along specified dimensions. out = min(in)
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("min") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "first") { description = "" }
-        Input(NUMERIC, "second") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "first") { description = "First input array" }
+        Input(NUMERIC, "second") { description = "Second input array" }
+        Output(NUMERIC, "output"){ description = "Second input array" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise minimum operation: out[i] = min(first[i], second[i])<br>
- Supports broadcasting
-
- @param name   Name of the output variable
- @param first  First input array
- @param second Second input array
- @return Output variable
-     
-""".trimIndent()
+                Element-wise minimum operation: out[i] = min(first[i], second[i])
+                Supports broadcasting
+            """.trimIndent()
         }
     }
 
     Op("mmul") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "transpose") { description = "" }
-
+        Input(NUMERIC, "x") { description = "First input variable" }
+        Input(NUMERIC, "y") { description = "Second input variable" }
+        Input(NUMERIC, "transpose") { description = "Transpose arguments" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Matrix multiplication: out = mmul(x,y)<br>
- Supports specifying a {@link MMulTranspose} argument to perform operation such as mmul(a^T, b), etc.
-
- @param name      Output variable name
- @param x         First input variable
- @param y         Second input variable
- @param transpose Transpose arguments
- @return Output variable
-     
-""".trimIndent()
+                Matrix multiplication: out = mmul(x,y)
+                Supports specifying a {@link MMulTranspose} argument to perform operation such as mmul(a^T, b), etc.
+            """.trimIndent()
         }
     }
 
     Op("mmul") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
+        Input(NUMERIC, "x") { description = "First input variable" }
+        Input(NUMERIC, "y") { description = "Second input variable" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Matrix multiplication: out = mmul(x,y)
-
- @param name Output variable name
- @param x    First input variable
- @param y    Second input variable
- @return Output variable
-     
-""".trimIndent()
+                Matrix multiplication: out = mmul(x,y)
+            """.trimIndent()
         }
     }
 
