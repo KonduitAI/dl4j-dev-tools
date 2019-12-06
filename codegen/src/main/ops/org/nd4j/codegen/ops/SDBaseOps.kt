@@ -647,10 +647,10 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("mmul") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "x") { description = "First input variable" }
         Input(NUMERIC, "y") { description = "Second input variable" }
-        Input(NUMERIC, "transpose") { description = "Transpose arguments" }
+        Input(NUMERIC, "transpose") { description = "Transpose arguments" } //TODO: MMulTranspose argument.
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -661,7 +661,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("mmul") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "x") { description = "First input variable" }
         Input(NUMERIC, "y") { description = "Second input variable" }
         Output(NUMERIC, "output"){ description = "" }
@@ -673,265 +673,191 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("neq") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar.comparison"
+        javaOpClass = "ScalarNotEquals"
+        legacy = true
+        Input(NUMERIC, "x") {  description = "Input array" }
+        Arg(NUMERIC, "y") {  description = "Double value argument to use in operation" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Not equals operation: elementwise x != y<br>
- Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
- value 0 otherwise
-
- @param name Name of the output variable
- @param x    Input array
- @param y    Double value argument to use in operation
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Not equals operation: elementwise x != y
+                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
+                value 0 otherwise
+            """.trimIndent()
         }
     }
 
     Op("neq") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "NotEqualTo"
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
+        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Not equal to operation: elementwise x != y<br>
- If x and y arrays have equal shape, the output shape is the same as these inputs.<br>
- Note: supports broadcasting if x and y have different shapes and are broadcastable.<br>
- Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
-
- @param name Name of the output variable
- @param x    Input 1
- @param y    Input 2
- @return Output SDVariable with values 0 and 1 based on where the condition is satisfied
-     
-""".trimIndent()
+                Not equal to operation: elementwise x != y
+                If x and y arrays have equal shape, the output shape is the same as these inputs.
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
+            """.trimIndent()
         }
     }
 
     Op("norm1") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "dimensions dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Norm1 (L1 norm) reduction operation: The output contains the L1 norm for each tensor/subset along the specified dimensions:<br>
- out = sum_i abs(x[i])
-
- @param name       Output variable name
- @param x          Input variable
- @param dimensions dimensions to reduce over
- @return Output variable
-     
-""".trimIndent()
+                Norm1 (L1 norm) reduction operation: The output contains the L1 norm for each tensor/subset along the specified dimensions:
+                out = sum_i abs(x[i])
+            """.trimIndent()
         }
     }
 
     Op("norm1") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1);  description = "dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Norm1 (L1 norm) reduction operation: The output contains the L1 norm for each tensor/subset along the specified dimensions:<br>
- out = sum_i abs(x[i])<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions dimensions to reduce over
- @return Output variable
-     
-""".trimIndent()
+                Norm1 (L1 norm) reduction operation: The output contains the L1 norm for each tensor/subset along the specified dimensions: 
+                out = sum_i abs(x[i])
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting 
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("norm2") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "dimensions") { description = "dimensions dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Norm2 (L2 norm) reduction operation: The output contains the L2 norm for each tensor/subset along the specified dimensions:<br>
- out = sqrt(sum_i x[i]^2)
-
- @param name       Output variable name
- @param x          Input variable
- @param dimensions dimensions to reduce over
- @return Output variable
-     
-""".trimIndent()
+                Norm2 (L2 norm) reduction operation: The output contains the L2 norm for each tensor/subset along the specified dimensions: 
+                out = sqrt(sum_i x[i]^2)
+            """.trimIndent()
         }
     }
 
     Op("norm2") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "dimensions dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Norm2 (L2 norm) reduction operation: The output contains the L2 norm for each tensor/subset along the specified dimensions:<br>
- out = sqrt(sum_i x[i]^2)<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions dimensions to reduce over
- @return Output variable
-     
-""".trimIndent()
+                Norm2 (L2 norm) reduction operation: The output contains the L2 norm for each tensor/subset along the specified dimensions:
+                out = sqrt(sum_i x[i]^2)
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("normmax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        javaOpClass = "NormMax"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Max norm (infinity norm) reduction operation: The output contains the max norm for each tensor/subset along the
- specified dimensions
-
- @param name       Output variable name
- @param x          Input variable
- @param dimensions dimensions to reduce over
- @return Output variable
-     
-""".trimIndent()
+                Max norm (infinity norm) reduction operation: The output contains the max norm for each tensor/subset along the
+                specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("normmax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        javaOpClass = "NormMax"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "dimensions to reduce over" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Max norm (infinity norm) reduction operation: The output contains the max norm for each tensor/subset along the
- specified dimensions:<br>
- out = max(abs(x[i]))<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions dimensions to reduce over
- @return Output variable
-     
-""".trimIndent()
+                Max norm (infinity norm) reduction operation: The output contains the max norm for each tensor/subset along the
+                specified dimensions:
+                out = max(abs(x[i]))
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("oneHot") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "depth") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-        Input(NUMERIC, "on") { description = "" }
-        Input(NUMERIC, "off") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "indices") { description = "Indices - value 0 to depth-1" }
+        Arg(INT, "depth") { description = "Number of classes" }
+        Arg(INT, "axis") { description = "" }
+        Arg(NUMERIC, "on") { description = "" }
+        Arg(NUMERIC, "off") { description = "" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Convert the array to a one-hot array with walues {@code on} and {@code off} for each entry<br>
- If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
- with {@code out[i, ..., j, in[i,...,j]] = on} with other values being set to {@code off}
-
- @param name    Output variable name
- @param indices Indices - value 0 to depth-1
- @param depth   Number of classes
- @return Output variable
-     
-""".trimIndent()
+                Convert the array to a one-hot array with walues {@code on} and {@code off} for each entry
+                If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
+                with {@code out[i, ..., j, in[i,...,j]] = on} with other values being set to {@code off}
+            """.trimIndent()
         }
     }
 
     Op("oneHot") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "depth") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-        Input(NUMERIC, "on") { description = "" }
-        Input(NUMERIC, "off") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
+        Arg(INT, "depth") { description = "" }
+        Arg(INT, "axis") { description = "" }
+        Arg(NUMERIC, "on") { description = "" }
+        Arg(NUMERIC, "off") { description = "" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #oneHot(String, SDVariable, int, int, double, double)} but allows configuring the output datatype
-     
-""".trimIndent()
+                As per {@link #oneHot(String, SDVariable, int, int, double, double)} but allows configuring the output datatype
+            """.trimIndent()
         }
     }
 
     Op("oneHot") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "depth") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "indices") { description = "Indices - value 0 to depth-1" }
+        Arg(INT, "depth") { description = "Number of classes" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Convert the array to a one-hot array with walues 0 and 1 for each entry<br>
- If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
- with out[i, ..., j, in[i,...,j]] = 1 with other values being set to 0
-
- @param name    Output variable name
- @param indices Indices - value 0 to depth-1
- @param depth   Number of classes
- @return Output variable
- @see #oneHot(SDVariable, int, int, double, double)
-     
-""".trimIndent()
+                Convert the array to a one-hot array with walues 0 and 1 for each entry
+                If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
+                with out[i, ..., j, in[i,...,j]] = 1 with other values being set to 0
+                @see #oneHot(SDVariable, int, int, double, double)
+            """.trimIndent()
         }
     }
 
