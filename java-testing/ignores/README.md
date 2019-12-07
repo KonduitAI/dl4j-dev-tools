@@ -5,15 +5,24 @@ For dl4j:
 ```
 ./summarize-ignores deeplearning4j results
 ```
-
 This will write two files into results/deeplearning4j:
-ignored_classes.csv
-ignored_methods.csv
 
-Both files can be opened up to be viewed in excel/numbers
+ ignored_classes.csv
 
-Sample information from files:
+ ignored_methods.csv
 
+*_classes contains the list of test classes with a @Ignore for the whole class with other pertinent information. Refer sample first three lines below.
+*_methods lists the methods ignored along with other pertinent information. Refer sample first three lines below.
+Note the csv includes the string inside @Ignore("XX") if present
+
+To run other projects repeat as follows:
+./summarize-ignores nd4j results
+#./summarize-ignores deeplearning4j results
+./summarize-ignores datavec results
+./summarize-ignores arbiter results
+
+
+Both files can be opened up to be viewed in excel/numbers. Sample information from files:
 ```
 head -3 java-testing/ignores/results/nd4j/ignored_classes.csv 
 IGNORED/ALL IGNORED: PROJECT, PACKAGE NAME, TEST CLASS, TEST METHOD, IGNORED COMMENT, LOCAL PATH TO TEST CLASS
