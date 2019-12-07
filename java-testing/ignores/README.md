@@ -1,4 +1,4 @@
-# How to generate a .csv file with information on the ignored tests in the various projects
+# Generate a .csv file with information on the ignored tests in the various projects
 
 
 For dl4j:
