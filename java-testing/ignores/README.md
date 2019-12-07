@@ -11,9 +11,11 @@ This will write two files into results/deeplearning4j:
 
  ignored_methods.csv
 
-*_classes contains the list of test classes with a @Ignore for the whole class with other pertinent information. Refer sample first three lines below.
-*_methods lists the methods ignored along with other pertinent information. Refer sample first three lines below.
-Note the csv includes the string inside @Ignore("XX") if present
+*_classes contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
+
+*_methods lists the methods ignored along with other pertinent information.
+
+Refer sample first three lines below. Note the csv includes the string inside @Ignore("XX") if present
 
 To run other projects repeat as follows:
 ./summarize-ignores nd4j results
