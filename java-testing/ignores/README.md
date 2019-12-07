@@ -4,6 +4,10 @@
 For dl4j:
 ```
 ./summarize-ignores deeplearning4j results
+Ignored methods count: 6 results/deeplearning4j/ignored_classes.csv
+Ignored methods information  written to results/deeplearning4j/ignored_methods.csv
+Ignored classes count: 22 results/deeplearning4j/ignored_methods.csv
+Ignored classes information written to results/deeplearning4j/ignored_methods.csv
 ```
 This will write two files into results/deeplearning4j:
 
