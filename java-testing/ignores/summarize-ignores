@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+
+mkdir -p $2/$1
+./parse-for-ignores $1 > /tmp/o && cat /tmp/o | grep "ALL IGNORED" > $2/$1/ignored_classes.csv 
+cat /tmp/o | grep ^IGNORE > $2/$1/ignored_methods.csv
+
+echo Ignored methods count:`wc -l $2/$1/ignored_classes.csv`
+echo "Ignored methods information  written to $2/$1/ignored_methods.csv"
+echo Ignored classes count:`wc -l $2/$1/ignored_methods.csv`
+echo "Ignored classes information written to $2/$1/ignored_methods.csv"
+
