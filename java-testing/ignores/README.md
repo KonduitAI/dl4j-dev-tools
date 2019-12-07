@@ -9,11 +9,8 @@ Ignored methods information  written to results/deeplearning4j/ignored_methods.c
 Ignored classes count: 22 results/deeplearning4j/ignored_methods.csv
 Ignored classes information written to results/deeplearning4j/ignored_methods.csv
 ```
-This will write two files into results/deeplearning4j:
-
  ignored_classes.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
  ignored_methods.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
-
 
 Refer sample first three lines below. Note the csv includes the string inside @Ignore("XX") if present
 
