@@ -15,10 +15,12 @@ Ignored classes information written to results/deeplearning4j/ignored_methods.cs
 Refer sample first three lines below. Note the csv includes the string inside @Ignore("XX") if present
 
 To run other projects repeat as follows:
+```
 ./summarize-ignores nd4j results
 #./summarize-ignores deeplearning4j results
 ./summarize-ignores datavec results
 ./summarize-ignores arbiter results
+```
 
 
 Both files can be opened up to be viewed in excel/numbers. Sample information from files:
