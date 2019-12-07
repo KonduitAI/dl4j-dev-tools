@@ -862,85 +862,51 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("onesLike") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { count = AtLeast(1); description = "Input SDVariable" }
+        Output(NUMERIC, "output"){ description = "A new SDVariable with the same (dynamic) shape as the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Return a variable of all 1s, with the same shape as the input variable. Note that this is dynamic:
- if the input shape changes in later execution, the returned variable's shape will also be updated
-
- @param name  Name of the new SDVariable
- @param input Input SDVariable
- @return A new SDVariable with the same (dynamic) shape as the input
-     
-""".trimIndent()
+                Return a variable of all 1s, with the same shape as the input variable. Note that this is dynamic:
+                if the input shape changes in later execution, the returned variable's shape will also be updated
+            """.trimIndent()
         }
     }
 
     Op("onesLike") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { count = AtLeast(1); description = "" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #onesLike(String, SDVariable)} but the output datatype may be specified
-     
-""".trimIndent()
+                As per {@link #onesLike(String, SDVariable)} but the output datatype may be specified
+            """.trimIndent()
         }
     }
 
     Op("parallel_stack") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "values") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "ParallelStack"
+        Input(NUMERIC, "values") { count = AtLeast(1); description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #stack(String, int, SDVariable...)
-     
-""".trimIndent()
+                @see #stack(String, int, SDVariable...)
+            """.trimIndent()
         }
     }
 
     Op("permute") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "" }
+        Output(NUMERIC, "output"){ description = "Output variable (permuted input)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Array permutation operation: permute the dimensions according to the specified permutation indices.<br>
- Example: if input has shape [a,b,c] and dimensions = [2,0,1] the output has shape [c,a,b]
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable (permuted input)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("permute") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- As per {@link #permute(String, SDVariable, int...)} but with SDVariable permute dimension
-     
-""".trimIndent()
+                Array permutation operation: permute the dimensions according to the specified permutation indices.
+                Example: if input has shape [a,b,c] and dimensions = [2,0,1] the output has shape [c,a,b]
+            """.trimIndent()
         }
     }
 
