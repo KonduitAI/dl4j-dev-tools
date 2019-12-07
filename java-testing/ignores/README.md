@@ -7,13 +7,10 @@ For dl4j:
 ```
 This will write two files into results/deeplearning4j:
 
- ignored_classes.csv
+ ignored_classes.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
 
- ignored_methods.csv
+ ignored_methods.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
 
-*_classes contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
-
-*_methods lists the methods ignored along with other pertinent information.
 
 Refer sample first three lines below. Note the csv includes the string inside @Ignore("XX") if present
 
