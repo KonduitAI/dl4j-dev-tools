@@ -1,62 +1,133 @@
 #!/usr/bin/env bash
+#
+# Finds ignored test classes and test methods in the given project directory
+#
+#	Arguments:
+#		1) directory to run checks in relative to dl4j repo, checks files under
+#			src/test
+#
+#	Usage examples: ./parse-for-ignores nd4j
+#				    ./parse-for-ignores datavec/datavec-spark
+#
+#   Globals:
+#		PROJECT_DIR
+#		LIST_OF_TEST_DIRS
+###############################################################################
 
 set -o errexit
 set -o pipefail
 
-function ignorealltests {
-	cat $1 | perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' | perl -pe 's/\n/\g/' | perl -pe 's/\@Ignore(\((\".*?\")\))*.*?public\s+class\s+(\S+)/\nIGNORED ALL TESTS *,$2\n/g' | grep IGNORED | perl -pe 's/IGNORED ALL TESTS //g'
+
+###############################################################################
+# Checks if supplied test class is ingored in entirety
+# Captures comment inside @Ignore(...) if present
+# Arguments:
+#   1) Java test file name
+###############################################################################
+ignored_all() {
+  cat $1 \
+    | perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' \
+    | perl -pe 's/\n/\g/' \
+    | perl -pe \
+        's/\@Ignore(\((\".*?\")\))*.*?public\s+class\s+(\S+)/\nFLAG,$2\n/g' \
+    | grep ^FLAG \
+    | perl -pe 's/FLAG/*/g'
 }
 
-function ignoredtests {
-	cat $1 | perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' | perl -pe 's/\n/\g/' | perl -pe 's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nIGNORED TEST $3,$2\n/g' | grep IGNORED | perl -pe 's/IGNORED TEST //g'
+###############################################################################
+# Finds ignored tests in given test file
+# Captures comment inside @Ignore(...) if present
+# Arguments:
+#   1) Java test file name
+###############################################################################
+ignored_tests() {
+  cat $1 \
+    | perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' \
+    | perl -pe 's/\n/\g/' \
+    | perl -pe \
+        's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nFLAG$3,$2\n/g' \
+    | grep ^FLAG \
+    | perl -pe 's/FLAG//g'\
 }
 
-if [ -z $LIBND4J_HOME ]; then
-    echo "ERROR: LIBND4J_HOME is either unset or set to a non-empty string. Set LIBND4J_HOME and rerun.Exiting script..." 1>&2
-	exit 13
-fi
+###############################################################################
+# Parse every java file under any src/test and collect information on tests 
+# Arguments:
+#  None
+###############################################################################
+parse_test_dirs() {
+  
+  echo "IGNORED/ALL IGNORED:PROJECT,\
+						    PACKAGE NAME, TEST CLASS, TEST METHOD, \
+							IGNORED COMMENT, LOCAL PATH TO TEST CLASS"
 
-DL4JBASEDIR=`dirname $LIBND4J_HOME`
-echo -e "\nFound DL4J base dir: $DL4JBASEDIR"
+  for test_dir in "${LIST_OF_TEST_DIRS[@]}"; do
+	echo -e "\nRunning in subdir $test_dir..."
+   
+	#Java files under test directory
+    list_of_test_files=$(find $test_dir -type f -name *.java)
+    for test_file in "${list_of_test_files[@]}"; do
+      echo -e "\tChecking test file $test_file..."
+	  test_file_name=$(basename $test_file)
+      test_class=${test_file_name%java}
+      package_name=$(grep -e "^\s*package" $test_file \
+					  | awk '{print $2}' \
+					  | tr -d ';')
+      #Check if entire test class is ignored, if ignored continue to next 
+      all_ignored=$(ignored_all "$test_file") || true
+      if [ -n "$all_ignored" ]; then
+        echo "ALL IGNORED:$PROJECT_DIR,\
+						  $package_name, $test_class, $all_ignored, $test_file"
+        continue
+      fi
+      #Check for ignored tests in test class
+      tests_ignored=$(ignored_tests "$test_file") || true
+      if [ -n "$tests_ignored" ]; then       
+        while read -r line; do
+            echo "IGNORED:$PROJECT_DIR,\
+						  $package_name, $test_class, $line, $test_file"
+        done <<< "$tests_ignored"
+      fi
+    done
+    echo -e "Finished running subdir $test_dir"
+  done
+}
 
+###############################################################################
+# Main method
+# Arguments:
+#  1) directory to run checks in relative to dl4j repo, checks files under
+#			src/test
+###############################################################################
+main() {
+  if [[ -z $LIBND4J_HOME ]]; then
+   echo "ERROR: LIBND4J_HOME is either unset or set to a non-empty string.\
+  	Set LIBND4J_HOME and rerun.Exiting script..." 1>&2
+   exit 13 
+  fi
+  
+  DL4J_BASE_DIR=`dirname $LIBND4J_HOME`
+  echo -e "\nFound DL4J base dir: $DL4J_BASE_DIR"
+  
+  PROJECT_DIR=$1
+  test_path="${DL4J_BASE_DIR}/${PROJECT_DIR}"
+  echo -e "\nRunning checks on: ${test_path}"
+  
+  if [[ ! -d "$test_path" ]]; then
+    echo -e "ERROR: $test_path DOES NOT exist. \
+  		   Supplied paths have to be relative to the deeplearning4j base dir, \
+  		   i.e the parent dir of libnd4j,nd4j etc\nExiting script..." 1>&2
+    exit 7
+  
+  LIST_OF_TEST_DIRS=$(find $test_path -path *src/test)
+  
+  if [[ -n "$LIST_OF_TEST_DIRS" ]]; then
+    echo -e "ERROR: NO src/test directories under $test_path" 1>&2
+    exit 8
+  parse_test_dirs()
+}
 
-if [ $# -eq 0 ]; then
-    echo -e "\nNo arguments supplied.Checks will be run on:\n\tnd4j\n\tdeeplearning4j\n\tdatavec\n\tarbiter\n\trl4j"
-	CHECKDIRS=(nd4j deeplearning4j datavec arbiter rl4j)
-else
-	echo -e "\nWill only run checks in given dirs"
-	CHECKDIRS=("$@")
-fi
-
-echo "IGNORED/ALL IGNORED: PROJECT, PACKAGE NAME, TEST CLASS, TEST METHOD, IGNORED COMMENT, LOCAL PATH TO TEST CLASS"
-for CHECKDIR in "${CHECKDIRS[@]}"; do 
-	FULLPATH="$DL4JBASEDIR/$CHECKDIR"
-	echo -e "\nRUNNING CHECKS ON $CHECKDIR:\n"
-	if [ ! -d "$FULLPATH" ]; then
-    	echo -e "ERROR: $FULLPATH DOES NOT exist. Supplied paths have to be relative to the deeplearning4j base dir, i.e the parent dir of libnd4j,nd4j etc\nExiting script..." 1>&2
-    	exit 7
-	fi
-	LISTOFTESTDIRS=(`find $FULLPATH -path *src/test`)
-	for TESTDIR in "${LISTOFTESTDIRS[@]}"; do
-        echo -e "\nRunning in subdir $TESTDIR..."
-		LISTOFTESTCLASSES=(`find $TESTDIR -type f -name *.java`)
-		for TESTFILE in "${LISTOFTESTCLASSES[@]}"; do
-			echo -e "\tChecking test file $TESTFILE..."
-			TESTCLASS=`basename $TESTFILE | sed 's/\.java//'`
-			PACKAGENAME=`grep -e "^\s*package" $TESTFILE | awk '{print $2}' | tr -d ';' `
-			ALLIGNORED=`ignorealltests $TESTFILE` || true
-			if [ -n "$ALLIGNORED" ]; then
-				echo "ALL IGNORED: $CHECKDIR, $PACKAGENAME, $TESTCLASS, $ALLIGNORED, $TESTFILE"
-				continue
-			fi
-			IGNORED=`ignoredtests "$TESTFILE"` || true
-			if [ -n "$IGNORED" ]; then 			
-				while read -r line; do
-    				echo "IGNORED: $CHECKDIR, $PACKAGENAME, $TESTCLASS, $line, $TESTFILE"
-				done <<< "$IGNORED"
-			fi
-		done
-		echo -e "Finished running subdir $TESTDIR"
-	done
-done
+###############################################################################
+#Call to main
+main "$@"
 
