@@ -911,110 +911,63 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("prod") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Product array reduction operation, optionally along specified dimensions
-
- @param name       Output variable name
- @param x          Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Product array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("prod") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count = AtLeast(1);  description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Product array reduction operation, optionally along specified dimensions<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Product array reduction operation, optionally along specified dimensions
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("range") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "from") { description = "" }
-        Input(NUMERIC, "to") { description = "" }
-        Input(NUMERIC, "step") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Create a new variable with a 1d array, where the values start at {@code from} and increment by {@code step}
- up to (but not including) limit.<br>
- For example, {@code range(1.0, 3.0, 0.5)} will return {@code [1.0, 1.5, 2.0, 2.5]}
-
- @param name Name of the new variable
- @param from Initial/smallest value
- @param to   Largest value (exclusive)
- @param step Step size
- @return 1D SDVariable with the specified values
-     
-""".trimIndent()
-        }
-    }
-
-    Op("range") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "from") { description = "" }
-        Input(NUMERIC, "to") { description = "" }
-        Input(NUMERIC, "step") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        Arg(NUMERIC, "from") { description = "Initial/smallest value" }
+        Arg(NUMERIC, "to") { description = "Largest value (exclusive)" }
+        Arg(NUMERIC, "step") { description = "Step size" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
+        Output(NUMERIC, "output"){ description = "SDVariable with the specified values" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #range(String, double, double, double, DataType)} but with SDVariable arguments
-     
-""".trimIndent()
+                Create a new variable with a 1d array, where the values start at {@code from} and increment by {@code step}
+                up to (but not including) limit.
+                For example, {@code range(1.0, 3.0, 0.5)} will return {@code [1.0, 1.5, 2.0, 2.5]
+            """.trimIndent()
         }
     }
 
     Op("rank") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "in") {count = AtLeast(1);  description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "(scalar) output variable with value equal to the rank of the input variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns the rank (number of dimensions, i.e., length(shape)) of the specified SDVariable as a 0D scalar variable
-
- @param name Name of the output variable
- @param in   Input variable
- @return 0D (scalar) output variable with value equal to the rank of the input variable
-     
-""".trimIndent()
+                Returns the rank (number of dimensions, i.e., length(shape)) of the specified SDVariable as a 0D scalar variable
+            """.trimIndent()
         }
     }
 
