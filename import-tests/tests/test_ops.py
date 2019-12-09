@@ -1,4 +1,5 @@
 
+
 import tensorflow as tf
 from tfoptests.persistor import TensorFlowPersistor
 from tfoptests.test_graph import TestGraph
@@ -62,8 +63,6 @@ class OpTest(TestGraph):
             out.append(initializer.newPlaceholder(varInit, s, d, n))
 
         return out
-
-
 
 
 def test_mathtransform():
@@ -1266,14 +1265,17 @@ def test_mathtransform():
          #{"opName": "adjust_saturation", "outName": "adjust_saturation/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["uniform"], "factor": 2.0},
          #{"opName": "adjust_saturation", "outName": "adjust_saturation/rank4_float32", "varShapes": [[8, 8, 2, 3]], "varTypes": ["float32"], "varInit": ["uniform"], "factor": 0.5},
 
-         #{"opName": "adjust_contrast", "outName": "adjust_contrast/rank3_float32", "varShapes": [[8,8,3]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
-         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v/rank3_mixed", "varShapes": [[8,8,3,1]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
-         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v/rank4_mixed","varShapes": [[8, 8, 3, 4]], "varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
-         #{"opName": "adjust_contrast", "outName": "adjust_contrast/emptyArrayTests/rank3_float32", "varShapes": [[0,0,0]],"varTypes": ["float32"], "varInit": ["empty"],"contrast_factor":0.0},
+         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v2/rank3_float32", "varShapes": [[8,8,3]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
+         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v2/rank4_float32", "varShapes": [[8,8,3,1]],"varTypes": ["float32"], "varInit": ["uniform"],"contrast_factor":2.0},
+         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v2/rank4_float64","varShapes": [[8, 8, 3, 4]], "varTypes": ["float64"], "varInit": ["uniform"],"contrast_factor":2.0},
+         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v2/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor": 2.0},
+         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v2/rank3_float64", "varShapes": [[8, 8, 3]],  "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor": 2.0},
+         #{"opName": "adjust_contrast", "outName": "adjust_contrast_v2/emptyArrayTests/rank3_float32", "varShapes": [[0,0,0]],"varTypes": ["float32"], "varInit": ["empty"],"contrast_factor":0.0},
 
         #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float32", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["stdnormal"], "delta": 0.5},
         #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 0.5},
         #{"opName": "adjust_hue", "outName": "adjust_hue/rank3_float64_zero_delta", "varShapes": [[8, 8, 3]], "varTypes": ["float64"], "varInit": ["uniform"], "delta": 0.5},
+        # {"opName": "adjust_hue", "outName": "adjust_hue/rank3_float32_test", "varShapes": [[8, 8, 3]], "varTypes": ["float32"], "varInit": ["stdnormal"], "delta": 0.5},
 
          #{"opName": "crop_and_resize", "outName": "crop_and_resize", "varShapes": [[1,2,2,1], [2,4], [2], [2]],"varTypes": ["float32", "float32","int32","int32"], "varInit": ["uniform", "uniform","uniform_int10","uniform_int10"], "method":"bilinear","ext_value":0},
          #{"opName": "crop_and_resize", "outName": "crop_and_resize", "varShapes": [[1,2,2,1], [2,4], [2], [2]],"varTypes": ["float32", "float32","int32","int32"], "varInit": ["uniform", "uniform","uniform_int10","uniform_int10"], "method":"nearest","ext_value":0},
@@ -1291,6 +1293,11 @@ def test_mathtransform():
          #{"opName": "resize_nearest_neighbor", "outName": "resize_nearest_neighbor/float64", "varShapes": [[2,5,5,3], [2]],"varTypes": ["float64", "int32"], "varInit": ["uniform", "uniform_int10"],"align_corners":True, "half_pixel_centers":False},
          #{"opName": "resize_nearest_neighbor", "outName": "resize_nearest_neighbor/int32", "varShapes": [[2, 5, 5, 1], [2]], "varTypes": ["int32", "int32"], "varInit": ["uniform_int10", "uniform_int10"],"align_corners":False, "half_pixel_centers":True},
          #{"opName": "resize_nearest_neighbor", "outName": "resize_nearest_neighbor/float32_1", "varShapes": [[2, 5, 5, 3], [2]],   "varTypes": ["float32", "int32"], "varInit": ["uniform", "uniform_int10"],"align_corners":False, "half_pixel_centers":False},
+
+        # {"opName": "resize_bicubic", "outName": "resize_bicubic/float32", "varShapes": [[2,5,5,3],[2]],"varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "align_corners":True, "half_pixel_centers":False},
+        # {"opName": "resize_bicubic", "outName": "resize_bicubic/float64", "varShapes": [[2, 5, 5, 1],[2]],  "varTypes": ["float64","int32"], "varInit": ["uniform","uniform_int10"], "size":10, "align_corners":True, "half_pixel_centers":False},
+        # {"opName": "resize_bicubic", "outName": "resize_bicubic/int32", "varShapes": [[2, 5, 5, 1],[2]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"], "size":0, "align_corners":False, "half_pixel_centers":True},
+        # {"opName": "resize_bicubic", "outName": "resize_bicubic/float32_1", "varShapes": [[2, 5, 5, 3],[2]],   "varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "size":100, "align_corners":False, "half_pixel_centers":False},
 
         # {"opName": "check_numerics", "outName": "check_numerics/rank1_float16", "varShapes":[[5]], "varTypes":["float16", "string"], "varInit":["uniform", "string_scalar"], "message":"This is a test string."},
         # {"opName": "check_numerics", "outName": "check_numerics/rank1_float32", "varShapes":[[5]], "varTypes":["float32", "string"], "varInit":["uniform", "string_scalar"], "message":"This is a test string."},
@@ -1478,7 +1485,9 @@ def test_mathtransform():
         # TODO: Div just gives "TypeError: unsupported operand type(s) for /: 'list' and 'list'" event through other ops work :/
         # {"opName": "div", "outName": "emptyArrayTests/div/rank1", "varShapes":[[0], [0]], "varTypes":["float32", "float32"], "varInit":["empty","empty"], "dtype":tf.float32},
         # {"opName": "div", "outName": "emptyArrayTests/div/rank2", "varShapes":[[0,2], [0,2]], "varTypes":["float64", "float64"], "varInit":["empty", "empty"], "dtype":tf.float64},
-        #  {"opName": "div", "outName": "div", "varShapes":[[1,10], [1,10]], "varTypes":["float64", "float64"], "varInit":["uniform", "uniform"], "dtype":tf.float64},
+        #  {"opName": "div", "outName": "div/float64", "varShapes":[[1,10], [1,10]], "varTypes":["float64", "float64"], "varInit":["uniform", "uniform"], "dtype":tf.float64},
+        #  {"opName": "div", "outName": "div/float32", "varShapes": [[1, 10], [1, 10]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "dtype": tf.float32},
+        #  {"opName": "div", "outName": "div/int32", "varShapes": [[1, 10], [1, 10]], "varTypes": ["int32", "int32"],  "varInit": ["uniform_int10", "uniform_int10"], "dtype": tf.int32},
 
         #{"opName": "div_no_nan", "outName": "div_no_nan", "varShapes":[[1,10], [1,10]], "varTypes":["float32", "float32"], "varInit":["uniform","uniform"], "dtype":tf.float32},
         # {"opName": "div_no_nan", "outName": "div_no_nan", "varShapes":[[], [1,10]], "varTypes":["float32", "float32"], "varInit":["uniform","uniform"], "dtype":tf.float32},
@@ -2065,14 +2074,14 @@ def test_mathtransform():
         #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float16_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
         #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds",  "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
 
-         #{"opName": "betainc", "outName": "betainc/rank1_float32", "varShapes":[[4],[4],[4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
-         #{"opName": "betainc", "outName": "betainc/rank2_float32", "varShapes": [[3,4],[3,4],[3,4]], "varTypes": ["float32","float32","float32"], "varInit": ["uniform","uniform","uniform"]},
-         #{"opName": "betainc", "outName": "betainc/rank1_float64", "varShapes": [[4], [4], [4]], "varTypes": ["float64", "float64", "float64"], "varInit": ["uniform", "uniform", "uniform"]},
-         #{"opName": "betainc", "outName": "betainc/rank2_float64", "varShapes": [[3, 4], [3, 4], [3, 4]], "varTypes": ["float64", "float64", "float64"], "varInit": ["uniform", "uniform", "uniform"]},
-         #{"opName": "betainc", "outName": "betainc/emptyArrayTest/float64", "varShapes": [[], [], []],  "varTypes": ["float64", "float64", "float64"], "varInit": ["empty", "empty", "empty"]},
-         #{"opName": "betainc", "outName": "betainc/emptyArrayTest/float32", "varShapes": [[], [], []],  "varTypes": ["float64", "float64", "float64"], "varInit": ["empty", "empty", "empty"]},
+        # {"opName": "betainc", "outName": "betainc/rank1_float32", "varShapes":[[4],[4],[4]], "varTypes":["float32","float32","float32"], "varInit":["uniform10","uniform10","uniform_0_1"]},
+        # {"opName": "betainc", "outName": "betainc/rank2_float32", "varShapes": [[3,4],[3,4],[3,4]], "varTypes": ["float32","float32","float32"], "varInit": ["uniform10","uniform10","uniform_0_1"]},
+        # {"opName": "betainc", "outName": "betainc/rank1_float64", "varShapes": [[4], [4], [4]], "varTypes": ["float64", "float64", "float64"], "varInit": ["uniform10", "uniform10", "uniform_0_1"]},
+        # {"opName": "betainc", "outName": "betainc/rank2_float64", "varShapes": [[3, 4], [3, 4], [3, 4]], "varTypes": ["float64", "float64", "float64"], "varInit": ["uniform10", "uniform10", "uniform_0_1"]},
+        # {"opName": "betainc", "outName": "betainc/emptyArrayTest/float64", "varShapes": [[], [], []],  "varTypes": ["float64", "float64", "float64"], "varInit": ["empty", "empty", "empty"]},
+        # {"opName": "betainc", "outName": "betainc/emptyArrayTest/float32", "varShapes": [[0], [0], [0]],  "varTypes": ["float64", "float64", "float64"], "varInit": ["empty", "empty", "empty"]},
 
-         #'TF 1.15 - throws error : float32' has type str, but expected one of: int, long, bool
+         #'TF 1.15 - mismatch of allowed arguments with ops.proto
          #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32", "varShapes": [[2,2,3,4],[4],[4]],  "varTypes": ["float32","float32","float32"], "varInit": ["uniform","uniform","uniform"], "epsilon":0.5, "data_format":"NHWC"},
 
          #{"opName": "matrix_band_part", "outName": "matrix_band_part/float32", "varShapes": [[3,4]],  "varTypes": ["float32"], "varInit": ["uniform"],"num_lower":1, "num_upper":-1},
@@ -2100,15 +2109,23 @@ def test_mathtransform():
          #{"opName": "roll", "outName": "roll/rank4_float32_axis", "varShapes": [[4, 5, 3, 4]], "varTypes": ["half"],  "varInit": ["uniform"], "shift": 2, "axis": 2},
          #{"opName": "roll", "outName": "roll/int32_long_axis", "varShapes": [[4, 5, 3, 4]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "shift": 2, "axis": 3},
 
-        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int8", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
-        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int16", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int8", "varShapes": [[4]], "varTypes": ["int8"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int16", "varShapes": [[4]], "varTypes": ["int16"], "varInit": ["uniform_int10"]},
         #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int32", "varShapes": [[4]],"varTypes": ["int32"], "varInit": ["uniform_int10"]},
-        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int8", "varShapes": [[4,2]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
-        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int16", "varShapes": [[4,2]], "varTypes": ["int32"],"varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int8", "varShapes": [[4,2]], "varTypes": ["int8"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int16", "varShapes": [[4,2]], "varTypes": ["int16"],"varInit": ["uniform_int10"]},
         #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int32", "varShapes": [[4,2]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
-        #{"opName": "toggle_bits", "outName": "toggle_bits/rank3_int8", "varShapes": [[4, 2, 3]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
-        #{"opName": "toggle_bits", "outName": "toggle_bits/rank3_int16", "varShapes": [[4, 2, 3]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank3_int8", "varShapes": [[4, 2, 3]], "varTypes": ["int8"], "varInit": ["uniform_int10"]},
+        #{"opName": "toggle_bits", "outName": "toggle_bits/rank3_int16", "varShapes": [[4, 2, 3]], "varTypes": ["int16"], "varInit": ["uniform_int10"]},
         #{"opName": "toggle_bits", "outName": "toggle_bits/rank2_int32", "varShapes": [[4, 2, 3]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+
+        # {"opName": "right_shift", "outName": "right_shift/rank1_int32", "varShapes": [[4],[4]],"varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"]},
+        # {"opName": "right_shift", "outName": "right_shift/rank2_int32", "varShapes": [[4,2],[4,2]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"]},
+        # {"opName": "right_shift", "outName": "right_shift/rank2_int32", "varShapes": [[4, 2, 3],[4,2,3]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"]},
+
+        #{"opName": "left_shift", "outName": "left_shift/rank1_int32", "varShapes": [[4], [4]], "varTypes": ["int32", "int32"], "varInit": ["uniform_int10","uniform_int10"]},
+        #{"opName": "left_shift", "outName": "left_shift/rank2_int32", "varShapes": [[4, 2], [4, 2]],  "varTypes": ["int32", "int32"], "varInit": ["uniform_int10","uniform_int10"]},
+        #{"opName": "left_shift", "outName": "left_shift/rank2_int32", "varShapes": [[4, 2, 3], [4, 2, 3]], "varTypes": ["int32", "int32"], "varInit": ["uniform_int10","uniform_int10"]},
      ]
 
     '''

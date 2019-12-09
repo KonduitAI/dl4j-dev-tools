@@ -1264,6 +1264,12 @@ class OpCreator:
     def execute_bitwise_xor(self):
         return [tf.bitwise.bitwise_xor(self.vars[0], self.vars[1])]
 
+    def execute_left_shift(self):
+        return [tf.bitwise.left_shift(self.vars[0], self.vars[1])]
+
+    def execute_right_shift(self):
+        return [tf.bitwise.right_shift(self.vars[0], self.vars[1])]
+
     def execute_crop_and_resize(self):
         return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_ind = self.vars[3],\
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
@@ -1280,6 +1286,11 @@ class OpCreator:
 
     def execute_resize_nearest_neighbor(self):
         return [tf.image.resize_nearest_neighbor(images = self.vars[0], size = self.vars[1])]
+
+    def execute_resize_bicubic(self):
+        return [tf.image.resize_bicubic(images=self.vars[0], size=self.vars[1], \
+                                        align_corners=self.op["align_corners"], \
+                                        half_pixel_centers=self.op["half_pixel_centers"])]
 
     def execute_non_max_suppression(self):
         iou_threshold = 0.5
