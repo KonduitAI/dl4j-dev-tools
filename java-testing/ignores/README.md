@@ -1,13 +1,21 @@
 # Generate a .csv file with information on the ignored tests in the various projects
 
 
-For dl4j:
+For arbiter:
 ```
-./summarize-ignores deeplearning4j results
-Ignored methods count: 6 results/deeplearning4j/ignored_classes.csv
-Ignored methods information  written to results/deeplearning4j/ignored_methods.csv
-Ignored classes count: 22 results/deeplearning4j/ignored_methods.csv
-Ignored classes information written to results/deeplearning4j/ignored_methods.csv
+./summarize-ignores arbiter results
+....
+INFO:Checked test file
+/Users/susaneraly/SKYMIND/deeplearning4j/arbiter/arbiter-ui/src/test/java/org/deeplearning4j/arbiter/optimize/TestBasic.java...
+INFO:Finished running subdir
+/Users/susaneraly/SKYMIND/deeplearning4j/arbiter/arbiter-ui/src/test
+
+
+INFO: Run completed.
+====================================================================
+Ignored classes count:1. Written to: results/arbiter/ignored_classes.csv
+Ignored methods count: 10. Written to: results/arbiter/ignored_methods.csv
+Log file written to summarize-ignores-arbiter.log
 ```
  ignored_classes.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
  ignored_methods.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
@@ -17,9 +25,9 @@ Refer sample first three lines below. Note the csv includes the string inside @I
 To run other projects repeat as follows:
 ```
 ./summarize-ignores nd4j results
-#./summarize-ignores deeplearning4j results
+./summarize-ignores deeplearning4j results
 ./summarize-ignores datavec results
-./summarize-ignores arbiter results
+#./summarize-ignores arbiter results
 ```
 
 
