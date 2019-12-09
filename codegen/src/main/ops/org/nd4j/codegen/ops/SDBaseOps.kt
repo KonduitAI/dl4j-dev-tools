@@ -972,413 +972,232 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("repeat") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "df") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "df") {count = AtLeast(1); description = "" }
+        Arg(INT, "axis") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #repeat(String, SDVariable, int)
-     
-""".trimIndent()
+                @see #repeat(String, SDVariable, int)
+            """.trimIndent()
         }
     }
 
     Op("replaceWhere") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "update") { description = "" }
-        Input(NUMERIC, "from") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.comparison"
+        javaOpClass = "CompareAndReplace"
+        legacy = true
+        Input(NUMERIC, "update") { description = "Source array" }
+        Input(NUMERIC, "from") { description = "Replacement values array (used conditionally). Must be same shape as 'update' array" }
+        Arg(CONDITION, "condition") { description = "Condition to check on update array elements" }
+        Output(NUMERIC, "output"){ description = "New array with values replaced where condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise replace where condition:<br>
- out[i] = from[i] if condition(update[i]) is satisfied, or<br>
- out[i] = update[i] if condition(update[i]) is NOT satisfied
-
- @param name      Name of the output variable
- @param update    Source array
- @param from      Replacement values array (used conditionally). Must be same shape as 'update' array
- @param condition Condition to check on update array elements
- @return New array with values replaced where condition is satisfied
-     
-""".trimIndent()
-        }
-    }
-
-    Op("replaceWhere") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "update") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-        Input(NUMERIC, "condition") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Element-wise replace where condition:<br>
- out[i] = value if condition(update[i]) is satisfied, or<br>
- out[i] = update[i] if condition(update[i]) is NOT satisfied
-
- @param name      Name of the output variable
- @param update    Source array
- @param value     Value to set at the output, if the condition is satisfied
- @param condition Condition to check on update array elements
- @return New array with values replaced where condition is satisfied
-     
-""".trimIndent()
+                Element-wise replace where condition:
+                out[i] = from[i] if condition(update[i]) is satisfied, or
+                out[i] = update[i] if condition(update[i]) is NOT satisfied
+            """.trimIndent()
         }
     }
 
     Op("reshape") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shape") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "shape") { description = "New shape for variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Reshape the input variable to the specified (fixed) shape. The output variable will have the same values as the
- input, but with the specified shape.<br>
- Note that prod(shape) must match length(input) == prod(input.shape)
-
- @param name  Output variable name
- @param x     Input variable
- @param shape New shape for variable
- @return Output variable
- @see #reshape(SDVariable, SDVariable)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("reshape") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shape") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Reshape the input variable to the specified (fixed) shape. The output variable will have the same values as the
- input, but with the specified shape.<br>
- Note that prod(shape) must match length(input) == prod(input.shape)
-
- @param name  Output variable name
- @param x     Input variable
- @param shape New shape for variable
- @return Output variable
- @see #reshape(SDVariable, SDVariable)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("reshape") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "shape") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Reshape the input variable to the specified (dynamic) shape. The output variable will have the same values as the
- input, but with the specified shape.<br>
- Note that prod(shape) must match length(input) == prod(input.shape)
-
- @param name  Output variable name
- @param x     Input variable
- @param shape New shape for variable
- @return Output variable
- @see #reshape(SDVariable, int[])
-     
-""".trimIndent()
+                Reshape the input variable to the specified (fixed) shape. The output variable will have the same values as the
+                input, but with the specified shape.
+                Note that prod(shape) must match length(input) == prod(input.shape)
+            """.trimIndent()
         }
     }
 
     Op("reverse") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Reverse the values of an array for the specified dimensions<br>
- If input is:<br>
- [ 1, 2, 3]<br>
- [ 4, 5, 6]<br>
- then<br>
- reverse(in, 0):<br>
- [3, 2, 1]<br>
- [6, 5, 4]<br>
- reverse(in, 0):<br>
- [4, 5, 6]<br>
- [1, 2 3]<br>
-
- @param x          Input variable
- @param dimensions Dimensions
- @return Output variable
-     
-""".trimIndent()
+                Reverse the values of an array for the specified dimensions
+                If input is:
+                [ 1, 2, 3]
+                [ 4, 5, 6]
+                then
+                reverse(in, 0):
+                [3, 2, 1]
+                [6, 5, 4]
+                reverse(in, 0):
+                [4, 5, 6]
+                [1, 2 3]
+            """.trimIndent()
         }
     }
 
     Op("reverseSequence") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "seq_lengths") { description = "" }
-        Input(NUMERIC, "seqDim") { description = "" }
-        Input(NUMERIC, "batchDim") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "seq_lengths") { description = "Length of the sequences" }
+        Arg(INT, "seqDim") { description = "Sequence dimension" }
+        Arg(INT, "batchDim") { description = "Batch dimension" }
+        Output(NUMERIC, "output"){ description = "Reversed sequences" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Reverse sequence op: for each slice along dimension seqDimension, the first seqLength values are reversed
-
- @param name        Name of the output variable
- @param x           Input variable
- @param seq_lengths Length of the sequences
- @param seqDim      Sequence dimension
- @param batchDim    Batch dimension
- @return Reversed sequences
-     
-""".trimIndent()
+                Reverse sequence op: for each slice along dimension seqDimension, the first seqLength values are reversed
+            """.trimIndent()
         }
     }
 
     Op("reverseSequence") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "" }
         Input(NUMERIC, "seq_lengths") { description = "" }
-
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #reverseSequence(String, SDVariable, SDVariable, int, int)
-     
-""".trimIndent()
+                @see #reverseSequence(String, SDVariable, SDVariable, int, int)
+            """.trimIndent()
         }
     }
 
     Op("scalarFloorMod") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        javaOpClass = "ScalarFMod"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise scalar floor modulus operation: out = floorMod(in, value).
- i.e., returns the remainder after division by 'value'
-
- @param name  Name of the output variable
- @param in    Input variable
- @param value Scalar value to compare
- @return Output variable
-     
-""".trimIndent()
+                Element-wise scalar floor modulus operation: out = floorMod(in, value).
+                i.e., returns the remainder after division by 'value'
+            """.trimIndent()
         }
     }
 
     Op("scalarMax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
+        Output(NUMERIC, "output"){ description = "Scalar value to compare" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise scalar maximum operation: out = max(in, value)
-
- @param name  Name of the output variable
- @param in    Input variable
- @param value Scalar value to compare
- @return Output variable
-     
-""".trimIndent()
+                Element-wise scalar maximum operation: out = max(in, value)
+            """.trimIndent()
         }
     }
 
     Op("scalarMin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "value") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Element-wise scalar minimum operation: out = min(in, value)
-
- @param name  Name of the output variable
- @param in    Input variable
- @param value Scalar value to compare
- @return Output variable
-     
-""".trimIndent()
+                Element-wise scalar minimum operation: out = min(in, value)
+            """.trimIndent()
         }
     }
 
     Op("scalarSet") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "set") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "set") { description = "Value to set" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Return a variable with equal shape to the input, but all elements set to value 'set'
-
- @param name Name of the output variable
- @param in   Input variable
- @param set  Value to set
- @return Output variable
-     
-""".trimIndent()
+                Return a variable with equal shape to the input, but all elements set to value 'set'
+            """.trimIndent()
         }
     }
 
     Op("scatterAdd") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter addition operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] += updates[...]<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] += updates[i, ...]<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] += updates[i, ..., k, ...]<br>
- Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter addition operation.
+                If indices is rank 0 (a scalar), then out[index, ...] += updates[...]
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] += updates[i, ...]
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] += updates[i, ..., k, ...] 
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
+            """.trimIndent()
         }
     }
 
     Op("scatterDiv") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter division operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] /= updates[...]<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] /= updates[i, ...]<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] /= updates[i, ..., k, ...]<br>
- Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter division operation.
+                If indices is rank 0 (a scalar), then out[index, ...] /= updates[...]
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] /= updates[i, ...]
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] /= updates[i, ..., k, ...]
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
+            """.trimIndent()
         }
     }
 
     Op("scatterMax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter max operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] = max(updates[...], in[index,...])<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = max(updates[i,...], in[indices[i],...])<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = max(updates[i, ..., k, ...], in[indices[i], ..., indices[k], ...]<br>
- Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter max operation.
+                If indices is rank 0 (a scalar), then out[index, ...] = max(updates[...], in[index,...])
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = max(updates[i,...], in[indices[i],...])
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = max(updates[i, ..., k, ...], in[indices[i], ..., indices[k], ...] 
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
+            """.trimIndent()
         }
     }
 
     Op("scatterMin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter min operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] = min(updates[...], in[index,...])<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = min(updates[i,...], in[indices[i],...])<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = min(updates[i, ..., k, ...], in[indices[i], ..., indices[k], ...]<br>
- Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter min operation.
+                If indices is rank 0 (a scalar), then out[index, ...] = min(updates[...], in[index,...])
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = min(updates[i,...], in[indices[i],...])
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = min(updates[i, ..., k, ...], in[indices[i], ..., indices[k], ...]
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
+            """.trimIndent()
         }
     }
 
     Op("scatterMul") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter multiplication operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] *= updates[...]<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] *= updates[i, ...]<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] *= updates[i, ..., k, ...]<br>
- Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter multiplication operation.
+                If indices is rank 0 (a scalar), then out[index, ...] *= updates[...]
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] *= updates[i, ...]
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] *= updates[i, ..., k, ...]
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.     
+            """.trimIndent()
         }
     }
 
