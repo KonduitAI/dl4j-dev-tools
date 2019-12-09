@@ -368,7 +368,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("invertPermutation") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "input") { count = AtLeast(1); description = "1D indices for permutation" }
+        Input(NUMERIC, "input") { description = "1D indices for permutation" }
         Output(NUMERIC, "output"){ description = "1D inverted permutation" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -381,7 +381,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("isNumericTensor") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variable" }
+        Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "Scalar variable with value 1" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -863,7 +863,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("onesLike") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "input") { count = AtLeast(1); description = "Input SDVariable" }
+        Input(NUMERIC, "input") { description = "Input SDVariable" }
         Output(NUMERIC, "output"){ description = "A new SDVariable with the same (dynamic) shape as the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -875,7 +875,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("onesLike") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "input") { count = AtLeast(1); description = "" }
+        Input(NUMERIC, "input") { description = "" }
         Arg(DATA_TYPE, "dataType") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
@@ -962,7 +962,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("rank") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "in") {count = AtLeast(1);  description = "Input variable" }
+        Input(NUMERIC, "in") { description = "Input variable" }
         Output(NUMERIC, "output"){ description = "(scalar) output variable with value equal to the rank of the input variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
