@@ -795,6 +795,9 @@ def test_mathtransform():
         # {"opName":"reduce_all", "outName":"reduce_all/rank2_d0_keep", "varShapes":[[3,4]], "varTypes":["bool"], "varInit":["boolean"], "axis":0, "keep_dims":True},
         # {"opName":"reduce_all", "outName":"reduce_all/rank2_d1_keep", "varShapes":[[3,4]], "varTypes":["bool"], "varInit":["boolean"], "axis":1, "keep_dims":False},
         # {"opName":"reduce_all", "outName":"reduce_all/rank3_d01_keep", "varShapes":[[2,3,4]], "varTypes":["bool"], "varInit":["boolean"], "axis":[0,1], "keep_dims":True},
+        #{"opName": "reduce_all", "outName": "reduce_all/empty_axis0", "varShapes": [[0, 0, 0]], "varTypes": ["bool"], "varInit": ["boolean"], "axis": [0], "keep_dims": True},
+        #{"opName": "reduce_all", "outName": "reduce_all/empty_axis1", "varShapes": [[0, 0, 3]], "varTypes": ["bool"], "varInit": ["boolean"], "axis": [1], "keep_dims": True},
+        #{"opName":"reduce_all", "outName":"reduce_all/empty_axis2", "varShapes":[[2,0,3]], "varTypes":["bool"], "varInit":["boolean"], "axis":[2], "keep_dims":True},
 
         # {"opName":"boolean_mask", "outName":"boolean_mask/rank1_mask1", "varShapes":[[10],[10]], "varTypes":["float32", "bool"], "varInit":["uniform", "boolean"]},
         # {"opName":"boolean_mask", "outName":"boolean_mask/rank2_mask1", "varShapes":[[5,4],[5]], "varTypes":["float32", "bool"], "varInit":["uniform", "boolean"]},
@@ -2003,10 +2006,10 @@ def test_mathtransform():
         #{"opName": "bitcast", "outName": "bitcast/from_int64_to_float64", "varShapes": [[2]], "varTypes": ["int64"], "varInit": ["uniform_int2"], "output": tf.float64},
         #{"opName": "bitcast", "outName": "bitcast/emptyArrayTest/from_uint32_to_float64", "varShapes": [[0]], "varTypes": ["uint32"], "varInit": ["empty"], "output": tf.float64},
 
-         {"opName": "bitwise_and", "outName": "bitwise_and/rank2_int32", "varShapes":[[1,2], [1,2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
-         {"opName": "bitwise_and", "outName": "bitwise_and/rank2_int64", "varShapes": [[1, 2], [1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
-         {"opName": "bitwise_and", "outName": "bitwise_and/rank3_int32", "varShapes":[[1,1, 2], [1,1, 2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
-         {"opName": "bitwise_and", "outName": "bitwise_and/rank3_int64", "varShapes": [[1, 1, 2], [1, 1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
+        # {"opName": "bitwise_and", "outName": "bitwise_and/rank2_int32", "varShapes":[[1,2], [1,2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
+        # {"opName": "bitwise_and", "outName": "bitwise_and/rank2_int64", "varShapes": [[1, 2], [1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
+        # {"opName": "bitwise_and", "outName": "bitwise_and/rank3_int32", "varShapes":[[1,1, 2], [1,1, 2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
+        # {"opName": "bitwise_and", "outName": "bitwise_and/rank3_int64", "varShapes": [[1, 1, 2], [1, 1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
 
         # {"opName": "bitwise_or", "outName": "bitwise_or/rank2_int32", "varShapes":[[1,2], [1,2]], "varTypes":["int32", "int32"], "varInit":["uniform_int10", "uniform_int2"]},
         # {"opName": "bitwise_or", "outName": "bitwise_or/rank2_int64", "varShapes": [[1, 2], [1, 2]],"varTypes": ["int64", "int64"], "varInit": ["uniform_int10", "uniform_int2"]},
