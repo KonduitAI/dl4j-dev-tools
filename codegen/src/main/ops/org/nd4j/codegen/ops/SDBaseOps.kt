@@ -1202,252 +1202,161 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("scatterSub") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter subtraction operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] -= updates[...]<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] -= updates[i, ...]<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] -= updates[i, ..., k, ...]<br>
- Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter subtraction operation.
+                If indices is rank 0 (a scalar), then out[index, ...] -= updates[...]
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] -= updates[i, ...]
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] -= updates[i, ..., k, ...]
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
+            """.trimIndent()
         }
     }
 
     Op("scatterUpdate") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "ref") { description = "" }
-        Input(NUMERIC, "indices") { description = "" }
-        Input(NUMERIC, "updates") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Scatter update operation.<br>
- If indices is rank 0 (a scalar), then out[index, ...] = updates[...]<br>
- If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = updates[i, ...]<br>
- If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = updates[i, ..., k, ...]<br>
- Note that if multiple indices refer to the same location, the output at those locations is undefined - different
- updates may occur in different orders
-
- @param name    Name of the output variable
- @param ref     Initial/source variable
- @param indices Indices array
- @param updates Updates to add to the initial/source array
- @return The updated variable
-     
-""".trimIndent()
+                Scatter update operation.
+                If indices is rank 0 (a scalar), then out[index, ...] = updates[...]
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = updates[i, ...]
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = updates[i, ..., k, ...]
+                Note that if multiple indices refer to the same location, the output at those locations is undefined - different
+                updates may occur in different orders
+            """.trimIndent()
         }
     }
 
     Op("segmentMax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
+        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Output(NUMERIC, "output"){ description = "Segment max output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Segment max operation.<br>
- If data =     [3, 6, 1, 4, 9, 2, 8]<br>
- segmentIds =  [0, 0, 1, 1, 1, 2, 2]<br>
- then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]<br>
- Note that the segment IDs must be sorted from smallest to largest segment.
- See {@link #unsortedSegmentMax(String, SDVariable, SDVariable, int)}
- for the same op without this sorted requirement
-
- @param name       Name of the output variable. May be null
- @param data       Data to perform segment max on
- @param segmentIds Variable for the segment IDs
- @return Segment max output
-     
-""".trimIndent()
+                Segment max operation.
+                If data =     [3, 6, 1, 4, 9, 2, 8]
+                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
+                then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]
+                Note that the segment IDs must be sorted from smallest to largest segment.
+                See {@link #unsortedSegmentMax(String, SDVariable, SDVariable, int)}
+                for the same op without this sorted requirement
+            """.trimIndent()
         }
     }
 
     Op("segmentMean") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
+        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Output(NUMERIC, "output"){ description = "Segment mean output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Segment mean operation.<br>
- If data =     [3, 6, 1, 4, 9, 2, 8]<br>
- segmentIds =  [0, 0, 1, 1, 1, 2, 2]<br>
- then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]<br>
- Note that the segment IDs must be sorted from smallest to largest segment.
- See {@link #unsortedSegmentMean(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
-
- @param name       Name of the output variable. May be null
- @param data       Data to perform segment max on
- @param segmentIds Variable for the segment IDs
- @return Segment mean output
-     
-""".trimIndent()
+                Segment mean operation.
+                If data =     [3, 6, 1, 4, 9, 2, 8]
+                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
+                then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]
+                Note that the segment IDs must be sorted from smallest to largest segment.
+                See {@link #unsortedSegmentMean(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+            """.trimIndent()
         }
     }
 
     Op("segmentMin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
+        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Output(NUMERIC, "output"){ description = "Segment min output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Segment min operation.<br>
- If data =     [3, 6, 1, 4, 9, 2, 8]<br>
- segmentIds =  [0, 0, 1, 1, 1, 2, 2]<br>
- then output = [3, 1, 2] = [min(3,6), min(1,4,9), min(2,8)]<br>
- Note that the segment IDs must be sorted from smallest to largest segment.
- See {@link #unsortedSegmentMin(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
-
- @param name       Name of the output variable. May be null
- @param data       Data to perform segment max on
- @param segmentIds Variable for the segment IDs
- @return Segment min output
-     
-""".trimIndent()
+                Segment min operation.
+                If data =     [3, 6, 1, 4, 9, 2, 8]
+                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
+                then output = [3, 1, 2] = [min(3,6), min(1,4,9), min(2,8)]
+                Note that the segment IDs must be sorted from smallest to largest segment.
+                See {@link #unsortedSegmentMin(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+            """.trimIndent()
         }
     }
 
     Op("segmentProd") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
+        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Output(NUMERIC, "output"){ description = "Segment product output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Segment product operation.<br>
- If data =     [3, 6, 1, 4, 9, 2, 8]<br>
- segmentIds =  [0, 0, 1, 1, 1, 2, 2]<br>
- then output = [18, 36, 16] = [prod(3,6), prod(1,4,9), prod(2,8)]<br>
- Note that the segment IDs must be sorted from smallest to largest segment.
- See {@link #unsortedSegmentProd(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
-
- @param name       Name of the output variable. May be null
- @param data       Data to perform segment max on
- @param segmentIds Variable for the segment IDs
- @return Segment product output
-     
-""".trimIndent()
+                Segment product operation.
+                If data =     [3, 6, 1, 4, 9, 2, 8]
+                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
+                then output = [18, 36, 16] = [prod(3,6), prod(1,4,9), prod(2,8)]
+                Note that the segment IDs must be sorted from smallest to largest segment.
+                See {@link #unsortedSegmentProd(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+            """.trimIndent()
         }
     }
 
     Op("segmentSum") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
+        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Output(NUMERIC, "output"){ description = "Segment sum output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Segment sum operation.<br>
- If data =     [3, 6, 1, 4, 9, 2, 8]<br>
- segmentIds =  [0, 0, 1, 1, 1, 2, 2]<br>
- then output = [9, 14, 10] = [sum(3,6), sum(1,4,9), sum(2,8)]<br>
- Note that the segment IDs must be sorted from smallest to largest segment.
- See {@link #unsortedSegmentSum(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
-
- @param name       Name of the output variable. May be null
- @param data       Data to perform segment max on
- @param segmentIds Variable for the segment IDs
- @return Segment sum output
-     
-""".trimIndent()
+                Segment sum operation.
+                If data =     [3, 6, 1, 4, 9, 2, 8]
+                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
+                then output = [9, 14, 10] = [sum(3,6), sum(1,4,9), sum(2,8)]
+                Note that the segment IDs must be sorted from smallest to largest segment.
+                See {@link #unsortedSegmentSum(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+            """.trimIndent()
         }
     }
 
     Op("sequenceMask") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "lengths") { description = "" }
-        Input(NUMERIC, "maxLen") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "lengths") { description = "Lengths of the sequences" }
+        Arg(INT, "maxLen") { description = "Maximum sequence length" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #sequenceMask(String, SDVariable, SDVariable, DataType)
-     
-""".trimIndent()
+                 Generate a sequence mask (with values 0 or 1) based on the specified lengths 
+                 Specifically, out[i, ..., k, j] = (j < lengths[i, ..., k] ? 1.0 : 0.0)
+            """.trimIndent()
         }
     }
 
     Op("sequenceMask") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "lengths") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
+        Arg(DATA_TYPE,  "dataType") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #sequenceMask(String, SDVariable, SDVariable, DataType)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("sequenceMask") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "lengths") { description = "" }
-        Input(NUMERIC, "maxLen") { description = "" }
-        Input(NUMERIC, "dataType") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Generate a sequence mask (with values 0 or 1) based on the specified lengths<br>
- Specifically, out[i, ..., k, j] = (j < lengths[i, ..., k] ? 1.0 : 0.0)
-
- @param name    Name of the output variable
- @param lengths Lengths of the sequences
- @param maxLen  Maximum sequence length
- @return Output variable
-     
-""".trimIndent()
+                @see #sequenceMask(String, SDVariable, SDVariable, DataType)
+            """.trimIndent()
         }
     }
 
     Op("shape") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "1D output variable with contents equal to the shape of the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns the shape of the specified SDVariable as a 1D SDVariable
-
- @param name  Name of the output variable
- @param input Input variable
- @return 1D output variable with contents equal to the shape of the input
-     
-""".trimIndent()
+                Returns the shape of the specified SDVariable as a 1D SDVariable
+            """.trimIndent()
         }
     }
 
@@ -1896,155 +1805,103 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentMax") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-        Input(NUMERIC, "numSegments") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output"){ description = "Unsorted segment max output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Unsorted segment max operation. As per {@link #segmentMax(String, SDVariable, SDVariable)} but without
- the requirement for the indices to be sorted.<br>
- If data =     [1, 3, 2, 6, 4, 9, 8]<br>
- segmentIds =  [1, 0, 2, 0, 1, 1, 2]<br>
- then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]<br>
-
- @param name        Name of the output variable
- @param data        Data (variable) to perform unsorted segment max on
- @param segmentIds  Variable for the segment IDs
- @param numSegments Number of segments
- @return Unsorted segment max output
-     
-""".trimIndent()
+                Unsorted segment max operation. As per {@link #segmentMax(String, SDVariable, SDVariable)} but without
+                the requirement for the indices to be sorted.
+                If data =     [1, 3, 2, 6, 4, 9, 8]
+                segmentIds =  [1, 0, 2, 0, 1, 1, 2]
+                then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]
+            """.trimIndent()
         }
     }
 
     Op("unsortedSegmentMean") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-        Input(NUMERIC, "numSegments") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment mean on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output"){ description = "Unsorted segment mean output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Unsorted segment mean operation. As per {@link #segmentMean(String, SDVariable, SDVariable)} but without
- the requirement for the indices to be sorted.<br>
- If data =     [1, 3, 2, 6, 4, 9, 8]<br>
- segmentIds =  [1, 0, 2, 0, 1, 1, 2]<br>
- then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]<br>
-
- @param name        Name of the output variable
- @param data        Data (variable) to perform unsorted segment mean on
- @param segmentIds  Variable for the segment IDs
- @param numSegments Number of segments
- @return Unsorted segment mean output
-     
-""".trimIndent()
+                Unsorted segment mean operation. As per {@link #segmentMean(String, SDVariable, SDVariable)} but without
+                the requirement for the indices to be sorted.
+                If data =     [1, 3, 2, 6, 4, 9, 8]
+                segmentIds =  [1, 0, 2, 0, 1, 1, 2]
+                then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]
+            """.trimIndent()
         }
     }
 
     Op("unsortedSegmentMin") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-        Input(NUMERIC, "numSegments") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment min on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output"){ description = "Unsorted segment min output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Unsorted segment min operation. As per {@link #segmentMin(String, SDVariable, SDVariable)} but without
- the requirement for the indices to be sorted.<br>
- If data =     [1, 3, 2, 6, 4, 9, 8]<br>
- segmentIds =  [1, 0, 2, 0, 1, 1, 2]<br>
- then output = [3, 1, 2] = [min(3,6), min(1,4,9), min(2,8)]<br>
-
- @param name        Name of the output variable
- @param data        Data (variable) to perform unsorted segment min on
- @param segmentIds  Variable for the segment IDs
- @param numSegments Number of segments
- @return Unsorted segment min output
-     
-""".trimIndent()
+                Unsorted segment min operation. As per {@link #segmentMin(String, SDVariable, SDVariable)} but without
+                the requirement for the indices to be sorted.
+                If data =     [1, 3, 2, 6, 4, 9, 8]
+                segmentIds =  [1, 0, 2, 0, 1, 1, 2]
+                then output = [3, 1, 2] = [min(3,6), min(1,4,9), min(2,8)]
+            """.trimIndent()
         }
     }
 
     Op("unsortedSegmentProd") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-        Input(NUMERIC, "numSegments") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment product on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output"){ description = "Unsorted segment product output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Unsorted segment product operation. As per {@link #segmentProd(String, SDVariable, SDVariable)} but without
- the requirement for the indices to be sorted.<br>
- If data =     [1, 3, 2, 6, 4, 9, 8]<br>
- segmentIds =  [1, 0, 2, 0, 1, 1, 2]<br>
- then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]<br>
-
- @param name       Name of the output variable
- @param data       Data (variable) to perform unsorted segment product on
- @param segmentIds Variable for the segment IDs
- @return Unsorted segment product output
-     
-""".trimIndent()
+                Unsorted segment product operation. As per {@link #segmentProd(String, SDVariable, SDVariable)} but without
+                the requirement for the indices to be sorted.
+                If data =     [1, 3, 2, 6, 4, 9, 8]
+                segmentIds =  [1, 0, 2, 0, 1, 1, 2]
+                then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]
+            """.trimIndent()
         }
     }
 
     Op("unsortedSegmentSqrtN") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-        Input(NUMERIC, "numSegments") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment sqrtN on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output"){ description = "Unsorted segment sqrtN output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Unsorted segment sqrtN operation. Simply returns the sqrt of the count of the number of values in each segment<br>
- If data =     [1, 3, 2, 6, 4, 9, 8]<br>
- segmentIds =  [1, 0, 2, 0, 1, 1, 2]<br>
- then output = [1.414, 1.732, 1.414] = [sqrt(2), sqrtN(3), sqrtN(2)]<br>
-
- @param name       Name of the output variable
- @param data       Data (variable) to perform unsorted segment sqrtN on
- @param segmentIds Variable for the segment IDs
- @return Unsorted segment sqrtN output
-     
-""".trimIndent()
+                Unsorted segment sqrtN operation. Simply returns the sqrt of the count of the number of values in each segment
+                If data =     [1, 3, 2, 6, 4, 9, 8]
+                segmentIds =  [1, 0, 2, 0, 1, 1, 2]
+                then output = [1.414, 1.732, 1.414] = [sqrt(2), sqrtN(3), sqrtN(2)]
+            """.trimIndent()
         }
     }
 
     Op("unsortedSegmentSum") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "data") { description = "" }
-        Input(NUMERIC, "segmentIds") { description = "" }
-        Input(NUMERIC, "numSegments") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment sum on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output"){ description = "Unsorted segment sum output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Unsorted segment sum operation. As per {@link #segmentSum(String, SDVariable, SDVariable)} but without
- the requirement for the indices to be sorted.<br>
- If data =     [1, 3, 2, 6, 4, 9, 8]<br>
- segmentIds =  [1, 0, 2, 0, 1, 1, 2]<br>
- then output = [9, 14, 10] = [sum(3,6), sum(1,4,9), sum(2,8)]<br>
-
- @param name        Name of the output variable
- @param data        Data (variable) to perform unsorted segment sum on
- @param segmentIds  Variable for the segment IDs
- @param numSegments Number of segments
- @return Unsorted segment sum output
-     
-""".trimIndent()
+                Unsorted segment sum operation. As per {@link #segmentSum(String, SDVariable, SDVariable)} but without
+                the requirement for the indices to be sorted.
+                If data =     [1, 3, 2, 6, 4, 9, 8]
+                segmentIds =  [1, 0, 2, 0, 1, 1, 2]
+                then output = [9, 14, 10] = [sum(3,6), sum(1,4,9), sum(2,8)]
+            """.trimIndent()
         }
     }
 
