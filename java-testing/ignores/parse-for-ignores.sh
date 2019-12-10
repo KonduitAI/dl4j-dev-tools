@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 #
 # Finds ignored test classes and test methods in the given project directory
-#
+# Main method is named parse_for_ignores
 #	Arguments:
-#		1) directory to run checks in relative to dl4j repo, checks files under
-#			src/test
+#		1) Absolute path to run checks in. Checks files under src/test
 #
-#	Usage examples: ./parse-for-ignores nd4j
-#				    ./parse-for-ignores datavec/datavec-spark
+#	Usage examples: ./parse-for-ignores ~/deeplearning4j/nd4j
+#				    ./parse-for-ignores ~/deeplearningdatavec/datavec-spark
 #
 #   Globals:
-#		PROJECT_DIR
 #		LIST_OF_TEST_DIRS
 ###############################################################################
 
@@ -54,8 +52,8 @@ ignored_tests() {
 ###############################################################################
 parse_test_dirs() {
   #header for csv
-  echo -n "IGNORED/ALL IGNORED:"
-  echo -n "PROJECT,PACKAGE NAME, TEST CLASS, TEST METHOD,"
+  echo -n "IGNORED/ALL IGNORED, "
+  echo -n "PACKAGE NAME, TEST CLASS, TEST METHOD,"
   echo "IGNORED COMMENT, LOCAL PATH TO TEST CLASS"
  
   for test_dir in ${LIST_OF_TEST_DIRS[@]}; do
@@ -74,8 +72,8 @@ parse_test_dirs() {
       #Check if entire test class is ignored, if ignored continue to next 
       all_ignored=$(ignored_all "$test_file") || true
       if [[ -n "$all_ignored" ]]; then
-        echo -n "ALL IGNORED:$PROJECT_DIR"
-        echo ",$package_name, $test_class, $all_ignored, $test_file"
+        echo -n "ALL IGNORED, "
+        echo "$package_name, $test_class, $all_ignored, $test_file"
         continue
       fi
 
@@ -83,7 +81,7 @@ parse_test_dirs() {
       tests_ignored=$(ignored_tests "$test_file") || true
       if [[ -n "$tests_ignored" ]]; then       
         while read -r line; do
-            echo -n "IGNORED:$PROJECT_DIR,"
+            echo -n "IGNORED, "
 			echo "$package_name, $test_class, $line, $test_file"
         done <<< "$tests_ignored"
       fi
@@ -97,26 +95,16 @@ parse_test_dirs() {
 ###############################################################################
 # Main method
 # Arguments:
-#  1) directory to run checks in relative to dl4j repo, checks files under
-#			src/test
+#  1) Absolute path to directory to run checks in
+#
 ###############################################################################
-main() {
-  declare PROJECT_DIR="$1"
-  if [[ -z $LIBND4J_HOME ]]; then
-    echo -n "ERROR: LIBND4J_HOME is either unset or set to a non-empty string."
-    echo -n "Set LIBND4J_HOME and rerun.Exiting script..." 1>&2
-    exit 13 
-  else
-    DL4J_BASE_DIR=$(dirname "$LIBND4J_HOME")
-    echo -e "\nINFO:Found DL4J base dir: $DL4J_BASE_DIR"
-    test_path="${DL4J_BASE_DIR}/${PROJECT_DIR}"
-    echo -e "\nINFO:Running checks on: ${test_path}\n"
-  fi
-  
+parse_for_ignore() {
+  declare test_path=$1
+  echo -e "\nINFO:Running checks on: ${test_path}\n"
+
   if [[ ! -d "$test_path" ]]; then
-    echo -n "ERROR: $test_path DOES NOT exist. "
-    echo -n "Supplied paths have to be relative to the deeplearning4j base dir"
-    echo -n ", i.e the parent dir of libnd4j,nd4j etc Exiting script..." 1>&2
+    echo -n "ERROR: $test_path DOES NOT exist.Supplied path has to be absolute"
+    echo "Exiting script..." 1>&2
     exit 7
   else
     LIST_OF_TEST_DIRS=$(find "$test_path" -path "*/src/test")
@@ -129,9 +117,10 @@ main() {
 
   parse_test_dirs
   echo -e "\n\nINFO: Run completed."
+  exit 0
 }
 
 ###############################################################################
-#Call to main
-main "$@"
+#Call to main method..
+parse_for_ignore "$@"
 

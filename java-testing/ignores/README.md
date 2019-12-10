@@ -18,7 +18,7 @@ Ignored methods count: 10. Written to: results/arbiter/ignored_methods.csv
 Log file written to summarize-ignores-arbiter.log
 ```
  ignored_classes.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
- ignored_methods.csv, contains the list of test classes with a @Ignore for the whole class with other pertinent information. 
+ ignored_methods.csv, contains the list of test method with a @Ignore for the whole class with other pertinent information. 
 
 Refer sample first three lines below. Note the csv includes the string inside @Ignore("XX") if present
 
