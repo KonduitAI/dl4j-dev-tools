@@ -22,12 +22,12 @@ set -o pipefail
 #   1) Java test file name
 ###############################################################################
 ignored_all() {
-  perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' < "$1" \
-    | tr -d "\n" \
-    | perl -pe \
-        's/\@Ignore(\((\".*?\")\))*.*?public\s+class\s+(\S+)/\nFLAG,$2\n/g' \
-    | grep ^FLAG \
-    | perl -pe 's/FLAG/*/g'
+  sed 's/\/\/.*//' < "$1" \
+   | perl -0p -e \
+       's/\/\*(.*?)\*\///sg;' -e \
+       's/\@Ignore(\((\".*?\")\))*.*?public\s+class\s+(\S+)/\nFLAG,$2\n/sg' \
+   | grep ^FLAG \
+   | sed 's/FLAG/*/g'
 }
 
 ###############################################################################
@@ -37,13 +37,29 @@ ignored_all() {
 #   1) Java test file name
 ###############################################################################
 ignored_tests() {
- perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' < "$1" \
-   | tr -d "\n" \
-   | perl -pe \
-     's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nFLAG$3,$2\n/g' \
+  sed 's/\/\/.*//' < "$1" \
+   | perl -0p -e \
+       's/\/\*(.*?)\*\///sg;' -e \
+       's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nFLAG$3,$2\n/sg' \
    | grep ^FLAG \
    | perl -pe 's/FLAG//g'
 }
+
+############################################################################### 
+# Finds ignored tests in given test file                                        
+# Captures comment inside @Ignore(...) if present                               
+# Arguments:                                                                    
+#   1) Java test file name                                                      
+############################################################################### 
+#ignored_tests_opvalidation_suite() {                                                               
+# perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' < "$1" \                                  
+#   | tr -d "\n" \                                                               
+#   | perl -pe \                                                                 
+#	 's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nFLAG$3,$2\n/g' \   
+#	 's/public\s+void\s+(\S+)\(.*?OpValidationSuite.ignoreFailing();/\nFLAG$3,$2\n/g' \   
+#   | grep ^FLAG \                                                               
+#   | perl -pe 's/FLAG//g'                                                       
+#}  
 
 ###############################################################################
 # Parse every java file under any src/test and collect information on tests 
