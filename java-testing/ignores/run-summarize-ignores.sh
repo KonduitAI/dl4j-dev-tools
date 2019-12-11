@@ -1,7 +1,7 @@
 #!/usr/bin/env bash                                                             
 #                                                                               
-# Finds ignored test classes and test methods in given project directory
-# Wrapper around parse_for_ignores.sh
+# Finds ignored test classes, test methods and failing tests set to ignore 
+# in given project directory. 
 #                                                                               
 #Usage is:                                                                       
 # run-summarize-ignores.sh <Relative Path to check> <Path for results> [DL4J repo path]
@@ -10,13 +10,16 @@
 # dir of the dl4j-dev-tools repo for the deeplearning4j repo.                       
 #                                                                                
 # Example usage:                                                                
-#   summarize-ignores.sh nd4j results                                             
-#   summarize-ignores.sh datavec/datavec-spark results_only_datavec_spark         
-#   summarize-ignores.sh nd4j results path_to_my_dl4j_repo                        
+#   run-summarize-ignores.sh nd4j results                                             
+#   run-summarize-ignores.sh datavec/datavec-spark results_only_datavec_spark         
+#   run-summarize-ignores.sh nd4j results path_to_my_dl4j_repo                        
 #     
 #Globals:                                                                    
 # PROJECT_DIR                                                             
 # RESULTS_DIR
+#Note: 
+# This is mostly a wrapper around parse_for_ignores.sh that checks arguments and
+# separates output to write to different files
 ###############################################################################
 
 set -o errexit
@@ -60,7 +63,8 @@ if [[ $# -eq 3 ]]; then
     DL4J_BASE_DIR="$3"	
   fi
 else
-  DL4J_BASE_DIR="${BASH_SOURCE%/*}/../../../deeplearning4j"
+  #awk because on mac shell might print "...saving history..." before exiting
+  DL4J_BASE_DIR="$(echo $(cd ../../../deeplearning4j && pwd) | awk '{print $1}')"
   echo "INFO: Constructing dl4j repo path based on absolute path of script ..."
   echo "INFO: Checking for repo at $DL4J_BASE_DIR"
   if [[ ! -d "$DL4J_BASE_DIR" ]]; then
@@ -88,17 +92,30 @@ fi
 log_file="$RESULTS_DIR"/summarize-ignores.log
 info_classes="$RESULTS_DIR"/ignored_classes.csv
 info_methods="$RESULTS_DIR"/ignored_methods.csv
+info_failed="$RESULTS_DIR"/ignore_failing_methods.csv
 
-echo "RUN RUN RUN"
 ./parse-for-ignores.sh "$TEST_PATH" 2>&1 | tee $log_file
+
+echo -n "===================================================================="
 echo "===================================================================="
+
 grep "ALL IGNORED" $log_file> $info_classes
-grep ^IGNORE $log_file > $info_methods
 line_count=$(wc -l "$info_classes" | awk '{print $1}')
-let "count = $line_count - 1"
+#count can return zero
+let "count = $line_count - 1" || true
 echo "Ignored classes count:$count. Written to: $info_classes"
+
+grep ^IGNORED $log_file > $info_methods
 line_count=$(wc -l "$info_methods" | awk '{print $1}')
-let "count = $line_count - 1"
+let "count = $line_count - 1" || true
 echo "Ignored methods count: $count. Written to: $info_methods"
-echo "Log file written to $log_file"
+
+grep "IGNORE FAILING" $log_file > $info_failed
+line_count=$(wc -l "$info_failed" | awk '{print $1}')
+let "count = $line_count - 1" || true
+echo "Ignore failing tests count:$count. Written to: $info_failed"
+
+echo -e "\n\tLog file written to $log_file"
+echo -n "===================================================================="
+echo "===================================================================="
 

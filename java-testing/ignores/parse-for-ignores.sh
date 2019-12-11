@@ -42,24 +42,21 @@ ignored_tests() {
        's/\/\*(.*?)\*\///sg;' -e \
        's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nFLAG$3,$2\n/sg' \
    | grep ^FLAG \
-   | perl -pe 's/FLAG//g'
+   | sed 's/FLAG//g'
 }
 
 ############################################################################### 
-# Finds ignored tests in given test file                                        
-# Captures comment inside @Ignore(...) if present                               
+# Finds tests in given test file with OpValidationSuite.ignoreFailing()                                       
 # Arguments:                                                                    
 #   1) Java test file name                                                      
 ############################################################################### 
-#ignored_tests_opvalidation_suite() {                                                               
-# perl -pe 's/(^\s*\/\/|\s+\/\/).*$//' < "$1" \                                  
-#   | tr -d "\n" \                                                               
-#   | perl -pe \                                                                 
-#	 's/\@Ignore(\((\".*?\")\))*.*?public\s+void\s+(\S+)\(/\nFLAG$3,$2\n/g' \   
-#	 's/public\s+void\s+(\S+)\(.*?OpValidationSuite.ignoreFailing();/\nFLAG$3,$2\n/g' \   
-#   | grep ^FLAG \                                                               
-#   | perl -pe 's/FLAG//g'                                                       
-#}  
+ignored_failing() {                                                               
+  sed 's/\/\/.*//' < "$1" \
+    | tr -d '\n'| rev \
+    | perl -pe \
+     's/(GNILIAF_ERONGI|gniliaFerongi).etiuSnoitadilaVpO.*?\)\s*\(\s*(\S+)\s+diov\s+cilbup/\n,$2GALF\n/g' \
+    | rev | grep ^FLAG | sed 's/FLAG//g'
+}  
 
 ###############################################################################
 # Parse every java file under any src/test and collect information on tests 
@@ -67,8 +64,9 @@ ignored_tests() {
 #  None
 ###############################################################################
 parse_test_dirs() {
+
   #header for csv
-  echo -n "IGNORED/ALL IGNORED, "
+  echo -n "IGNORED/ALL IGNORED/IGNORE FAILING, "
   echo -n "PACKAGE NAME, TEST CLASS, TEST METHOD,"
   echo "IGNORED COMMENT, LOCAL PATH TO TEST CLASS"
  
@@ -85,6 +83,7 @@ parse_test_dirs() {
       package_name=$(grep "package .*;" "$test_file" \
 	  				  | awk '{print $2}' \
 	  				  | tr -d ';')
+
       #Check if entire test class is ignored, if ignored continue to next 
       all_ignored=$(ignored_all "$test_file") || true
       if [[ -n "$all_ignored" ]]; then
@@ -97,15 +96,26 @@ parse_test_dirs() {
       tests_ignored=$(ignored_tests "$test_file") || true
       if [[ -n "$tests_ignored" ]]; then       
         while read -r line; do
-            echo -n "IGNORED, "
-			echo "$package_name, $test_class, $line, $test_file"
+          echo -n "IGNORED, "
+		  echo "$package_name, $test_class, $line, $test_file"
         done <<< "$tests_ignored"
       fi
+
+      #Check for ignored failing tests set from OpValidationSuite
+      tests_failing_ignored=$(ignored_failing "$test_file") || true
+      if [[ -n "$tests_failing_ignored" ]]; then
+        while read -r line; do
+          echo -n "IGNORE FAILING, "
+		  echo "$package_name, $test_class, $line, $test_file"
+        done <<< "$tests_failing_ignored"
+      fi
+          
 	  echo "INFO:Checked test file $test_file..."
     done
     echo "INFO:Finished running subdir $test_dir"
 
   done
+
 }
 
 ###############################################################################
@@ -119,7 +129,8 @@ parse_for_ignore() {
   echo -e "\nINFO:Running checks on: ${test_path}\n"
 
   if [[ ! -d "$test_path" ]]; then
-    echo -n "ERROR: $test_path DOES NOT exist.Supplied path has to be absolute"
+    echo -n "ERROR: $test_path DOES NOT exist." 1>&2
+    echo -n "Supplied path has to be absolute" 1>&2
     echo "Exiting script..." 1>&2
     exit 7
   else
