@@ -10,5 +10,7 @@ enum class DataType {
     DATA_TYPE, // tensor data type
     CONDITION, // A condition
     LOSS_REDUCE, // Loss reduction mode
-    ENUM // defines an enum along with possibleValues property in Arg
+    ENUM; // defines an enum along with possibleValues property in Arg
+
+    fun isTensorDataType() = setOf(FLOATING_POINT, INT, LONG, NUMERIC, BOOL).contains(this)
 }

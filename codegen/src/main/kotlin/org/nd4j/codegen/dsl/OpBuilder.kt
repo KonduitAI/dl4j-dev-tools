@@ -56,11 +56,13 @@ fun OpLike.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = 
     val input = Input(name, dataType)
     if (block != null) input.block()
 
-    if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
+    if (!dataType.isTensorDataType()) {
         throw IllegalArgumentException("Invalid datatype for input \"$name\" of op ${this.name()}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
     }
 
     this.addInput(input)
+
+
     return input
 }
 
@@ -69,6 +71,9 @@ fun OpLike.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null
     if (block != null) input.block()
 
     this.addArgument(input)
+    if(dataType == DataType.ENUM){
+        Registry.registerEnum(input)
+    }
     return input
 }
 
@@ -76,7 +81,7 @@ fun OpLike.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? 
     val output = Output(name, dataType)
     if (block != null) output.block()
 
-    if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
+    if (!dataType.isTensorDataType()) {
         throw IllegalArgumentException("Invalid datatype for output \"$name\" of op ${this.name()}: output arrays cannot have type $dataType");
     }
 
@@ -198,6 +203,7 @@ fun NamespaceOps.Config(name: String, block: (Config.() -> Unit)): Config {
     val config = Config(name)
     config.block()
     this.addConfig(config)
+    Registry.registerConfig(config)
     return config
 }
 
@@ -205,7 +211,7 @@ fun Config.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = 
     val input = Input(name, dataType)
     if (block != null) input.block()
 
-    if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
+    if (!dataType.isTensorDataType()) {
         throw IllegalArgumentException("Invalid datatype for input \"$name\" of config ${this.name}: inputs arrays cannot have type $dataType - wrong type, or should be Arg type?");
     }
 

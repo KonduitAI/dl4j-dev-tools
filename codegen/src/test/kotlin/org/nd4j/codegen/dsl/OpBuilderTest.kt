@@ -3,8 +3,7 @@ package org.nd4j.codegen.dsl
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.nd4j.codegen.api.AtLeast
-import org.nd4j.codegen.api.DataType.INT
-import org.nd4j.codegen.api.DataType.NUMERIC
+import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Exactly
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
@@ -21,6 +20,9 @@ class OpBuilderTest {
         val outDir = testDir
 
         val mathNs = Namespace("math") {
+            val config = Config("bla"){
+
+            }
             Op("add") {
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
@@ -106,6 +108,8 @@ class OpBuilderTest {
                 javaOpClass = "FooBarOp"
                 val x = Input(NUMERIC,"x") { description = "First operand to %OPNAME% (%INPUT_TYPE%)" }
                 val y = Input(NUMERIC,"y") { description = "Second operand to div" }
+                val z = Arg(ENUM, "fooMode"){ description = "Something or other"; possibleValues = listOf("SOME", "value", "Spam", "eGGs")}
+                val bla = useConfig(config)
 
                 Constraint("foo bar"){
                     x.sizeAt(7) eq 7 and y.isScalar()
@@ -115,13 +119,13 @@ class OpBuilderTest {
                     "op doc text that will appear everywhere - classes, constructors, op creators"
                 }
 
-                Signature(x, y)
+                Signature(x, y, z, bla)
             }
         }
 
         val generator = JavaPoetGenerator()
         generator.generateNamespaceNd4j(mathNs, null, outDir, "Nd4jMath")
-        val exp = File(outDir, "org/nd4j/linalg/factory/ops/Nd4jMath.java")
+        val exp = File(outDir, "org/nd4j/linalg/factory/configs/Bla.java")
         assertTrue(exp.isFile)
 
         println(FileUtils.readFileToString(exp, StandardCharsets.UTF_8))

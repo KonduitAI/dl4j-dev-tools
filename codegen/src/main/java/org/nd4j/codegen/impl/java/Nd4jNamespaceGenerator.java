@@ -1,9 +1,6 @@
 package org.nd4j.codegen.impl.java;
 
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
@@ -12,22 +9,42 @@ import org.nd4j.codegen.api.doc.DocTokens;
 import org.nd4j.codegen.api.generator.ConstraintCodeGenerator;
 import org.nd4j.codegen.api.generator.GeneratorConfig;
 import org.nd4j.codegen.util.GenUtil;
-import org.nd4j.linalg.factory.NDValidation;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.NDValidation;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.conditions.Condition;
 
 import javax.lang.model.element.Modifier;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Nd4jNamespaceGenerator {
     private static Map<DataType, Class<?>> typeMapping = new HashMap<>();
-    private static Map<DataType, Class<?>> arrayTypeMapping = new HashMap<>();
     private static Map<DataType, String> validationMapping = new HashMap<>();
+    private static Map<Arg, TypeName> enumMapping = new HashMap<>();
+    private static Map<Config, TypeName> configMapping = new HashMap<>();
     private static Count exactlyOne = new Exactly(1);
+    private static String copyright =
+            "/* ******************************************************************************\n" +
+            " * Copyright (c) 2019 Konduit K.K.\n" +
+            " *\n" +
+            " * This program and the accompanying materials are made available under the\n" +
+            " * terms of the Apache License, Version 2.0 which is available at\n" +
+            " * https://www.apache.org/licenses/LICENSE-2.0.\n" +
+            " *\n" +
+            " * Unless required by applicable law or agreed to in writing, software\n" +
+            " * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n" +
+            " * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n" +
+            " * License for the specific language governing permissions and limitations\n" +
+            " * under the License.\n" +
+            " *\n" +
+            " * SPDX-License-Identifier: Apache-2.0\n" +
+            " ******************************************************************************/\n";
+    private static String codeGenWarning =
+            "\n//================== GENERATED CODE - DO NOT MODIFY THIS FILE ==================\n\n";
 
     static {
         typeMapping.put(DataType.BOOL, boolean.class);
@@ -37,13 +54,6 @@ public class Nd4jNamespaceGenerator {
         typeMapping.put(DataType.LONG, long.class);
         typeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType.class);
         typeMapping.put(DataType.CONDITION, Condition.class);
-
-        arrayTypeMapping.put(DataType.BOOL, boolean[].class);
-        arrayTypeMapping.put(DataType.FLOATING_POINT, double[].class);
-        arrayTypeMapping.put(DataType.NUMERIC, double[].class);
-        arrayTypeMapping.put(DataType.INT, int[].class);
-        arrayTypeMapping.put(DataType.LONG, long[].class);
-        arrayTypeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType[].class);
 
         validationMapping.put(DataType.BOOL, "validateBool");
         validationMapping.put(DataType.FLOATING_POINT, "validateFloatingPoint");
@@ -56,8 +66,15 @@ public class Nd4jNamespaceGenerator {
 
     private Nd4jNamespaceGenerator() { }
 
-    public static void generate(NamespaceOps namespace, GeneratorConfig config, File directory, String className) throws IOException {
+    public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className) throws IOException {
+        String basePackage = "org.nd4j.linalg.factory";
 
+        generateEnums(outputDirectory, basePackage);
+        generateConfigs(outputDirectory, basePackage);
+        generateOpFactory(namespace, outputDirectory, className, basePackage);
+    }
+
+    private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage) throws IOException {
         TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC);
 
@@ -73,31 +90,22 @@ public class Nd4jNamespaceGenerator {
 
         TypeSpec ts = builder.build();
 
-        JavaFile jf = JavaFile.builder("org.nd4j.linalg.factory.ops", ts)
+        final String opsPackage = basePackage + ".ops";
+        JavaFile jf = JavaFile.builder(opsPackage, ts)
                 .addStaticImport(NDValidation.class, "isSameType")
                 .build();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("/* ******************************************************************************\n" +
-                " * Copyright (c) 2019 Konduit K.K.\n" +
-                " *\n" +
-                " * This program and the accompanying materials are made available under the\n" +
-                " * terms of the Apache License, Version 2.0 which is available at\n" +
-                " * https://www.apache.org/licenses/LICENSE-2.0.\n" +
-                " *\n" +
-                " * Unless required by applicable law or agreed to in writing, software\n" +
-                " * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n" +
-                " * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n" +
-                " * License for the specific language governing permissions and limitations\n" +
-                " * under the License.\n" +
-                " *\n" +
-                " * SPDX-License-Identifier: Apache-2.0\n" +
-                " ******************************************************************************/\n");
-        sb.append("\n//================== GENERATED CODE - DO NOT MODIFY THIS FILE ==================\n\n");
+        sb.append(copyright);
+        sb.append(codeGenWarning);
         jf.writeTo(sb);
 
-        File outFile = new File(directory, "org/nd4j/linalg/factory/ops/" + className + ".java");
+        File outFile = new File(outputDirectory, packageToDirectory(opsPackage) + "/" + className + ".java");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
+    }
+
+    private static String packageToDirectory(String packageName){
+        return packageName.replace(".", File.separator);
     }
 
     private static void addDefaultConstructor(TypeSpec.Builder builder) {
@@ -168,14 +176,17 @@ public class Nd4jNamespaceGenerator {
                 if(p instanceof Input){
                     Input i = (Input)p;
                     c.addJavadoc("@param " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)\n");
-                } else if(p instanceof Arg){
-                    Arg arg = (Arg)p;
+                } else if(p instanceof Arg) {
+                    Arg arg = (Arg) p;
                     final Count count = arg.getCount();
                     if (count == null || count.equals(exactlyOne)) {
                         c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + "\n");
                     } else {
                         c.addJavadoc("@param " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() + ")\n");
                     }
+                } else if(p instanceof Config){
+                    Config config = (Config) p;
+                    c.addJavadoc("@param " + config.getName() + " Configuration Object\n");
                 } else {
                     throw new RuntimeException("Unknown parameter type: " + p + " - " + p.getClass() + " - op = " + op.getOpName());
                 }
@@ -227,21 +238,36 @@ public class Nd4jNamespaceGenerator {
                     inNames.add(argName);
 
                     final Count count = arg.getCount();
-                    if (count == null || count.equals(exactlyOne)) {
-                        // single arg
+                    TypeName type;
+                    if(arg.getType() == DataType.ENUM){
+                        type = enumMapping.get(arg);
+                    }else{
                         if(!typeMapping.containsKey(arg.getType())){
                             throw new IllegalStateException("No type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
                         }
-                        c.addParameter(typeMapping.get(arg.getType()), argName);
-                    } else {
-                        // array Arg
-                        if(!arrayTypeMapping.containsKey(arg.getType())){
-                            throw new IllegalStateException("No array type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
-                        }
-                        c.addParameter(arrayTypeMapping.get(arg.getType()), argName);
+                        type = TypeName.get(typeMapping.get(arg.getType()));
                     }
 
+                    if (!(count == null || count.equals(exactlyOne))) {
+                        // array Arg
+                        if(arg.getType() == DataType.ENUM){
+                            type = ArrayTypeName.of(type);
+                        }else{
+
+                            if(!typeMapping.containsKey(arg.getType())){
+                                throw new IllegalStateException("No array type mapping has been specified for type " + arg.getType() + " (op=" + op.getOpName() + ", arg=" + arg.getName() + ")" );
+                            }
+                            type = ArrayTypeName.of(type);
+                        }
+                    }
+                    c.addParameter(type, argName);
+
                     checkParameterCount(c, count, argName);
+                } else if(p instanceof Config) {
+                    Config config = (Config) p;
+                    final String configName = config.getName();
+                    inNames.add(configName);
+                    c.addParameter(configMapping.get(config), config.name());
                 } else {
                     throw new IllegalStateException("Unknown parameter type: " + p + " - " + p.getClass());
                 }
@@ -331,5 +357,65 @@ public class Nd4jNamespaceGenerator {
                 c.addStatement(CodeBlock.of("$T.checkArgument($L.length >= $L && $L.length <= $L, $S, $L)", Preconditions.class, paramName, ((Range) count).getFrom(), paramName, ((Range) count).getTo(), errorMessage, paramName + ".length"));
             }
         }
+    }
+
+    private static void generateEnums(File outputDirectory, String basePackage) throws IOException {
+        for (Arg it : Registry.INSTANCE.enums()) {
+            generateEnum(outputDirectory, basePackage + ".enums", it);
+        }
+    }
+
+    private static void generateEnum(File outputDirectory, String targetPackage, Arg arg) throws IOException {
+        final String className = GenUtil.ensureFirstIsCap(arg.name());
+        enumMapping.put(arg, ClassName.get(targetPackage, className));
+
+        TypeSpec.Builder builder = TypeSpec.enumBuilder(className)
+                .addModifiers(Modifier.PUBLIC)
+                .addJavadoc(CodeBlock.of(arg.getDescription()));
+
+        for (String possibleValue : arg.getPossibleValues()) {
+            builder.addEnumConstant(possibleValue);
+        }
+
+        TypeSpec ts = builder.build();
+
+        JavaFile jf = JavaFile.builder(targetPackage, ts)
+                .build();
+
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(copyright);
+        sb.append(codeGenWarning);
+        jf.writeTo(sb);
+
+        File outFile = new File(outputDirectory, packageToDirectory(targetPackage) + "/" + className + ".java");
+        FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
+    }
+
+    private static void generateConfigs(File outputDirectory, String basePackage) throws IOException {
+        for (Config config : Registry.INSTANCE.configs()) {
+            generateConfig(outputDirectory, basePackage+".configs", config);
+        }
+    }
+
+    private static void generateConfig(File outputDirectory, String targetPackage, Config config) throws IOException {
+        final String className = GenUtil.ensureFirstIsCap(config.name());
+        configMapping.put(config, ClassName.get(targetPackage, className));
+        TypeSpec.Builder builder = TypeSpec.classBuilder(className)
+                .addModifiers(Modifier.PUBLIC);
+        TypeSpec ts = builder.build();
+
+        JavaFile jf = JavaFile.builder(targetPackage, ts)
+                .build();
+
+        // TODO Actually implement something here
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(copyright);
+        sb.append(codeGenWarning);
+        jf.writeTo(sb);
+
+        File outFile = new File(outputDirectory, packageToDirectory(targetPackage) + "/" + className + ".java");
+        FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 }
