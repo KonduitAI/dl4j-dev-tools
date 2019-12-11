@@ -56,8 +56,8 @@ ignored_tests() {
 ############################################################################### 
 ignored_failing() {                                                               
   sed 's/\/\/.*//' < "$1" \
-    | tr -d '\n'| rev \
-    | perl -pe \
+    | tr -d '\n'| perl -pe 's/\/\*.*?\*\///g' | rev \
+    | perl -p -e \
      's/(GNILIAF_ERONGI|gniliaFerongi).etiuSnoitadilaVpO.*?\)\s*\(\s*(\S+)\s+diov\s+cilbup/\n,$2GALF\n/g' \
     | rev | grep ^FLAG | sed 's/FLAG//g'
 }  
