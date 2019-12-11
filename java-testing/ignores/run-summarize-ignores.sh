@@ -3,21 +3,14 @@
 # Finds ignored test classes, test methods and failing tests set to ignore 
 # in given project directory. 
 #                                                                               
-#Usage is:                                                                       
-# run-summarize-ignores.sh <Relative Path to check> <Path for results> [DL4J repo path]
-#                                                                                
-# If the optional third argument in not provided, script will check the parent
-# dir of the dl4j-dev-tools repo for the deeplearning4j repo.                       
-#                                                                                
-# Example usage:                                                                
-#   run-summarize-ignores.sh nd4j results                                             
-#   run-summarize-ignores.sh datavec/datavec-spark results_only_datavec_spark         
-#   run-summarize-ignores.sh nd4j results path_to_my_dl4j_repo                        
+# Author       	:Susan Eraly
+# Email        	:susan@skymind.global
 #     
-#Globals:                                                                    
+# Globals:                                                                    
 # PROJECT_DIR                                                             
 # RESULTS_DIR
-#Note: 
+
+# Note: 
 # This is mostly a wrapper around parse_for_ignores.sh that checks arguments and
 # separates output to write to different files
 ###############################################################################

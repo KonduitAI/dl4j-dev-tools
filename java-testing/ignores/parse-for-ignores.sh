@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 #
+#                                                                               
 # Finds ignored test classes and test methods in the given project directory
+# Author        :Susan Eraly                                                    
+# Email         :susan@skymind.global 
+#
 # Main method is named parse_for_ignores
 #	Arguments:
 #		1) Absolute path to run checks in. Checks files under src/test
