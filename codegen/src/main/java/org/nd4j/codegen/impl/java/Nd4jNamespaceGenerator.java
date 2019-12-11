@@ -24,8 +24,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Nd4jNamespaceGenerator {
-    private static Map<DataType, Class> typeMapping = new HashMap<>();
-    private static Map<DataType, Class> arrayTypeMapping = new HashMap<>();
+    private static Map<DataType, Class<?>> typeMapping = new HashMap<>();
+    private static Map<DataType, Class<?>> arrayTypeMapping = new HashMap<>();
     private static Map<DataType, String> validationMapping = new HashMap<>();
     private static Count exactlyOne = new Exactly(1);
 
@@ -132,7 +132,7 @@ public class Nd4jNamespaceGenerator {
     private static void  buildJavaDoc(Op op, Signature s, MethodSpec.Builder c) {
         //Method javadoc:
         List<DocSection> doc = op.getDoc();
-        if(doc != null && !doc.isEmpty()){
+        if(!doc.isEmpty()){
             for(DocSection ds : doc){
                 if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
                     String text = DocTokens.processDocText(ds.getText(), op, DocTokens.GenerationType.ND4J);
@@ -153,7 +153,7 @@ public class Nd4jNamespaceGenerator {
         // Document Constraints:
         //TODO what if constraint is on default value arg/s - no point specifying them here...
         final List<Constraint> constraints = op.getConstraints();
-        if(constraints != null && !constraints.isEmpty()){
+        if(!constraints.isEmpty()){
             c.addJavadoc("Inputs must satisfy the following constraints: <br>\n");
             for (Constraint constraint : constraints) {
                 c.addJavadoc(constraint.getMessage() +": " + constraintCodeGenerator.generateExpression(constraint.getCheck()) + "<br>\n");
@@ -163,7 +163,7 @@ public class Nd4jNamespaceGenerator {
         }
 
         List<Parameter> params = s.getParameters();
-        if(params != null && !params.isEmpty()){
+        if(!params.isEmpty()){
             for(Parameter p : params){
                 if(p instanceof Input){
                     Input i = (Input)p;
@@ -186,7 +186,7 @@ public class Nd4jNamespaceGenerator {
 
         //Outputs:
         List<Output> outputs = op.getOutputs();
-        if(outputs != null && !outputs.isEmpty()){
+        if(!outputs.isEmpty()){
             if(outputs.size() == 1){
                 Output o = outputs.get(0);
                 c.addJavadoc("@return " + o.getName() + " " + (o.getDescription() == null ? "" : DocTokens.processDocText(o.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + o.getType() + " type)\n");
@@ -200,7 +200,7 @@ public class Nd4jNamespaceGenerator {
         List<String> inNames = new ArrayList<>();
 
         List<Parameter> params = s.getParameters();
-        if(params != null && !params.isEmpty()){
+        if(!params.isEmpty()){
             for(Parameter p : params){
                 if(p instanceof Input){
                     Input i = (Input)p;
@@ -221,7 +221,7 @@ public class Nd4jNamespaceGenerator {
                 } else if(p instanceof Arg){
                     Arg arg = (Arg)p;
                     final String argName = arg.getName();
-                    if(argName == null || argName.isEmpty()){
+                    if(argName.isEmpty()){
                         throw new IllegalStateException("Got null argument name for op " + op.getOpName());
                     }
                     inNames.add(argName);
@@ -253,7 +253,7 @@ public class Nd4jNamespaceGenerator {
     }
 
     private static void buildConstraints(MethodSpec.Builder c, Op op, Signature s) {
-        if(op.getConstraints() == null || op.getConstraints().isEmpty())
+        if(op.getConstraints().isEmpty())
             return;
 
         //TODO not all contsraints apply to all signatures?
@@ -290,7 +290,7 @@ public class Nd4jNamespaceGenerator {
 
     private static void enableVarargsOnLastArg(MethodSpec.Builder c, Op op, Signature s) {
         List<Parameter> p = s.getParameters();
-        if(p != null && !p.isEmpty()){
+        if(!p.isEmpty()){
             Parameter lastP = p.get(p.size() - 1);
             if (lastP instanceof Arg) {
                 Arg arg = (Arg) lastP;

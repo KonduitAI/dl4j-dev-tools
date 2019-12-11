@@ -8,13 +8,13 @@ object DocTokens {
     private val LIBND4J_OPNAME = "%LIBND4J_OPNAME%".toRegex()
     private val INPUT_TYPE = "%INPUT_TYPE%".toRegex()
 
-    @JvmStatic fun processDocText(doc: String?, op: Op, type: GenerationType): String? {
+    @JvmStatic fun processDocText(doc: String?, op: Op, type: GenerationType): String {
         return doc
-                ?.replace(OPNAME, op.opName!!)
+                ?.replace(OPNAME, op.opName)
                 ?.replace(LIBND4J_OPNAME, op.libnd4jOpName!!)
                 ?.replace(INPUT_TYPE, when(type){
                     GenerationType.SAMEDIFF -> "SDVariable"
                     GenerationType.ND4J -> "INDArray"
-                })
+                }) ?: ""
     }
 }
