@@ -1361,315 +1361,182 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("size") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "0D (scalar) output variable with value equal to the number of elements in the specified array" }
         Doc(Language.ANY, DocScope.ALL){
-            """
- Returns the size (number of elements, i.e., prod(shape)) of the specified SDVariable as a 0D scalar variable
-
- @param name Name of the output variable
- @param in   Input variable
- @return 0D (scalar) output variable with value equal to the number of elements in the specified array
-     
-""".trimIndent()
+            """ 
+                Returns the size (number of elements, i.e., prod(shape)) of the specified SDVariable as a 0D scalar variable
+            """.trimIndent()
         }
     }
 
     Op("sizeAt") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(INT, "dimension") { description = "Dimension to get size of" }
+        Output(NUMERIC, "output"){ description = "Scalar SDVariable for size at specified variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Returns a rank 0 (scalar) variable for the size of the specified dimension.
- For example, if X has shape [10,20,30] then sizeAt(X,1)=20. Similarly, sizeAt(X,-1)=30
-
- @param name      Name of the output variable
- @param in        Input variable
- @param dimension Dimension to get size of
- @return Scalar SDVariable for size at specified variable
-     
-""".trimIndent()
+                Returns a rank 0 (scalar) variable for the size of the specified dimension.
+                For example, if X has shape [10,20,30] then sizeAt(X,1)=20. Similarly, sizeAt(X,-1)=30
+            """.trimIndent()
         }
     }
 
     Op("slice") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "begin") { description = "" }
-        Input(NUMERIC, "size") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { description = "input Variable to get subset of" }
+        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index. Must be same length as rank of input array" }
+        Arg(INT, "size") { count = AtLeast(1); description = "Size of the output array. Must be same length as rank of input array" }
+        Output(NUMERIC, "output"){ description = "Subset of the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Get a subset of the specified input, by specifying the first element and the size of the array.<br>
- For example, if input is:<br>
- [a, b, c]<br>
- [d, e, f]<br>
- then slice(input, begin=[0,1], size=[2,1] will return:<br>
- [b]<br>
- [e]<br>
- <br>
- Note that for each dimension i, begin[i] + size[i] <= input.size(i)
-
- @param name  Output variable name
- @param input Variable to get subset of
- @param begin Beginning index. Must be same length as rank of input array
- @param size  Size of the output array. Must be same length as rank of input array
- @return Subset of the input
-     
-""".trimIndent()
+                Get a subset of the specified input, by specifying the first element and the size of the array.
+                For example, if input is:
+                [a, b, c]
+                [d, e, f]
+                then slice(input, begin=[0,1], size=[2,1] will return:
+                [b]
+                [e]
+                Note that for each dimension i, begin[i] + size[i] <= input.size(i)
+            """.trimIndent()
         }
     }
 
     Op("squaredNorm") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
         Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
+        Arg(BOOL, "keepDims") { description = "" }
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Squared L2 norm: see {@link #norm2(String, SDVariable, boolean, int...)}
-     
-""".trimIndent()
+                Squared L2 norm: see {@link #norm2(String, SDVariable, boolean, int...)}
+            """.trimIndent()
         }
     }
 
     Op("squaredNorm") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
+        legacy = true
         Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
+        Arg(INT, "dimensions") { count = AtLeast(1); description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- Squared L2 norm: see {@link #norm2(String, SDVariable, int...)}
-     
-""".trimIndent()
+                Squared L2 norm: see {@link #norm2(String, SDVariable, int...)}
+            """.trimIndent()
         }
     }
 
     Op("squeeze") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "axis") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "axis") { description = "Size 1 dimension to remove" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Remove a single dimension of size 1.
- For example, if input has shape [a,b,1,c] then squeeze(input, 2) returns an array of shape [a,b,c]
-
- @param name Name of the output variable
- @param x    Input variable
- @param axis Size 1 dimension to remove
- @return Output variable
-     
-""".trimIndent()
+                Remove a single dimension of size 1.
+                For example, if input has shape [a,b,1,c] then squeeze(input, 2) returns an array of shape [a,b,c]
+            """.trimIndent()
         }
     }
 
     Op("stack") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "axis") { description = "" }
-        Input(NUMERIC, "values") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        //TODO: Flip the variables back to the original order.
+        Input(NUMERIC, "values") { description = "Input variables to stack. Must have the same shape for all inputs" }
+        Arg(INT, "axis") { description = "Axis to stack on" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Stack a set of N SDVariables of rank X into one rank X+1 variable.
- If inputs have shape [a,b,c] then output has shape:<br>
- axis = 0: [N,a,b,c]<br>
- axis = 1: [a,N,b,c]<br>
- axis = 2: [a,b,N,c]<br>
- axis = 3: [a,b,c,N]<br>
-
- @param name   Name of the output variable
- @param axis   Axis to stack on
- @param values Input variables to stack. Must have the same shape for all inputs
- @return Output variable
- @see #unstack(String[], SDVariable, int, int)
-     
-""".trimIndent()
+                Stack a set of N SDVariables of rank X into one rank X+1 variable.
+                If inputs have shape [a,b,c] then output has shape:
+                axis = 0: [N,a,b,c]
+                axis = 1: [a,N,b,c]
+                axis = 2: [a,b,N,c]
+                axis = 3: [a,b,c,N]
+                @see #unstack(String[], SDVariable, int, int)
+            """.trimIndent()
         }
     }
 
     Op("standardDeviation") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "biasCorrected") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.summarystats"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample stdev). If false: divide by N (population stdev)" }
+        Arg(INT, "dimensions") {count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Stardard deviation array reduction operation, optionally along specified dimensions
-
- @param name          Output variable name
- @param x             Input variable
- @param biasCorrected If true: divide by (N-1) (i.e., sample stdev). If false: divide by N (population stdev)
- @param dimensions    Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Stardard deviation array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("standardDeviation") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "biasCorrected") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.summarystats"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample stdev). If false: divide by N (population stdev)" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count= AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Stardard deviation array reduction operation, optionally along specified dimensions<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param x             Input variable
- @param biasCorrected If true: divide by (N-1) (i.e., sample stdev). If false: divide by N (population stdev)
- @param keepDims      If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions    Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Stardard deviation array reduction operation, optionally along specified dimensions
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("stridedSlice") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "begin") { description = "" }
-        Input(NUMERIC, "end") { description = "" }
-        Input(NUMERIC, "strides") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { description = "Variable to get subset of" }
+        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index. Must be same length as rank of input array" }
+        Arg(INT, "end") { count = AtLeast(1); description = "End index. Must be same length as the rank of the array" }
+        Arg(INT, "strides") { count = AtLeast(1); description = "(\"step size\") for each dimension. Must be same length as the rank of the array. For example, stride of 2 means take every second element" }
+        Output(NUMERIC, "output"){ description = "Subset of the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #stridedSlice(String, SDVariable, long[], long[], long[])
-     
-""".trimIndent()
+                Get a subset of the specified input, by specifying the first element, last element, and the strides.
+                For example, if input is:
+                [a, b, c]
+                [d, e, f]
+                [g, h, i]
+                then stridedSlice(input, begin=[0,1], end=[2,2], strides=[2,1]) will return:
+                [b, c]
+                [h, i]
+            """.trimIndent()
         }
     }
 
     Op("stridedSlice") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "begin") { description = "" }
-        Input(NUMERIC, "end") { description = "" }
-        Input(NUMERIC, "strides") { description = "" }
-        Input(NUMERIC, "beginMask") { description = "" }
-        Input(NUMERIC, "endMask") { description = "" }
-        Input(NUMERIC, "ellipsisMask") { description = "" }
-        Input(NUMERIC, "newAxisMask") { description = "" }
-        Input(NUMERIC, "shrinkAxisMask") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "in") { description = "Variable to get subset of" }
+        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index" }
+        Arg(INT, "end") { count = AtLeast(1); description = "End index" }
+        Arg(INT, "strides") { count = AtLeast(1); description = "Stride (\"step size\") for each dimension. For example, stride of 2 means take every second element." }
+        Arg(INT, "beginMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the begin long[] is ignored, and a value of 0 is used instead for the beginning index for that dimension" }
+        Arg(INT, "endMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the end long[] is ignored, and a value of size(i)-1 is used instead for the end index for that dimension" }
+        Arg(INT, "ellipsisMask") { description = "Bit mask: only one non-zero value is allowed here. If a non-zero value is set, then other dimensions are inserted as required at the specified position" }
+        Input(NUMERIC, "newAxisMask") { description = "Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and a size 1 dimension is inserted at this point" }
+        Input(NUMERIC, "shrinkAxisMask") { description = "Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and a size 1 dimension is removed at this point. Note that begin/end/stride values must result in a size 1 output for these dimensions" }
+        Output(NUMERIC, "output"){ description = "A subset of the input array" }
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #stridedSlice(String, SDVariable, long[], long[], long[], int, int, int, int, int)
-     
-""".trimIndent()
-        }
-    }
-
-    Op("stridedSlice") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-        Input(NUMERIC, "begin") { description = "" }
-        Input(NUMERIC, "end") { description = "" }
-        Input(NUMERIC, "strides") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Get a subset of the specified input, by specifying the first element, last element, and the strides.<br>
- For example, if input is:<br>
- [a, b, c]<br>
- [d, e, f]<br>
- [g, h, i]<br>
- then stridedSlice(input, begin=[0,1], end=[2,2], strides=[2,1]) will return:<br>
- [b, c]<br>
- [h, i]<br>
- <br>
-
- @param name    Output variable name
- @param input   Variable to get subset of
- @param begin   Beginning index. Must be same length as rank of input array
- @param end     End index. Must be same length as the rank of the array
- @param strides Stride ("step size") for each dimension. Must be same length as the rank of the array. For example,
-                stride of 2 means take every second element.
- @return Subset of the input
-     
-""".trimIndent()
-        }
-    }
-
-    Op("stridedSlice") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "in") { description = "" }
-        Input(NUMERIC, "begin") { description = "" }
-        Input(NUMERIC, "end") { description = "" }
-        Input(NUMERIC, "strides") { description = "" }
-        Input(NUMERIC, "beginMask") { description = "" }
-        Input(NUMERIC, "endMask") { description = "" }
-        Input(NUMERIC, "ellipsisMask") { description = "" }
-        Input(NUMERIC, "newAxisMask") { description = "" }
-        Input(NUMERIC, "shrinkAxisMask") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Get a subset of the specified input, by specifying the first element, last element, and the strides.<br>
- Operates as described in {@link #stridedSlice(SDVariable, long[], long[], long[])} with some extra mask arrays
- as described below.
-
- @param name           Output variable name
- @param in             Variable to get subset of
- @param begin          Beginning index
- @param end            End index
- @param strides        Stride ("step size") for each dimension. For example,
-                       stride of 2 means take every second element.
- @param beginMask      Bit mask: If the ith bit is set to 1, then the value in the begin long[] is ignored,
-                       and a value of 0 is used instead for the beginning index for that dimension
- @param endMask        Bit mask: If the ith bit is set to 1, then the value in the end long[] is ignored,
-                       and a value of size(i)-1 is used instead for the end index for that dimension
- @param ellipsisMask   Bit mask: only one non-zero value is allowed here. If a non-zero value is set, then other
-                       dimensions are inserted as required at the specified position
- @param newAxisMask    Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and
-                       a size 1 dimension is inserted at this point
- @param shrinkAxisMask Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and
-                       a size 1 dimension is removed at this point. Note that begin/end/stride values must
-                       result in a size 1 output for these dimensions
- @return A subset of the input array
-     
-""".trimIndent()
+                Get a subset of the specified input, by specifying the first element, last element, and the strides.
+                Operates as described in {@link #stridedSlice(SDVariable, long[], long[], long[])} with some extra mask arrays
+                as described below.
+            """.trimIndent()
         }
     }
 
