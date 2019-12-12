@@ -3,6 +3,7 @@ package org.nd4j.codegen.dsl
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.nd4j.codegen.api.AtLeast
+import org.nd4j.codegen.api.AtMost
 import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Exactly
 import org.nd4j.codegen.api.Language
@@ -21,7 +22,19 @@ class OpBuilderTest {
 
         val mathNs = Namespace("math") {
             val config = Config("bla"){
+                val a = Input(NUMERIC, "a") { description = "This is A!"}
+                Input(NUMERIC, "c") { count = AtLeast(1); description = "This is C!"}
+                Input(NUMERIC, "e") { defaultValue = a}
+                val b = Arg(NUMERIC, "b") { description = "This is B!"}
+                Arg(NUMERIC, "d") { count = AtMost(7); description = "This is D!"}
+                Arg(NUMERIC, "f") { defaultValue = 12}
 
+                Constraint("Some constraint"){
+                    a.isScalar()
+                }
+                Constraint("Some different constraint"){
+                    b eq 7
+                }
             }
             Op("add") {
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
