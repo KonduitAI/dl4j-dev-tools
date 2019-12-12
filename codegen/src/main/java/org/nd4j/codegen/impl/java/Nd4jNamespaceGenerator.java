@@ -3,6 +3,7 @@ package org.nd4j.codegen.impl.java;
 import com.squareup.javapoet.*;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
+import org.nd4j.autodiff.samediff.ops.SDValidation;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
 import org.nd4j.codegen.api.doc.DocSection;
@@ -515,7 +516,16 @@ public class Nd4jNamespaceGenerator {
                 .addModifiers(Modifier.PUBLIC);
         checkParameterCount(setter, count, paramName);
         if(inputType != null){
-            setter.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(inputType), "Config: "+configClassName, paramName, paramName));
+            final CodeBlock code = CodeBlock.builder()
+                    .beginControlFlow("if($L instanceof INDArray)", paramName)
+                    .addStatement("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(inputType), "Config: " + configClassName, paramName, paramName)
+                    .nextControlFlow("else if($L instanceof SDVariable)", paramName)
+                    .addStatement("$T.$L($S, $S, $L)", SDValidation.class, validationMapping.get(inputType), "Config: " + configClassName, paramName, paramName)
+                    .nextControlFlow("else")
+                    .addStatement("throw new $T($S)", IllegalArgumentException.class, "Unsupported data type. Only INDArray and SDVariable supported.")
+                    .endControlFlow().build();
+
+            setter.addCode(code);
         }
         setter.addStatement("this.$L = $L", paramName, paramName)
                 .addStatement("return this")
