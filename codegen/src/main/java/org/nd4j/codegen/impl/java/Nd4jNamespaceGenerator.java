@@ -468,7 +468,11 @@ public class Nd4jNamespaceGenerator {
         }
         holder.addMethod(constructorBuilder.build());
 
-        holder.addMethod(MethodSpec.methodBuilder("builder").addStatement("return new $N"+(needsGenericParameter ? "<"+typeVariable.name+">" : "")+"()", builderTypeSpec.name).returns(ClassName.bestGuess(needsGenericParameter ? builderTypeSpec.name+"<"+typeVariable.name+">" : builderTypeSpec.name)).build());
+        holder.addMethod(MethodSpec.methodBuilder("builder")
+                .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                .addStatement("return new $N"+(needsGenericParameter ? "<"+typeVariable.name+">" : "")+"()", builderTypeSpec.name)
+                .returns(ClassName.bestGuess(needsGenericParameter ? builderTypeSpec.name+"<"+typeVariable.name+">" : builderTypeSpec.name))
+                .build());
         holder.addType(builderTypeSpec);
         TypeSpec ts = holder.build();
 
