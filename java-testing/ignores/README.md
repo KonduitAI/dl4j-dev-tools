@@ -1,8 +1,7 @@
 # Generate csv files with information on ignored tests
-
 Usage: 
-  run-summarize-ignores.sh <Relative Path to check> <Path for results> [DL4J
-repo path]
+  run-summarize-ignores.sh < Relative Path to check > < Path for results > [ DL4J
+repo path ]
                                                                                 
   If the optional third argument in not provided, script will check the parent
 dir of the dl4j-dev-tools repo for the deeplearning4j repo.                       
