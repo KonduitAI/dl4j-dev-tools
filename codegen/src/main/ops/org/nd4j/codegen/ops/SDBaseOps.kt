@@ -1541,133 +1541,91 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("sum") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(INT, "dimensions") { count= AtLeast(1); description = "dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or of rank (input rank) if keepdims = true" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Sum array reduction operation, optionally along specified dimensions
-
- @param x          Input variable
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions) if keepDims = false, or
- of rank (input rank) if keepdims = true
-     
-""".trimIndent()
+                Sum array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("sum") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count= AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or of rank (input rank) if keepdims = true" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Sum array reduction operation, optionally along specified dimensions.<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name       Output variable name
- @param x          Input variable
- @param keepDims   If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions
- @param dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions) if keepDims = false, or
- of rank (input rank) if keepdims = true
-     
-""".trimIndent()
+                Sum array reduction operation, optionally along specified dimensions.
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("tensorMmul") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
+        Input(NUMERIC, "dimensions") { description = "dimensions" } //TODO: How to map int[][]        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- @param x          Input variable x
- @param y          Input variable y
- @param dimensions dimensions
- @return Output variable
-     
-""".trimIndent()
+                //TODO: Ops must be documented.
+            """.trimIndent()
         }
     }
 
     Op("tile") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "repeat") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "repeat") { description = "Number of times to repeat in each axis. Must have length equal to the rank of the input array" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Repeat (tile) the input tensor the specified number of times.<br>
- For example, if input is<br>
- [1, 2]<br>
- [3, 4]<br>
- and repeat is [2, 3]<br>
- then output is<br>
- [1, 2, 1, 2, 1, 2]<br>
- [3, 4, 3, 4, 3, 4]<br>
- [1, 2, 1, 2, 1, 2]<br>
- [3, 4, 3, 4, 3, 4]<br>
- <br>
-
- @param name   Output variable name
- @param x      Input variable
- @param repeat Number of times to repeat in each axis. Must have length equal to the rank of the input array
- @return Output variable
-     
-""".trimIndent()
+                Repeat (tile) the input tensor the specified number of times.
+                For example, if input is
+                [1, 2]
+                [3, 4]
+                and repeat is [2, 3]
+                then output is
+                [1, 2, 1, 2, 1, 2]
+                [3, 4, 3, 4, 3, 4]
+                [1, 2, 1, 2, 1, 2]
+                [3, 4, 3, 4, 3, 4]
+            """.trimIndent()
         }
     }
 
     Op("tile") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "repeat") { description = "" }
-
+        Arg(INT, "repeat") { count= AtLeast(1); description = "" }
         Output(NUMERIC, "output"){ description = "" }
-
         Doc(Language.ANY, DocScope.ALL){
             """
- @see #tile(String, SDVariable, int...)
-     
-""".trimIndent()
+                @see #tile(String, SDVariable, int...)
+            """.trimIndent()
         }
     }
 
     Op("transpose") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "transposed input" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Matrix transpose operation: If input has shape [a,b] output has shape [b,a]
-
- @param name Output variable name
- @param x    Input variable
- @return Output variable (transposed input)
-     
-""".trimIndent()
+                Matrix transpose operation: If input has shape [a,b] output has shape [b,a]
+            """.trimIndent()
         }
     }
 
@@ -1773,73 +1731,50 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("variance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "biasCorrected") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.summarystats"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample variable). If false: divide by N (population variance)" }
+        Arg(INT, "dimensions") { count=AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
-            """
- Variance array reduction operation, optionally along specified dimensions
-
- @param name          Output variable name
- @param x             Input variable
- @param biasCorrected If true: divide by (N-1) (i.e., sample variable). If false: divide by N (population variance)
- @param dimensions    Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+            """ 
+                Variance array reduction operation, optionally along specified dimensions
+            """.trimIndent()
         }
     }
 
     Op("variance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "biasCorrected") { description = "" }
-        Input(NUMERIC, "keepDims") { description = "" }
-        Input(NUMERIC, "dimensions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.summarystats"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample variable). If false: divide by N (population variance)" }
+        Arg(BOOL, "keepDims") {  description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(INT, "dimensions") { count=AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
- Variance array reduction operation, optionally along specified dimensions<br>
- Note that if keepDims = true, the output variable has the same rank as the input variable,
- with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
- the mean along a dimension).<br>
- Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
- keepDims = true: [a,1,c]<br>
- keepDims = false: [a,c]
-
- @param name          Output variable name
- @param x             Input variable
- @param biasCorrected If true: divide by (N-1) (i.e., sample variable). If false: divide by N (population variance)
- @param keepDims      If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions
- @param dimensions    Dimensions to reduce over. If dimensions are not specified, full array reduction is performed
- @return Output variable: reduced array of rank (input rank - num dimensions)
-     
-""".trimIndent()
+                Variance array reduction operation, optionally along specified dimensions
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
         }
     }
 
     Op("zerosLike") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "input") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { description = "Input " }
+        Output(NUMERIC, "output"){ description = "A new Variable with the same (dynamic) shape as the input" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Return a variable of all 0s, with the same shape as the input variable. Note that this is dynamic:
- if the input shape changes in later execution, the returned variable's shape will also be updated
-
- @param name  Name of the new SDVariable
- @param input Input SDVariable
- @return A new SDVariable with the same (dynamic) shape as the input
-     
-""".trimIndent()
+                Return a variable of all 0s, with the same shape as the input variable. Note that this is dynamic:
+                if the input shape changes in later execution, the returned variable's shape will also be updated
+            """.trimIndent()
         }
     }
 
