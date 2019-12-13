@@ -249,8 +249,12 @@ fun Op.useMixin(mixin: Mixin,
                 keepDocs: Boolean = true,
                 keepConfigs: Boolean = true
 ) {
-    legacy = mixin.legacy
-    javaPackage = mixin.javaPackage
+    if(mixin.legacyWasSet){
+        legacy = mixin.legacy
+    }
+    if(mixin.javaPackageWasSet){
+        javaPackage = mixin.javaPackage
+    }
     if (keepArgs) {
         args.addOrReplaceAll(mixin.args)
     }
@@ -282,8 +286,12 @@ fun Mixin.useMixin(mixin: Mixin,
                    keepSignatures: Boolean = true,
                    keepDocs: Boolean = true,
                    keepConfigs: Boolean = true) {
-    legacy = mixin.legacy
-    javaPackage = mixin.javaPackage
+    if(mixin.legacyWasSet){
+        legacy = mixin.legacy
+    }
+    if(mixin.javaPackageWasSet){
+        javaPackage = mixin.javaPackage
+    }
     if (keepArgs) {
         args.addOrReplaceAll(mixin.args)
     }
