@@ -19,7 +19,7 @@ class ConstraintTest {
     @Test
     fun simpleConstraintTest() {
         val expected = "x.rank() == 3"
-        val input = Input(name = "x")
+        val input = Input(name = "x", type = DataType.INT)
         val constraint = buildConstraint { input.rank() eq 3 }
         val out = JavaConstraintCodeGenerator().generateExpression(constraint)
         assertEquals(expected, out)
@@ -28,7 +28,7 @@ class ConstraintTest {
     @Test
     fun simple2ConstraintTest() {
         val expected = "(x.rank() == 3) && (x.sizeAt(2) >= 7)"
-        val input = Input(name = "x")
+        val input = Input(name = "x", type = DataType.INT)
         val constraint = buildConstraint { (input.rank() eq 3) and (input.sizeAt(2) gte 7) }
         val out = JavaConstraintCodeGenerator().generateExpression(constraint)
         assertEquals(expected, out)
@@ -37,7 +37,7 @@ class ConstraintTest {
     @Test
     fun simple3ConstraintTest() {
         val expected = "((x.rank() == 3) || (x.sizeAt(2) >= 7)) || (x.sizeAt(4) < 5)"
-        val input = Input(name = "x")
+        val input = Input(name = "x", type = DataType.INT)
         val constraint = buildConstraint { some(
                 input.rank() eq 3,
                 input.sizeAt(2) gte 7,
@@ -50,7 +50,7 @@ class ConstraintTest {
     @Test
     fun complexConstraintTest() {
         val expected = "(x.rank() == 3) == false"
-        val input = Input(name = "x")
+        val input = Input(name = "x", type = DataType.INT)
         val constraint = buildConstraint { not(input.rank() eq 3) }
         val out = JavaConstraintCodeGenerator().generateExpression(constraint)
         assertEquals(expected, out)
@@ -60,7 +60,7 @@ class ConstraintTest {
     fun argConstraintTest() {
         val expected = "(x.rank() == rank) == false"
         val arg = Arg(name = "rank", type = DataType.NUMERIC)
-        val input = Input(name = "x")
+        val input = Input(name = "x", type = DataType.INT)
         val constraint = buildConstraint { not(input.rank() eq arg) }
         val out = JavaConstraintCodeGenerator().generateExpression(constraint)
         assertEquals(expected, out)
@@ -69,9 +69,9 @@ class ConstraintTest {
     @Test
     fun specificConstraintTest(){
         val expected = "isSameType(x, y, z)"
-        val x = Input(name = "x")
-        val y = Input(name = "y")
-        val z = Input(name = "z")
+        val x = Input(name = "x", type = DataType.INT)
+        val y = Input(name = "y", type = DataType.INT)
+        val z = Input(name = "z", type = DataType.INT)
         val constraint = buildConstraint { sameType(x, y, z) }
         val out = JavaConstraintCodeGenerator().generateExpression(constraint)
         assertEquals(expected, out)

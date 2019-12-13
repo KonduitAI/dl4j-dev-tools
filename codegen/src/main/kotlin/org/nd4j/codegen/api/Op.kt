@@ -92,8 +92,7 @@ data class Op (
 
 data class Mixin (
         val name: String,
-        var legacy: Boolean = false,
-        var javaPackage: String? = null,
+
         val inputs: MutableList<Input> = mutableListOf(),
         val outputs: MutableList<Output> = mutableListOf(),
         val args: MutableList<Arg> = mutableListOf(),
@@ -121,6 +120,19 @@ data class Mixin (
     override fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
     override fun addConfig(config: Config) { configs.addOrReplace(config) }
 
+
+    var legacyWasSet: Boolean = false
+    var legacy: Boolean = false
+        set(value) {
+            field = value
+            legacyWasSet = true
+        }
+    var javaPackageWasSet: Boolean = false
+    var javaPackage: String? = null
+        set(value) {
+            field = value
+            javaPackageWasSet = true
+        }
 
     /**
      * Check that all required properties are set

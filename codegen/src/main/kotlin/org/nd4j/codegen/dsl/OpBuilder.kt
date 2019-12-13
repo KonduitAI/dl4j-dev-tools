@@ -53,9 +53,7 @@ fun NamespaceOps.Op(name: String,
 
 
 fun OpLike.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null): Input {
-    val input = Input()
-    input.name = name
-    input.type = dataType
+    val input = Input(name, dataType)
     if (block != null) input.block()
 
     if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
@@ -67,9 +65,7 @@ fun OpLike.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = 
 }
 
 fun OpLike.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null): Arg {
-    val input = Arg()
-    input.name = name
-    input.type = dataType
+    val input = Arg(name, dataType)
     if (block != null) input.block()
 
     this.addArgument(input)
@@ -77,9 +73,7 @@ fun OpLike.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null
 }
 
 fun OpLike.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? = null): Output {
-    val output = Output()
-    output.name = name
-    output.type = dataType
+    val output = Output(name, dataType)
     if (block != null) output.block()
 
     if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
@@ -148,18 +142,14 @@ fun OpLike.Signature(vararg params: Parameter, block: (Signature.() -> String)? 
 
 fun OpLike.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
     val check = ConstraintBuilder().block()
-    val constraint = Constraint()
-    constraint.message = desc
-    constraint.check = check
+    val constraint = Constraint(desc, check)
     this.addConstraint(constraint)
     return constraint
 }
 
 fun OpLike.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
     val check = ConstraintBuilder().block()
-    val constraint = BackendConstraint()
-    constraint.message = desc
-    constraint.check = check
+    val constraint = BackendConstraint(desc, check)
     this.addConstraint(constraint)
     return constraint
 }
@@ -212,9 +202,7 @@ fun NamespaceOps.Config(name: String, block: (Config.() -> Unit)): Config {
 }
 
 fun Config.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = null): Input {
-    val input = Input()
-    input.name = name
-    input.type = dataType
+    val input = Input(name, dataType)
     if (block != null) input.block()
 
     if (dataType == DataType.DATA_TYPE || dataType == DataType.CONDITION || dataType == DataType.LOSS_REDUCE) {
@@ -226,9 +214,7 @@ fun Config.Input(dataType: DataType, name: String, block: (Input.() -> Unit)? = 
 }
 
 fun Config.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null): Arg {
-    val input = Arg()
-    input.name = name
-    input.type = dataType
+    val input = Arg(name, dataType)
     if (block != null) input.block()
 
     this.addArgument(input)
@@ -237,18 +223,14 @@ fun Config.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null
 
 fun Config.Constraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
     val check = ConstraintBuilder().block()
-    val constraint = Constraint()
-    constraint.message = desc
-    constraint.check = check
+    val constraint = Constraint(desc, check)
     this.addConstraint(constraint)
     return constraint
 }
 
 fun Config.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expression): Constraint {
     val check = ConstraintBuilder().block()
-    val constraint = BackendConstraint()
-    constraint.message = desc
-    constraint.check = check
+    val constraint = BackendConstraint(desc, check)
     this.addConstraint(constraint)
     return constraint
 }
@@ -267,8 +249,12 @@ fun Op.useMixin(mixin: Mixin,
                 keepDocs: Boolean = true,
                 keepConfigs: Boolean = true
 ) {
-    legacy = mixin.legacy
-    javaPackage = mixin.javaPackage
+    if(mixin.legacyWasSet){
+        legacy = mixin.legacy
+    }
+    if(mixin.javaPackageWasSet){
+        javaPackage = mixin.javaPackage
+    }
     if (keepArgs) {
         args.addOrReplaceAll(mixin.args)
     }
@@ -300,8 +286,12 @@ fun Mixin.useMixin(mixin: Mixin,
                    keepSignatures: Boolean = true,
                    keepDocs: Boolean = true,
                    keepConfigs: Boolean = true) {
-    legacy = mixin.legacy
-    javaPackage = mixin.javaPackage
+    if(mixin.legacyWasSet){
+        legacy = mixin.legacy
+    }
+    if(mixin.javaPackageWasSet){
+        javaPackage = mixin.javaPackage
+    }
     if (keepArgs) {
         args.addOrReplaceAll(mixin.args)
     }

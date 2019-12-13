@@ -5,10 +5,10 @@ import java.util.*
 
 open class Constraint (
         var message: String? = null,
-        var check: Expression? = null
+        var check: Expression
 )
 
-class BackendConstraint(message: String? = null, check: Expression? = null): Constraint(message, check)
+class BackendConstraint(message: String? = null, check: Expression): Constraint(message, check)
 
 // Used in Constraint Expressions
 sealed class Reference
@@ -59,11 +59,11 @@ interface Parameter {
 interface Tensor: Parameter
 
 data class Arg(
-        var name: String? = null,
-        var type: DataType? = null,
+        val name: String,
+        val type: DataType,
         var description: String? = null
 ) : Reference(), Parameter {
-    override fun name(): String = name!!
+    override fun name(): String = name
     override fun defaultValue(): Any? = defaultValue
     override fun hasDefaultValue(): Boolean = defaultValueIsSet
 
@@ -128,12 +128,12 @@ data class Arg(
 }
 
 data class Input (
-        var name: String? = null,
-        var type: DataType? = null,
+        val name: String,
+        val type: DataType,
         var description: String? = null,
         var count: Count? = null
 ) : Parameter, Tensor {
-    override fun name(): String = name!!
+    override fun name(): String = name
     override fun defaultValue(): Any? = defaultValue
     override fun hasDefaultValue(): Boolean = defaultValueIsSet
 
@@ -153,11 +153,11 @@ data class Input (
 }
 
 data class Output(
-        var name: String? = null,
-        var type: DataType? = null,
+        var name: String,
+        var type: DataType,
         var description: String? = null
 ) : Parameter, Tensor{
-    override fun name(): String = name!!
+    override fun name(): String = name
     override fun defaultValue(): Any? = null
     override fun hasDefaultValue(): Boolean = false
 }
