@@ -56,7 +56,7 @@ def save_model_details(model, prefix=None, out_dir=None):
     model.save_weights(os.path.join(out_dir, prefix + 'weights.h5'), True)
 
 
-def save_model_output(model, inputs, outputs, nb_examples=None, prefix=None, out_dir=None, labels=None):
+def save_model_output(model, inputs, outputs, nb_examples=None, prefix=None, out_dir=None, labels=None, doEval=True):
     '''
     Save data necessary to fully test a loaded model to an HDF5 archive: sample
     data (inputs, outputs), model predictions, scores in given metrics, and per-layer activations.
@@ -125,27 +125,28 @@ def save_model_output(model, inputs, outputs, nb_examples=None, prefix=None, out
     for (k, v) in zip(model.output_names, predictions):
         grp.create_dataset(k, v.shape, dtype='f', data=v)
 
-    print('saving scores')
-    evalLabel = outputs
-    if labels is not None:
-        evalLabel = {model.output_names[0]: labels}
-    print("Eval label: ", evalLabel)
-    scores = model.evaluate([ inputs[nm] for nm in model.input_names ],
-                            [ evalLabel[nm] for nm in model.output_names ],
-                            verbose=0)
-    grp = f.create_group('scores')
-    if type(scores) is list:
-        grp.create_dataset(model.metrics_names[0], (1,), dtype='f', data=np.array([scores[0]]))
-        score_map = dict([ (nm, grp.create_group(nm)) for nm in model.output_names ])
-        for score_name, score in zip(model.metrics_names[1:], scores[1:]):
-            for output_name in model.output_names:
-                if output_name in score_name:
-                    nm = score_name.replace(output_name + '_', '')
-                    grp = score_map[output_name]
-                    grp.create_dataset(nm, (1,), dtype='f', data=np.array([score]))
-                    break
-    else:
-        grp.create_dataset(model.metrics_names[0], (1,), dtype='f', data=np.array([scores]))
+    if doEval:
+        print('saving scores')
+        evalLabel = outputs
+        if labels is not None:
+            evalLabel = {model.output_names[0]: labels}
+        print("Eval label: ", evalLabel)
+        scores = model.evaluate([ inputs[nm] for nm in model.input_names ],
+                                [ evalLabel[nm] for nm in model.output_names ],
+                                verbose=0)
+        grp = f.create_group('scores')
+        if type(scores) is list:
+            grp.create_dataset(model.metrics_names[0], (1,), dtype='f', data=np.array([scores[0]]))
+            score_map = dict([ (nm, grp.create_group(nm)) for nm in model.output_names ])
+            for score_name, score in zip(model.metrics_names[1:], scores[1:]):
+                for output_name in model.output_names:
+                    if output_name in score_name:
+                        nm = score_name.replace(output_name + '_', '')
+                        grp = score_map[output_name]
+                        grp.create_dataset(nm, (1,), dtype='f', data=np.array([score]))
+                        break
+        else:
+            grp.create_dataset(model.metrics_names[0], (1,), dtype='f', data=np.array([scores]))
 
     grp = f.create_group('activations')
     for layer in model.layers:

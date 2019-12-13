@@ -733,4 +733,79 @@ class OpInvariantTest {
         }
 
     }
+
+    @Test
+    fun mixinDoesOnlyOverwritePropertiesIfSetNoneSetCase(){
+        val mixin = Mixin("Bar") {
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        Namespace("math") {
+            val op = Op("foo") {
+                javaPackage = "fooPackage"
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                Output(DataType.NUMERIC, "out")
+                Input(DataType.NUMERIC, "a")
+                useMixin(mixin)
+            }
+
+            assertEquals("fooPackage", op.javaPackage)
+        }
+
+    }
+
+    @Test
+    fun mixinDoesOnlyOverwritePropertiesIfSetSetCase(){
+        val mixin = Mixin("Bar") {
+            javaPackage = "MixinPackage"
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        Namespace("math") {
+            val op = Op("foo") {
+                javaPackage = "fooPackage"
+                Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
+                Output(DataType.NUMERIC, "out")
+                Input(DataType.NUMERIC, "a")
+                useMixin(mixin)
+            }
+
+            assertEquals("MixinPackage", op.javaPackage)
+        }
+
+    }
+
+    @Test
+    fun mixinDoesOnlyOverwritePropertiesIfSetNoneSetCaseOnMixins(){
+        val mixin = Mixin("Bar") {
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        val op = Mixin("foo") {
+            javaPackage = "fooPackage"
+            useMixin(mixin)
+        }
+
+        assertEquals("fooPackage", op.javaPackage)
+
+    }
+
+    @Test
+    fun mixinDoesOnlyOverwritePropertiesIfSetSetCaseOnMixins(){
+        val mixin = Mixin("Bar") {
+            javaPackage = "MixinPackage"
+            Input(DataType.NUMERIC, "a")
+            Arg(DataType.BOOL, "b")
+        }
+
+        val op = Mixin("foo") {
+            javaPackage = "fooPackage"
+            useMixin(mixin)
+        }
+
+        assertEquals("MixinPackage", op.javaPackage)
+    }
 }
