@@ -1338,8 +1338,8 @@ class OpCreator:
         return [tf.math.betainc(self.vars[0], self.vars[1], self.vars[2])]
 
     def execute_fused_batch_norm(self):
-        return [tf.math.betainc(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
-                                data_format = self.op["data_format"], is_training = True)]
+        return tf.nn.fused_batch_norm(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
+                                data_format = self.op["data_format"], is_training = True)
 
     def execute_matrix_band_part(self):
         return [tf.linalg.band_part(input = self.vars[0], num_lower = self.op["num_lower"], num_upper = self.op["num_upper"])]
