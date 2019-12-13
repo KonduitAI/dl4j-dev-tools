@@ -3,6 +3,7 @@ package org.nd4j.codegen.impl.java;
 import com.squareup.javapoet.*;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
+import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.ops.SDValidation;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
@@ -406,25 +407,21 @@ public class Nd4jNamespaceGenerator {
     private static void generateConfig(File outputDirectory, String targetPackage, Config config) throws IOException {
         final String className = GenUtil.ensureFirstIsCap(config.name());
         configMapping.put(config, ClassName.get(targetPackage, className));
-        final boolean needsGenericParameter = !config.getInputs().isEmpty();
 
-        final TypeVariableName typeVariable = TypeVariableName.get("T");
         // Build Config Builder Class
-        final TypeSpec.Builder builder = TypeSpec.classBuilder("Builder")
-                .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
-        if(needsGenericParameter){
-            builder.addTypeVariable(typeVariable);
-            for (Input input : config.getInputs()) {
-                addConfigBuilderParam(className, builder, input.getName(), input.getType(), getType(typeVariable, input.getCount()), input.getDescription(), input.getCount());
-            }
+        final TypeSpec.Builder sdb = TypeSpec.classBuilder("SdBuilder").addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+        final TypeSpec.Builder ndb = TypeSpec.classBuilder("NdBuilder").addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+
+        for (Input input : config.getInputs()) {
+            addConfigBuilderParam(className, sdb, input.getName(), input.getType(), getType(TypeName.get(SDVariable.class), input.getCount()), input.getDescription(), input.getCount());
+            addConfigBuilderParam(className, ndb, input.getName(), input.getType(), getType(TypeName.get(INDArray.class), input.getCount()), input.getDescription(), input.getCount());
         }
+
         for (Arg arg : config.getArgs()) {
-            addConfigBuilderParam(className, builder, arg.getName(), null, getArgType(arg), arg.getDescription(), arg.getCount());
+            addConfigBuilderParam(className, sdb, arg.getName(), null, getArgType(arg), arg.getDescription(), arg.getCount());
+            addConfigBuilderParam(className, ndb, arg.getName(), null, getArgType(arg), arg.getDescription(), arg.getCount());
         }
-        final MethodSpec.Builder build = MethodSpec.methodBuilder("build")
-                .addModifiers(Modifier.PUBLIC)
-                .returns(ClassName.bestGuess(className+(needsGenericParameter ? "<"+typeVariable.toString()+">" : "")));
-        buildConstraints(build, config.getConstraints());
+
         ArrayList<String> parts = new ArrayList<>();
         ArrayList<Object> parameters = new ArrayList<>();
         for (Input input : config.getInputs()) {
@@ -443,38 +440,53 @@ public class Nd4jNamespaceGenerator {
             );
         }
         parameters.add(0, className);
-        build.addStatement("return new $N<>("+(String.join(", ", parts))+")", parameters.toArray());
-        builder.addMethod(build.build());
+
+        final MethodSpec.Builder build = MethodSpec.methodBuilder("build")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.bestGuess(className));
+        buildConstraints(build, config.getConstraints());
+        build.addStatement("return new $N("+(String.join(", ", parts))+")", parameters.toArray());
+
+        sdb.addMethod(build.build());
+        ndb.addMethod(build.build());
 
 
-        final TypeSpec builderTypeSpec = builder.build();
+        final TypeSpec ndBuilder = ndb.build();
+        final TypeSpec sdBuilder = sdb.build();
 
 
         // Build Config Holder Class
-        TypeSpec.Builder holder = TypeSpec.classBuilder(className)
-                .addModifiers(Modifier.PUBLIC);
+        TypeSpec.Builder holder = TypeSpec.classBuilder(className).addModifiers(Modifier.PUBLIC);
 
-        final MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PRIVATE);
+        final MethodSpec.Builder ndConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE);
+        final MethodSpec.Builder sdConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE);
 
-        if(needsGenericParameter){
-            holder.addTypeVariable(typeVariable);
 
-            for (Input input : config.getInputs()) {
-                addConfigParam(holder, constructorBuilder, input.getName(), getType(typeVariable, input.getCount()), input.getDescription());
-            }
+        for (Input input : config.getInputs()) {
+            final String inputName = GenUtil.ensureFirstIsCap(input.getName());
+            addConfigParam(holder, ndConstructorBuilder, "nd" + inputName, getType(TypeName.get(INDArray.class), input.getCount()), input.getDescription(), true);
+            addConfigParam(holder, sdConstructorBuilder, "sd" + inputName, getType(TypeName.get(SDVariable.class), input.getCount()), input.getDescription(), true);
         }
+
         for (Arg arg : config.getArgs()) {
-            addConfigParam(holder, constructorBuilder, arg.getName(), getArgType(arg), arg.getDescription());
+            addConfigParam(holder, ndConstructorBuilder, arg.getName(), getArgType(arg), arg.getDescription(), true);
+            addConfigParam(holder, sdConstructorBuilder, arg.getName(), getArgType(arg), arg.getDescription(), false);
         }
-        holder.addMethod(constructorBuilder.build());
+        holder.addMethod(sdConstructorBuilder.build());
+        holder.addMethod(ndConstructorBuilder.build());
 
-        holder.addMethod(MethodSpec.methodBuilder("builder")
+        holder.addMethod(MethodSpec.methodBuilder("sdBuilder")
                 .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
-                .addStatement("return new $N"+(needsGenericParameter ? "<"+typeVariable.name+">" : "")+"()", builderTypeSpec.name)
-                .returns(ClassName.bestGuess(needsGenericParameter ? builderTypeSpec.name+"<"+typeVariable.name+">" : builderTypeSpec.name))
+                .addStatement("return new $N()", sdBuilder.name)
+                .returns(ClassName.bestGuess(sdBuilder.name))
                 .build());
-        holder.addType(builderTypeSpec);
+        holder.addType(sdBuilder);
+        holder.addMethod(MethodSpec.methodBuilder("ndBuilder")
+                .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                .addStatement("return new $N()", ndBuilder.name)
+                .returns(ClassName.bestGuess(ndBuilder.name))
+                .build());
+        holder.addType(ndBuilder);
         TypeSpec ts = holder.build();
 
 
@@ -491,12 +503,14 @@ public class Nd4jNamespaceGenerator {
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
-    private static void addConfigParam(TypeSpec.Builder builder, MethodSpec.Builder constructorBuilder, String paramName, TypeName paramType, String paramDescription) {
-        // Add param fields
-        builder.addField(paramType, paramName, Modifier.FINAL, Modifier.PRIVATE);
+    private static void addConfigParam(TypeSpec.Builder builder, MethodSpec.Builder constructorBuilder, String paramName, TypeName paramType, String paramDescription, boolean addField) {
+        if(addField){
+            // Add param fields
+            builder.addField(paramType, paramName, Modifier.PRIVATE);
 
-        // Add param getters
-        builder.addMethod(generateGetter(paramType, paramName, paramDescription, false));
+            // Add param getters
+            builder.addMethod(generateGetter(paramType, paramName, paramDescription, false));
+        }
 
         // Add param constructor parameters
         constructorBuilder.addParameter(paramType, paramName, Modifier.FINAL);
@@ -504,6 +518,7 @@ public class Nd4jNamespaceGenerator {
     }
 
     private static void addConfigBuilderParam(String configClassName, TypeSpec.Builder builder, String paramName, DataType inputType, TypeName paramType, String paramDescription, Count count) {
+        final String builderName = builder.build().name;
         // Add param fields
         builder.addField(paramType.box(), paramName, Modifier.PRIVATE);
 
@@ -516,20 +531,17 @@ public class Nd4jNamespaceGenerator {
                 .addModifiers(Modifier.PUBLIC);
         checkParameterCount(setter, count, paramName);
         if(inputType != null){
-            final CodeBlock code = CodeBlock.builder()
-                    .beginControlFlow("if($L instanceof INDArray)", paramName)
-                    .addStatement("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(inputType), "Config: " + configClassName, paramName, paramName)
-                    .nextControlFlow("else if($L instanceof SDVariable)", paramName)
-                    .addStatement("$T.$L($S, $S, $L)", SDValidation.class, validationMapping.get(inputType), "Config: " + configClassName, paramName, paramName)
-                    .nextControlFlow("else")
-                    .addStatement("throw new $T($S)", IllegalArgumentException.class, "Unsupported data type. Only INDArray and SDVariable supported.")
-                    .endControlFlow().build();
-
-            setter.addCode(code);
+            if(builderName.equals("SdBuilder")){
+                setter.addStatement("$T.$L($S, $S, $L)", SDValidation.class, validationMapping.get(inputType), "Config: " + configClassName, paramName, paramName);
+            }else if(builderName.equals("NdBuilder")){
+                setter.addStatement("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(inputType), "Config: " + configClassName, paramName, paramName);
+            }else{
+                throw new IllegalArgumentException("Unknown Builder Type "+builderName);
+            }
         }
         setter.addStatement("this.$L = $L", paramName, paramName)
                 .addStatement("return this")
-                .returns(ClassName.bestGuess("Builder<T>"));
+                .returns(ClassName.bestGuess(builderName));
 
         if(count != null && !count.equals(exactlyOne)){
             setter.varargs(true);
@@ -541,7 +553,7 @@ public class Nd4jNamespaceGenerator {
         builder.addMethod(setter.build());
     }
 
-    private static TypeName getType(TypeVariableName typeVariable, Count count) {
+    private static TypeName getType(TypeName typeVariable, Count count) {
         if(count != null && !count.equals(exactlyOne)){
             return ArrayTypeName.of(typeVariable);
         }else{
