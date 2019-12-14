@@ -124,7 +124,11 @@ data class Arg(
     fun Tensor.shape() = TensorShapeValue(this)
     fun Tensor.dataType() = TensorDataTypeValue(this)
 
-    override fun toString() = "Arg(${if(type == DataType.ENUM){"ENUM(${possibleValues?.joinToString(", ")})"}else{type}}, $name)${if(count != null) "{ count = $count }" else "" }"
+    override fun toString() = "Arg(${if(type == DataType.ENUM){
+        "ENUM(${possibleValues?.joinToString(", ")})"
+    }else{
+        type.toString()
+    }}, $name)${if(count != null) "{ count = $count }" else "" }"
 }
 
 data class Input (

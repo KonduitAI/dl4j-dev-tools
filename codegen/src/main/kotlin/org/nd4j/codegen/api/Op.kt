@@ -67,14 +67,14 @@ data class Op (
      * Check that all required properties are set
      */
     fun checkInvariants() {
-        if( !isAbstract && (doc?.size == 0 || doc?.all { it.text.isNullOrBlank() } != false )){
+        if( !isAbstract && (doc.size == 0 || doc.all { it.text.isNullOrBlank() } != false )){
             throw IllegalStateException("$opName: Ops must be documented!")
         }
 
-        signatures?.forEach {
+        signatures.forEach {
             val opParameters = mutableListOf<Parameter>()
-            opParameters.addAll(inputs!!)
-            opParameters.addAll(args!!)
+            opParameters.addAll(inputs)
+            opParameters.addAll(args)
 
             val notCovered = opParameters.fold(mutableListOf<Parameter>()){acc, parameter ->
                 if(!(it.parameters.contains(parameter) || parameter.defaultValueIsApplicable(it.parameters))){
@@ -138,10 +138,10 @@ data class Mixin (
      * Check that all required properties are set
      */
     fun checkInvariants() {
-        signatures?.forEach {
+        signatures.forEach {
             val opParameters = mutableListOf<Parameter>()
-            opParameters.addAll(inputs!!)
-            opParameters.addAll(args!!)
+            opParameters.addAll(inputs)
+            opParameters.addAll(args)
 
             val notCovered = opParameters.fold(mutableListOf<Parameter>()){acc, parameter ->
                 if(!(it.parameters.contains(parameter) || parameter.defaultValueIsApplicable(it.parameters))){

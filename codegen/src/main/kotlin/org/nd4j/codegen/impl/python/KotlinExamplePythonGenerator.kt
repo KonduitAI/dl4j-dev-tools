@@ -21,7 +21,7 @@ class KotlinExamplePythonGenerator: Generator {
         val content =
         """
             |class ${GenUtil.ensureFirstIsCap(namespace.name)}:
-            |${namespace.ops!!.filterNot { it.isAbstract }.joinToString("\n\n") { generateMethod(it).addIndent(4) }}
+            |${namespace.ops.filterNot { it.isAbstract }.joinToString("\n\n") { generateMethod(it).addIndent(4) }}
         """.trimMargin()
         FileUtils.writeStringToFile(f, content, StandardCharsets.UTF_8)
     }
@@ -29,7 +29,7 @@ class KotlinExamplePythonGenerator: Generator {
     fun generateMethod(op: Op): String  =
             """
                 |@staticmethod
-                |def ${GenUtil.ensureFirstIsNotCap(op.opName)}(${op.inputs?.joinToString(", "){it.name!!} ?: ""}):
+                |def ${GenUtil.ensureFirstIsNotCap(op.opName)}(${op.inputs.joinToString(", "){it.name}}):
                 |${genDocString(op).addIndent(4)}
                 |${"# Execution code here".addIndent(4)}
                 
@@ -38,24 +38,24 @@ class KotlinExamplePythonGenerator: Generator {
     fun genDocString(op: Op): String {
         //Following roughly: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
         // python docstring / multiline string delimiter is the same as in kotlin, so use this little workaround
-        if (op.args != null) {
+        if (op.args.isNotEmpty()) {
             //Args and default args
             throw UnsupportedOperationException("Generating method with args not yet implemented")
         }
-        if(op.outputs?.size != 1) throw UnsupportedOperationException("Not yet implemented: Python docstring generation for multiple output ops")
+        if(op.outputs.size != 1) throw UnsupportedOperationException("Not yet implemented: Python docstring generation for multiple output ops")
 
         val docStringDelimiter = "\"\"\""
         return """
                 |$docStringDelimiter
                 |${op.opName} operation
                 |
-                |${op.inputs?.let { """
+                |${op.inputs.let { """
                 |Args: 
                 |${it.joinToString("\n") {
                "|    ${it.name} (ndarray): ${DocTokens.processDocText(it.description, op, DocTokens.GenerationType.ND4J)}"
                 }}
                 |""".trimMargin() }}
-                |${op.outputs?.let {"""
+                |${op.outputs.let {"""
                 |Returns:
                 |    ndarray: ${it[0].name} ${it[0].description?.let {"- ${DocTokens.processDocText(it, op, DocTokens.GenerationType.ND4J)}"
                     }}""".trimMargin()
