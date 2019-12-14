@@ -10,7 +10,20 @@ import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
 fun SDBaseOps() =  Namespace("SDBaseOps"){
-    val namespaceJavaPackage = "TODO"
+
+    val keepDimsDoc = Mixin("keepDims"){
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Note that if keepDims = true, the output variable has the same rank as the input variable,
+                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
+                the mean along a dimension).
+                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
+                keepDims = true: [a,1,c]
+                keepDims = false: [a,c]
+            """.trimIndent()
+        }
+    }
+
     Op("argmax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
         legacy = true
@@ -25,15 +38,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Argmax array reduction operation, optionally along specified dimensions.
                 Output values are the index of the maximum value of each slice along the specified dimension.
-                
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("argmin") {
@@ -48,21 +55,15 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Argmin array reduction operation, optionally along specified dimensions.
                 Output values are the index of the minimum value of each slice along the specified dimension.
-                
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("assign") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variable x" }
-        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input variable y" }
+        Input(NUMERIC, "x") { description = "Input variable x" }
+        Input(NUMERIC, "y") { description = "Input variable y" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -76,9 +77,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaOpClass = "Concat"
         //TODO: The generator flips the order of dimension and inputs.
         Arg(INT, "dimension"){ description = "Dimension to concatenate on" }
-        Input(NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
+        val inputs = Input(NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "" }
-
+        Constraint("Input arrays must all be the same datatype"){ sameType(inputs) }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Concatenate a set of inputs along the specified dimension.
@@ -100,7 +101,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Cumulative product operation.
                 For input: [ a, b, c], output is:
-                exclusize=false, reverse=false: [a, a*b, a*b*c]
+                exclusive=false, reverse=false: [a, a*b, a*b*c]
                 exclusive=true, reverse=false, [0, a, a*b]
                 exclusive=false, reverse=true: [a*b*c, b*c, c]
                 exclusive=true, reverse=true: [b*c, c, 0]
@@ -121,7 +122,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Cumulative sum operation.
                 For input: [ a, b, c], output is:
-                exclusize=false, reverse=false: [a, a+b, a+b+c]
+                exclusive=false, reverse=false: [a, a+b, a+b+c]
                 exclusive=true, reverse=false, [0, a, a+b]
                 exclusive=false, reverse=true: [a+b+c, b+c, c]
                 exclusive=true, reverse=true: [b+c, c, 0]
@@ -133,15 +134,14 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
         javaOpClass = "Dot"
         legacy = true
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "y") { description = "" }
-        Arg(INT, "dimensions") {count = AtLeast(1); description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        Input(NUMERIC, "x") { description = "first input" }
+        Input(NUMERIC, "y") { description = "second input" }
+        Arg(INT, "dimensions") {count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+        Output(NUMERIC, "output"){ description = "output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                TODO doc string
+                Pairwise dot product reduction along dimension
+                output = sum(i=0 ... size(dim)-1) x[i] * y[i]
             """.trimIndent()
         }
     }
@@ -150,7 +150,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicPartition"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "partitions") { description = "1D input with values 0 to numPartitions-1" }
+        Arg(INT, "partitions") { description = "1D input with values 0 to numPartitions-1" }
         Arg(INT, "numPartitions") { description = "Number of partitions, >= 1" }
         Output(NUMERIC, "output"){ description = "Output variables (equal in number to numPartitions)" }
 
@@ -172,8 +172,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("dynamicStitch") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicStitch"
-        Input(NUMERIC, "indices") {count = AtLeast(1); description = "Indices to use when merging. Must be >= 1, same length as input variables" }
         Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variables." }
+        Arg(INT, "indices") {count = AtLeast(1); description = "Indices to use when merging. Must be >= 1, same length as input variables" }
         Output(NUMERIC, "output"){ description = "Merged output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -511,14 +511,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Returns a count of the number of elements that satisfy the condition (for each slice along the specified dimensions)
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]<br>
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("max") {
@@ -544,14 +539,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Max array reduction operation, optionally along specified dimensions
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("max") {
@@ -590,14 +580,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Mean (average) array reduction operation, optionally along specified dimensions
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("min") {
@@ -623,14 +608,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Minimum array reduction operation, optionally along specified dimensions. out = min(in)
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("min") {
@@ -729,14 +709,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Norm1 (L1 norm) reduction operation: The output contains the L1 norm for each tensor/subset along the specified dimensions: 
                 out = sum_i abs(x[i])
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting 
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("norm2") {
@@ -764,14 +739,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Norm2 (L2 norm) reduction operation: The output contains the L2 norm for each tensor/subset along the specified dimensions:
                 out = sqrt(sum_i x[i]^2)
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("normmax") {
@@ -802,14 +772,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Max norm (infinity norm) reduction operation: The output contains the max norm for each tensor/subset along the
                 specified dimensions:
                 out = max(abs(x[i]))
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("oneHot") {
@@ -1488,14 +1453,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Stardard deviation array reduction operation, optionally along specified dimensions
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("stridedSlice") {
@@ -1563,18 +1523,13 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Sum array reduction operation, optionally along specified dimensions.
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("tensorMmul") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "x") { description = "Input variable x" }
         Input(NUMERIC, "y") { description = "Input variable y" }
         Input(NUMERIC, "dimensions") { description = "dimensions" } //TODO: How to map int[][]        Output(NUMERIC, "output"){ description = "Output variable" }
