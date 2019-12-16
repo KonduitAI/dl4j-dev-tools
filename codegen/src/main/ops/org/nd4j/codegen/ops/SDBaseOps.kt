@@ -24,6 +24,15 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
+    val broadcastingDoc = Mixin("broadcastingDoc"){
+        Doc(Language.ANY, DocScope.ALL){
+            //TODO: finalize content for this broadcasting mixin doc.
+            """
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+            """.trimIndent()
+        }
+    }
+
     Op("argmax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
         legacy = true
@@ -58,6 +67,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """.trimIndent()
         }
         useMixin(keepDimsDoc)
+        useMixin(broadcastingDoc)
     }
 
     Op("assign") {
@@ -67,9 +77,10 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Assign/copy op: out = x.assign(y). Supports broadcasting
+                Assign/copy op: out = x.assign(y).
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("concat") {
@@ -79,7 +90,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(INT, "dimension"){ description = "Dimension to concatenate on" }
         val inputs = Input(NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "" }
-        Constraint("Input arrays must all be the same datatype"){ sameType(inputs) }
+        // Constraint("Input arrays must all be the same datatype"){ sameType(inputs) } //TODO: Fix, generates error in java,
         Doc(Language.ANY, DocScope.ALL){
             """
                 Concatenate a set of inputs along the specified dimension.
@@ -147,6 +158,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("dynamicPartition") {
+        //TODO: double check this one, may have gotten it wrong.
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicPartition"
         Input(NUMERIC, "x") { description = "Input variable" }
@@ -189,7 +201,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input array" }
         Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -203,17 +215,17 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("eq") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "EqualTo"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
-        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
+        Output(NUMERIC, "output"){ description = "INDArray with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Equal to operation: elementwise x == y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("expandDims") {
@@ -235,9 +247,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("fill") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        javaOpClass = "Fill"
         Input(NUMERIC, "shape") { description = "Shape: must be a 1D array/variable" }
-        Arg(DATA_TYPE, "dataType") { description = "" }
+        Arg(DATA_TYPE, "dataType") { description = "Datatype of the output array" }
         Arg(NUMERIC, "value") { description = "Value to set all elements to" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -249,7 +260,6 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("gather") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        javaOpClass = "Gather"
         Input(NUMERIC, "df") { description = "Input variable" }
         Arg(INT, "indices") { count = AtLeast(1); description = "Indices to get" }
         Arg(INT, "axis") { description = "Axis that the indices refer to" }
@@ -264,14 +274,13 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("gather") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        javaOpClass = "Gather"
         Input(NUMERIC, "df") { description = "Input variable" }
         Input(NUMERIC, "indices") { description = "Indices to get slices for. Rank 0 or 1 input" }
         Arg(INT, "axis") { description = "Axis that the indices refer to" }
         Output(NUMERIC, "output"){ description = "Output variable with slices pulled from the specified axis" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Gather slices from the input variable where the indices are specified as dynamic SDVariable values.
+                Gather slices from the input variable where the indices are specified as dynamic array values.
                 Output shape is same as input shape, except for axis dimension, which has size equal to indices.length.
             """.trimIndent()
         }
@@ -285,7 +294,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                TODO doc string
+               Gather slices from df with shape specified by indices. 
             """.trimIndent()
         }
     }
@@ -296,7 +305,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input array" }
         Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "INDArray with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than operation: elementwise x > y
@@ -311,16 +320,16 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaOpClass = "GreaterThan"
         Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
         Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "Output INDArray with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than operation: elementwise x > y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("gte") {
@@ -329,7 +338,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input array" }
         Arg(NUMERIC, "y") {  description = "Double value argument to use in operation" }
-        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "Output INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than or equals operation: elementwise x >= y
@@ -349,10 +358,10 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Greater than or equal to operation: elementwise x >= y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("identity") {
@@ -396,7 +405,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(NUMERIC, "start") { description = "Start value" }
         Arg(NUMERIC, "stop") { description = "Stop value" }
         Arg(NUMERIC, "number") { description = "Number of values to generate" }
-        Output(NUMERIC, "output"){ description = "SDVariable with linearly spaced elements" }
+        Output(NUMERIC, "output"){ description = "INDArray  with linearly spaced elements" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -412,7 +421,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input array" }
         Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Less than operation: elementwise x < y<br>
@@ -427,16 +436,16 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaOpClass = "LessThan"
         Input(NUMERIC, "x") {count = AtLeast(1); description = "Input 1" }
         Input(NUMERIC, "y") {count = AtLeast(1); description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "Output INDArray  with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Less than operation: elementwise x < y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("lte") {
@@ -445,7 +454,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input array" }
         Arg(NUMERIC, "y") { description = "Double value argument to use in operation" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Less than or equals operation: elementwise x <= y
@@ -460,15 +469,15 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaOpClass = "LessThanOrEqual"
         Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
         Input(NUMERIC, "y") { count = AtLeast(1);description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "Output SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "Output INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Less than or equal to operation: elementwise x <= y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("matchCondition") {
@@ -552,9 +561,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise maximum operation: out[i] = max(first[i], second[i])
-                Supports broadcasting
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("mean") {
@@ -621,9 +630,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise minimum operation: out[i] = min(first[i], second[i])
-                Supports broadcasting
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("mmul") {
@@ -635,7 +644,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Matrix multiplication: out = mmul(x,y)
-                Supports specifying a {@link MMulTranspose} argument to perform operation such as mmul(a^T, b), etc.
+                Supports specifying a MMulTranspose argument to perform operation such as mmul(a^T, b), etc.
             """.trimIndent()
         }
     }
@@ -658,7 +667,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") {  description = "Input array" }
         Arg(NUMERIC, "y") {  description = "Double value argument to use in operation" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Not equals operation: elementwise x != y
@@ -673,15 +682,15 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaOpClass = "NotEqualTo"
         Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
         Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
-        Output(NUMERIC, "output"){ description = "SDVariable with values 0 and 1 based on where the condition is satisfied" }
+        Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Not equal to operation: elementwise x != y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
                 Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
+        useMixin(broadcastingDoc)
     }
 
     Op("norm1") {
@@ -806,7 +815,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #oneHot(String, SDVariable, int, int, double, double)} but allows configuring the output datatype
+                As per oneHot(String, SDVariable, int, int, double, double) but allows configuring the output datatype
             """.trimIndent()
         }
     }
@@ -821,15 +830,15 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Convert the array to a one-hot array with walues 0 and 1 for each entry
                 If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
                 with out[i, ..., j, in[i,...,j]] = 1 with other values being set to 0
-                @see #oneHot(SDVariable, int, int, double, double)
+                see oneHot(SDVariable, int, int, double, double)
             """.trimIndent()
         }
     }
 
     Op("onesLike") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "input") { description = "Input SDVariable" }
-        Output(NUMERIC, "output"){ description = "A new SDVariable with the same (dynamic) shape as the input" }
+        Input(NUMERIC, "input") { description = "Input INDArray " }
+        Output(NUMERIC, "output"){ description = "A new INDArray  with the same (dynamic) shape as the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Return a variable of all 1s, with the same shape as the input variable. Note that this is dynamic:
@@ -845,7 +854,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                As per {@link #onesLike(String, SDVariable)} but the output datatype may be specified
+                As per onesLike(String, SDVariable) but the output datatype may be specified
             """.trimIndent()
         }
     }
@@ -857,7 +866,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                @see #stack(String, int, SDVariable...)
+                see stack(String, int, SDVariable...)
             """.trimIndent()
         }
     }
@@ -914,7 +923,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(NUMERIC, "to") { description = "Largest value (exclusive)" }
         Arg(NUMERIC, "step") { description = "Step size" }
         Arg(DATA_TYPE, "dataType") { description = "" }
-        Output(NUMERIC, "output"){ description = "SDVariable with the specified values" }
+        Output(NUMERIC, "output"){ description = "INDArray  with the specified values" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -931,7 +940,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "(scalar) output variable with value equal to the rank of the input variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Returns the rank (number of dimensions, i.e., length(shape)) of the specified SDVariable as a 0D scalar variable
+                Returns the rank (number of dimensions, i.e., length(shape)) of the specified INDArray  as a 0D scalar variable
             """.trimIndent()
         }
     }
@@ -943,7 +952,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                @see #repeat(String, SDVariable, int)
+                see repeat(String, SDVariable, int)
             """.trimIndent()
         }
     }
@@ -1022,7 +1031,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                @see #reverseSequence(String, SDVariable, SDVariable, int, int)
+                see reverseSequence(String, SDVariable, SDVariable, int, int)
             """.trimIndent()
         }
     }
@@ -1213,7 +1222,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 segmentIds =  [0, 0, 1, 1, 1, 2, 2]
                 then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]
                 Note that the segment IDs must be sorted from smallest to largest segment.
-                See {@link #unsortedSegmentMax(String, SDVariable, SDVariable, int)}
+                See {unsortedSegmentMax(String, SDVariable, SDVariable, int)
                 for the same op without this sorted requirement
             """.trimIndent()
         }
@@ -1231,7 +1240,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 segmentIds =  [0, 0, 1, 1, 1, 2, 2]
                 then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]
                 Note that the segment IDs must be sorted from smallest to largest segment.
-                See {@link #unsortedSegmentMean(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+                See unsortedSegmentMean(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
     }
@@ -1248,7 +1257,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 segmentIds =  [0, 0, 1, 1, 1, 2, 2]
                 then output = [3, 1, 2] = [min(3,6), min(1,4,9), min(2,8)]
                 Note that the segment IDs must be sorted from smallest to largest segment.
-                See {@link #unsortedSegmentMin(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+                See unsortedSegmentMin(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
     }
@@ -1265,7 +1274,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 segmentIds =  [0, 0, 1, 1, 1, 2, 2]
                 then output = [18, 36, 16] = [prod(3,6), prod(1,4,9), prod(2,8)]
                 Note that the segment IDs must be sorted from smallest to largest segment.
-                See {@link #unsortedSegmentProd(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+                See unsortedSegmentProd(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
     }
@@ -1282,7 +1291,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 segmentIds =  [0, 0, 1, 1, 1, 2, 2]
                 then output = [9, 14, 10] = [sum(3,6), sum(1,4,9), sum(2,8)]
                 Note that the segment IDs must be sorted from smallest to largest segment.
-                See {@link #unsortedSegmentSum(String, SDVariable, SDVariable, int)} for the same op without this sorted requirement
+                See unsortedSegmentSum(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
     }
@@ -1309,7 +1318,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-                @see #sequenceMask(String, SDVariable, SDVariable, DataType)
+                see sequenceMask(String, SDVariable, SDVariable, DataType)
             """.trimIndent()
         }
     }
@@ -1320,7 +1329,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "1D output variable with contents equal to the shape of the input" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Returns the shape of the specified SDVariable as a 1D SDVariable
+                Returns the shape of the specified INDArray  as a 1D INDArray 
             """.trimIndent()
         }
     }
@@ -1331,7 +1340,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "0D (scalar) output variable with value equal to the number of elements in the specified array" }
         Doc(Language.ANY, DocScope.ALL){
             """ 
-                Returns the size (number of elements, i.e., prod(shape)) of the specified SDVariable as a 0D scalar variable
+                Returns the size (number of elements, i.e., prod(shape)) of the specified INDArray  as a 0D scalar variable
             """.trimIndent()
         }
     }
@@ -1340,7 +1349,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "in") { description = "Input variable" }
         Arg(INT, "dimension") { description = "Dimension to get size of" }
-        Output(NUMERIC, "output"){ description = "Scalar SDVariable for size at specified variable" }
+        Output(NUMERIC, "output"){ description = "Scalar INDArray  for size at specified variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Returns a rank 0 (scalar) variable for the size of the specified dimension.
@@ -1378,7 +1387,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Squared L2 norm: see {@link #norm2(String, SDVariable, boolean, int...)}
+                Squared L2 norm: see norm2(String, SDVariable, boolean, int...)
             """.trimIndent()
         }
     }
@@ -1391,7 +1400,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Squared L2 norm: see {@link #norm2(String, SDVariable, int...)}
+                Squared L2 norm: see {norm2(String, SDVariable, int...)
             """.trimIndent()
         }
     }
@@ -1417,13 +1426,13 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Stack a set of N SDVariables of rank X into one rank X+1 variable.
+                Stack a set of N INDArray of rank X into one rank X+1 variable.
                 If inputs have shape [a,b,c] then output has shape:
                 axis = 0: [N,a,b,c]
                 axis = 1: [a,N,b,c]
                 axis = 2: [a,b,N,c]
                 axis = 3: [a,b,c,N]
-                @see #unstack(String[], SDVariable, int, int)
+                see unstack(String[], SDVariable, int, int)
             """.trimIndent()
         }
     }
@@ -1494,7 +1503,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Get a subset of the specified input, by specifying the first element, last element, and the strides.
-                Operates as described in {@link #stridedSlice(SDVariable, long[], long[], long[])} with some extra mask arrays
+                Operates as described in stridedSlice(SDVariable, long[], long[], long[]) with some extra mask arrays
                 as described below.
             """.trimIndent()
         }
@@ -1568,7 +1577,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                @see #tile(String, SDVariable, int...)
+                see tile(String, SDVariable, int...)
             """.trimIndent()
         }
     }
@@ -1592,7 +1601,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Unsorted segment max output" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Unsorted segment max operation. As per {@link #segmentMax(String, SDVariable, SDVariable)} but without
+                Unsorted segment max operation. As per segmentMax(String, SDVariable, SDVariable) but without
                 the requirement for the indices to be sorted.
                 If data =     [1, 3, 2, 6, 4, 9, 8]
                 segmentIds =  [1, 0, 2, 0, 1, 1, 2]
@@ -1609,7 +1618,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Unsorted segment mean output" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Unsorted segment mean operation. As per {@link #segmentMean(String, SDVariable, SDVariable)} but without
+                Unsorted segment mean operation. As per segmentMean(String, SDVariable, SDVariable) but without
                 the requirement for the indices to be sorted.
                 If data =     [1, 3, 2, 6, 4, 9, 8]
                 segmentIds =  [1, 0, 2, 0, 1, 1, 2]
@@ -1626,7 +1635,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Unsorted segment min output" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Unsorted segment min operation. As per {@link #segmentMin(String, SDVariable, SDVariable)} but without
+                Unsorted segment min operation. As per segmentMin(String, SDVariable, SDVariable) but without
                 the requirement for the indices to be sorted.
                 If data =     [1, 3, 2, 6, 4, 9, 8]
                 segmentIds =  [1, 0, 2, 0, 1, 1, 2]
@@ -1643,7 +1652,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Unsorted segment product output" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Unsorted segment product operation. As per {@link #segmentProd(String, SDVariable, SDVariable)} but without
+                Unsorted segment product operation. As per segmentProd(String, SDVariable, SDVariable) but without
                 the requirement for the indices to be sorted.
                 If data =     [1, 3, 2, 6, 4, 9, 8]
                 segmentIds =  [1, 0, 2, 0, 1, 1, 2]
@@ -1676,7 +1685,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Unsorted segment sum output" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Unsorted segment sum operation. As per {@link #segmentSum(String, SDVariable, SDVariable)} but without
+                Unsorted segment sum operation. As per segmentSum(String, SDVariable, SDVariable) but without
                 the requirement for the indices to be sorted.
                 If data =     [1, 3, 2, 6, 4, 9, 8]
                 segmentIds =  [1, 0, 2, 0, 1, 1, 2]
