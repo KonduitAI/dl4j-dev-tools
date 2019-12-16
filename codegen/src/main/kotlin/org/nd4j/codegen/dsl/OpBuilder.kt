@@ -13,7 +13,9 @@ fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
 }
 
 fun Mixin(name: String, block: Mixin.() -> Unit): Mixin {
-    return Mixin(name).apply(block)
+    return Mixin(name).apply(block).also {
+        it.checkInvariants()
+    }
 }
 
 fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {
