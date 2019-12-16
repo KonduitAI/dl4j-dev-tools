@@ -350,7 +350,7 @@ input from the op.
 Only available within a namespace context
 
     val nameConfig = Config("Name"){
-        /* input, arg, constraint properties */
+        /* input, arg, constraint, doc properties */
     }
 
 Every config requires a namespace unique name.
@@ -358,7 +358,7 @@ Every config requires a namespace unique name.
 A config allows to define a configuration class, that can be used as a holder for complex properties of specific ops 
 which will be passed to an op as a parameter.
 
-Similar to an op itself, it supports `Input`, `Arg` and `Constraint` definitions. 
+Similar to an op itself, it supports `Input`, `Arg`, `Constraint` and `Doc` definitions. 
 
 in order to use the config within an op you either use `useConfig(cfg)` or `val configRef = useConfig(cfg)`. The second
 form allows you to reference the config.

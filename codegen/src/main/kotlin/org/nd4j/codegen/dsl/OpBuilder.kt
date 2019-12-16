@@ -243,6 +243,16 @@ fun Config.BackendConstraint(desc: String, block: ConstraintBuilder.() -> Expres
     return constraint
 }
 
+fun Config.Doc(language: Language, scope: DocScope, block: DocSection.() -> String): DocSection {
+    val doc = DocSection().apply {
+        this.language = language
+        this.scope = scope
+        text = this.block()
+    }
+    this.addDoc(doc)
+    return doc
+}
+
 fun OpLike.useConfig(config: Config): Config {
     this.addConfig(config)
     return config

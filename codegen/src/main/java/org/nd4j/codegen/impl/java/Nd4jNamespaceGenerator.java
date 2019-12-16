@@ -487,6 +487,39 @@ public class Nd4jNamespaceGenerator {
                 .returns(ClassName.bestGuess(ndBuilder.name))
                 .build());
         holder.addType(ndBuilder);
+
+        // add javadoc
+        //Method javadoc:
+        List<DocSection> doc = config.getDoc();
+        if(!doc.isEmpty()){
+            for(DocSection ds : doc){
+                if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
+                    String text = ds.getText();
+                    //Add <br> tags at the end of each line, where none already exists
+                    String[] lines = text.split("\n");
+                    for( int i=0; i<lines.length; i++ ){
+                        if(!lines[i].endsWith("<br>")){
+                            lines[i] = lines[i] + "<br>";
+                        }
+                    }
+                    text = String.join("\n", lines);
+                    holder.addJavadoc(text + "\n\n");
+                }
+            }
+        }
+
+
+        // Document Constraints:
+        final List<Constraint> constraints = config.getConstraints();
+        if(!constraints.isEmpty()){
+            holder.addJavadoc("Inputs must satisfy the following constraints: <br>\n");
+            for (Constraint constraint : constraints) {
+                holder.addJavadoc(constraint.getMessage() +": " + constraintCodeGenerator.generateExpression(constraint.getCheck()) + "<br>\n");
+            }
+
+            holder.addJavadoc("\n");
+        }
+
         TypeSpec ts = holder.build();
 
 

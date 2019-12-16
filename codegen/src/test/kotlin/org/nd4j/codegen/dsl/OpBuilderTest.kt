@@ -35,6 +35,10 @@ class OpBuilderTest {
                 Constraint("Some different constraint"){
                     b eq 7
                 }
+
+                Doc(Language.JAVA, DocScope.ALL){
+                    "This is some config documentation"
+                }
             }
             Op("add") {
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
