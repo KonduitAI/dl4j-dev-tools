@@ -19,9 +19,9 @@ class JavaConstraintCodeGenerator: ConstraintCodeGenerator {
                 BooleanOperation.OR -> "$left || $right"
             }
         }
-        is SameTypeExpression -> "isSameType(${expression.inputs.joinToString(", "){ it.name!! }})"
-        is SameShapeExpression -> "isSameShape(${expression.inputs.joinToString(", "){ it.name!! }})"
-        is BroadcastableShapesExpression -> "isBroadcastableShapes(${expression.inputs.joinToString(", "){ it.name!! }})"
+        is SameTypeExpression -> "isSameType(${expression.inputs.joinToString(", "){ it.name }})"
+        is SameShapeExpression -> "isSameShape(${expression.inputs.joinToString(", "){ it.name }})"
+        is BroadcastableShapesExpression -> "isBroadcastableShapes(${expression.inputs.joinToString(", "){ it.name }})"
     }
 
     private fun generateReference(reference: Reference): String = when(reference){
@@ -29,7 +29,7 @@ class JavaConstraintCodeGenerator: ConstraintCodeGenerator {
         is BooleanReference -> reference.value.toString()
         is InputShapeReference -> "${reference.input.name}.sizeAt(${reference.idx})"
         is InputRankReference -> "${reference.input.name}.rank()"
-        is Arg -> reference.name.toString()
+        is Arg -> reference.name
         is Expression -> "(${generateExpression(reference)})"
     }
 }

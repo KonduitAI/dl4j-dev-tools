@@ -1,5 +1,6 @@
 package org.nd4j.codegen.api
 
+import org.nd4j.codegen.api.doc.DocSection
 import java.util.*
 
 
@@ -124,7 +125,11 @@ data class Arg(
     fun Tensor.shape() = TensorShapeValue(this)
     fun Tensor.dataType() = TensorDataTypeValue(this)
 
-    override fun toString() = "Arg(${if(type == DataType.ENUM){"ENUM(${possibleValues?.joinToString(", ")})"}else{type}}, $name)${if(count != null) "{ count = $count }" else "" }"
+    override fun toString() = "Arg(${if(type == DataType.ENUM){
+        "ENUM(${possibleValues?.joinToString(", ")})"
+    }else{
+        type.toString()
+    }}, $name)${if(count != null) "{ count = $count }" else "" }"
 }
 
 data class Input (
@@ -194,8 +199,9 @@ data class Config(
         val name: String,
         val inputs: MutableList<Input> = mutableListOf(),
         val args: MutableList<Arg> = mutableListOf(),
-        val constraints: MutableList<Constraint> = mutableListOf()
-): Parameter {
+        val constraints: MutableList<Constraint> = mutableListOf(),
+        val doc: MutableList<DocSection> = mutableListOf()
+        ): Parameter {
     override fun name(): String = name
     override fun defaultValue(): Any? = null
     override fun hasDefaultValue(): Boolean = false
@@ -203,4 +209,5 @@ data class Config(
     fun addInput(input: Input) { inputs.add(input) }
     fun addArgument(arg: Arg) { args.add(arg) }
     fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
+    fun addDoc(doc: DocSection){ this.doc.add(doc) }
 }
