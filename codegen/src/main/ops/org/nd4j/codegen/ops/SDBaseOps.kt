@@ -8,6 +8,7 @@ import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
+import java.lang.Boolean.FALSE
 
 fun SDBaseOps() =  Namespace("SDBaseOps"){
 
@@ -31,6 +32,61 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Note: supports broadcasting if x and y have different shapes and are broadcastable.
             """.trimIndent()
         }
+    }
+
+    val booleanReturnDoc = Mixin("booleanReturnDoc"){
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+                Return boolean array with values true where satisfied, or false otherwise.
+            """.trimIndent()
+        }
+    }
+
+    val scatterOp = Mixin("scatterOp "){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
+        Input(NUMERIC, "ref") { description = "Initial/source variable" }
+        Input(NUMERIC, "indices") { description = "Indices array" }
+        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
+        Output(NUMERIC, "output"){ description = "The updated variable" }
+    }
+
+    val scatterDoc = Mixin("scatterDoc "){
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+                If indices is rank 0 (a scalar), then out[index, ...] += updates[...]
+                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] += updates[i, ...]
+                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] += updates[i, ..., k, ...] 
+                Note that if multiple indices refer to the same location, the contributions from each is handled correctly. 
+            """.trimIndent()
+        }
+    }
+
+    val segmentOp = Mixin("segmentOp"){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
+        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Output(NUMERIC, "output"){ description = "Segment output" }
+    }
+
+    val segmentDoc = Mixin("segmentDoc") {
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+                If data =     [3, 6, 1, 4, 9, 2, 8]
+                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
+                then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]
+                Note that the segment IDs must be sorted from smallest to largest segment.
+                See {unsortedSegmentMax(String, SDVariable, SDVariable, int)
+                for the same op without this sorted requirement
+            """.trimIndent()
+        }
+    }
+
+    val unsortedSegmentOp = Mixin("unsortedSegmentOp") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
+        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment max on" }
+        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
+        Arg(INT, "numSegments") { description = "Number of segments" }
+        Output(NUMERIC, "output") { description = "Unsorted segment output" }
     }
 
     Op("argmax") {
@@ -171,7 +227,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Dynamically partition the input variable values into the specified number of paritions, using the indices.
                 Example:
                 <pre>
-                {@code input = [1,2,3,4,5]
+                input = [1,2,3,4,5]
                 numPartitions = 2
                 partitions = [1,0,0,1,0]
                 out[0] = [2,3,5]
@@ -206,10 +262,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Equals operation: elementwise x == y
-                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
-                value 0 otherwise
             """.trimIndent()
         }
+        useMixin(booleanReturnDoc)
     }
 
     Op("eq") {
@@ -222,10 +277,10 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Equal to operation: elementwise x == y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+        useMixin(booleanReturnDoc)
     }
 
     Op("expandDims") {
@@ -266,7 +321,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Output variable with slices pulled from the specified axis" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Gather slices from the input variable where the indices are specified as fixed int[] values.<br>
+                Gather slices from the input variable where the indices are specified as fixed int[] values.
                 Output shape is same as input shape, except for axis dimension, which has size equal to indices.length.
             """.trimIndent()
         }
@@ -275,7 +330,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("gather") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "df") { description = "Input variable" }
-        Input(NUMERIC, "indices") { description = "Indices to get slices for. Rank 0 or 1 input" }
+        Input(INT, "indices") { description = "Indices to get slices for. Rank 0 or 1 input" }
         Arg(INT, "axis") { description = "Axis that the indices refer to" }
         Output(NUMERIC, "output"){ description = "Output variable with slices pulled from the specified axis" }
         Doc(Language.ANY, DocScope.ALL){
@@ -309,27 +364,26 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than operation: elementwise x > y
-                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
-                value 0 otherwise
             """.trimIndent()
         }
+        useMixin(booleanReturnDoc)
     }
 
     Op("gt") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "GreaterThan"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
-        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
         Output(NUMERIC, "output"){ description = "Output INDArray with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than operation: elementwise x > y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+        useMixin(booleanReturnDoc)
     }
 
     Op("gte") {
@@ -342,26 +396,25 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than or equals operation: elementwise x >= y
-                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
-                value 0 otherwise
             """.trimIndent()
         }
+        useMixin(booleanReturnDoc)
     }
 
     Op("gte") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "GreaterThanOrEqual"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
-        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Greater than or equal to operation: elementwise x >= y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+        useMixin(booleanReturnDoc)
     }
 
     Op("identity") {
@@ -377,8 +430,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("invertPermutation") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "input") { description = "1D indices for permutation" }
-        Output(NUMERIC, "output"){ description = "1D inverted permutation" }
+        Input(INT, "input") { description = "1D indices for permutation" }
+        Output(INT, "output"){ description = "1D inverted permutation" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Compute the inverse permutation indices for a permutation operation
@@ -391,7 +444,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("isNumericTensor") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "Scalar variable with value 1" }
+        Output(NUMERIC, "output"){ description = "scalar boolean with value true or false" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Is the director a numeric tensor? In the current version of ND4J/SameDiff, this always returns true/1
@@ -410,7 +463,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Create a new 1d array with values evenly spaced between values 'start' and 'stop'
-                For example, linspace(start=3.0, stop=4.0, number=3) will generate [3.0, 3.5, 4.0
+                For example, linspace(start=3.0, stop=4.0, number=3) will generate [3.0, 3.5, 4.0]
             """.trimIndent()
         }
     }
@@ -424,11 +477,10 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Less than operation: elementwise x < y<br>
-                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
-                value 0 otherwise
+                Less than operation: elementwise x < y
             """.trimIndent()
         }
+        useMixin(booleanReturnDoc)
     }
 
     Op("lt") {
@@ -442,10 +494,10 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """ 
                 Less than operation: elementwise x < y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+        useMixin(booleanReturnDoc)
     }
 
     Op("lte") {
@@ -458,26 +510,25 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Less than or equals operation: elementwise x <= y
-                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
-                value 0 otherwise
             """.trimIndent()
         }
+        useMixin(booleanReturnDoc)
     }
 
     Op("lte") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "LessThanOrEqual"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
-        Input(NUMERIC, "y") { count = AtLeast(1);description = "Input 2" }
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
         Output(NUMERIC, "output"){ description = "Output INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """ 
                 Less than or equal to operation: elementwise x <= y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+        useMixin(booleanReturnDoc)
     }
 
     Op("matchCondition") {
@@ -524,7 +575,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
         useMixin(keepDimsDoc)
     }
-
+/*
     Op("max") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         legacy = true
@@ -537,12 +588,13 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """.trimIndent()
         }
     }
-
+*/
     Op("max") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"
+        ; defaultValue=FALSE }
         Arg(INT, "dimensions") { count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -671,26 +723,25 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Not equals operation: elementwise x != y
-                Returns an array with the same shape/size as the input, with values 1 where condition is satisfied, or
-                value 0 otherwise
             """.trimIndent()
         }
+        useMixin(booleanReturnDoc)
     }
 
     Op("neq") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "NotEqualTo"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input 1" }
-        Input(NUMERIC, "y") { count = AtLeast(1); description = "Input 2" }
+        Input(NUMERIC, "x") { description = "Input 1" }
+        Input(NUMERIC, "y") { description = "Input 2" }
         Output(NUMERIC, "output"){ description = "INDArray  with values 0 and 1 based on where the condition is satisfied" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Not equal to operation: elementwise x != y
                 If x and y arrays have equal shape, the output shape is the same as these inputs.
-                Returns an array with values 1 where condition is satisfied, or value 0 otherwise.
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+        useMixin(booleanReturnDoc)
     }
 
     Op("norm1") {
@@ -796,9 +847,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Convert the array to a one-hot array with walues {@code on} and {@code off} for each entry
+                Convert the array to a one-hot array with walues and  for each entry
                 If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
-                with {@code out[i, ..., j, in[i,...,j]] = on} with other values being set to {@code off}
+                with {out[i, ..., j, in[i,...,j]]  with other values being set to 
             """.trimIndent()
         }
     }
@@ -859,18 +910,6 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
-    Op("parallel_stack") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        javaOpClass = "ParallelStack"
-        Input(NUMERIC, "values") { count = AtLeast(1); description = "" }
-        Output(NUMERIC, "output"){ description = "" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                see stack(String, int, SDVariable...)
-            """.trimIndent()
-        }
-    }
-
     Op("permute") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "x") { description = "Input variable" }
@@ -927,9 +966,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-                Create a new variable with a 1d array, where the values start at {@code from} and increment by {@code step}
+                Create a new variable with a 1d array, where the values start at from and increment by step
                 up to (but not including) limit.
-                For example, {@code range(1.0, 3.0, 0.5)} will return {@code [1.0, 1.5, 2.0, 2.5]
+                For example, range(1.0, 3.0, 0.5) will return [1.0, 1.5, 2.0, 2.5]
             """.trimIndent()
         }
     }
@@ -1013,7 +1052,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("reverseSequence") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "seq_lengths") { description = "Length of the sequences" }
+        Arg(INT, "seq_lengths") { description = "Length of the sequences" }
         Arg(INT, "seqDim") { description = "Sequence dimension" }
         Arg(INT, "batchDim") { description = "Batch dimension" }
         Output(NUMERIC, "output"){ description = "Reversed sequences" }
@@ -1091,209 +1130,123 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("scatterAdd") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter addition operation.
-                If indices is rank 0 (a scalar), then out[index, ...] += updates[...]
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] += updates[i, ...]
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] += updates[i, ..., k, ...] 
-                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("scatterDiv") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter division operation.
-                If indices is rank 0 (a scalar), then out[index, ...] /= updates[...]
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] /= updates[i, ...]
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] /= updates[i, ..., k, ...]
-                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("scatterMax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter max operation.
-                If indices is rank 0 (a scalar), then out[index, ...] = max(updates[...], in[index,...])
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = max(updates[i,...], in[indices[i],...])
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = max(updates[i, ..., k, ...], in[indices[i], ..., indices[k], ...] 
-                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("scatterMin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter min operation.
-                If indices is rank 0 (a scalar), then out[index, ...] = min(updates[...], in[index,...])
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = min(updates[i,...], in[indices[i],...])
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = min(updates[i, ..., k, ...], in[indices[i], ..., indices[k], ...]
-                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("scatterMul") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter multiplication operation.
-                If indices is rank 0 (a scalar), then out[index, ...] *= updates[...]
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] *= updates[i, ...]
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] *= updates[i, ..., k, ...]
-                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.     
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("scatterSub") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter subtraction operation.
-                If indices is rank 0 (a scalar), then out[index, ...] -= updates[...]
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] -= updates[i, ...]
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] -= updates[i, ..., k, ...]
-                Note that if multiple indices refer to the same location, the contributions from each is handled correctly.
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("scatterUpdate") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scatter"
-        Input(NUMERIC, "ref") { description = "Initial/source variable" }
-        Input(NUMERIC, "indices") { description = "Indices array" }
-        Input(NUMERIC, "updates") { description = "Updates to add to the initial/source array" }
-        Output(NUMERIC, "output"){ description = "The updated variable" }
+        useMixin(scatterOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Scatter update operation.
-                If indices is rank 0 (a scalar), then out[index, ...] = updates[...]
-                If indices is rank 1 (a vector), then for each position i, out[indices[i], ...] = updates[i, ...]
-                If indices is rank 2+, then for each position (i,...,k), out[indices[i], ..., indices[k], ...] = updates[i, ..., k, ...]
-                Note that if multiple indices refer to the same location, the output at those locations is undefined - different
-                updates may occur in different orders
             """.trimIndent()
         }
+        useMixin(scatterDoc)
     }
 
     Op("segmentMax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
-        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Output(NUMERIC, "output"){ description = "Segment max output" }
+        useMixin(segmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Segment max operation.
-                If data =     [3, 6, 1, 4, 9, 2, 8]
-                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
-                then output = [6, 9, 8] = [max(3,6), max(1,4,9), max(2,8)]
-                Note that the segment IDs must be sorted from smallest to largest segment.
-                See {unsortedSegmentMax(String, SDVariable, SDVariable, int)
-                for the same op without this sorted requirement
             """.trimIndent()
         }
+        useMixin(segmentDoc)
     }
 
     Op("segmentMean") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
-        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Output(NUMERIC, "output"){ description = "Segment mean output" }
+        useMixin(segmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Segment mean operation.
-                If data =     [3, 6, 1, 4, 9, 2, 8]
-                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
-                then output = [4.5, 4.666, 5] = [mean(3,6), mean(1,4,9), mean(2,8)]
-                Note that the segment IDs must be sorted from smallest to largest segment.
-                See unsortedSegmentMean(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
+        useMixin(segmentDoc)
     }
 
     Op("segmentMin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
-        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Output(NUMERIC, "output"){ description = "Segment min output" }
+        useMixin(segmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Segment min operation.
-                If data =     [3, 6, 1, 4, 9, 2, 8]
-                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
-                then output = [3, 1, 2] = [min(3,6), min(1,4,9), min(2,8)]
-                Note that the segment IDs must be sorted from smallest to largest segment.
-                See unsortedSegmentMin(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
+        useMixin(segmentDoc)
     }
 
     Op("segmentProd") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
-        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Output(NUMERIC, "output"){ description = "Segment product output" }
+        useMixin(segmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Segment product operation.
-                If data =     [3, 6, 1, 4, 9, 2, 8]
-                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
-                then output = [18, 36, 16] = [prod(3,6), prod(1,4,9), prod(2,8)]
-                Note that the segment IDs must be sorted from smallest to largest segment.
-                See unsortedSegmentProd(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
+        useMixin(segmentDoc)
     }
 
     Op("segmentSum") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
-        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Output(NUMERIC, "output"){ description = "Segment sum output" }
+        useMixin(segmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Segment sum operation.
-                If data =     [3, 6, 1, 4, 9, 2, 8]
-                segmentIds =  [0, 0, 1, 1, 1, 2, 2]
-                then output = [9, 14, 10] = [sum(3,6), sum(1,4,9), sum(2,8)]
-                Note that the segment IDs must be sorted from smallest to largest segment.
-                See unsortedSegmentSum(String, SDVariable, SDVariable, int) for the same op without this sorted requirement
             """.trimIndent()
         }
+        useMixin(segmentDoc)
     }
 
     Op("sequenceMask") {
@@ -1594,11 +1547,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentMax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
-        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment max on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Arg(INT, "numSegments") { description = "Number of segments" }
-        Output(NUMERIC, "output"){ description = "Unsorted segment max output" }
+        useMixin(unsortedSegmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Unsorted segment max operation. As per segmentMax(String, SDVariable, SDVariable) but without
@@ -1611,11 +1560,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentMean") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
-        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment mean on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Arg(INT, "numSegments") { description = "Number of segments" }
-        Output(NUMERIC, "output"){ description = "Unsorted segment mean output" }
+        useMixin(unsortedSegmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Unsorted segment mean operation. As per segmentMean(String, SDVariable, SDVariable) but without
@@ -1628,11 +1573,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentMin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
-        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment min on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Arg(INT, "numSegments") { description = "Number of segments" }
-        Output(NUMERIC, "output"){ description = "Unsorted segment min output" }
+        useMixin(unsortedSegmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Unsorted segment min operation. As per segmentMin(String, SDVariable, SDVariable) but without
@@ -1645,11 +1586,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentProd") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
-        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment product on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Arg(INT, "numSegments") { description = "Number of segments" }
-        Output(NUMERIC, "output"){ description = "Unsorted segment product output" }
+        useMixin(unsortedSegmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Unsorted segment product operation. As per segmentProd(String, SDVariable, SDVariable) but without
@@ -1662,11 +1599,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentSqrtN") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
-        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment sqrtN on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Arg(INT, "numSegments") { description = "Number of segments" }
-        Output(NUMERIC, "output"){ description = "Unsorted segment sqrtN output" }
+        useMixin(unsortedSegmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Unsorted segment sqrtN operation. Simply returns the sqrt of the count of the number of values in each segment
@@ -1678,11 +1611,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("unsortedSegmentSum") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.segment"
-        Input(NUMERIC, "data") { description = "Data (variable) to perform unsorted segment sum on" }
-        Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
-        Arg(INT, "numSegments") { description = "Number of segments" }
-        Output(NUMERIC, "output"){ description = "Unsorted segment sum output" }
+        useMixin(unsortedSegmentOp)
         Doc(Language.ANY, DocScope.ALL){
             """
                 Unsorted segment sum operation. As per segmentSum(String, SDVariable, SDVariable) but without
