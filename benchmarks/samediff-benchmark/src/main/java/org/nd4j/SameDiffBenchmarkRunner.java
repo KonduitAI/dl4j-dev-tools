@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.TrainingConfig;
+import org.nd4j.autodiff.samediff.VariableType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.dataset.adapter.SingletonMultiDataSetIterator;
@@ -100,7 +102,7 @@ public class SameDiffBenchmarkRunner {
             //Warmup
         log.info("Warmup: {} iterations", numIterWarmup);
         for( int i=0; i<numIterWarmup; i++ ){
-            Map<String,INDArray> out = sd.exec(phData, outputs);
+            Map<String,INDArray> out = sd.output(phData, outputs);
         }
 
             //Testing
@@ -108,7 +110,7 @@ public class SameDiffBenchmarkRunner {
         log.info("Testing: {} iterations", numIter);
         for( int i=0; i<numIter; i++ ){
             long start = System.currentTimeMillis();
-            Map<String,INDArray> out = sd.exec(phData, outputs);
+            Map<String,INDArray> out = sd.output(phData, outputs);
             long end = System.currentTimeMillis();
             r.addForwardTimeMs(end-start);
             System.gc();
@@ -120,8 +122,14 @@ public class SameDiffBenchmarkRunner {
             log.info("Starting backprop timing...");
             //Warmup
             log.info("Warmup: {} iterations", numIterWarmup);
+            List<String> varNames = new ArrayList<>();
+            for(SDVariable v : sd.variables()){
+                if(v.getVariableType() == VariableType.VARIABLE){
+                    varNames.add(v.name());
+                }
+            }
             for (int i = 0; i < numIterWarmup; i++) {
-                sd.execBackwards(phData);
+                sd.calculateGradients(phData, varNames);
             }
 
             //Testing
@@ -129,7 +137,7 @@ public class SameDiffBenchmarkRunner {
             log.info("Testing: {} iterations", numIter);
             for (int i = 0; i < numIter; i++) {
                 long start = System.currentTimeMillis();
-                sd.execBackwards(phData);
+                sd.calculateGradients(phData, varNames);
                 long end = System.currentTimeMillis();
                 r.addGradientCalcTime(end - start);
                 System.gc();
