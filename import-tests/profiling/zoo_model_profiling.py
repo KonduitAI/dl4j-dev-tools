@@ -54,32 +54,39 @@ def writeSystemInfo(path, data):
 
 def profile():
 
-
-    # # http://download.tensorflow.org/models/tflite_11_05_08/mobilenet_v2_1.0_224.tgz
-    # z = ZooEvaluation(name="mobilenet_v2_1.0_224",prefix="")
-    # z.graphFile("C:\\Temp\\TF_Graphs\\mobilenet_v2_1.0_224\\mobilenet_v2_1.0_224_frozen.pb") \
-    #     .inputName("input:0") \
-    #     .outputNames(["MobilenetV2/Predictions/Reshape_1:0"]) \
-    #     .imageUrl("https://github.com/tensorflow/models/blob/master/research/deeplab/g3doc/img/image2.jpg?raw=true") \
-    #     .inputDims(224, 224, 3) \
-    #     .preprocessingType("inception")     #Not 100% sure on this, but more likely it's inception than vgg preprocessing...
-    # z.write()
-
     outputBaseDir = "/ImportTests/profiling/"
 
     tfversion = tf.__version__
 
-    for test in ["mobilenetv2"]:
+    # for test in ["mobilenetv2", "inception_resnet_v2"]:
+    for test in ["faster_rcnn_resnet101_coco"]:
 
         for batch in [1,32]:
 
             warmup = 3
-            runs = 5
+            runs = 10
+
+            # tests adapted from: zoo_evaluation.py
             if test == "mobilenetv2":
+                # http://download.tensorflow.org/models/tflite_11_05_08/mobilenet_v2_1.0_224.tgz
                 testname = "mobilenet_v2_1.0_224_batch" + str(batch) + "_tf-" + tfversion
                 path = "/TF_Graphs/mobilenet_v2_1.0_224_frozen.pb"
                 outputNames = ["MobilenetV2/Predictions/Reshape_1:0"]
                 feed_dict = {"input:0": np.random.uniform(size=[batch,224,224,3])}
+                data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
+            elif test == "inception_resnet_v2":
+                # https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/inception_resnet_v2_2018_04_27.tgz
+                testname = "inception_resnet_v2_batch" + str(batch) + "_tf-" + tfversion
+                path = "/TF_Graphs/inception_resnet_v2.pb"
+                outputNames = ["InceptionResnetV2/AuxLogits/Logits/BiasAdd:0"]
+                feed_dict = {"input:0": np.random.uniform(size=[batch,299,299,3])}
+                data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
+            elif test == "faster_rcnn_resnet101_coco":
+                # http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2018_01_28.tar.gz
+                testname = "faster_rcnn_resnet101_coco_batch" + str(batch) + "_tf-" + tfversion
+                path = "/TF_Graphs/faster_rcnn_resnet101_coco_2018_01_28/frozen_inference_graph.pb"
+                outputNames = ["detection_boxes:0", "detection_scores:0", "num_detections:0", "detection_classes:0"]
+                feed_dict = {"image_tensor:0": np.random.uniform(size=[batch,600,600,3])}
                 data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
             else:
                 raise ValueError("Unknown test name: test")
