@@ -218,7 +218,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicPartition"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "partitions") { description = "1D input with values 0 to numPartitions-1" }
+        Arg(INT, "partitions") { count = AtLeast(1); description = "1D input with values 0 to numPartitions-1" }
         Arg(INT, "numPartitions") { description = "Number of partitions, >= 1" }
         Output(NUMERIC, "output"){ description = "Output variables (equal in number to numPartitions)" }
 
