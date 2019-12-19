@@ -14,20 +14,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * SameDiff profile comparison tool - typically used for SameDiff vs. TensorFlow import, but could be adapted for
+ * SameDiff vs. SameDiff (say CPU vs. CUDA).
+ *
+ * Note it is set up to use the output of dl4j-dev-tools/import-tests/profiling/zoo_model_profiling.py
+ *
+ * The corresponding frozen TensorFlow models are loaded here and profiled, before printing out the comparison results
+ *
+ * @author Alex Black
+ */
 @Slf4j
 public class CompareProfiles {
 
     public static void main(String[] args) {
 
-        File modelsRootDir = new File("/home/alex/TF_Graphs/");
-        File tfProfileRootDir = new File("/home/alex/profiling");
-        File sdProfileOutputDir = new File("/home/alex/profiling/sd");
+        File modelsRootDir = new File("/home/alex/TF_Graphs/");             //Directory where the frozen .pb TensorFlow files are located
+        File tfProfileRootDir = new File("/home/alex/profiling");           //Directory where the TensorFlow profiles were written (by zoo_model_profiling.py)
+        File sdProfileOutputDir = new File("/home/alex/profiling/sd");      //Directory where the SameDiff profiles should be written
 
         //Available tests (so far): mobilenetv2, inception_resnet_v2, faster_rcnn_resnet101_coco
         String testName = "mobilenetv2";
-        int batch = 32; //1 or 32
+        int batch = 32; //1 or 32, to match zoo_model_profiling.py
         String tfVersion = "1.15.0";
 
+        //Number of forward pass iterations
         int warmup = 3;
         int runs = 10;
 
@@ -72,6 +83,7 @@ public class CompareProfiles {
         }
 
 
+        //Set up SameDiff profiling listener and JSON output
         File sdDir = new File(sdProfileOutputDir, testName + "_" + System.currentTimeMillis());
         sdDir.mkdirs();
         File sdProfileFile = new File(sdDir, "profile.json");
@@ -98,6 +110,7 @@ public class CompareProfiles {
         System.out.println(s);
 
 
+        //And print raw profile info
         System.out.println("============================================================================");
         System.out.println(" ----- TensorFlow Profile Summary -----");
         ProfileAnalyzer.summarizeProfileDirectory(dir, ProfileAnalyzer.ProfileFormat.TENSORFLOW);
@@ -106,5 +119,4 @@ public class CompareProfiles {
         System.out.println(" ----- SameDiff Profile Summary -----");
         ProfileAnalyzer.summarizeProfileDirectory(sdDir, ProfileAnalyzer.ProfileFormat.SAMEDIFF);
     }
-
 }
