@@ -1,3 +1,18 @@
+/* ******************************************************************************
+ * Copyright (c) 2019 Konduit K.K.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ******************************************************************************/
 package org.nd4j.profiling;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +50,8 @@ public class CompareProfiles {
 
         //Available tests (so far): mobilenetv2, inception_resnet_v2, faster_rcnn_resnet101_coco
         String testName = "mobilenetv2";
+//        String testName = "inception_resnet_v2";
+//        String testName = "faster_rcnn_resnet101_coco";
         int batch = 32; //1 or 32, to match zoo_model_profiling.py
         String tfVersion = "1.15.0";
 
@@ -54,15 +71,15 @@ public class CompareProfiles {
                 dirName = "mobilenet_v2_1.0_224_batch" + batch + "_tf-" + tfVersion;
                 break;
             case "inception_resnet_v2":
-                modelFile = new File(modelsRootDir, "mobilenet_v2_1.0_224_frozen.pb");
+                modelFile = new File(modelsRootDir, "inception_resnet_v2.pb");
                 outputNames = Collections.singletonList("InceptionResnetV2/AuxLogits/Logits/BiasAdd");
                 ph = Collections.singletonMap("input", Nd4j.rand(DataType.FLOAT, batch, 299, 299, 3));
                 dirName = "inception_resnet_v2_batch" + batch + "_tf-" + tfVersion;
                 break;
             case "faster_rcnn_resnet101_coco":
-                modelFile = new File(modelsRootDir, "mobilenet_v2_1.0_224_frozen.pb");
+                modelFile = new File(modelsRootDir, "faster_rcnn_resnet101_coco_2018_01_28/frozen_inference_graph.pb");
                 outputNames = Arrays.asList("detection_boxes", "detection_scores", "num_detections", "detection_classes");
-                ph = Collections.singletonMap("input:0", Nd4j.rand(DataType.FLOAT, batch, 600, 600, 3));
+                ph = Collections.singletonMap("input", Nd4j.rand(DataType.FLOAT, batch, 600, 600, 3));
                 dirName = "faster_rcnn_resnet101_coco_batch" + batch + "_tf-" + tfVersion;
                 break;
             default:
