@@ -23,6 +23,12 @@ class OpCreator:
         else:
             return method()
 
+    def execute_hsv_to_rgb(self):
+        return [tf.image.hsv_to_rgb(self.vars[0])]
+
+    def execute_rgb_to_hsv(self):
+        return [tf.image.rgb_to_hsv(self.vars[0])]
+
     def execute_adjust_saturation(self):
         return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
 

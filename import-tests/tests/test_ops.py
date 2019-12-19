@@ -1430,6 +1430,20 @@ def test_mathtransform():
         #     "begin_mask":0, "end_mask":0}
         # {"opName": "strided_slice", "outName": "emptyArrayTests/strided_slice/in2-0-4_out2-0-2_v2", "varShapes":[[2,0,4]], "varTypes":["float32"], "varInit":["empty"], "begin":[0,-1,0], "end":[2,-1,2], "strides":[1,1,1], \
         #     "begin_mask":2, "end_mask":2}
+        # {"opName": "strided_slice", "outName": "strided_slice/in2-3-4_out2-0-2","varShapes": [[20, 30, 40]], "varTypes": ["float32"], "varInit": ["uniform"], "begin": [0, 0, 0],"end": [15,10, 12], "strides": [1, 1, 1],
+        # "begin_mask": 0, "end_mask": 0},
+        #{"opName": "strided_slice", "outName": "strided_slice/largein_largeout", "varShapes": [[200, 300, 400]],
+        # "varTypes": ["float32"], "varInit": ["uniform"], "begin": [10, 10, 20], "end": [15, 10, 12], "strides": [10, 10, 10],
+        # "begin_mask": 0, "end_mask": 0},
+        #{"opName": "strided_slice", "outName": "strided_slice/largein_largeout_1", "varShapes": [[50, 30, 40]], "varTypes": ["float64"], "varInit": ["uniform"], "begin": [10, 10, 20], "end": [50, 5, 7],
+        # "strides": [10, 10, 10],
+        # "begin_mask": 0, "end_mask": 0},
+
+        #{"opName": "strided_slice", "outName": "strided_slice/largein_largeout_2", "varShapes": [[1000, 200, 100]],
+        # "varTypes": ["float64"], "varInit": ["uniform"], "begin": [50, 20, 20], "end": [50, 20, 40],
+        # "strides": [20, 20, 20],
+        # "begin_mask": 0, "end_mask": 0},
+
 
         #Again, somehow TF is appending a 1 here: InvalidArgumentError: Dimension must be 3 but is 2 for 'transpose' (op: 'Transpose') with input shapes: [1,2,0], [2].
         # {"opName": "transpose", "outName": "emptyArrayTests/transpose/in2-0_perm1-0", "varShapes":[[2,0]], "varTypes":["float32"], "varInit":["empty"], "perm":[1,0,2]},
@@ -2125,6 +2139,11 @@ def test_mathtransform():
          #{"opName": "roll", "outName": "roll/rank4_float32_axis", "varShapes": [[4, 5, 3, 4]], "varTypes": ["half"],  "varInit": ["uniform"], "shift": 2, "axis": 2},
          #{"opName": "roll", "outName": "roll/int32_long_axis", "varShapes": [[4, 5, 3, 4]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "shift": 2, "axis": 3},
 
+         #{"opName": "roll", "outName": "roll_test/rank1_float32", "varShapes": [[1024]],"varTypes": ["float32"], "varInit": ["uniform"], "shift":2, "axis":0},
+         #{"opName": "roll", "outName": "roll_test/rank2_float32", "varShapes": [[102,204]], "varTypes": ["float32","float32"], "varInit": ["uniform","uniform"], "shift": 0, "axis": 1},
+         #{"opName": "roll", "outName": "roll_test/rank3_float32", "varShapes": [[102, 204, 102]],  "varTypes": ["float32", "float32", "float32"], "varInit": ["uniform", "uniform","uniform"], "shift": 0, "axis": 1},
+         #{"opName": "roll", "outName": "roll_test/rank4_float32", "varShapes": [[20, 20, 30, 20]],  "varTypes": ["float32", "float32", "float32","float32"], "varInit": ["uniform", "uniform", "uniform","uniform"],"shift": 0, "axis": 1},
+
         #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int8", "varShapes": [[4]], "varTypes": ["int8"], "varInit": ["uniform_int10"]},
         #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int16", "varShapes": [[4]], "varTypes": ["int16"], "varInit": ["uniform_int10"]},
         #{"opName": "toggle_bits", "outName": "toggle_bits/rank1_int32", "varShapes": [[4]],"varTypes": ["int32"], "varInit": ["uniform_int10"]},
@@ -2151,9 +2170,26 @@ def test_mathtransform():
         #{"opName": "random_poisson", "outName": "random_poisson/rank1_float32", "varShapes": [[4], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"]},
         #{"opName": "random_shuffle", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["float32"], "varInit": ["uniform"]},
 
-        #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float16_nhwc", "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float16", "float32", "float32"], "varInit": ["uniform", "uniform", "uniform"], "epsilon": 0.5 , "data_format": "NHWC"},
-        #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nhcw", "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float32", "float32", "float32"], "varInit": ["uniform", "uniform", "uniform"], "epsilon": 0.5, "data_format": "NHCW"},
+        #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nhwc_restr", "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float32", "float32", "float32"], "varInit": ["uniform_0_1", "uniform_0_1", "uniform_0_1"], "epsilon": 0.5 , "data_format": "NHWC"},
+        # NCHW is not supported by TF CPU
+        #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nchw", "varShapes": [[1, 2, 3, 4], [2], [2]], "varTypes": ["float32", "float32", "float32"], "varInit": ["uniform", "uniform", "uniform"], "epsilon": 0.5, "data_format": "NCHW"},
+
         #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nhwc", "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float32", "float32", "float32"],  "varInit": ["uniform", "uniform", "uniform"], "epsilon": 0.0, "data_format": "NHWC"},
+
+         # hsv_to_rgb - no registered kernels for half, float16 types.
+         # {"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/float16", "varShapes": [[1, 2, 3]], "varTypes": ["half"], "varInit": ["uniform"]},
+         # {"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/float16", "varShapes": [[1, 2, 3]], "varTypes": ["float16"], "varInit": ["uniform"]},
+
+         #{"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/float32_1", "varShapes": [[1, 1, 3]], "varTypes": ["float32"],  "varInit": ["uniform"]},
+         #{"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"],  "varInit": ["uniform"]},
+         #{"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],  "varInit": ["uniform"]},
+         #{"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
+         #{"opName": "hsv_to_rgb", "outName": "hsv_to_rgb/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+
+         #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"], "varInit": ["uniform"]},
+         #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],    "varInit": ["uniform"]},
+         #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
+         #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
      ]
 
     '''
