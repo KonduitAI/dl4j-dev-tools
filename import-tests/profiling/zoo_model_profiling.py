@@ -53,12 +53,15 @@ def writeSystemInfo(path, data):
 
 
 def profile():
-    outputBaseDir = "/home/alex/profiling/"
-    inputBaseDir = "/home/alex/TF_Graphs/"
+#     outputBaseDir = "/home/alex/profiling/"
+#     inputBaseDir = "/home/alex/TF_Graphs/"
+    outputBaseDir = "/TF_Graphs/gpu_profiling/"
+    inputBaseDir = "/TF_Graphs/"
 
     tfversion = tf.__version__
 
-    for test in ["mobilenetv2", "inception_resnet_v2", "faster_rcnn_resnet101_coco"]:
+    for test in ["densenet", "squeezenet", "nasnet_mobile", "inception_v4_2018_04_27", "inception_resnet_v2", \
+        "mobilenetv1", "mobilenetv2", "ssd_mobilenet", "faster_rcnn_resnet101_coco"]:
 
         for batch in [1,32]:
 
@@ -66,29 +69,63 @@ def profile():
             runs = 10
 
             # tests adapted from: zoo_evaluation.py
-            if test == "mobilenetv2":
-                # http://download.tensorflow.org/models/tflite_11_05_08/mobilenet_v2_1.0_224.tgz
-                testname = "mobilenet_v2_1.0_224_batch" + str(batch) + "_tf-" + tfversion
-                path = inputBaseDir + "mobilenet_v2_1.0_224_frozen.pb"
-                outputNames = ["MobilenetV2/Predictions/Reshape_1:0"]
+            if test == "densenet":
+                # https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/densenet_2018_04_27.tgz
+                testname = "densenet_2018_04_27_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "densenet_2018_04_27/densenet.pb"
+                outputNames = ["ArgMax:0", "softmax_tensor:0"]
+                feed_dict = {"Placeholder:0": np.random.uniform(size=[batch,224,224,3])}
+            elif test == "squeezenet":
+                # https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/squeezenet_2018_04_27.tgz
+                testname = "squeezenet_2018_04_27_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "squeezenet_2018_04_27/squeezenet.pb"
+                outputNames = ["ArgMax:0", "softmax_tensor:0"]
+                feed_dict = {"Placeholder:0": np.random.uniform(size=[batch,224,224,3])}
+            elif test == "nasnet_mobile":
+                # https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/nasnet_mobile_2018_04_27.tgz
+                testname = "nasnet_mobile_2018_04_27_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "nasnet_mobile_2018_04_27/nasnet_mobile.pb"
+                outputNames = ["final_layer/predictions:0"]
                 feed_dict = {"input:0": np.random.uniform(size=[batch,224,224,3])}
-                data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
+            elif test == "inception_v4_2018_04_27":
+                # https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/inception_v4_2018_04_27.tgz
+                testname = "inception_v4_2018_04_27_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "inception_v4_2018_04_27/inception_v4.pb"
+                outputNames = ["InceptionV4/Logits/Predictions:0"]
+                feed_dict = {"input:0": np.random.uniform(size=[batch,299,299,3])}
             elif test == "inception_resnet_v2":
                 # https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/inception_resnet_v2_2018_04_27.tgz
                 testname = "inception_resnet_v2_batch" + str(batch) + "_tf-" + tfversion
                 path = inputBaseDir + "inception_resnet_v2.pb"
                 outputNames = ["InceptionResnetV2/AuxLogits/Logits/BiasAdd:0"]
                 feed_dict = {"input:0": np.random.uniform(size=[batch,299,299,3])}
-                data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
+            elif test == "mobilenetv1":
+                # http://download.tensorflow.org/models/mobilenet_v1_2018_02_22/mobilenet_v1_0.5_128.tgz
+                testname = "mobilenet_v1_0.5_128_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "mobilenet_v1_0.5_128/mobilenet_v1_0.5_128_frozen.pb"
+                outputNames = ["MobilenetV1/Predictions/Reshape_1:0"]
+                feed_dict = {"input:0": np.random.uniform(size=[batch,128,128,3])}
+            elif test == "mobilenetv2":
+                # http://download.tensorflow.org/models/tflite_11_05_08/mobilenet_v2_1.0_224.tgz
+                testname = "mobilenet_v2_1.0_224_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "mobilenet_v2_1.0_224_frozen.pb"
+                outputNames = ["MobilenetV2/Predictions/Reshape_1:0"]
+                feed_dict = {"input:0": np.random.uniform(size=[batch,224,224,3])}
+            elif test == "ssd_mobilenet":
+                testname = "ssd_mobilenet_v1_coco_2018_01_28_batch" + str(batch) + "_tf-" + tfversion
+                path = inputBaseDir + "ssd_mobilenet_v1_coco_2018_01_28/frozen_inference_graph.pb"
+                outputNames = ["detection_boxes:0", "detection_scores:0", "num_detections:0", "detection_classes:0"]
+                feed_dict = {"image_tensor:0": np.random.uniform(size=[batch,320,320,3])}
             elif test == "faster_rcnn_resnet101_coco":
                 # http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2018_01_28.tar.gz
                 testname = "faster_rcnn_resnet101_coco_batch" + str(batch) + "_tf-" + tfversion
                 path = inputBaseDir + "faster_rcnn_resnet101_coco_2018_01_28/frozen_inference_graph.pb"
                 outputNames = ["detection_boxes:0", "detection_scores:0", "num_detections:0", "detection_classes:0"]
                 feed_dict = {"image_tensor:0": np.random.uniform(size=[batch,600,600,3])}
-                data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
             else:
                 raise ValueError("Unknown test name: test")
+
+            data = {"testname": testname, "path": path, "outputNames": outputNames, "inputs": feed_dict.keys()}
 
 
             outputDir = outputBaseDir + testname + "/"
