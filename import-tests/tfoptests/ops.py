@@ -23,6 +23,12 @@ class OpCreator:
         else:
             return method()
 
+    def execute_hsv_to_rgb(self):
+        return [tf.image.hsv_to_rgb(self.vars[0])]
+
+    def execute_rgb_to_hsv(self):
+        return [tf.image.rgb_to_hsv(self.vars[0])]
+
     def execute_adjust_saturation(self):
         return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
 
@@ -1255,11 +1261,20 @@ class OpCreator:
     def execute_bitcast(self):
         return [tf.bitcast(self.vars[0], self.op["output"])]
 
+    def execute_bitwise_and(self):
+        return [tf.bitwise.bitwise_and(self.vars[0], self.vars[1])]
+
     def execute_bitwise_or(self):
         return [tf.bitwise.bitwise_or(self.vars[0], self.vars[1])]
 
     def execute_bitwise_xor(self):
         return [tf.bitwise.bitwise_xor(self.vars[0], self.vars[1])]
+
+    def execute_left_shift(self):
+        return [tf.bitwise.left_shift(self.vars[0], self.vars[1])]
+
+    def execute_right_shift(self):
+        return [tf.bitwise.right_shift(self.vars[0], self.vars[1])]
 
     def execute_crop_and_resize(self):
         return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_ind = self.vars[3],\
@@ -1277,6 +1292,11 @@ class OpCreator:
 
     def execute_resize_nearest_neighbor(self):
         return [tf.image.resize_nearest_neighbor(images = self.vars[0], size = self.vars[1])]
+
+    def execute_resize_bicubic(self):
+        return [tf.image.resize_bicubic(images=self.vars[0], size=self.vars[1], \
+                                        align_corners=self.op["align_corners"], \
+                                        half_pixel_centers=self.op["half_pixel_centers"])]
 
     def execute_non_max_suppression(self):
         iou_threshold = 0.5
@@ -1324,8 +1344,8 @@ class OpCreator:
         return [tf.math.betainc(self.vars[0], self.vars[1], self.vars[2])]
 
     def execute_fused_batch_norm(self):
-        return [tf.math.betainc(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
-                                data_format = self.op["data_format"], is_training = True)]
+        return tf.nn.fused_batch_norm(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
+                                data_format = self.op["data_format"], is_training = True)
 
     def execute_matrix_band_part(self):
         return [tf.linalg.band_part(input = self.vars[0], num_lower = self.op["num_lower"], num_upper = self.op["num_upper"])]
