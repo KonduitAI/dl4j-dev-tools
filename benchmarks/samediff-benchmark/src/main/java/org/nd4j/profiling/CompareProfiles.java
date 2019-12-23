@@ -17,17 +17,17 @@ package org.nd4j.profiling;
 
 import lombok.extern.slf4j.Slf4j;
 import org.nd4j.autodiff.listeners.profiler.ProfilingListener;
+import org.nd4j.autodiff.listeners.profiler.comparison.Config;
+import org.nd4j.autodiff.listeners.profiler.comparison.OpStats;
 import org.nd4j.autodiff.listeners.profiler.comparison.ProfileAnalyzer;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.function.BiFunction;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SameDiff profile comparison tool - typically used for SameDiff vs. TensorFlow import, but could be adapted for
@@ -50,11 +50,11 @@ public class CompareProfiles {
 
         File modelsRootDir = new File("/home/alex/TF_Graphs/");             //Directory where the frozen .pb TensorFlow files are located
         File tfProfileRootDir = new File("/home/alex/TF_Graphs/gpu_profiling");           //Directory where the TensorFlow profiles were written (by zoo_model_profiling.py)
-        File sdProfileOutputDir = new File("/home/alex/TF_Graphs/gpu_profiling/sd");      //Directory where the SameDiff profiles should be written
+        File sdProfileOutputDir = new File("/home/alex/TF_Graphs/gpu_profiling/sd2");      //Directory where the SameDiff profiles should be written
 
         //Available tests (so far): mobilenetv2, inception_resnet_v2, faster_rcnn_resnet101_coco
-        String testName = "densenet";
-//        String testName = "squeezenet";
+//        String testName = "densenet";
+        String testName = "squeezenet";
 //        String testName = "nasnet_mobile";
 //        String testName = "inception_v4_2018_04_27";
 //        String testName = "inception_resnet_v2";
@@ -168,8 +168,35 @@ public class CompareProfiles {
         }
 
         //Now, compare profiles:
-        String s = ProfileAnalyzer.compareProfiles(sdDir, dir, ProfileAnalyzer.ProfileFormat.SAMEDIFF, ProfileAnalyzer.ProfileFormat.TENSORFLOW,
-                true, true, "sd", "tf", ProfileAnalyzer.SortBy.RATIO);
+        final Set<String> skipOps = new HashSet<>();
+        skipOps.add("identity");
+        skipOps.add("Const");
+
+        Config c = Config.builder()
+                .profile1(sdDir)
+                .profile2(dir)
+                .profile1Format(ProfileAnalyzer.ProfileFormat.SAMEDIFF)
+                .profile2Format(ProfileAnalyzer.ProfileFormat.TENSORFLOW)
+                .profile1IsDir(true)
+                .profile2IsDir(true)
+                .p1Name("sd")
+                .p2Name("tf")
+                .sortBy(ProfileAnalyzer.SortBy.RATIO)
+                .filter(new BiFunction<OpStats, OpStats, Boolean>() {
+                    @Override
+                    public Boolean apply(OpStats opStats, OpStats opStats2) {
+                        //True to keep, false to remove
+                        if(opStats != null && skipOps.contains(opStats.getOpName()) || opStats2 != null && skipOps.contains(opStats2.getOpName())){
+                            return false;
+                        }
+                        return true;
+                    }
+                })
+                .build();
+
+//        String s = ProfileAnalyzer.compareProfiles(sdDir, dir, ProfileAnalyzer.ProfileFormat.SAMEDIFF, ProfileAnalyzer.ProfileFormat.TENSORFLOW,
+//                true, true, "sd", "tf", ProfileAnalyzer.SortBy.RATIO);
+        String s = ProfileAnalyzer.compareProfiles(c);
 
         System.out.println(s);
 
