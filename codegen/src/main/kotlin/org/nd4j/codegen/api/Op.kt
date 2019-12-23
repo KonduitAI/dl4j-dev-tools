@@ -87,6 +87,12 @@ data class Op (
                 throw IllegalStateException("$opName: $it does not cover all parameters! Missing: ${notCovered.joinToString(", ") { it.name() }}")
             }
         }
+
+        args.filter { it.type == DataType.ENUM }.forEach {
+            if(it.description == null){
+                throw IllegalStateException("$opName: Argument ${it.name} is ENUM but has no documentation!")
+            }
+        }
     }
 }
 

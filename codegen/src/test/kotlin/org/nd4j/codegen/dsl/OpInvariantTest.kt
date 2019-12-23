@@ -534,7 +534,7 @@ class OpInvariantTest {
                 Doc(Language.ANY, DocScope.ALL) { "Some Documentation" }
                 val out = Output(DataType.NUMERIC, "out")
                 val x = Input(DataType.NUMERIC, "x")
-                val y = Arg(DataType.ENUM, "y") { possibleValues = listOf("FOO", "BAR", "BAZ") }
+                val y = Arg(DataType.ENUM, "y") { possibleValues = listOf("FOO", "BAR", "BAZ"); description = "Enums require some docs" }
 
             }
         }
@@ -550,6 +550,7 @@ class OpInvariantTest {
                 val y = Arg(DataType.ENUM, "y") {
                     possibleValues = listOf("FOO", "BAR", "BAZ")
                     defaultValue = "BAZ"
+                    description = "Enums require some docs"
                 }
 
                 AllDefaultsSignature()
@@ -649,6 +650,7 @@ class OpInvariantTest {
                 val y = Arg(DataType.ENUM, "y") {
                     count = Exactly(1)
                     possibleValues = listOf("FOO", "BAR", "BAZ")
+                    description = "Enums require some docs"
                 }
 
                 AllDefaultsSignature()
