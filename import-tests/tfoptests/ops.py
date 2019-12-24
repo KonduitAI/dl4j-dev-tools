@@ -19,7 +19,7 @@ class OpCreator:
         try:
             method = getattr(self, method_name)
         except AttributeError:
-            print(method_name, "not found")
+            print(method_name, "not found - no method has been defined for this")
         else:
             return method()
 
@@ -164,23 +164,28 @@ class OpCreator:
         if(shapes[len(shapes)-1] != shapes[len(shapes)-2]):
             raise ValueError("Only square inputs currently supported due to multiple outputs issue")
 
-        svd = tf.svd(tensor=self.vars[0], full_matrices=self.op["full_matrices"], compute_uv=self.op["compute_uv"])
-        #Outputs: If compute_uv is false, only one output
-        if(self.op["compute_uv"] is False or len(svd) == 1):
-            if(isinstance(svd, list)):
-                return svd
-            return [svd]
+        # Add identity so
+        input = self.vars[0]
+        shape = self.op["varShapes"][0]
+        rank = len(shape)
+        # if(input.rank() == 2):
+        #     #OK as is
+        # el
+        if(rank == 2):
+            input = tf.add(input, tf.linalg.eye(num_rows=shape[0], num_columns=shape[1]))
+        if(rank == 3):
+            input = tf.add(input, tf.linalg.eye(num_rows=shape[1], num_columns=shape[2], batch_shape=[shape[0]]))
+        if(rank == 4):
+            input = tf.add(input, tf.linalg.eye(num_rows=shape[2], num_columns=shape[3], batch_shape=[shape[0], shape[1]]))
 
-        #Multiple outputs issue: s, shape [..., P], u shape [..., M, P] or [..., M, M]
-        # v shape [..., N,P] or [..., N, N]
-        # Where P is min(M,N)
-        #Workaround for multiple outputs saving issue: if m=n, can add u and v... then need to reshape s to [..., M, 1] and broadcast add...
-        s = svd[0]
-        u = svd[1]
-        v = svd[2]
-        if(self.op["full_matrices"] is False):
-            s = tf.expand_dims(s, -1)
-        return [s + u + v]
+        svd = tf.svd(tensor=input, full_matrices=self.op["full_matrices"], compute_uv=self.op["compute_uv"])
+
+        # Note that SVD has multiple solutions, that differ only by sign
+        if(isinstance(svd, list) or isinstance(svd, tuple)):
+            return [tf.math.abs(svd[0]), tf.math.abs(svd[1]), tf.math.abs(svd[2])]
+        else:
+            return [tf.math.abs(svd)]
+
 
     def execute_mean_squared_error(self):
         weights = 1.0

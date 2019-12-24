@@ -43,9 +43,9 @@ class OpBuilderTest {
             Op("add") {
                 javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
 
-                Input(NUMERIC, "x") { description = "First input to add" }
-                Input(NUMERIC,"y") { count = AtLeast(1); description = "Second input to add" }
-                Arg(INT,"shape") { count = AtLeast(1); description = "shape" }
+                val x = Input(NUMERIC, "x") { description = "First input to add" }
+                Input(NUMERIC,"y") { count = AtLeast(1); description = "Second input to add"; defaultValue = x }
+                Arg(INT,"shape") { count = AtLeast(1); description = "shape"; defaultValue = intArrayOf(1,2,3) }
 
 
                 Output(NUMERIC, "z") { description = "Output (x+y)" }
@@ -142,7 +142,7 @@ class OpBuilderTest {
 
         val generator = JavaPoetGenerator()
         generator.generateNamespaceNd4j(mathNs, null, outDir, "Nd4jMath")
-        val exp = File(outDir, "org/nd4j/linalg/factory/configs/Bla.java")
+        val exp = File(outDir, "org/nd4j/linalg/factory/ops/Nd4jMath.java")
         assertTrue(exp.isFile)
 
         println(FileUtils.readFileToString(exp, StandardCharsets.UTF_8))

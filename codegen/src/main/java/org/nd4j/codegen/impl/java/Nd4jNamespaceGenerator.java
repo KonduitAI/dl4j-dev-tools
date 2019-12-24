@@ -305,6 +305,17 @@ public class Nd4jNamespaceGenerator {
             c.returns(INDArray[].class);
         }
 
+        // We have to pass all parameters, always. But not all signatures will be taking all parameters.
+        // inNames tells us which parameters this signatures has. For all others we want to pass default values
+        List<String> parameters = op.allParameters().stream().map(it -> {
+            if(inNames.contains(it.name())){
+                return it.name();
+            }else{
+                if(!it.hasDefaultValue()) throw new IllegalStateException("The parameter "+it.name()+" has no default value, but is also not part of "+inNames.toString());
+                return anyToCode(it.defaultValue());
+            }
+        }).collect(Collectors.toList());
+
         //Op execution:
         StringBuilder sb = new StringBuilder();
         sb.append("return $T.exec(new ")
@@ -312,7 +323,7 @@ public class Nd4jNamespaceGenerator {
                 .append(".")
                 .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
                 .append("(")
-                .append(String.join(", ", inNames))
+                .append(String.join(", ", parameters))
                 .append("))");
         if(!op.getLegacy() && singleOut)        //Note: legacy ops Nd4j.exec(Op) returns INDArray; Nd4j.exec(CustomOp) returns INDArray[]
             sb.append("[0]");
@@ -435,7 +446,7 @@ public class Nd4jNamespaceGenerator {
             parts.add("$L");
             parameters.add(
                     input.hasDefaultValue() ?
-                            input.name() + " == null ? " + input.defaultValue() +" : "+input.name()
+                            input.name() + " == null ? " + anyToCode(input.defaultValue()) +" : "+input.name()
                             : input.name()
             );
         }
@@ -604,5 +615,16 @@ public class Nd4jNamespaceGenerator {
         }
         getter.addStatement("return this.$L", paramName);
         return getter.build();
+    }
+
+    private static String anyToCode(Object v){
+        if(v == null){ return "null"; }
+        else if(v instanceof int[]){ return "new int[]"+Arrays.toString((int[]) v).replace("[", "{").replace("]", "}"); }
+        else if(v instanceof long[]){ return "new long[]"+Arrays.toString((long[]) v).replace("[", "{").replace("]", "}"); }
+        else if(v instanceof float[]){ return "new float[]"+Arrays.toString((float[]) v).replace("[", "{").replace("]", "}"); }
+        else if(v instanceof double[]){ return "new double[]"+Arrays.toString((double[]) v).replace("[", "{").replace("]", "}"); }
+        else if(v instanceof boolean[]){ return "new boolean[]"+Arrays.toString((boolean[]) v).replace("[", "{").replace("]", "}"); }
+        else if(v instanceof Input){ return ((Input)v).getName(); }
+        else return v.toString();
     }
 }
