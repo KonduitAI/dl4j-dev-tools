@@ -1363,3 +1363,9 @@ class OpCreator:
 
     def execute_roll(self):
         return [tf.roll(self.vars[0], self.op["shift"], self.op["axis"])]
+
+    def execute_lu(self):
+        output_idx_type = tf.int32
+        if ("output_idx_type" in self.op):
+            output_idx_type = self.op["output_idx_type"]
+        return tf.linalg.lu(self.vars[0], output_idx_type)
