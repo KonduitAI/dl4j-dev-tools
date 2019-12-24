@@ -68,8 +68,19 @@ class OpTest(TestGraph):
 def test_mathtransform():
     ops = [
         #Format:
-        # {"opName": "segment_max", "outName": "segment/segment_max_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float64", "varShapes": [[20], [20]],"varTypes": ["float64", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_int32", "varShapes": [[20], [20]], "varTypes": ["int32", "int32"], "varInit": ["uniform_int10", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float32_large", "varShapes": [[100], [100]], "varTypes": ["float32", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float64_large", "varShapes": [[230], [230]],"varTypes": ["float64", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float16_large", "varShapes": [[250], [250]], "varTypes": ["float16", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_half_large", "varShapes": [[150], [150]], "varTypes": ["half", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank3_float32_large", "varShapes": [[150,150,150],[150]], "varTypes": ["float32", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank4_float64_large","varShapes": [[70, 100, 120, 70], [70]], "varTypes": ["float64", "int32"], "varInit": ["uniform", "segment5"]},
+        #{"opName": "segment_max", "outName": "segment/segment_max_rank4_int64_large", "varShapes": [[30, 30, 30, 30], [30]], "varTypes": ["int64", "int32"], "varInit": ["uniform_int10", "segment5"]},
+
         # {"opName": "segment_mean", "outName": "segment/segment_mean_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
+        # {"opName": "segment_mean", "outName": "segment/segment_mean_rank4_large", "varShapes":[[200,100,100,100], [100]], "varTypes":["float32", "int32"], "varInit":["uniform", "segment5"]},
         # {"opName": "segment_min", "outName": "segment/segment_min_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
         # {"opName": "segment_prod", "outName": "segment/segment_prod_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
         # {"opName": "segment_sum", "outName": "segment/segment_sum_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
@@ -2170,10 +2181,10 @@ def test_mathtransform():
         #{"opName": "random_poisson", "outName": "random_poisson/rank1_float32", "varShapes": [[4], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"]},
         #{"opName": "random_shuffle", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["float32"], "varInit": ["uniform"]},
 
+        #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float16_nhcw",  "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float16", "float32", "float32"],  "varInit": ["uniform", "uniform_0_1", "uniform_0_1"], "epsilon": 0.5, "data_format": "NHWC"},
         #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nhwc_restr", "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float32", "float32", "float32"], "varInit": ["uniform_0_1", "uniform_0_1", "uniform_0_1"], "epsilon": 0.5 , "data_format": "NHWC"},
-        # NCHW is not supported by TF CPU
+        # The CPU implementation of FusedBatchNorm only supports NHWC tensor format for now.
         #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nchw", "varShapes": [[1, 2, 3, 4], [2], [2]], "varTypes": ["float32", "float32", "float32"], "varInit": ["uniform", "uniform", "uniform"], "epsilon": 0.5, "data_format": "NCHW"},
-
         #{"opName": "fused_batch_norm", "outName": "fused_batch_norm/float32_nhwc", "varShapes": [[1, 2, 3, 4], [4], [4]], "varTypes": ["float32", "float32", "float32"],  "varInit": ["uniform", "uniform", "uniform"], "epsilon": 0.0, "data_format": "NHWC"},
 
          # hsv_to_rgb - no registered kernels for half, float16 types.
@@ -2190,6 +2201,11 @@ def test_mathtransform():
          #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],    "varInit": ["uniform"]},
          #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
          #{"opName": "rgb_to_hsv", "outName": "rgb_to_hsv/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+
+        #{"opName": "lu", "outName": "lu/float32_rank2", "varShapes": [[3,3]], "varTypes": ["float32"], "varInit": ["uniform"]},
+        #{"opName": "lu", "outName": "lu/float32_rank3", "varShapes": [[2,2,2]], "varTypes": ["float32"], "varInit": ["uniform"]},
+        #{"opName": "lu", "outName": "lu/emptyArrayTest/float32", "varShapes": [[0, 2, 2]], "varTypes": ["float32"],"varInit": ["empty"]},
+        #{"opName": "lu", "outName": "lu/float32_rank3_returns_int64", "varShapes": [[2,2,2]], "varTypes": ["float32"],  "varInit": ["uniform"], "output_idx_type": "int64"}
      ]
 
     '''
