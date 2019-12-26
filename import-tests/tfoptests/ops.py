@@ -29,6 +29,18 @@ class OpCreator:
     def execute_rgb_to_hsv(self):
         return [tf.image.rgb_to_hsv(self.vars[0])]
 
+    def execute_yiq_to_rgb(self):
+        return [tf.image.yiq_to_rgb(self.vars[0])]
+
+    def execute_rgb_to_yiq(self):
+        return [tf.image.rgb_to_yiq(self.vars[0])]
+
+    def execute_yuv_to_rgb(self):
+        return [tf.image.yuv_to_rgb(self.vars[0])]
+
+    def execute_rgb_to_yuv(self):
+        return [tf.image.rgb_to_yuv(self.vars[0])]
+
     def execute_adjust_saturation(self):
         return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
 
