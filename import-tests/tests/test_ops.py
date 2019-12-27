@@ -7,64 +7,6 @@ from tfoptests.reduce_ops import ReduceOps
 from tfoptests.ops import OpCreator
 from tfoptests.var_initializer import VarInitializer
 
-class OpTest(TestGraph):
-    def __init__(self, op, *args, **kwargs):
-        super(OpTest, self).__init__(*args, **kwargs)
-        self.op = op
-
-    def list_inputs(self):
-        return self.op.get("phNames", [])
-
-    def _get_placeholder_shape(self, name):
-        '''Get input tensor shape for given node name'''
-        return self.op.get("phShapes", {})
-
-    def get_placeholder_input(self, name):
-        '''Get input tensor for given node name'''
-        return self.invals[name]
-
-    def createVars(self, shapes, dtypes, init):
-        print("Creating vars: shapes=", shapes, ", dtypes=", dtypes, ", init=", init)
-        out = []
-        initializer = VarInitializer()
-        # for(s in shapes):
-        for i in range(len(shapes)):
-            s = shapes[i]
-            d = tf.float32
-            if(dtypes is not None):
-                d = dtypes[i]
-
-            n = "in_" + str(i)
-
-            varInit = "uniform"
-            if(init is not None and init[i] is not None):
-                varInit = init[i]
-
-            out.append(initializer.newVar(varInit, s, d, n))
-
-        return out
-
-    def createPlaceholders(self, shapes, dtypes, init):
-        print("Creating vars: shapes=", shapes, ", dtypes=", dtypes, ", init=", init)
-        out = []
-        initializer = VarInitializer()
-        for i in range(len(shapes)):
-            s = shapes[i]
-            d = tf.float32
-            if(dtypes is not None):
-                d = dtypes[i]
-
-            n = "in_ph_" + str(i)
-
-            varInit = "uniform"
-            if(init is not None and init[i] is not None):
-                varInit = init[i]
-
-            out.append(initializer.newPlaceholder(varInit, s, d, n))
-
-        return out
-
-
 def test_mathtransform():
     ops = [
         #Format:
@@ -212,6 +154,7 @@ def test_mathtransform():
         # {"opName": "matmul", "outName": "matmul/rank4_batch2,2_ta", "varShapes":[[2,2,4,3],[2,2,4,5]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "transpose_a":True, "transpose_b":False},
         # {"opName": "matmul", "outName": "matmul/rank4_batch2,2_tb", "varShapes":[[2,2,3,4],[2,2,5,4]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "transpose_a":False, "transpose_b":True},
         # {"opName": "matmul", "outName": "matmul/rank4_batch2,2_ta_tb", "varShapes":[[2,2,4,3],[2,2,5,4]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "transpose_a":True, "transpose_b":True},
+        # {"opName": "matmul", "outName": "matmul/emptyArrayTest/rank4", "varShapes":[[2,2,4,0],[2,2,0,4]], "varTypes":["float64", "float64"], "varInit":["empty", "empty"], "transpose_a":True, "transpose_b":True},
         # {"opName": "matmul", "outName": "matmul/rank5_batch2,2,2", "varShapes":[[2,2,2,3,4],[2,2,2,4,5]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "transpose_a":False, "transpose_b":False},
         # {"opName": "matmul", "outName": "matmul/rank5_batch2,2,2_ta_tb", "varShapes":[[2,2,2,4,3],[2,2,2,5,4]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "transpose_a":True, "transpose_b":True},
         # {"opName": "matrix_diag_part", "outName": "matrix_diag_part/rank2", "varShapes":[[4,4]], "varTypes":["float32"], "varInit":["uniform"]},
@@ -876,7 +819,7 @@ def test_mathtransform():
         #
         # #axes=1: equivalent to mmul, as is axes=[[1],[0]]
         # {"opName":"tensordot", "outName":"tensordot/4,3_3,2_a1", "varShapes":[[4,3],[3,2]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "axes":1},
-        # {"opName":"tensordot", "outName":"tensordot/emptyArrayTest/4,3_3,2_a1", "varShapes":[[0,0],[0,0]], "varTypes":["float32", "float32"], "varInit":["empty", "empty"], "axes":1},
+        # {"opName":"tensordot", "outName":"tensordot/emptyArrayTest/4,3_3,2_a1", "varShapes":[[0,3],[3,0]], "varTypes":["float32", "float32"], "varInit":["empty", "empty"], "axes":0},
         # {"opName":"tensordot", "outName":"tensordot/4,3_3,2_a1-0", "varShapes":[[4,3],[3,2]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "axes":[[1],[0]]},
         # {"opName":"tensordot", "outName":"tensordot/4,3_2,3_a1-1", "varShapes":[[4,3],[2,3]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "axes":[[1],[1]]},
         # {"opName":"tensordot", "outName":"tensordot/3,4_2,3_a1-1", "varShapes":[[4,3],[2,3]], "varTypes":["float32", "float32"], "varInit":["uniform", "uniform"], "axes":[[1],[1]]},
