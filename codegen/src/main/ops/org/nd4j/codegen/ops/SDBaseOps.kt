@@ -486,8 +486,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("lt") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "LessThan"
-        Input(NUMERIC, "x") {count = AtLeast(1); description = "Input 1" }
-        Input(NUMERIC, "y") {count = AtLeast(1); description = "Input 2" }
+        Input(NUMERIC, "x") {description = "Input 1" }
+        Input(NUMERIC, "y") {description = "Input 2" }
         Output(NUMERIC, "output"){ description = "Output INDArray  with values 0 and 1 based on where the condition is satisfied" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -778,7 +778,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "dimensions") { description = "dimensions dimensions to reduce over" }
+        Arg(INT, "dimensions") { count = AtLeast(1);  description = "dimensions to reduce over" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -986,7 +986,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("repeat") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "df") {count = AtLeast(1); description = "" }
+        Input(NUMERIC, "df") { description = "" }
         Arg(INT, "axis") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1052,7 +1052,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("reverseSequence") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "seq_lengths") { description = "Length of the sequences" }
+        Input(NUMERIC, "seq_lengths") { description = "Length of the sequences" }
         Arg(INT, "seqDim") { description = "Sequence dimension" }
         Arg(INT, "batchDim") { description = "Batch dimension" }
         Output(NUMERIC, "output"){ description = "Reversed sequences" }
