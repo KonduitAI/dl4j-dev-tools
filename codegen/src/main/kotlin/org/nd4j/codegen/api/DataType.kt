@@ -1,6 +1,7 @@
 package org.nd4j.codegen.api
 
 enum class DataType {
+    NDARRAY,        // Any NDArray type (input only) - INDArray or SDVariable
     FLOATING_POINT, // Any floating point data type
     INT, // integer data type
     LONG, //long, signed int64 datatype
@@ -12,5 +13,5 @@ enum class DataType {
     LOSS_REDUCE, // Loss reduction mode
     ENUM; // defines an enum along with possibleValues property in Arg
 
-    fun isTensorDataType() = setOf(FLOATING_POINT, INT, LONG, NUMERIC, BOOL).contains(this)
+    fun isTensorDataType() = setOf(NDARRAY, FLOATING_POINT, INT, LONG, NUMERIC, BOOL).contains(this)
 }
