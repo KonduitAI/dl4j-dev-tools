@@ -7,6 +7,63 @@ from tfoptests.reduce_ops import ReduceOps
 from tfoptests.ops import OpCreator
 from tfoptests.var_initializer import VarInitializer
 
+class OpTest(TestGraph):
+    def __init__(self, op, *args, **kwargs):
+        super(OpTest, self).__init__(*args, **kwargs)
+        self.op = op
+
+    def list_inputs(self):
+        return self.op.get("phNames", [])
+
+    def _get_placeholder_shape(self, name):
+        '''Get input tensor shape for given node name'''
+        return self.op.get("phShapes", {})
+
+    def get_placeholder_input(self, name):
+        '''Get input tensor for given node name'''
+        return self.invals[name]
+
+    def createVars(self, shapes, dtypes, init):
+        print("Creating vars: shapes=", shapes, ", dtypes=", dtypes, ", init=", init)
+        out = []
+        initializer = VarInitializer()
+        # for(s in shapes):
+        for i in range(len(shapes)):
+            s = shapes[i]
+            d = tf.float32
+            if(dtypes is not None):
+                d = dtypes[i]
+
+            n = "in_" + str(i)
+
+            varInit = "uniform"
+            if(init is not None and init[i] is not None):
+                varInit = init[i]
+
+            out.append(initializer.newVar(varInit, s, d, n))
+
+        return out
+
+    def createPlaceholders(self, shapes, dtypes, init):
+        print("Creating vars: shapes=", shapes, ", dtypes=", dtypes, ", init=", init)
+        out = []
+        initializer = VarInitializer()
+        for i in range(len(shapes)):
+            s = shapes[i]
+            d = tf.float32
+            if(dtypes is not None):
+                d = dtypes[i]
+
+            n = "in_ph_" + str(i)
+
+            varInit = "uniform"
+            if(init is not None and init[i] is not None):
+                varInit = init[i]
+
+            out.append(initializer.newPlaceholder(varInit, s, d, n))
+
+        return out
+
 def test_mathtransform():
     ops = [
         #Format:
@@ -1904,13 +1961,13 @@ def test_mathtransform():
          #{"opName": "bitcast", "outName": "bitcast/from_float32_to_int64", "varShapes": [[2]], "varTypes": ["float32"], "varInit": ["uniform"], "output": tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_bfloat16_to_int64", "varShapes": [[4]], "varTypes": ["bfloat16"], "varInit": ["uniform"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_half_to_int64", "varShapes": [[4]], "varTypes": ["half"], "varInit": ["uniform"], "output":tf.int64},
-         #{"opName": "bitcast", "outName": "bitcast/from_float64_to_int64", "varShapes": [[1]], "varTypes": ["float64"], "varInit": ["uniform"], "output":tf.int64},
+         {"opName": "bitcast", "outName": "bitcast/from_float64_to_int64", "varShapes": [[1]], "varTypes": ["float64"], "varInit": ["uniform_int10"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_int32_to_int64", "varShapes": [[2]], "varTypes": ["int32"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_int64_to_int64", "varShapes": [[1]], "varTypes": ["int64"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_float32_to_int64", "varShapes": [[2,2]], "varTypes": ["float32"], "varInit": ["uniform"], "output": tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_bfloat16_to_int64", "varShapes": [[4,4]], "varTypes": ["bfloat16"], "varInit": ["uniform"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_half_to_int64", "varShapes": [[4,4]], "varTypes": ["half"], "varInit": ["uniform"], "output":tf.int64},
-         #{"opName": "bitcast", "outName": "bitcast/from_rank2_float64_to_int64", "varShapes": [[1,1]], "varTypes": ["float64"], "varInit": ["uniform"], "output":tf.int64},
+         {"opName": "bitcast", "outName": "bitcast/from_rank2_float64_to_int64", "varShapes": [[1,1]], "varTypes": ["float64"], "varInit": ["uniform_int10"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_int32_to_int64", "varShapes": [[2,2]], "varTypes": ["int32"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_int64_to_int64", "varShapes": [[1,1]], "varTypes": ["int64"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank3_float32_to_int64", "varShapes": [[2, 2,2]],"varTypes": ["float32"], "varInit": ["uniform"], "output": tf.int64},
@@ -1940,7 +1997,7 @@ def test_mathtransform():
          #{"opName": "bitcast", "outName": "bitcast/from_float32_to_uint64", "varShapes": [[2]], "varTypes": ["float32"], "varInit": ["uniform"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_bfloat16_to_uint64", "varShapes": [[4]], "varTypes": ["bfloat16"],"varInit": ["uniform"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_half_to_uint64", "varShapes": [[4]], "varTypes": ["half"],"varInit": ["uniform"], "output": tf.uint64},
-         #{"opName": "bitcast", "outName": "bitcast/from_float64_to_uint64", "varShapes": [[1]], "varTypes": ["float64"],"varInit": ["uniform"], "output": tf.uint64},
+         {"opName": "bitcast", "outName": "bitcast/from_float64_to_uint64", "varShapes": [[1]], "varTypes": ["float64"],"varInit": ["uniform_int10"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_int32_to_uint64", "varShapes": [[2]], "varTypes": ["int32"],"varInit": ["uniform_int2"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_int64_to_uint64", "varShapes": [[1]], "varTypes": ["int64"],"varInit": ["uniform_int2"], "output": tf.uint64},
         # {"opName": "bitcast", "outName": "bitcast/emptyArrayTest/from_uint32_to_uint16", "varShapes": [[0]],"varTypes": ["uint32"], "varInit": ["empty"], "output": tf.uint32},
