@@ -231,7 +231,10 @@ public class Nd4jNamespaceGenerator {
                     }
                     // Check for parameter types
                     final DataType paramType = i.getType();
-                    c.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", NDValidation.class, validationMapping.get(paramType), op.getOpName(), inputName, inputName));
+                    String validationName = validationMapping.get(paramType);
+                    if(validationName != null) {
+                        c.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", NDValidation.class, validationName, op.getOpName(), inputName, inputName));
+                    }
                     checkParameterCount(c, count, inputName);
                 } else if(p instanceof Arg){
                     Arg arg = (Arg)p;
