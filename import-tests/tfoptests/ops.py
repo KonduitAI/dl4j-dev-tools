@@ -41,6 +41,9 @@ class OpCreator:
     def execute_rgb_to_yuv(self):
         return [tf.image.rgb_to_yuv(self.vars[0])]
 
+    def execute_rgb_to_grayscale(self):
+        return [tf.image.rgb_to_grayscale(self.vars[0])]
+
     def execute_adjust_saturation(self):
         return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
 
