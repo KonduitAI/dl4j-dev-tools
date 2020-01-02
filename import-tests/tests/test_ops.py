@@ -68,31 +68,16 @@ def test_mathtransform():
     ops = [
         #Format:
         #{"opName": "segment_max", "outName": "segment/segment_max_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float64", "varShapes": [[20], [20]],"varTypes": ["float64", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_int32", "varShapes": [[20], [20]], "varTypes": ["int32", "int32"], "varInit": ["uniform_int10", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float32_large", "varShapes": [[100], [100]], "varTypes": ["float32", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float64_large", "varShapes": [[230], [230]],"varTypes": ["float64", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_float16_large", "varShapes": [[250], [250]], "varTypes": ["float16", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank1_half_large", "varShapes": [[150], [150]], "varTypes": ["half", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank3_float32_large", "varShapes": [[150,150,150],[150]], "varTypes": ["float32", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank4_float64_large","varShapes": [[70, 100, 120, 70], [70]], "varTypes": ["float64", "int32"], "varInit": ["uniform", "segment5"]},
-        #{"opName": "segment_max", "outName": "segment/segment_max_rank4_int64_large", "varShapes": [[30, 30, 30, 30], [30]], "varTypes": ["int64", "int32"], "varInit": ["uniform_int10", "segment5"]},
-
         # {"opName": "segment_mean", "outName": "segment/segment_mean_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
-        # {"opName": "segment_mean", "outName": "segment/segment_mean_rank4_large", "varShapes":[[200,100,100,100], [100]], "varTypes":["float32", "int32"], "varInit":["uniform", "segment5"]},
         # {"opName": "segment_mean", "outName": "segment/segment_mean_rank2", "varShapes":[[6,3], [6]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment3"]},
 
         # {"opName": "segment_min", "outName": "segment/segment_min_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
-        # {"opName": "segment_min", "outName": "segment/segment_min_rank4_large", "varShapes":[[200,100,100,100], [100]], "varTypes":["float32", "int32"], "varInit":["uniform", "segment5"]},
 
         # {"opName": "segment_prod", "outName": "segment/segment_prod_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
-        # {"opName": "segment_prod", "outName": "segment/segment_prod_rank4_large", "varShapes":[[200,100,100,100], [100]], "varTypes":["float32", "int32"], "varInit":["uniform", "segment5"]},
 
         # {"opName": "segment_sum", "outName": "segment/segment_sum_rank1", "varShapes":[[20], [20]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment5"]},
-        # {"opName": "segment_sum", "outName": "segment/segment_sum_rank4_large", "varShapes":[[200,100,100,100], [100]], "varTypes":["float32", "int32"], "varInit":["uniform", "segment5"]},
 
         # {"opName": "segment_max", "outName": "segment/segment_max_rank2", "varShapes":[[6,3], [6]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment3"]},
-        # {"opName": "segment_max", "outName": "segment/segment_max_rank4_large", "varShapes":[[200,100,100,100], [100]], "varTypes":["float32", "int32"], "varInit":["uniform", "segment5"]},
 
         # {"opName": "segment_min", "outName": "segment/segment_min_rank2", "varShapes":[[6,3], [6]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment3"]},
         # {"opName": "segment_prod", "outName": "segment/segment_prod_rank2", "varShapes":[[6,3], [6]], "varTypes":["float32", "int32"], "varInit":["uniform_int10", "segment3"]},
@@ -1961,13 +1946,13 @@ def test_mathtransform():
          #{"opName": "bitcast", "outName": "bitcast/from_float32_to_int64", "varShapes": [[2]], "varTypes": ["float32"], "varInit": ["uniform"], "output": tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_bfloat16_to_int64", "varShapes": [[4]], "varTypes": ["bfloat16"], "varInit": ["uniform"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_half_to_int64", "varShapes": [[4]], "varTypes": ["half"], "varInit": ["uniform"], "output":tf.int64},
-         {"opName": "bitcast", "outName": "bitcast/from_float64_to_int64", "varShapes": [[1]], "varTypes": ["float64"], "varInit": ["uniform_int10"], "output":tf.int64},
+         #{"opName": "bitcast", "outName": "bitcast/from_float64_to_int64", "varShapes": [[1]], "varTypes": ["float64"], "varInit": ["uniform_int10"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_int32_to_int64", "varShapes": [[2]], "varTypes": ["int32"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_int64_to_int64", "varShapes": [[1]], "varTypes": ["int64"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_float32_to_int64", "varShapes": [[2,2]], "varTypes": ["float32"], "varInit": ["uniform"], "output": tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_bfloat16_to_int64", "varShapes": [[4,4]], "varTypes": ["bfloat16"], "varInit": ["uniform"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_half_to_int64", "varShapes": [[4,4]], "varTypes": ["half"], "varInit": ["uniform"], "output":tf.int64},
-         {"opName": "bitcast", "outName": "bitcast/from_rank2_float64_to_int64", "varShapes": [[1,1]], "varTypes": ["float64"], "varInit": ["uniform_int10"], "output":tf.int64},
+         #{"opName": "bitcast", "outName": "bitcast/from_rank2_float64_to_int64", "varShapes": [[1,1]], "varTypes": ["float64"], "varInit": ["uniform_int10"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_int32_to_int64", "varShapes": [[2,2]], "varTypes": ["int32"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank2_int64_to_int64", "varShapes": [[1,1]], "varTypes": ["int64"], "varInit": ["uniform_int2"], "output":tf.int64},
          #{"opName": "bitcast", "outName": "bitcast/from_rank3_float32_to_int64", "varShapes": [[2, 2,2]],"varTypes": ["float32"], "varInit": ["uniform"], "output": tf.int64},
@@ -1997,7 +1982,7 @@ def test_mathtransform():
          #{"opName": "bitcast", "outName": "bitcast/from_float32_to_uint64", "varShapes": [[2]], "varTypes": ["float32"], "varInit": ["uniform"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_bfloat16_to_uint64", "varShapes": [[4]], "varTypes": ["bfloat16"],"varInit": ["uniform"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_half_to_uint64", "varShapes": [[4]], "varTypes": ["half"],"varInit": ["uniform"], "output": tf.uint64},
-         {"opName": "bitcast", "outName": "bitcast/from_float64_to_uint64", "varShapes": [[1]], "varTypes": ["float64"],"varInit": ["uniform_int10"], "output": tf.uint64},
+         #{"opName": "bitcast", "outName": "bitcast/from_float64_to_uint64", "varShapes": [[1]], "varTypes": ["float64"],"varInit": ["uniform_int10"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_int32_to_uint64", "varShapes": [[2]], "varTypes": ["int32"],"varInit": ["uniform_int2"], "output": tf.uint64},
          #{"opName": "bitcast", "outName": "bitcast/from_int64_to_uint64", "varShapes": [[1]], "varTypes": ["int64"],"varInit": ["uniform_int2"], "output": tf.uint64},
         # {"opName": "bitcast", "outName": "bitcast/emptyArrayTest/from_uint32_to_uint16", "varShapes": [[0]],"varTypes": ["uint32"], "varInit": ["empty"], "output": tf.uint32},
