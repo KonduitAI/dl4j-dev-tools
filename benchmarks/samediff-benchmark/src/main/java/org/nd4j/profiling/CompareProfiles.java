@@ -53,8 +53,8 @@ public class CompareProfiles {
         File sdProfileOutputDir = new File("/home/alex/TF_Graphs/gpu_profiling/sd2");      //Directory where the SameDiff profiles should be written
 
         //Available tests (so far): mobilenetv2, inception_resnet_v2, faster_rcnn_resnet101_coco
-//        String testName = "densenet";
-        String testName = "squeezenet";
+        String testName = "densenet";
+//        String testName = "squeezenet";
 //        String testName = "nasnet_mobile";
 //        String testName = "inception_v4_2018_04_27";
 //        String testName = "inception_resnet_v2";
