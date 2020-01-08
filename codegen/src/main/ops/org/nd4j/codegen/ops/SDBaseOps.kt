@@ -63,7 +63,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     val segmentOp = Mixin("segmentOp"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom.segment"
-        Input(NUMERIC, "data") { description = "Data to perform segment max on" }
+        Input(NDARRAY, "data") { description = "Data to perform segment max on" }
         Input(NUMERIC, "segmentIds") { description = "Variable for the segment IDs" }
         Output(NUMERIC, "output"){ description = "Segment output" }
     }
@@ -517,6 +517,20 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         useMixin(booleanReturnDoc)
     }
 
+    Op("matchCondition") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.bool"
+        javaOpClass = "MatchConditionTransform"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input" }
+        Arg(CONDITION, "condition") { description = "Condition" }
+        Output(NUMERIC, "output"){ description = "Boolean mask" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Returns a boolean mask of equal shape to the input, where the condition is satisfied - value 1 where satisfied, 0 otherwise
+            """.trimIndent()
+        }
+    }
+
     Op("matchConditionCount") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.longer"
         javaOpClass = "MatchCondition"
@@ -547,20 +561,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
         useMixin(keepDimsDoc)
     }
-/*
-    Op("max") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") {count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Max array reduction operation, optionally along specified dimensions
-            """.trimIndent()
-        }
-    }
-*/
+
     Op("max") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         legacy = true
