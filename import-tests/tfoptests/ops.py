@@ -1281,6 +1281,10 @@ class OpCreator:
     def execute_bitcast(self):
         return [tf.bitcast(self.vars[0], self.op["output"])]
 
+    def execute_bitcast_float64(self):
+        z = tf.bitcast(self.vars[0], tf.float64)
+        return [tf.bitcast(z, self.op["output"])]
+
     def execute_bitwise_and(self):
         return [tf.bitwise.bitwise_and(self.vars[0], self.vars[1])]
 
