@@ -1384,6 +1384,9 @@ class OpCreator:
     def execute_polygamma(self):
         return [tf.math.polygamma(self.vars[0], self.vars[1])]
 
+    def execute_lgamma(self):
+        return [tf.math.lgamma(self.vars[0])]
+
     def execute_roll(self):
         return [tf.roll(self.vars[0], self.op["shift"], self.op["axis"])]
 

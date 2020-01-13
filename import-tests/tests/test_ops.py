@@ -2123,6 +2123,10 @@ def test_mathtransform():
          #{"opName": "polygamma", "outName": "polygamma/float64", "varShapes": [[3, 4], [3, 4]], "varTypes": ["float64", "float64"], "varInit": ["uniform10", "uniform"]},
          #{"opName": "polygamma", "outName": "polygamma/emptyArrayTest/float32", "varShapes": [[0, 0], [3, 4]],  "varTypes": ["float32", "float32"], "varInit": ["empty", "uniform"]},
 
+         #{"opName": "lgamma", "outName": "lgamma/float32", "varShapes": [[3,4]],  "varTypes": ["float32"], "varInit": ["uniform"]},
+         #{"opName": "lgamma", "outName": "lgamma/float64", "varShapes": [[3, 4]], "varTypes": ["float64"], "varInit": ["uniform"]},
+         #{"opName": "lgamma", "outName": "lgamma/emptyArrayTest/float32", "varShapes": [[0, 0]],  "varTypes": ["float32"], "varInit": ["empty"]},
+
         #{"opName": "igamma", "outName": "igamma/float32", "varShapes": [[3,4],[3,4]],  "varTypes": ["float32","float32"], "varInit": ["uniform10","uniform"]},
         #{"opName": "igamma", "outName": "igamma/float64", "varShapes": [[3, 4], [3, 4]], "varTypes": ["float64", "float64"], "varInit": ["uniform10", "uniform"]},
         #{"opName": "igamma", "outName": "igamma/emptyArrayTest/float32", "varShapes": [[0, 0], [0, 0]],  "varTypes": ["float32", "float32"], "varInit": ["empty", "uniform"]},
