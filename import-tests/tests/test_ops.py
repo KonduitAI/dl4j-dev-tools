@@ -1309,6 +1309,12 @@ def test_mathtransform():
         # {"opName": "resize_bicubic", "outName": "resize_bicubic/int32", "varShapes": [[2, 5, 5, 1],[2]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"], "size":0, "align_corners":False, "half_pixel_centers":True},
         # {"opName": "resize_bicubic", "outName": "resize_bicubic/float32_1", "varShapes": [[2, 5, 5, 3],[2]],   "varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "size":100, "align_corners":False, "half_pixel_centers":False},
 
+        # {"opName": "resize_area", "outName": "resize_area/float32", "varShapes": [[2,5,5,3],[2]],"varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "align_corners":True},
+        # {"opName": "resize_area", "outName": "resize_area/float64", "varShapes": [[2, 5, 5, 1],[2]],  "varTypes": ["float64","int32"], "varInit": ["uniform","uniform_int10"], "size":10, "align_corners":True},
+        # {"opName": "resize_area", "outName": "resize_area/int32", "varShapes": [[2, 5, 5, 1],[2]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"], "size":0, "align_corners":False},
+        # {"opName": "resize_area", "outName": "resize_area/float32_1", "varShapes": [[2, 5, 5, 3],[2]],   "varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "size":100, "align_corners":False},
+        # {"opName": "resize_area", "outName": "resize_area/zeroArrayTest/float32", "varShapes": [[2, 5, 5, 3], [2]], "varTypes": ["float32", "int32"], "varInit": ["zeros", "uniform_int10"], "align_corners": True},
+
         # {"opName": "check_numerics", "outName": "check_numerics/rank1_float16", "varShapes":[[5]], "varTypes":["float16", "string"], "varInit":["uniform", "string_scalar"], "message":"This is a test string."},
         # {"opName": "check_numerics", "outName": "check_numerics/rank1_float32", "varShapes":[[5]], "varTypes":["float32", "string"], "varInit":["uniform", "string_scalar"], "message":"This is a test string."},
         # {"opName": "check_numerics", "outName": "check_numerics/rank2_float64", "varShapes":[[5]], "varTypes":["float64", "string"], "varInit":["uniform", "string_scalar"], "message":"This is a test string."},

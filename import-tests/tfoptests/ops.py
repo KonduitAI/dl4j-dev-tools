@@ -1322,6 +1322,10 @@ class OpCreator:
                                         align_corners=self.op["align_corners"], \
                                         half_pixel_centers=self.op["half_pixel_centers"])]
 
+    def execute_resize_area(self):
+        return [tf.image.resize_area(images=self.vars[0], size=self.vars[1], \
+                                        align_corners=self.op["align_corners"])]
+
     def execute_non_max_suppression(self):
         iou_threshold = 0.5
         score_threshold = 0.5
