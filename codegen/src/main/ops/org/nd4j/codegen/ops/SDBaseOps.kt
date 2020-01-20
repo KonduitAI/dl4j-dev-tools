@@ -8,6 +8,7 @@ import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
+import org.nd4j.linalg.api.buffer.DataType
 import java.lang.Boolean.FALSE
 
 fun SDBaseOps() =  Namespace("SDBaseOps"){
@@ -748,29 +749,14 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(INT, "axis") { description = "" }
         Arg(NUMERIC, "on") { description = "" }
         Arg(NUMERIC, "off") { description = "" }
+        Arg(DATA_TYPE, "dataType") { description = "Output data type"; defaultValue = DataType.FLOAT }
         Output(NUMERIC, "output"){ description = "Output variable" }
+
         Doc(Language.ANY, DocScope.ALL){
             """
                 Convert the array to a one-hot array with walues and  for each entry
                 If input has shape [ a, ..., n] then output has shape [ a, ..., n, depth],
-                with {out[i, ..., j, in[i,...,j]]  with other values being set to 
-            """.trimIndent()
-        }
-    }
-
-    Op("oneHot") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "indices") { description = "" }
-        Arg(INT, "depth") { description = "" }
-        Arg(INT, "axis") { description = "" }
-        Arg(NUMERIC, "on") { description = "" }
-        Arg(NUMERIC, "off") { description = "" }
-        Arg(DATA_TYPE, "dataType") { description = "" }
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                As per oneHot(String, SDVariable, int, int, double, double) but allows configuring the output datatype
+                with {out[i, ..., j, in[i,...,j]]  with other values being set to
             """.trimIndent()
         }
     }
@@ -883,6 +869,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
+    /*
     Op("repeat") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "df") { description = "" }
@@ -894,6 +881,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """.trimIndent()
         }
     }
+    */
 
     Op("replaceWhere") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.comparison"
@@ -941,7 +929,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 reverse(in, 0):
                 [3, 2, 1]
                 [6, 5, 4]
-                reverse(in, 0):
+                reverse(in, 1):
                 [4, 5, 6]
                 [1, 2 3]
             """.trimIndent()
@@ -951,25 +939,13 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("reverseSequence") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "seq_lengths") { description = "Length of the sequences" }
-        Arg(INT, "seqDim") { description = "Sequence dimension" }
-        Arg(INT, "batchDim") { description = "Batch dimension" }
+        Input(INT, "seq_lengths") { description = "Length of the sequences" }
+        Arg(INT, "seqDim") { description = "Sequence dimension"; defaultValue=0 }
+        Arg(INT, "batchDim") { description = "Batch dimension"; defaultValue=0 }
         Output(NUMERIC, "output"){ description = "Reversed sequences" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Reverse sequence op: for each slice along dimension seqDimension, the first seqLength values are reversed
-            """.trimIndent()
-        }
-    }
-
-    Op("reverseSequence") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
-        Input(NUMERIC, "x") { description = "" }
-        Input(NUMERIC, "seq_lengths") { description = "" }
-        Output(NUMERIC, "output"){ description = "" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                see reverseSequence(String, SDVariable, SDVariable, int, int)
             """.trimIndent()
         }
     }
