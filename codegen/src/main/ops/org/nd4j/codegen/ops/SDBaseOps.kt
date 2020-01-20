@@ -595,20 +595,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") { count = AtLeast(0);  description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Mean (average) array reduction operation, optionally along specified dimensions
-            """.trimIndent()
-        }
-    }
-
-    Op("mean") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -623,20 +610,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") { count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Minimum array reduction operation, optionally along specified dimensions. out = min(in)
-            """.trimIndent()
-        }
-    }
-
-    Op("min") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -721,21 +695,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") { count = AtLeast(0); description = "dimensions dimensions to reduce over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Norm1 (L1 norm) reduction operation: The output contains the L1 norm for each tensor/subset along the specified dimensions:
-                out = sum_i abs(x[i])
-            """.trimIndent()
-        }
-    }
-
-    Op("norm1") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0);  description = "dimensions to reduce over" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -751,21 +711,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") { count = AtLeast(0);  description = "dimensions to reduce over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Norm2 (L2 norm) reduction operation: The output contains the L2 norm for each tensor/subset along the specified dimensions: 
-                out = sqrt(sum_i x[i]^2)
-            """.trimIndent()
-        }
-    }
-
-    Op("norm2") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "dimensions dimensions to reduce over" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -782,22 +728,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaOpClass = "NormMax"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") { count = AtLeast(0); description = "dimensions to reduce over" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Max norm (infinity norm) reduction operation: The output contains the max norm for each tensor/subset along the
-                specified dimensions
-            """.trimIndent()
-        }
-    }
-
-    Op("normmax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        javaOpClass = "NormMax"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "dimensions to reduce over" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -919,14 +850,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Product array reduction operation, optionally along specified dimensions
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("range") {
@@ -1308,7 +1234,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         legacy = true
         Input(NUMERIC, "x") { description = "" }
-        Arg(BOOL, "keepDims") { description = "" }
+        Arg(BOOL, "keepDims") { description = ""; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1316,19 +1242,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Squared L2 norm: see norm2(String, SDVariable, boolean, int...)
             """.trimIndent()
         }
-    }
-
-    Op("squaredNorm") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
-        legacy = true
-        Input(NUMERIC, "x") { description = "" }
-        Arg(INT, "dimensions") { count = AtLeast(0); description = "" }
-        Output(NUMERIC, "output"){ description = "" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Squared L2 norm: see {norm2(String, SDVariable, int...)
-            """.trimIndent()
-        }
+        useMixin(keepDimsDoc)
     }
 
     Op("squeeze") {
@@ -1368,21 +1282,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample stdev). If false: divide by N (population stdev)" }
-        Arg(INT, "dimensions") {count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Stardard deviation array reduction operation, optionally along specified dimensions
-            """.trimIndent()
-        }
-    }
-
-    Op("standardDeviation") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.summarystats"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample stdev). If false: divide by N (population stdev)" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count= AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1439,20 +1339,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(INT, "dimensions") { count= AtLeast(0); description = "dimensions Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or of rank (input rank) if keepdims = true" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Sum array reduction operation, optionally along specified dimensions
-            """.trimIndent()
-        }
-    }
-
-    Op("sum") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count= AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions) if keepDims = false, or of rank (input rank) if keepdims = true" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1601,34 +1488,15 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample variable). If false: divide by N (population variance)" }
-        Arg(INT, "dimensions") { count=AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
-        Doc(Language.ANY, DocScope.ALL){
-            """ 
-                Variance array reduction operation, optionally along specified dimensions
-            """.trimIndent()
-        }
-    }
-
-    Op("variance") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.summarystats"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "biasCorrected") { description = "If true: divide by (N-1) (i.e., sample variable). If false: divide by N (population variance)" }
-        Arg(BOOL, "keepDims") {  description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
+        Arg(BOOL, "keepDims") {  description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count=AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Variance array reduction operation, optionally along specified dimensions
-                Note that if keepDims = true, the output variable has the same rank as the input variable,
-                with the reduced dimensions having size 1. This can be useful for later broadcast operations (such as subtracting
-                the mean along a dimension).
-                Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
-                keepDims = true: [a,1,c]
-                keepDims = false: [a,c]
             """.trimIndent()
         }
+        useMixin(keepDimsDoc)
     }
 
     Op("zerosLike") {
