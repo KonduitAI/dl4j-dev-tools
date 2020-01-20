@@ -1237,9 +1237,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("stack") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         //TODO: Flip the variables back to the original order.
-        Input(NUMERIC, "values") { description = "Input variables to stack. Must have the same shape for all inputs" }
+        Input(NDARRAY, "values") { description = "Input variables to stack. Must have the same shape for all inputs" }
         Arg(INT, "axis") { description = "Axis to stack on" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+        Output(NDARRAY, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Stack a set of N INDArray of rank X into one rank X+1 variable.
@@ -1271,11 +1271,16 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("stridedSlice") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "input") { description = "Variable to get subset of" }
-        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index. Must be same length as rank of input array" }
-        Arg(INT, "end") { count = AtLeast(1); description = "End index. Must be same length as the rank of the array" }
-        Arg(INT, "strides") { count = AtLeast(1); description = "(\"step size\") for each dimension. Must be same length as the rank of the array. For example, stride of 2 means take every second element" }
-        Output(NUMERIC, "output"){ description = "Subset of the input" }
+        Input(NUMERIC, "in") { description = "Variable to get subset of" }
+        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index" }
+        Arg(INT, "end") { count = AtLeast(1); description = "End index" }
+        Arg(INT, "strides") { count = AtLeast(1); description = "Stride (\"step size\") for each dimension. For example, stride of 2 means take every second element." }
+        Arg(INT, "beginMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the begin long[] is ignored, and a value of 0 is used instead for the beginning index for that dimension"; defaultValue=0 }
+        Arg(INT, "endMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the end long[] is ignored, and a value of size(i)-1 is used instead for the end index for that dimension"; defaultValue=0 }
+        Arg(INT, "ellipsisMask") { description = "Bit mask: only one non-zero value is allowed here. If a non-zero value is set, then other dimensions are inserted as required at the specified position"; defaultValue=0 }
+        Arg(INT, "newAxisMask") { description = "Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and a size 1 dimension is inserted at this point"; defaultValue=0 }
+        Arg(INT, "shrinkAxisMask") { description = "Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and a size 1 dimension is removed at this point. Note that begin/end/stride values must result in a size 1 output for these dimensions"; defaultValue=0 }
+        Output(NUMERIC, "output"){ description = "A subset of the input array" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Get a subset of the specified input, by specifying the first element, last element, and the strides.
@@ -1283,30 +1288,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 [a, b, c]
                 [d, e, f]
                 [g, h, i]
-                then stridedSlice(input, begin=[0,1], end=[2,2], strides=[2,1]) will return:
+                then stridedSlice(input, begin=[0,1], end=[2,2], strides=[2,1], all masks = 0) will return:
                 [b, c]
                 [h, i]
-            """.trimIndent()
-        }
-    }
-
-    Op("stridedSlice") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "in") { description = "Variable to get subset of" }
-        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index" }
-        Arg(INT, "end") { count = AtLeast(1); description = "End index" }
-        Arg(INT, "strides") { count = AtLeast(1); description = "Stride (\"step size\") for each dimension. For example, stride of 2 means take every second element." }
-        Arg(INT, "beginMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the begin long[] is ignored, and a value of 0 is used instead for the beginning index for that dimension" }
-        Arg(INT, "endMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the end long[] is ignored, and a value of size(i)-1 is used instead for the end index for that dimension" }
-        Arg(INT, "ellipsisMask") { description = "Bit mask: only one non-zero value is allowed here. If a non-zero value is set, then other dimensions are inserted as required at the specified position" }
-        Arg(INT, "newAxisMask") { description = "Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and a size 1 dimension is inserted at this point" }
-        Arg(INT, "shrinkAxisMask") { description = "Bit mask: if the ith bit is set to 1, then the begin/end/stride values are ignored, and a size 1 dimension is removed at this point. Note that begin/end/stride values must result in a size 1 output for these dimensions" }
-        Output(NUMERIC, "output"){ description = "A subset of the input array" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Get a subset of the specified input, by specifying the first element, last element, and the strides.
-                Operates as described in stridedSlice(SDVariable, long[], long[], long[]) with some extra mask arrays
-                as described below.
             """.trimIndent()
         }
     }
@@ -1340,9 +1324,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("tile") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "repeat") { description = "Number of times to repeat in each axis. Must have length equal to the rank of the input array" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
+        Input(NDARRAY, "x") { description = "Input variable" }
+        Input(INT, "repeat") { description = "Number of times to repeat in each axis. Must have length equal to the rank of the input array" }
+        Output(NDARRAY, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Repeat (tile) the input tensor the specified number of times.
@@ -1361,9 +1345,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("tile") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "x") { description = "" }
+        Input(NDARRAY, "x") { description = "" }
         Arg(INT, "repeat") { count= AtLeast(1); description = "" }
-        Output(NUMERIC, "output"){ description = "" }
+        Output(NDARRAY, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 see tile(String, SDVariable, int...)
@@ -1373,8 +1357,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("transpose") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Output(NUMERIC, "output"){ description = "transposed input" }
+        Input(NDARRAY, "x") { description = "Input variable" }
+        Output(NDARRAY, "output"){ description = "transposed input" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Matrix transpose operation: If input has shape [a,b] output has shape [b,a]
@@ -1491,9 +1475,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("any") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
         legacy = true
-        Input(NUMERIC, "x") { description = " Input variable" }
+        Input(BOOL, "x") { description = " Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
+        Output(BOOL, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean or array reduction operation, optionally along specified dimensions
@@ -1504,9 +1488,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("all") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
         legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(BOOL, "x") { description = "Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
+        Output(BOOL, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean and array reduction operation, optionally along specified dimensions
