@@ -29,6 +29,21 @@ class OpCreator:
     def execute_rgb_to_hsv(self):
         return [tf.image.rgb_to_hsv(self.vars[0])]
 
+    def execute_yiq_to_rgb(self):
+        return [tf.image.yiq_to_rgb(self.vars[0])]
+
+    def execute_rgb_to_yiq(self):
+        return [tf.image.rgb_to_yiq(self.vars[0])]
+
+    def execute_yuv_to_rgb(self):
+        return [tf.image.yuv_to_rgb(self.vars[0])]
+
+    def execute_rgb_to_yuv(self):
+        return [tf.image.rgb_to_yuv(self.vars[0])]
+
+    def execute_rgb_to_grayscale(self):
+        return [tf.image.rgb_to_grayscale(self.vars[0])]
+
     def execute_adjust_saturation(self):
         return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
 
@@ -1266,6 +1281,10 @@ class OpCreator:
     def execute_bitcast(self):
         return [tf.bitcast(self.vars[0], self.op["output"])]
 
+    def execute_bitcast_float64(self):
+        z = tf.bitcast(self.vars[0], tf.float64)
+        return [tf.bitcast(z, self.op["output"])]
+
     def execute_bitwise_and(self):
         return [tf.bitwise.bitwise_and(self.vars[0], self.vars[1])]
 
@@ -1302,6 +1321,10 @@ class OpCreator:
         return [tf.image.resize_bicubic(images=self.vars[0], size=self.vars[1], \
                                         align_corners=self.op["align_corners"], \
                                         half_pixel_centers=self.op["half_pixel_centers"])]
+
+    def execute_resize_area(self):
+        return [tf.image.resize_area(images=self.vars[0], size=self.vars[1], \
+                                        align_corners=self.op["align_corners"])]
 
     def execute_non_max_suppression(self):
         iou_threshold = 0.5
@@ -1361,5 +1384,14 @@ class OpCreator:
     def execute_polygamma(self):
         return [tf.math.polygamma(self.vars[0], self.vars[1])]
 
+    def execute_lgamma(self):
+        return [tf.math.lgamma(self.vars[0])]
+
     def execute_roll(self):
         return [tf.roll(self.vars[0], self.op["shift"], self.op["axis"])]
+
+    def execute_lu(self):
+        output_idx_type = tf.int32
+        if ("output_idx_type" in self.op):
+            output_idx_type = self.op["output_idx_type"]
+        return tf.linalg.lu(self.vars[0], output_idx_type)
