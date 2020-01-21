@@ -639,24 +639,14 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "x") { description = "First input variable" }
         Input(NUMERIC, "y") { description = "Second input variable" }
-        Input(NUMERIC, "transpose") { description = "Transpose arguments" } //TODO: MMulTranspose argument.
+        Arg(BOOL, "transposeX") { description = "Transpose x (first argument)"; defaultValue=false }
+        Arg(BOOL, "transposeY") { description = "Transpose y (second argument)"; defaultValue=false }
+        Arg(BOOL, "transposeZ") { description = "Transpose result array"; defaultValue=false }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Matrix multiplication: out = mmul(x,y)
-                Supports specifying a MMulTranspose argument to perform operation such as mmul(a^T, b), etc.
-            """.trimIndent()
-        }
-    }
-
-    Op("mmul") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
-        Input(NUMERIC, "x") { description = "First input variable" }
-        Input(NUMERIC, "y") { description = "Second input variable" }
-        Output(NUMERIC, "output"){ description = "" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Matrix multiplication: out = mmul(x,y)
+                Supports specifying transpose argument to perform operation such as mmul(a^T, b), etc.
             """.trimIndent()
         }
     }
@@ -1314,7 +1304,12 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "x") { description = "Input variable x" }
         Input(NUMERIC, "y") { description = "Input variable y" }
-        Input(NUMERIC, "dimensions") { description = "dimensions" } //TODO: How to map int[][]        Output(NUMERIC, "output"){ description = "Output variable" }
+        Arg(INT, "dimensionsX") { count=AtLeast(1); description = "dimensions for first input array (x)" }
+        Arg(INT, "dimensionsY") { count=AtLeast(1); description = "dimensions for second input array (y)" }
+        Arg(BOOL, "transposeX") { description = "Transpose x (first argument)"; defaultValue=false }
+        Arg(BOOL, "transposeY") { description = "Transpose y (second argument)"; defaultValue=false }
+        Arg(BOOL, "transposeZ") { description = "Transpose result array"; defaultValue=false }
+        Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 //TODO: Ops must be documented.
