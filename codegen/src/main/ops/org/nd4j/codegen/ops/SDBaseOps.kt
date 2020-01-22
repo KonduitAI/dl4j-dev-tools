@@ -807,21 +807,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue=false }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
-        Output(NUMERIC, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Product array reduction operation, optionally along specified dimensions
-            """.trimIndent()
-        }
-    }
-
-    Op("prod") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
-        legacy = true
-        Input(NUMERIC, "x") { description = "Input variable" }
-        Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions" }
-        Arg(INT, "dimensions") { count = AtLeast(0);  description = "" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
