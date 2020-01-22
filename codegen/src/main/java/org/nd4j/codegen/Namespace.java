@@ -43,7 +43,7 @@ public enum Namespace {
             case RANDOM:
                 return "NDRandom";
             case IMAGE:
-                return "NDIMAGE";
+                return "NDImage";
             case MATH:
                 return "NDMath";
         }
