@@ -444,7 +444,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(DATA_TYPE, "dataType") { description = "Data type of the output array" }
         Arg(NUMERIC, "start") { description = "Start value" }
         Arg(NUMERIC, "stop") { description = "Stop value" }
-        Arg(NUMERIC, "number") { description = "Number of values to generate" }
+        Arg(LONG, "number") { description = "Number of values to generate" }
         Output(NUMERIC, "output"){ description = "INDArray  with linearly spaced elements" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -917,7 +917,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(INT, "seq_lengths") { description = "Length of the sequences" }
-        Arg(INT, "seqDim") { description = "Sequence dimension"; defaultValue=0 }
+        Arg(INT, "seqDim") { description = "Sequence dimension"}
         Arg(INT, "batchDim") { description = "Batch dimension"; defaultValue=0 }
         Output(NUMERIC, "output"){ description = "Reversed sequences" }
         Doc(Language.ANY, DocScope.ALL){
