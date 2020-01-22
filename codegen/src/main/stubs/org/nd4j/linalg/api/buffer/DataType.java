@@ -1,5 +1,20 @@
 package org.nd4j.linalg.api.buffer;
 
 public enum DataType {
-    // This is a stub!
+    DOUBLE,
+    FLOAT,
+    HALF,
+    LONG,
+    INT,
+    SHORT,
+    UBYTE,
+    BYTE,
+    BOOL,
+    UTF8,
+    COMPRESSED,
+    BFLOAT16,
+    UINT16,
+    UINT32,
+    UINT64,
+    UNKNOWN;
 }

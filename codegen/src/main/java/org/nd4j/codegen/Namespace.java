@@ -1,16 +1,14 @@
 package org.nd4j.codegen;
 
 import org.nd4j.codegen.api.NamespaceOps;
-import org.nd4j.codegen.ops.BitwiseKt;
-import org.nd4j.codegen.ops.NeuralNetworkKt;
-import org.nd4j.codegen.ops.RandomKt;
-import org.nd4j.codegen.ops.MathKt;
+import org.nd4j.codegen.ops.*;
 
 public enum Namespace {
     BITWISE,
     NEURALNETWORK,
     RANDOM,
-    MATH;
+    MATH,
+    BASE;
 
     public static Namespace fromString(String in){
         switch (in.toLowerCase()){
@@ -23,6 +21,8 @@ public enum Namespace {
                 return RANDOM;
             case "math":
                 return MATH;
+            case "base":
+                return BASE;
             default:
                 return null;
         }
@@ -38,6 +38,8 @@ public enum Namespace {
                 return "NDRandom";
             case MATH:
                 return "NDMath";
+            case BASE:
+                return "NDBase";
         }
         throw new IllegalStateException("No java class name defined for: " + this);
     }
@@ -52,6 +54,8 @@ public enum Namespace {
                 return MathKt.Math();
             case NEURALNETWORK:
                 return NeuralNetworkKt.NN();
+            case BASE:
+                return SDBaseOpsKt.SDBaseOps();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
