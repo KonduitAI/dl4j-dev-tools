@@ -21,4 +21,7 @@ class ConstructionTest {
     @Test
     fun nn() { NN() }
 
+    @Test
+    fun image() { SDImage() }
+
 }
