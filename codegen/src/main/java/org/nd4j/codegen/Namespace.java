@@ -1,11 +1,7 @@
 package org.nd4j.codegen;
 
 import org.nd4j.codegen.api.NamespaceOps;
-import org.nd4j.codegen.ops.BitwiseKt;
-import org.nd4j.codegen.ops.NeuralNetworkKt;
-import org.nd4j.codegen.ops.RandomKt;
-import org.nd4j.codegen.ops.MathKt;
-import org.nd4j.codegen.ops.ImageKt;
+import org.nd4j.codegen.ops.*;
 
 
 public enum Namespace {
@@ -13,6 +9,8 @@ public enum Namespace {
     NEURALNETWORK,
     RANDOM,
     IMAGE,
+    CNN,
+    RNN,
     MATH;
 
 
@@ -29,6 +27,10 @@ public enum Namespace {
                 return MATH;
             case "image":
                 return IMAGE;
+            case "cnn":
+                return CNN;
+            case "rnn":
+                return RNN;
             default:
                 return null;
         }
@@ -44,6 +46,10 @@ public enum Namespace {
                 return "NDRandom";
             case IMAGE:
                 return "NDImage";
+            case CNN:
+                return "NDCNN";
+            case RNN:
+                return "NDRNN";
             case MATH:
                 return "NDMath";
         }
@@ -60,6 +66,10 @@ public enum Namespace {
                 return MathKt.Math();
             case IMAGE:
                 return ImageKt.SDImage();
+            case CNN:
+                return CNNKt.SDCNN();
+            case RNN:
+                return RNNKt.SDRNN();
             case NEURALNETWORK:
                 return NeuralNetworkKt.NN();
         }
