@@ -23,9 +23,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Given an input image and some crop boxes, extract out the image subsets and resize them to the specified size.
-
-""".trimIndent()
+             Given an input image and some crop boxes, extract out the image subsets and resize them to the specified size.
+            """.trimIndent()
         }
     }
 
@@ -44,11 +43,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Given an input image, extract out image patches (of size kSizes - h x w) and place them in the depth dimension.
-
-
-     
-""".trimIndent()
+             Given an input image, extract out image patches (of size kSizes - h x w) and place them in the depth dimension. 
+            """.trimIndent()
         }
     }
 
@@ -65,9 +61,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Greedily selects a subset of bounding boxes in descending order of score
-      
-""".trimIndent()
+            Greedily selects a subset of bounding boxes in descending order of score
+            """.trimIndent()
         }
     }
 
@@ -76,14 +71,13 @@ fun SDImage() =  Namespace("SDImage"){
         javaOpClass = "AdjustContrast"
         Input(NUMERIC, "in") { description = "images to adjust. 3D shape or higher" }
         Arg(FLOATING_POINT, "factor") { description = "multiplier for adjusting contrast" }
+
         Output(NUMERIC, "output"){ description = "Contrast-adjusted image" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Adjusts contrast of RGB or grayscale images.
- @return Contrast-adjusted image
-     
-""".trimIndent()
+             Adjusts contrast of RGB or grayscale images.
+            """.trimIndent()
         }
     }
 
@@ -97,9 +91,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Adjust saturation of RGB images
-
-""".trimIndent()
+             Adjust saturation of RGB images
+            """.trimIndent()
         }
     }
 
@@ -113,10 +106,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Adjust hue of RGB image
-
-     
-""".trimIndent()
+             Adjust hue of RGB image 
+            """.trimIndent()
         }
     }
 
@@ -130,9 +121,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Randomly crops image
-
-""".trimIndent()
+             Randomly crops image
+            """.trimIndent()
         }
     }
 
@@ -145,9 +135,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Converting array from HSV to RGB format
-
-""".trimIndent()
+             Converting array from HSV to RGB format
+            """.trimIndent()
         }
     }
 
@@ -160,10 +149,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Converting image from HSV to RGB format
-
-     
-""".trimIndent()
+             Converting image from HSV to RGB format 
+            """.trimIndent()
         }
     }
 
@@ -176,10 +163,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Converting array from RGB to YIQ format
-
-     
-""".trimIndent()
+             Converting array from RGB to YIQ format 
+            """.trimIndent()
         }
     }
 
@@ -192,10 +177,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Converting image from YIQ to RGB format
-
-     
-""".trimIndent()
+             Converting image from YIQ to RGB format 
+            """.trimIndent()
         }
     }
 
@@ -209,10 +192,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Converting array from RGB to YUV format
-
-     
-""".trimIndent()
+             Converting array from RGB to YUV format 
+            """.trimIndent()
         }
     }
 
@@ -226,10 +207,8 @@ fun SDImage() =  Namespace("SDImage"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
- Converting image from YUV to RGB format
-
-     
-""".trimIndent()
+             Converting image from YUV to RGB format 
+            """.trimIndent()
         }
     }
 }
