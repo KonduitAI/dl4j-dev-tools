@@ -96,6 +96,7 @@ data class Arg(
     private fun matchesDataType(value: Any?) = when(type){
         DataType.FLOATING_POINT -> value is Double
         DataType.INT -> (value is Int) || (value is Long)
+        DataType.LONG -> (value is Int) || (value is Long)
         DataType.NUMERIC -> value is Number
         DataType.BOOL -> value is Boolean
         else -> false
