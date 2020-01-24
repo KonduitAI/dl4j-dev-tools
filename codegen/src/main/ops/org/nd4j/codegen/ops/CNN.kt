@@ -9,6 +9,16 @@ fun SDCNN() =  Namespace("SDCNN"){
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
 
+    val conv1DConfig = Config("Conv1DConfig"){
+        Arg(LONG, "k"){ description = "Kernel"; defaultValue=-1L}
+        Arg(LONG, "s"){ description = "stride"; defaultValue=1}
+        Arg(LONG, "p"){ description = "padding"; defaultValue=0}
+        Arg(LONG, "d"){ description = "dilation"; defaultValue=1}
+        Arg(BOOL, "isSameMode"){ description = "Same mode"; defaultValue=true}
+        Arg(STRING, "dataFormat"){ description = "Data format"; defaultValue="NCW"}
+        javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.convolution.config.Conv1DConfig"
+    }
+
 
     val pooling2DConfig = Config("Pooling2DConfig"){
         Arg(INT, "kH"){ description = "Kernel height"; defaultValue=-1}
@@ -23,6 +33,26 @@ fun SDCNN() =  Namespace("SDCNN"){
         Arg(STRING, "dataFormat"){ description = "Data format"; defaultValue="nchw"}
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.convolution.config.Pooling2DConfig"
     }
+
+    val pooling3DConfig = Config("Pooling3DConfig"){
+        Arg(INT, "kD"){ description = "Kernel depth"; defaultValue=-1}
+        Arg(INT, "kW"){ description = "Kernel width"; defaultValue=-1}
+        Arg(INT, "kH"){ description = "Kernel height"; defaultValue=-1};
+        Arg(INT, "sD"){ description = "Stride depth"; defaultValue=1};
+        Arg(INT, "sW"){ description = "Stride width"; defaultValue=1};
+        Arg(INT, "sH"){ description = "Stride height"; defaultValue=1};
+        Arg(INT, "pD"){ description = "Padding depth"; defaultValue=0};
+        Arg(INT, "pW"){ description = "Padding width"; defaultValue=0};
+        Arg(INT, "pH"){ description = "Padding height"; defaultValue=0};
+        Arg(INT, "dD"){ description = "Dilation depth"; defaultValue=1};
+        Arg(INT, "dW"){ description = "Dilation width"; defaultValue=1};
+        Arg(INT, "dH"){ description = "Dilation height"; defaultValue=1};
+        Arg(BOOL, "isSameMode"){ description = "Same mode"; defaultValue=true}
+        Arg(BOOL, "isNCDHW"){ description = "isNCDHW"; defaultValue=true}
+        Arg(STRING, "dataFormat"){ description = "Data format"; defaultValue="nchw"}
+        javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.convolution.config.Pooling3DConfig"
+    }
+
 
     Op("avgPooling2d") {
         javaPackage = namespaceJavaPackage
@@ -42,11 +72,11 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("avgPooling3d") {
         javaPackage = namespaceJavaPackage
-        javaOpClass = "AvgPooling2D"
+        javaOpClass = "AvgPooling3D"
         Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
                 "                        (shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
                 "                        (shape [minibatch, depth, height, width, channels])" }
-        Input(NUMERIC, "pooling3DConfig") { description = "pooling3DConfig the configuration" }
+        useConfig(pooling3DConfig)
 
         Output(NUMERIC, "output"){ description = "after applying average pooling on the input" }
 
@@ -58,7 +88,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     }
 
     Op("batchToSpace") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "BatchToSpace"
         Input(NUMERIC, "x") { description = "Input variable. 4d input" }
         Input(NUMERIC, "blocks") { description = "Block size, in the height/width dimension" }
@@ -76,7 +106,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("col2Im") {
         javaPackage = namespaceJavaPackage
-        javaOpClass = "BatchToSpace"
+        javaOpClass = "Col2Im"
 
         Input(NUMERIC, "in") { description = "Input - rank 6 input with shape [minibatch, inputChannels, kernelHeight, kernelWidth, outputHeight, outputWidth]" }
         Input(NUMERIC, "config") { description = "Convolution configuration for the col2im operation" }
@@ -93,10 +123,10 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv1d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv1D"
         Input(NUMERIC, "input") { description = "the inputs to conv1d" }
         Input(NUMERIC, "weights") { description = "weights for conv1d op - rank 3 array with shape [kernelSize, inputChannels, outputChannels]" }
-        Input(NUMERIC, "conv1DConfig") { description = "Conv1DConfig configuration" }
-
+        useConfig(conv1DConfig)
         Doc(Language.ANY, DocScope.ALL){
             """
  See {@link #conv1d(String, SDVariable, SDVariable, SDVariable, Conv1DConfig)}, no bias.
@@ -107,10 +137,11 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv1d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv1D"
         Input(NUMERIC, "input") { description = "the inputs to conv1d" }
         Input(NUMERIC, "weights") { description = "weights for conv1d op - rank 3 array with shape [kernelSize, inputChannels, outputChannels]" }
         Input(NUMERIC, "bias") { description = "bias for conv1d op - rank 1 array with shape [outputChannels]. May be null." }
-        Input(NUMERIC, "conv1DConfig") { description = "Conv1DConfig configuration" }
+        useConfig(conv1DConfig)
 
         Output(NUMERIC, "output"){ description = "result of conv1d op" }
 
@@ -123,6 +154,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format" }
         Input(NUMERIC, "weights") { description = "Weights for the convolution operation. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, outputChannels]" }
         Input(NUMERIC, "config") { description = " Conv2DConfig configuration" }
@@ -138,6 +170,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format" }
         Input(NUMERIC, "weights") { description = "Weights for the convolution operation. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, outputChannels]" }
         Input(NUMERIC, "bias") { description = "Optional 1D bias array with shape [outputChannels]. May be null." }
@@ -154,6 +187,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv2D"
         Input(NUMERIC, "inputs") { description = "inputs an array with either 2 elements (layerInput, weights) or 3 elements (layerInput, weights, bias) as\n" +
                 "               described in {@link #conv2d(SDVariable, SDVariable, SDVariable, Conv2DConfig)}" }
         Input(NUMERIC, "config") { description = "onfig Conv2DConfig configuration" }
@@ -170,6 +204,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv3d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv3D"
         Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
                 "(shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
                 "(shape [minibatch, depth, height, width, channels])" }
@@ -187,6 +222,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("conv3d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Conv3D"
         Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
                 "(shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
                 "(shape [minibatch, depth, height, width, channels])" }
@@ -205,6 +241,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("deconv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DeConv2D"
         Input(NUMERIC, "layerInput") { description = "the input to deconvolution 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "(shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
 
@@ -222,6 +259,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("deconv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DeConv2D"
         Input(NUMERIC, "layerInput") { description = "the input to deconvolution 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "(shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "weights") { description = "Weights for the 2d deconvolution operation. 4 dimensions with format [inputChannels, outputChannels, kernelHeight, kernelWidth]" }
@@ -239,6 +277,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("deconv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DeConv2D"
         Input(NUMERIC, "inputs") { description = "Inputs to the deconvolution 2d operation - input array of length 2 (layerInput, weights)\n" +
                 "                       or length 3 (layerInput, weights, bias) as described in {@link #deconv2d(SDVariable[], DeConv2DConfig)}" }
         Input(NUMERIC, "deconv2DConfig") { description = "deconv2DConfig the configuration" }
@@ -254,6 +293,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("deconv3d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DeConv3D"
         Input(NUMERIC, "input") { description = "Input array - shape [bS, iD, iH, iW, iC] (NDHWC) or [bS, iC, iD, iH, iW] (NCDHW)" }
         Input(NUMERIC, "weights") { description = "Weights array - shape [kD, kH, kW, oC, iC]" }
         Input(NUMERIC, "config") { description = "Configuration" }
@@ -269,6 +309,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("deconv3d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DeConv3D"
         Input(NUMERIC, "input") { description = "Input array - shape [bS, iD, iH, iW, iC] (NDHWC) or [bS, iC, iD, iH, iW] (NCDHW)" }
         Input(NUMERIC, "weights") { description = "Weights array - shape [kD, kH, kW, oC, iC]" }
         Input(NUMERIC, "bias") { description = "Bias array - optional, may be null. If non-null, must have shape [outputChannels]" }
@@ -285,6 +326,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("depthToSpace") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DepthToSpace"
         Input(NUMERIC, "x") { description = "the input to depth to space pooling 2d operation - 4d activations in NCHW format\n" +
                 "                   (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "blockSize") { description = "Block size, in the height/width dimension" }
@@ -304,6 +346,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("depthWiseConv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DepthwiseConv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format" }
         Input(NUMERIC, "depthWeights") { description = "Depth-wise conv2d weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
         Input(NUMERIC, "config") { description = "Conv2DConfig configuration" }
@@ -319,6 +362,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("depthWiseConv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DepthwiseConv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format" }
         Input(NUMERIC, "depthWeights") { description = "Depth-wise conv2d weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
         Input(NUMERIC, "bias") { description = "Optional 1D bias array with shape [outputChannels]. May be null." }
@@ -335,6 +379,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("depthWiseConv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "DepthwiseConv2D"
         Input(NUMERIC, "inputs") { description = "the inputs to depth-wise conv2d. An array with either 2 elements (layerInput, depthWeights)\n" +
                 "                          or 3 elements (layerInput, depthWeights, bias) as described in\n" +
                 "                          {@link #depthWiseConv2d(SDVariable, SDVariable, SDVariable, Conv2DConfig)}" }
@@ -350,7 +395,8 @@ fun SDCNN() =  Namespace("SDCNN"){
     }
 
     Op("dilation2D") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "Dilation2D"
         Input(NUMERIC, "df") { description = "" }
         Input(NUMERIC, "weights") { description = "df" }
         Input(NUMERIC, "strides") { description = "weights" }
@@ -367,7 +413,8 @@ fun SDCNN() =  Namespace("SDCNN"){
     }
 
     Op("extractImagePatches") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.image"
+        javaOpClass = "ExtractImagePatches"
         Input(NUMERIC, "input") { description = "Input array. Must be rank 4, with shape [minibatch, height, width, channels]" }
         Input(NUMERIC, "kH") { description = "Kernel height" }
         Input(NUMERIC, "kW") { description = "Kernel width" }
@@ -388,6 +435,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("im2Col") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "Im2col"
         Input(NUMERIC, "in") { description = "Input - rank 4 input with shape [minibatch, inputChannels, height, width]" }
         Input(NUMERIC, "config") { description = "config Convolution configuration for the im2col operation" }
 
@@ -403,6 +451,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("localResponseNormalization") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "LocalResponseNormalization"
         Input(NUMERIC, "input") { description = "the inputs to lrn" }
         Input(NUMERIC, "lrnConfig") { description = "lrnConfig the configuration" }
 
@@ -417,6 +466,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("maxPooling2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "MaxPooling2D"
         Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "pooling2DConfig") { description = "pooling2DConfig the configuration" }
@@ -432,6 +482,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("maxPooling3d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "MaxPooling3D"
         Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
                 "                        (shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
                 "                        (shape [minibatch, depth, height, width, channels])" }
@@ -448,6 +499,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("separableConv2d") {
         javaPackage = namespaceJavaPackage
+        javaOpClass = "separableConv2d"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "                     (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "depthWeights") { description = "Separable conv2d depth weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
