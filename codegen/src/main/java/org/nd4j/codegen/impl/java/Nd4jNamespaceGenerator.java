@@ -419,6 +419,16 @@ public class Nd4jNamespaceGenerator {
     }
 
     private static void generateConfig(File outputDirectory, String targetPackage, Config config) throws IOException {
+        if(config.getJavaClassOverride() != null && !config.getJavaClassOverride().isEmpty()){
+            //Java class override means "don't generate, use the existing one instead"
+            String c = config.getJavaClassOverride();
+            int idx = c.lastIndexOf('.');
+            String pkg = c.substring(0,idx);
+            String className = c.substring(idx+1);
+            configMapping.put(config, ClassName.get(pkg, className));
+            return;
+        }
+
         final String className = GenUtil.ensureFirstIsCap(config.name());
         configMapping.put(config, ClassName.get(targetPackage, className));
 

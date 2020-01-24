@@ -109,6 +109,7 @@ data class Arg(
         is DoubleArray -> isArray() && (type == DataType.FLOATING_POINT || type == DataType.NUMERIC) && countMatches(value.size)
         is BooleanArray -> isArray() && type == DataType.BOOL && countMatches(value.size)
         is Arg -> value.count == count && value.type == type
+        is String -> type == DataType.STRING
         is String -> type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
         null -> true
         else -> false
@@ -210,4 +211,6 @@ data class Config(
     fun addArgument(arg: Arg) { args.add(arg) }
     fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
     fun addDoc(doc: DocSection){ this.doc.add(doc) }
+
+    var javaClassOverride: String = ""
 }

@@ -7,6 +7,7 @@ enum class DataType {
     LONG, //long, signed int64 datatype
     NUMERIC, // any floating point or integer data type
     BOOL, // boolean data type
+    STRING, //String value
     // Arg only
     DATA_TYPE, // tensor data type
     CONDITION, // A condition

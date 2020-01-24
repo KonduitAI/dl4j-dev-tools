@@ -8,12 +8,28 @@ import org.nd4j.codegen.api.DataType.*
 fun SDCNN() =  Namespace("SDCNN"){
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
+
+
+    val pooling2DConfig = Config("Pooling2DConfig"){
+        Arg(INT, "kH"){ description = "Kernel height"; defaultValue=-1}
+        Arg(INT, "kW"){ description = "Kernel width"; defaultValue=-1}
+        Arg(INT, "sH"){ description = "Stride along height dimension"; defaultValue=1};
+        Arg(INT, "sW"){ description = "Stride along width dimension"; defaultValue=1};
+        Arg(INT, "pH"){ description = "Padding along height dimension"; defaultValue=0};
+        Arg(INT, "pW"){ description = "Padding along width dimension"; defaultValue=0};
+        Arg(INT, "dH"){ description = "Dilation along height dimension"; defaultValue=1};
+        Arg(INT, "dW"){ description = "Dilation along width dimension"; defaultValue=1};
+        Arg(BOOL, "isSameMode"){ description = "Same mode"; defaultValue=true}
+        Arg(STRING, "dataFormat"){ description = "Data format"; defaultValue="nchw"}
+        javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.convolution.config.Pooling2DConfig"
+    }
+
     Op("avgPooling2d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "AvgPooling2D"
         Input(NUMERIC, "input") { description = "the input to average pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
-        Input(NUMERIC, "pooling2DConfig") { description = "pooling2DConfig the configuration" }
+        useConfig(pooling2DConfig)
 
         Output(NUMERIC, "output"){ description = "Result after applying average pooling on the input" }
 
