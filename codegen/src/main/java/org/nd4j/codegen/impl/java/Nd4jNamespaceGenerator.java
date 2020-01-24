@@ -56,6 +56,7 @@ public class Nd4jNamespaceGenerator {
         typeMapping.put(DataType.INT, int.class);
         typeMapping.put(DataType.LONG, long.class);
         typeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType.class);
+        typeMapping.put(DataType.LOSS_REDUCE, org.nd4j.autodiff.loss.LossReduce.class);
         typeMapping.put(DataType.CONDITION, Condition.class);
 
         validationMapping.put(DataType.BOOL, "validateBool");
