@@ -14,7 +14,6 @@ fun SDLoss() =  Namespace("SDLoss"){
     Op("absoluteDifference") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
         javaOpClass = "AbsoluteDifferenceLoss"
-        legacy = true
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
@@ -26,292 +25,98 @@ fun SDLoss() =  Namespace("SDLoss"){
             """.trimIndent()
         }
     }
-/*
-    Op("absoluteDifference") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Absolute difference loss: {@code sum_i abs( label[i] - predictions[i] )
-
- @param name        Name of the operation
- @param label       Label array
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("absoluteDifference") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #absoluteDifference(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
 
     Op("cosineDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "CosineDistanceLoss"
+        Input(NUMERIC, "label") { description = "Label array" }
+        Input(NUMERIC, "predictions") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is use" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(INT, "dimension") { description = "Dimension to perform the cosine distance over" }
+        Output(NUMERIC, "output"){ description = "Cosine distance loss " }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #cosineDistance(String, SDVariable, SDVariable, SDVariable, LossReduce, int)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("cosineDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Cosine distance loss: {@code 1 - cosineSimilarity(x,y)} or {@code 1 - sum_i label[i] * prediction[i]}, which is
- equivalent to cosine distance when both the predictions and labels are normalized.<br>
- <b>Note</b>: This loss function assumes that both the predictions and labels are normalized to have unit l2 norm.
- If this is not the case, you should normalize them first by dividing by {@link SameDiff#norm2(String, SDVariable, boolean, int...)}
- along the cosine distance dimension (with keepDims=true).
-
- @param name        Name of the operation
- @param label       Label array
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @param dimension   Dimension to perform the cosine distance over
- @return Cosine distance loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("cosineDistance") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "dimension") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #cosineDistance(String, SDVariable, SDVariable, SDVariable, LossReduce, int)}.
-     
-""".trimIndent()
+                Cosine distance loss: {@code 1 - cosineSimilarity(x,y)} or {@code 1 - sum_i label[i] * prediction[i]}, which is
+                equivalent to cosine distance when both the predictions and labels are normalized.<br>
+                <b>Note</b>: This loss function assumes that both the predictions and labels are normalized to have unit l2 norm.
+                If this is not the case, you should normalize them first by dividing by norm2(String, SDVariable, boolean, int...)
+                along the cosine distance dimension (with keepDims=true).
+            """.trimIndent()
         }
     }
 
     Op("hingeLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "HingeLoss"
+        Input(NUMERIC, "label") { description = "Label array. Each value should be 0.0 or 1.0 (internally -1 to 1 is used)" }
+        Input(NUMERIC, "predictions") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #hingeLoss(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
+                Hinge loss: a loss function used for training classifiers.
+                Implements {@code L = max(0, 1 - t * predictions)} where t is the label values after internally converting to {-1,1}
+                from the user specified {0,1}. Note that Labels should be provided with values {0,1}.
+            """.trimIndent()
         }
     }
 
-    Op("hingeLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Hinge loss: a loss function used for training classifiers.
- Implements {@code L = max(0, 1 - t * predictions)} where t is the label values after internally converting to {-1,1}
- from the user specified {0,1}. Note that Labels should be provided with values {0,1}.
-
- @param name        Name of the operation
- @param label       Label array. Each value should be 0.0 or 1.0 (internally -1 to 1 is used)
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("hingeLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #hingeLoss(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
 
     Op("huberLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "delta") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "HuberLoss"
+        Input(NUMERIC, "label") { description = "Label array" }
+        Input(NUMERIC, "predictions") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(FLOATING_POINT, "delta") { description = "Loss function delta value" }
+        Output(NUMERIC, "output"){ description = "Huber loss" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #huberLoss(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("huberLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "delta") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Huber loss function, used for robust regression. It is similar both squared error loss and absolute difference loss,
- though is less sensitive to outliers than squared error.<br>
- Huber loss implements:
- <pre>
- {@code L = 0.5 * (label[i] - predictions[i])^2 if abs(label[i] - predictions[i]) < delta
-  L = delta * abs(label[i] - predictions[i]) - 0.5 * delta^2 otherwise
-     }
- </pre>
-
- @param name        Name of the operation
- @param label       Label array
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @param delta       Loss function delta value
- @return Huber loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("huberLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "delta") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #huberLoss(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
+                Huber loss function, used for robust regression. It is similar both squared error loss and absolute difference loss,
+                though is less sensitive to outliers than squared error.<br>
+                Huber loss implements:
+                <pre>
+                {@code L = 0.5 * (label[i] - predictions[i])^2 if abs(label[i] - predictions[i]) < delta
+                L = delta * abs(label[i] - predictions[i]) - 0.5 * delta^2 otherwise
+                }
+                </pre>
+            """.trimIndent()
         }
     }
 
     Op("l2Loss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "var") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "L2Loss"
+        Input(NUMERIC, "var") { description = "Variable to calculate L2 loss of" }
+        Output(NUMERIC, "output"){ description = "L2 loss" }
         Doc(Language.ANY, DocScope.ALL){
             """
- L2 loss: 1/2 * sum(x^2)
-
- @param name Name of the output variable
- @param var  Variable to calculate L2 loss of
- @return L2 loss
-     
-""".trimIndent()
+                L2 loss: 1/2 * sum(x^2)
+            """.trimIndent()
         }
     }
 
     Op("logLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "LogLoss"
+        Input(NUMERIC, "label") { description = "Label array" }
+        Input(NUMERIC, "predictions") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(FLOATING_POINT, "epsilon") { description = "epsilon" }
+        Output(NUMERIC, "output"){ description = "Log loss " }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #logLoss(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
+                Log loss, i.e., binary cross entropy loss, usually used for binary multi-label classification. Implements:
+                {@code -1/numExamples * sum_i (labels[i] * log(predictions[i] + epsilon) + (1-labels[i]) * log(1-predictions[i] + epsilon))}
+            """.trimIndent()
         }
     }
 
-    Op("logLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "epsilon") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Log loss, i.e., binary cross entropy loss, usually used for binary multi-label classification. Implements:
- {@code -1/numExamples * sum_i (labels[i] * log(predictions[i] + epsilon) + (1-labels[i]) * log(1-predictions[i] + epsilon))}
-
- @param name        Name of the operation
- @param label       Label array
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Log loss variable
-     
-""".trimIndent()
-        }
-    }
-
+/*
     Op("logLoss") {
         javaPackage = namespaceJavaPackage
         Input(NUMERIC, "label") { description = "" }
