@@ -116,410 +116,140 @@ fun SDLoss() =  Namespace("SDLoss"){
         }
     }
 
-/*
-    Op("logLoss") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #logLoss(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
-        }
-    }
-
     Op("logPoisson") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "LogPoissonLoss"
+        Input(NUMERIC, "label") { description = "Label array. Each value should be 0.0 or 1.0" }
+        Input(NUMERIC, "predictions") { description = "Predictions array (has to be log(x) of actual predictions)" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(BOOL, "full") {description = "Boolean flag. true for logPoissonFull, false for logPoisson"}
+        Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #logPoisson(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
+                Log poisson loss: a loss function used for training classifiers.
+                Implements {@code L = exp(c) - z * c} where c is log(predictions) and z is labels.
+            """.trimIndent()
         }
     }
 
-    Op("logPoisson") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Log poisson loss: a loss function used for training classifiers.
- Implements {@code L = exp(c) - z * c} where c is log(predictions) and z is labels.
-
- @param name        Name of the operation
- @param label       Label array. Each value should be 0.0 or 1.0
- @param predictions Predictions array (has to be log(x) of actual predictions)
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("logPoisson") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #logPoisson(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("logPoissonFull") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #logPoissonFull(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("logPoissonFull") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Log poisson loss: a loss function used for training classifiers.
- Implements {@code L = exp(c) - z * c + z * log(z) - z + 0.5 * log(2 * pi * z)}
- where c is log(predictions) and z is labels.
-
- @param name        Name of the operation
- @param label       Label array. Each value should be 0.0 or 1.0
- @param predictions Predictions array (has to be log(x) of actual predictions)
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("logPoissonFull") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #logPoissonFull(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
+    // logPoissonFull is not implemented. Simply a moniker for logPoisson with full = true
 
     Op("meanPairwiseSquaredError") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "MeanPairwiseSquaredErrorLoss"
+        Input(NUMERIC, "label") { description = "Label array" }
+        Input(NUMERIC, "predictions") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used. Must be either null, scalar, or have shape [batchSize]" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Output(NUMERIC, "output"){ description = "Loss variable, scalar output" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #meanPairwiseSquaredError(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("meanPairwiseSquaredError") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Mean pairwise squared error.<br>
- MPWSE loss calculates the difference between pairs of consecutive elements in the predictions and labels arrays.
- For example, if predictions = [p0, p1, p2] and labels are [l0, l1, l2] then MPWSE is:
- {@code [((p0-p1) - (l0-l1))^2 + ((p0-p2) - (l0-l2))^2 + ((p1-p2) - (l1-l2))^2] / 3}<br>
-
- @param name        Name of the operation
- @param label       Label array
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used. Must be either null, scalar, or have shape [batchSize]
- @return Loss variable, scalar output
-     
-""".trimIndent()
+                Mean pairwise squared error.<br>
+                MPWSE loss calculates the difference between pairs of consecutive elements in the predictions and labels arrays.
+                For example, if predictions = [p0, p1, p2] and labels are [l0, l1, l2] then MPWSE is:
+                {@code [((p0-p1) - (l0-l1))^2 + ((p0-p2) - (l0-l2))^2 + ((p1-p2) - (l1-l2))^2] / 3}<br>
+            """.trimIndent()
         }
     }
 
     Op("meanSquaredError") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "MeanSquaredErrorLoss"
+        Input(NUMERIC, "label") { description = "Label array" }
+        Input(NUMERIC, "predictions") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #meanSquaredError(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("meanSquaredError") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Mean squared error loss function. Implements {@code (label[i] - prediction[i])^2} - i.e., squared error on a per-element basis.
- When averaged (using {@link LossReduce#MEAN_BY_WEIGHT} or {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT} (the default))
- this is the mean squared error loss function.
-
- @param name        Name of the operation
- @param label       Label array
- @param predictions Predictions array
- @param weights     Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce  Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("meanSquaredError") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #meanSquaredError(String, SDVariable, SDVariable, SDVariable, LossReduce)}.
-     
-""".trimIndent()
+                Mean squared error loss function. Implements {@code (label[i] - prediction[i])^2} - i.e., squared error on a per-element basis.
+                When averaged (using {@link LossReduce#MEAN_BY_WEIGHT} or {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT} (the default))
+                this is the mean squared error loss function.
+            """.trimIndent()
         }
     }
 
     Op("sigmoidCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "SigmoidCrossEntropyLoss"
+        Input(NUMERIC, "label") { description = "Label array" }
+        Input(NUMERIC, "predictionLogits") { description = "Predictions array" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(FLOATING_POINT, "labelSmoothing") { description = "Label smoothing value. Default value: 0" }
+        Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #sigmoidCrossEntropy(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("sigmoidCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictionLogits") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "labelSmoothing") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Sigmoid cross entropy: applies the sigmoid activation function on the input logits (input "pre-sigmoid preductions")
- and implements the binary cross entropy loss function. This implementation is numerically more stable than using
- standard (but separate) sigmoid activation function and log loss (binary cross entropy) loss function.<br>
- Implements:
- {@code -1/numExamples * sum_i (labels[i] * log(sigmoid(logits[i])) + (1-labels[i]) * log(1-sigmoid(logits[i])))}
- though this is done in a mathematically equivalent but more numerical stable form.<br>
- <br>
- When label smoothing is > 0, the following label smoothing is used:<br>
- <pre>
- {@code numClasses = labels.size(1);
- label = (1.0 - labelSmoothing) * label + 0.5 * labelSmoothing}
- </pre>
-
- @param name             Name of the operation
- @param label            Label array
- @param predictionLogits Predictions array
- @param weights          Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce       Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("sigmoidCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #sigmoidCrossEntropy(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
+                Sigmoid cross entropy: applies the sigmoid activation function on the input logits (input "pre-sigmoid preductions")
+                and implements the binary cross entropy loss function. This implementation is numerically more stable than using
+                standard (but separate) sigmoid activation function and log loss (binary cross entropy) loss function.<br>
+                Implements:
+                {@code -1/numExamples * sum_i (labels[i] * log(sigmoid(logits[i])) + (1-labels[i]) * log(1-sigmoid(logits[i])))}
+                though this is done in a mathematically equivalent but more numerical stable form.<br>
+                <br>
+                When label smoothing is > 0, the following label smoothing is used:<br>
+                <pre>
+                {@code numClasses = labels.size(1);
+                label = (1.0 - labelSmoothing) * label + 0.5 * labelSmoothing}
+                </pre>
+            """.trimIndent()
         }
     }
 
     Op("softmaxCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "SoftmaxCrossEntropyLoss"
+        Input(NUMERIC, "oneHotLabels") { description = "Label array. Should be one-hot per example and same shape as predictions (for example, [mb, nOut])" }
+        Input(NUMERIC, "logitPredictions") { description = "Predictions array (pre-softmax)" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(FLOATING_POINT, "labelSmoothing") { description = "Label smoothing value. Default value: 0" }
+        Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #softmaxCrossEntropy(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
-        }
-    }
-
-    Op("softmaxCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "oneHotLabels") { description = "" }
-        Input(NUMERIC, "logitPredictions") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-        Input(NUMERIC, "labelSmoothing") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- Applies the softmax activation function to the input, then implement multi-class cross entropy:<br>
- {@code -sum_classes label[i] * log(p[c])} where {@code p = softmax(logits)}<br>
- If {@link LossReduce#NONE} is used, returned shape is [numExamples] out for [numExamples, numClasses] predicitons/labels;
- otherwise, the output is a scalar.<br>
- <p>
- When label smoothing is > 0, the following label smoothing is used:<br>
- <pre>
- {@code numClasses = labels.size(1);
- oneHotLabel = (1.0 - labelSmoothing) * oneHotLabels + labelSmoothing/numClasses}
- </pre>
-
- @param name             Name of the operation
- @param oneHotLabels     Label array. Should be one-hot per example and same shape as predictions (for example, [mb, nOut])
- @param logitPredictions Predictions array (pre-softmax)
- @param weights          Weights array. May be null. If null, a weight of 1.0 is used
- @param lossReduce       Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}
- @param labelSmoothing   Label smoothing value. Default value: 0
- @return Loss variable
-     
-""".trimIndent()
-        }
-    }
-
-    Op("softmaxCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "label") { description = "" }
-        Input(NUMERIC, "predictions") { description = "" }
-        Input(NUMERIC, "lossReduce") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
- See {@link #softmaxCrossEntropy(String, SDVariable, SDVariable, SDVariable, LossReduce, double)}.
-     
-""".trimIndent()
+                Applies the softmax activation function to the input, then implement multi-class cross entropy:<br>
+                {@code -sum_classes label[i] * log(p[c])} where {@code p = softmax(logits)}<br>
+                If {@link LossReduce#NONE} is used, returned shape is [numExamples] out for [numExamples, numClasses] predicitons/labels;
+                otherwise, the output is a scalar.<br>
+                <p>
+                When label smoothing is > 0, the following label smoothing is used:<br>
+                <pre>
+                {@code numClasses = labels.size(1);
+                oneHotLabel = (1.0 - labelSmoothing) * oneHotLabels + labelSmoothing/numClasses}
+                </pre>
+            """.trimIndent()
         }
     }
 
     Op("sparseSoftmaxCrossEntropy") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "logits") { description = "" }
-        Input(NUMERIC, "labels") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
-
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "SparseSoftmaxCrossEntropyLossWithLogits"
+        Input(NUMERIC, "logits") { description = "Logits array (\"pre-softmax activations\")" }
+        Input(NUMERIC, "labels") { description = "Labels array. Must be an integer type." }
+        Output(NUMERIC, "output"){ description = "Softmax cross entropy" }
         Doc(Language.ANY, DocScope.ALL){
             """
- As per {@link #softmaxCrossEntropy(String, SDVariable, SDVariable, LossReduce)} but the labels variable
- is represented as an integer array instead of the equivalent one-hot array.<br>
- i.e., if logits are rank N, then labels have rank N-1
-
- @param name   Name of the output variable. May be null
- @param logits Logits array ("pre-softmax activations")
- @param labels Labels array. Must be an integer type.
- @return Softmax cross entropy
-     
-""".trimIndent()
+                As per softmaxCrossEntropy(String, SDVariable, SDVariable, LossReduce) but the labels variable
+                is represented as an integer array instead of the equivalent one-hot array.<br>
+                i.e., if logits are rank N, then labels have rank N-1
+            """.trimIndent()
         }
     }
+
 
     Op("weightedCrossEntropyWithLogits") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "targets") { description = "" }
-        Input(NUMERIC, "inputs") { description = "" }
-        Input(NUMERIC, "weights") { description = "" }
-
-        Output(NUMERIC, "output"){ description = "" }
+        javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
+        javaOpClass = "WeightedCrossEntropyLoss"
+        Input(NUMERIC, "targets") { description = "targets array" }
+        Input(NUMERIC, "inputs") { description = "input array" }
+        Input(NUMERIC, "weights") { description = "eights array. May be null. If null, a weight of 1.0 is used" }
+        Output(NUMERIC, "output"){ description = "Loss variable" }
 
         Doc(Language.ANY, DocScope.ALL){
-            """
- TODO
-
- @param name
- @param targets
- @param inputs
- @param weights
- @return
-     
-""".trimIndent()
+        """
+            Weighted cross entropy loss with logits
+        """.trimIndent()
         }
     }
-    */
 }
