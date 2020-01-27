@@ -115,7 +115,7 @@ fun SDImage() =  Namespace("SDImage"){
         javaPackage = namespaceJavaPackage
         javaOpClass = "RandomCrop"
         Input(NUMERIC, "input") { description = "input array" }
-        Input(NUMERIC, "shape") { description = "shape for crop" }
+        Input(INT, "shape") { description = "shape for crop" }
 
         Output(NUMERIC, "output"){ description = "cropped array" }
 
