@@ -190,7 +190,7 @@ fun SDCNN() =  Namespace("SDCNN"){
              Reduces input batch dimension by rearranging data into a larger spatial dimensions
             """.trimIndent()
         }
-        }
+    }
 
     Op("col2Im") {
         javaPackage = namespaceJavaPackage
@@ -217,9 +217,8 @@ fun SDCNN() =  Namespace("SDCNN"){
         useConfig(conv1DConfig)
         Doc(Language.ANY, DocScope.ALL){
             """
- See {@link #conv1d(String, SDVariable, SDVariable, SDVariable, Conv1DConfig)}, no bias.
-     
-""".trimIndent()
+            Computes a 1-D convolution given 3-D input and filter tensors.
+            """.trimIndent()
         }
     }
 
@@ -251,7 +250,8 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #conv2d(String, SDVariable, SDVariable, SDVariable, Conv2DConfig)}, no bias.
+             Computes a 2-D convolution given 4-D input.
+
             """.trimIndent()
         }
     }
@@ -276,8 +276,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("conv2d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "Conv2D"
-        Input(NUMERIC, "inputs") { description = "inputs an array with either 2 elements (layerInput, weights) or 3 elements (layerInput, weights, bias) as\n" +
-                "               described in {@link #conv2d(SDVariable, SDVariable, SDVariable, Conv2DConfig)}" }
+        Input(NUMERIC, "inputs") { description = "inputs an array with either 2 elements (layerInput, weights) or 3 elements (layerInput, weights, bias)" }
         useConfig(conv2DConfig)
 
         Output(NUMERIC, "output"){ description = "result of convolution 2d operation" }
@@ -303,7 +302,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #conv3d(String, SDVariable, SDVariable, SDVariable, Conv3DConfig)}, no bias.
+             Computes a 3-D convolution given 5-D input.
             """.trimIndent()
         }
     }
@@ -339,7 +338,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #deconv2d(String, SDVariable, SDVariable, SDVariable, DeConv2DConfig)}, no bias.
+             The transpose of conv2d..
             """.trimIndent()
         }
     }
@@ -364,8 +363,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("deconv2d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "DeConv2D"
-        Input(NUMERIC, "inputs") { description = "Inputs to the deconvolution 2d operation - input array of length 2 (layerInput, weights)\n" +
-                "                       or length 3 (layerInput, weights, bias) as described in {@link #deconv2d(SDVariable[], DeConv2DConfig)}" }
+        Input(NUMERIC, "inputs") { description = "Inputs to the deconvolution 2d operation - input array of length 2 (layerInput, weights)" }
         useConfig(deconv2DConfig)
 
         Output(NUMERIC, "output"){ description = "result of deconv2d op" }
@@ -388,7 +386,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #deconv3d(String, SDVariable, SDVariable, SDVariable, DeConv3DConfig)}, no bias.
+             The transpose of conv3d..
             """.trimIndent()
         }
     }
@@ -440,7 +438,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #depthWiseConv2d(String, SDVariable, SDVariable, SDVariable, Conv2DConfig)}, no bias.
+            Depthwise 2-D convolution.
             """.trimIndent()
         }
     }
@@ -466,8 +464,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         javaPackage = namespaceJavaPackage
         javaOpClass = "DepthwiseConv2D"
         Input(NUMERIC, "inputs") { description = "the inputs to depth-wise conv2d. An array with either 2 elements (layerInput, depthWeights)\n" +
-                "                          or 3 elements (layerInput, depthWeights, bias) as described in\n" +
-                "                          {@link #depthWiseConv2d(SDVariable, SDVariable, SDVariable, Conv2DConfig)}" }
+                "or 3 elements (layerInput, depthWeights, bias)" }
         useConfig(conv2DConfig)
 
         Output(NUMERIC, "output"){ description = "result of depthwise conv2d op" }
@@ -583,8 +580,8 @@ fun SDCNN() =  Namespace("SDCNN"){
     }
 
     Op("separableConv2d") {
-        javaPackage = namespaceJavaPackage
-        javaOpClass = "separableConv2d"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
+        javaOpClass = "SConv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "                     (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "depthWeights") { description = "Separable conv2d depth weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
@@ -595,19 +592,20 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #separableConv2d(String, SDVariable, SDVariable, SDVariable, SDVariable, Conv2DConfig)}, no bias.
+             2-D convolution with separable filters.
             """.trimIndent()
         }
     }
 
     Op("separableConv2d") {
-        javaPackage = namespaceJavaPackage
+        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
+        javaOpClass = "SConv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
                 "                     (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "depthWeights") { description = "Separable conv2d depth weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
         Input(NUMERIC, "pointWeights") { description = "Point weights, rank 4 with format [1, 1, inputChannels*depthMultiplier, outputChannels]. May be null" }
         Input(NUMERIC, "bias") { description = "Optional bias, rank 1 with shape [outputChannels]. May be null." }
-        useConfig((conv2DConfig))
+        useConfig(conv2DConfig)
 
         Output(NUMERIC, "output"){ description = "result of separable convolution 2d operation" }
 
@@ -618,20 +616,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         }
     }
 
-    Op("SConv2D") {
-        javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "inputs") { description = "the inputs to separable conv2 operation. Should be length 3 (layerInput, depthWeights, pointWeights)\n" +
-                "                     or length 4 (layerInput, depthWeights, pointWeights, bias) as described in {@link #separableConv2d(SDVariable, SDVariable, SDVariable, SDVariable, Conv2DConfig)}" }
-        useConfig(conv2DConfig)
 
-        Output(NUMERIC, "output"){ description = "result of separable convolution 2d operation" }
-
-        Doc(Language.ANY, DocScope.ALL){
-            """
-             Separable 2D convolution operation with/without optional bias
-            """.trimIndent()
-        }
-    }
 
     Op("spaceToBatch") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
@@ -678,7 +663,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             See {@link #upsampling2d(String, SDVariable, boolean, int, int)},
+             Upsampling layer for 2D inputs.
              scale is used for both height and width dimensions. 
             """.trimIndent()
         }
