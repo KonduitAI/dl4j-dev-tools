@@ -22,6 +22,12 @@ class ConstructionTest {
     fun nn() { NN() }
 
     @Test
+    fun cnn() { SDCNN() }
+
+    @Test
+    fun rnn() { SDRNN() }
+
+    @Test
     fun image() { SDImage() }
 
 }

@@ -135,30 +135,15 @@ fun SDRNN() =  Namespace("SDRNN") {
 
 
 
-    Op("sruCell") {
+
+
+
+    Op("sru") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
         javaOpClass = "SRU"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "initialC") { description = "Initial cell state, with shape [batchSize, inSize]" }
-        useConfig(SRUWeights)
-
-        Output(NUMERIC, "output") { description = "The cell's outputs.." }
-
-        Doc(Language.ANY, DocScope.ALL) {
-            """
-             The SRU layer.  Does a single time step operation.
-            """.trimIndent()
-        }
-
-    }
-
-
-    Op("sruCell") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
-        javaOpClass = "SRU"
-        Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
-        Input(NUMERIC, "initialC") { description = "Initial cell state, with shape [batchSize, inSize]" }
-        Input(NUMERIC, "mask") { description = "An optional dropout mask, with shape [batchSize, inSize]" }
+        Input(NUMERIC, "mask") { description = "An optional dropout mask, with shape [batchSize, inSize]"; defaultValue=null }
 
         useConfig(SRUWeights)
 
