@@ -8,6 +8,7 @@ import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
+import org.nd4j.codegen.api.LossReduce
 
 fun SDLoss() =  Namespace("SDLoss"){
     // val namespaceJavaPackage = "TODO"
@@ -17,7 +18,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"}
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT }
         Output(NUMERIC, "output"){ description = "loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
