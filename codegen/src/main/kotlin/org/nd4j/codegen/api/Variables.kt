@@ -49,7 +49,7 @@ interface Parameter {
             is IntArray, is BooleanArray, is DoubleArray -> true
             is String -> true
             is org.nd4j.linalg.api.buffer.DataType -> true
-            is org.nd4j.autodiff.loss.LossReduce -> true
+            is org.nd4j.codegen.api.LossReduce -> true
             is Parameter -> otherParams.contains(defaultValue) || defaultValue.defaultValueIsApplicable(otherParams)
             is TensorDataTypeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
             is TensorShapeValue -> otherParams.contains(defaultValue.tensor) || defaultValue.tensor.defaultValueIsApplicable(otherParams)
@@ -113,7 +113,7 @@ data class Arg(
         is Arg -> value.count == count && value.type == type
         is String -> type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
         is org.nd4j.linalg.api.buffer.DataType -> type == DataType.DATA_TYPE
-        is org.nd4j.autodiff.loss.LossReduce -> type == DataType.LOSS_REDUCE
+        is org.nd4j.codegen.api.LossReduce -> type == DataType.LOSS_REDUCE
         null -> true
         else -> false
     }
