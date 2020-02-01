@@ -11,14 +11,14 @@ import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.LossReduce
 
 fun SDLoss() =  Namespace("SDLoss"){
-    // val namespaceJavaPackage = "TODO"
+
     Op("absoluteDifference") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
         javaOpClass = "AbsoluteDifferenceLoss"
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Output(NUMERIC, "output"){ description = "loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -33,7 +33,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is use" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Arg(INT, "dimension") { description = "Dimension to perform the cosine distance over" }
         Output(NUMERIC, "output"){ description = "Cosine distance loss " }
         Doc(Language.ANY, DocScope.ALL){
@@ -53,7 +53,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array. Each value should be 0.0 or 1.0 (internally -1 to 1 is used)" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -71,7 +71,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Arg(FLOATING_POINT, "delta") { description = "Loss function delta value" }
         Output(NUMERIC, "output"){ description = "Huber loss" }
         Doc(Language.ANY, DocScope.ALL){
@@ -106,7 +106,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Arg(FLOATING_POINT, "epsilon") { description = "epsilon" }
         Output(NUMERIC, "output"){ description = "Log loss " }
         Doc(Language.ANY, DocScope.ALL){
@@ -123,7 +123,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array. Each value should be 0.0 or 1.0" }
         Input(NUMERIC, "predictions") { description = "Predictions array (has to be log(x) of actual predictions)" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Arg(BOOL, "full") {description = "Boolean flag. true for logPoissonFull, false for logPoisson"}
         Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -142,7 +142,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used. Must be either null, scalar, or have shape [batchSize]" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Output(NUMERIC, "output"){ description = "Loss variable, scalar output" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -160,7 +160,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
         Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -177,8 +177,8 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictionLogits") { description = "Predictions array" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
-        Arg(FLOATING_POINT, "labelSmoothing") { description = "Label smoothing value. Default value: 0" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
+        Arg(FLOATING_POINT, "labelSmoothing") { description = "Label smoothing value. Default value: 0"; defaultValue = 0.0}
         Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -204,8 +204,8 @@ fun SDLoss() =  Namespace("SDLoss"){
         Input(NUMERIC, "oneHotLabels") { description = "Label array. Should be one-hot per example and same shape as predictions (for example, [mb, nOut])" }
         Input(NUMERIC, "logitPredictions") { description = "Predictions array (pre-softmax)" }
         Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
-        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}" }
-        Arg(FLOATING_POINT, "labelSmoothing") { description = "Label smoothing value. Default value: 0" }
+        Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
+        Arg(FLOATING_POINT, "labelSmoothing") { description = "Label smoothing value. Default value: 0"; defaultValue = 0.0}
         Output(NUMERIC, "output"){ description = "Loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -227,7 +227,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.loss"
         javaOpClass = "SparseSoftmaxCrossEntropyLossWithLogits"
         Input(NUMERIC, "logits") { description = "Logits array (\"pre-softmax activations\")" }
-        Input(NUMERIC, "labels") { description = "Labels array. Must be an integer type." }
+        Input(INT, "labels") { description = "Labels array. Must be an integer type." }
         Output(NUMERIC, "output"){ description = "Softmax cross entropy" }
         Doc(Language.ANY, DocScope.ALL){
             """
