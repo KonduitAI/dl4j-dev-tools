@@ -22,7 +22,7 @@ fun SDLoss() =  Namespace("SDLoss"){
         Output(NUMERIC, "output"){ description = "loss variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
-                Absolute difference loss: {@code sum_i abs( label[i] - predictions[i] )
+                Absolute difference loss: {@code sum_i abs( label[i] - predictions[i] )}
             """.trimIndent()
         }
     }
@@ -80,9 +80,8 @@ fun SDLoss() =  Namespace("SDLoss"){
                 though is less sensitive to outliers than squared error.<br>
                 Huber loss implements:
                 <pre>
-                {@code L = 0.5 * (label[i] - predictions[i])^2 if abs(label[i] - predictions[i]) < delta
-                L = delta * abs(label[i] - predictions[i]) - 0.5 * delta^2 otherwise
-                }
+                {@code L = 0.5 * (label[i] - predictions[i])^2 if abs(label[i] - predictions[i]) < delta}
+                {@code L = delta * abs(label[i] - predictions[i]) - 0.5 * delta^2 otherwise}
                 </pre>
             """.trimIndent()
         }
