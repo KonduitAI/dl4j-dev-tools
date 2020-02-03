@@ -22,5 +22,8 @@ class ConstructionTest {
     fun base() { SDBaseOps() }
 
     @Test
+    fun loss() { SDLoss() }
+
+    @Test
     fun nn() { NN() }
 }

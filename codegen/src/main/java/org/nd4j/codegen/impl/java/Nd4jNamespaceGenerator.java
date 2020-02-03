@@ -56,6 +56,7 @@ public class Nd4jNamespaceGenerator {
         typeMapping.put(DataType.INT, int.class);
         typeMapping.put(DataType.LONG, long.class);
         typeMapping.put(DataType.DATA_TYPE, org.nd4j.linalg.api.buffer.DataType.class);
+        typeMapping.put(DataType.LOSS_REDUCE, org.nd4j.autodiff.loss.LossReduce.class);
         typeMapping.put(DataType.CONDITION, Condition.class);
 
         validationMapping.put(DataType.BOOL, "validateBool");
@@ -629,6 +630,7 @@ public class Nd4jNamespaceGenerator {
         else if(v instanceof boolean[]){ return "new boolean[]"+Arrays.toString((boolean[]) v).replace("[", "{").replace("]", "}"); }
         else if(v instanceof Input){ return ((Input)v).getName(); }
         else if(v instanceof org.nd4j.linalg.api.buffer.DataType){ return "DataType." + v; }
+        else if(v instanceof LossReduce || v instanceof org.nd4j.autodiff.loss.LossReduce){ return "org.nd4j.autodiff.loss.LossReduce." + v; }
         else return v.toString();
     }
 }

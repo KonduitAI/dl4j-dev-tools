@@ -8,7 +8,8 @@ public enum Namespace {
     NEURALNETWORK,
     RANDOM,
     MATH,
-    BASE;
+    BASE,
+    LOSS;
 
     public static Namespace fromString(String in){
         switch (in.toLowerCase()){
@@ -23,6 +24,8 @@ public enum Namespace {
                 return MATH;
             case "base":
                 return BASE;
+            case "loss":
+                return LOSS;
             default:
                 return null;
         }
@@ -40,6 +43,8 @@ public enum Namespace {
                 return "NDMath";
             case BASE:
                 return "NDBase";
+            case LOSS:
+                return "NDLoss";
         }
         throw new IllegalStateException("No java class name defined for: " + this);
     }
@@ -56,6 +61,8 @@ public enum Namespace {
                 return NeuralNetworkKt.NN();
             case BASE:
                 return SDBaseOpsKt.SDBaseOps();
+            case LOSS:
+                return SDLossKt.SDLoss();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
