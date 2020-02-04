@@ -235,7 +235,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         javaOpClass = "Conv2D"
         Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format" }
         Input(NUMERIC, "weights") { description = "Weights for the convolution operation. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, outputChannels]" }
-        Input(NUMERIC, "bias") { description = "Optional 1D bias array with shape [outputChannels]. May be null." }
+        Input(NUMERIC, "bias") { description = "Optional 1D bias array with shape [outputChannels]. May be null."; defaultValue=null }
         useConfig(conv2DConfig)
 
         Output(NUMERIC, "output"){ description = "result of conv2d op" }
@@ -460,7 +460,7 @@ fun SDCNN() =  Namespace("SDCNN"){
                 "                     (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "depthWeights") { description = "Separable conv2d depth weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
         Input(NUMERIC, "pointWeights") { description = "Point weights, rank 4 with format [1, 1, inputChannels*depthMultiplier, outputChannels]. May be null" }
-        Input(NUMERIC, "bias") { description = "Optional bias, rank 1 with shape [outputChannels]. May be null." ; defaultValue=null}
+        Input(NUMERIC, "bias") { description = "Optional bias, rank 1 with shape [outputChannels]. May be null."; defaultValue=null}
         useConfig(conv2DConfig)
 
         Output(NUMERIC, "output"){ description = "result of separable convolution 2d operation" }

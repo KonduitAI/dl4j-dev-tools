@@ -10,10 +10,10 @@ fun SDRNN() =  Namespace("SDRNN") {
     val LSTMConfiguration = Config("LSTMConfiguration") {
 
         Arg(ENUM, "RnnDataFormat") {
-            possibleValues = listOf("TNS", "NST", "NTS"); description = " The data format of the input      * Input shape depends on data format (in config):<br>\n" +
-                "     * TNS -> [timeSteps, batchSize, inSize]<br>\n" +
-                "     * NST -> [batchSize, inSize, timeSteps]<br>\n" +
-                "     * NTS -> [batchSize, timeSteps, inSize]<br>"
+            possibleValues = listOf("TNS", "NST", "NTS"); description = " The data format of the input. Input shape depends on data format (in config):<br>\n" +
+                " TNS -> [timeSteps, batchSize, inSize]<br>\n" +
+                " NST -> [batchSize, inSize, timeSteps]<br>\n" +
+                " NTS -> [batchSize, timeSteps, inSize]<br>"
         }
 
         Arg(BOOL, "peepHole") { description = "Whether to provide peephole connections"; }
@@ -29,14 +29,12 @@ fun SDRNN() =  Namespace("SDRNN") {
         Input(NUMERIC, "ruBias")
         Input(NUMERIC, "cBias")
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.GRUWeights"
-
     }
 
     val SRUWeights = Config("SRUWeights"){
         Input(NUMERIC, "weights")
         Input(NUMERIC, "bias")
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.SRUWeights"
-
     }
 
     val LSTMWeights = Config("LSTMWeights"){
@@ -47,13 +45,12 @@ fun SDRNN() =  Namespace("SDRNN") {
         Input(NUMERIC, "bias")
 
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.LSTMWeights"
-
     }
 
 
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
     Op("gru") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
+        javaPackage = namespaceJavaPackage
         javaOpClass = "GRUCell"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "hLast") { description = "Output of the previous cell/time step, with shape [batchSize, numUnits]" }
@@ -65,14 +62,12 @@ fun SDRNN() =  Namespace("SDRNN") {
             The GRU cell.  Does a single time step operation
             """.trimIndent()
         }
-
     }
 
 
 
-
     Op("lstmCell") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
+        javaPackage = namespaceJavaPackage
         javaOpClass = "LSTMBlockCell"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "cLast") { description = "Previous cell state, with shape [batchSize, numUnits]" }
@@ -87,13 +82,12 @@ fun SDRNN() =  Namespace("SDRNN") {
             The LSTM cell.  Does a single time step operation.
             """.trimIndent()
         }
-
     }
 
 
 
     Op("lstmLayer") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
+        javaPackage = namespaceJavaPackage
         javaOpClass = "LSTMLayer"
         Input(NUMERIC, "maxTSLength")
         Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
@@ -109,14 +103,12 @@ fun SDRNN() =  Namespace("SDRNN") {
              The LSTM layer.  Does multiple time steps.
             """.trimIndent()
         }
-
     }
 
 
 
-
     Op("sruCell") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
+        javaPackage = namespaceJavaPackage
         javaOpClass = "SRUCell"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "cLast") { description = "Previous cell state, with shape [batchSize, inSize]" }
@@ -129,17 +121,11 @@ fun SDRNN() =  Namespace("SDRNN") {
              The SRU layer.  Does a single time step operation.
             """.trimIndent()
         }
-
     }
 
 
-
-
-
-
-
     Op("sru") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
+        javaPackage = namespaceJavaPackage
         javaOpClass = "SRU"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "initialC") { description = "Initial cell state, with shape [batchSize, inSize]" }
