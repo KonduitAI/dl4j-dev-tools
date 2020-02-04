@@ -32,7 +32,7 @@ public class Nd4jNamespaceGenerator {
     private static Count exactlyOne = new Exactly(1);
     private static String copyright =
             "/*******************************************************************************\n" +
-            " * Copyright (c) 2019 Konduit K.K.\n" +
+            " * Copyright (c) 2019-2020 Konduit K.K.\n" +
             " *\n" +
             " * This program and the accompanying materials are made available under the\n" +
             " * terms of the Apache License, Version 2.0 which is available at\n" +
@@ -420,6 +420,16 @@ public class Nd4jNamespaceGenerator {
     }
 
     private static void generateConfig(File outputDirectory, String targetPackage, Config config) throws IOException {
+        if(config.getJavaClassOverride() != null && !config.getJavaClassOverride().isEmpty()){
+            //Java class override means "don't generate, use the existing one instead"
+            String c = config.getJavaClassOverride();
+            int idx = c.lastIndexOf('.');
+            String pkg = c.substring(0,idx);
+            String className = c.substring(idx+1);
+            configMapping.put(config, ClassName.get(pkg, className));
+            return;
+        }
+
         final String className = GenUtil.ensureFirstIsCap(config.name());
         configMapping.put(config, ClassName.get(targetPackage, className));
 

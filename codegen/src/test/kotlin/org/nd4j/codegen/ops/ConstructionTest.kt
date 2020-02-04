@@ -25,5 +25,14 @@ class ConstructionTest {
     fun loss() { SDLoss() }
 
     @Test
+    fun cnn() { SDCNN() }
+
+    @Test
+    fun rnn() { SDRNN() }
+
+    @Test
+    fun image() { SDImage() }
+
+    @Test
     fun nn() { NN() }
 }

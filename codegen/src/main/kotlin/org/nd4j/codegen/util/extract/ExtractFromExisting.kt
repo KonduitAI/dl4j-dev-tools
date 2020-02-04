@@ -8,7 +8,7 @@ private data class Parameter(val name: String, val outType: String)
 private data class Op(val name: String, val outType: String, val documentation: String, val parameters: List<Parameter>)
 
 fun main() {
-    val inputFile = File("F:\\dl4j-builds\\deeplearning4j\\nd4j\\nd4j-backends\\nd4j-api-parent\\nd4j-api\\src\\main\\java\\org\\nd4j\\autodiff\\samediff\\ops\\SDRandom.java")
+    val inputFile = File("/home/atuzhykov/SkyMind/deeplearning4j/nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/org/nd4j/autodiff/samediff/ops/SDImage.java")
     val mainRegex = "/\\*\\*(?!\\*)(.*?)\\*/.*?public (.+?) (.+?)\\s*\\((.+?)\\)".toRegex(RegexOption.DOT_MATCHES_ALL)
     val parameterRegex = "(?:@.+?\\s+)?([^\\s,]+?) ([^\\s,]+)".toRegex()
 

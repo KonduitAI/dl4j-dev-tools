@@ -98,6 +98,7 @@ data class Arg(
     private fun matchesDataType(value: Any?) = when(type){
         DataType.FLOATING_POINT -> value is Double
         DataType.INT -> (value is Int) || (value is Long)
+        DataType.LONG -> (value is Int) || (value is Long)
         DataType.NUMERIC -> value is Number
         DataType.BOOL -> value is Boolean
         else -> false
@@ -111,6 +112,7 @@ data class Arg(
         is DoubleArray -> isArray() && (type == DataType.FLOATING_POINT || type == DataType.NUMERIC) && countMatches(value.size)
         is BooleanArray -> isArray() && type == DataType.BOOL && countMatches(value.size)
         is Arg -> value.count == count && value.type == type
+        is String -> type == DataType.STRING
         is String -> type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
         is org.nd4j.linalg.api.buffer.DataType -> type == DataType.DATA_TYPE
         is org.nd4j.codegen.api.LossReduce -> type == DataType.LOSS_REDUCE
@@ -214,4 +216,6 @@ data class Config(
     fun addArgument(arg: Arg) { args.add(arg) }
     fun addConstraint(constraint: Constraint){ constraints.add(constraint) }
     fun addDoc(doc: DocSection){ this.doc.add(doc) }
+
+    var javaClassOverride: String = ""
 }
