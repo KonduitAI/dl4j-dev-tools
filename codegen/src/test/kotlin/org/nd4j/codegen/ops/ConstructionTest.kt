@@ -19,7 +19,10 @@ class ConstructionTest {
     fun math() { Math() }
 
     @Test
-    fun nn() { NN() }
+    fun base() { SDBaseOps() }
+
+    @Test
+    fun loss() { SDLoss() }
 
     @Test
     fun cnn() { SDCNN() }
@@ -30,4 +33,6 @@ class ConstructionTest {
     @Test
     fun image() { SDImage() }
 
+    @Test
+    fun nn() { NN() }
 }

@@ -3,7 +3,6 @@ package org.nd4j.codegen;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.ops.*;
 
-
 public enum Namespace {
     BITWISE,
     NEURALNETWORK,
@@ -11,7 +10,9 @@ public enum Namespace {
     IMAGE,
     CNN,
     RNN,
-    MATH;
+    MATH,
+    BASE,
+    LOSS;
 
 
     public static Namespace fromString(String in){
@@ -31,6 +32,10 @@ public enum Namespace {
                 return CNN;
             case "rnn":
                 return RNN;
+            case "base":
+                return BASE;
+            case "loss":
+                return LOSS;
             default:
                 return null;
         }
@@ -52,6 +57,10 @@ public enum Namespace {
                 return "NDRNN";
             case MATH:
                 return "NDMath";
+            case BASE:
+                return "NDBase";
+            case LOSS:
+                return "NDLoss";
         }
         throw new IllegalStateException("No java class name defined for: " + this);
     }
@@ -72,6 +81,10 @@ public enum Namespace {
                 return RNNKt.SDRNN();
             case NEURALNETWORK:
                 return NeuralNetworkKt.NN();
+            case BASE:
+                return SDBaseOpsKt.SDBaseOps();
+            case LOSS:
+                return SDLossKt.SDLoss();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
