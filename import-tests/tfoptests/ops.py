@@ -1397,7 +1397,7 @@ class OpCreator:
         return tf.linalg.lu(self.vars[0], output_idx_type)
 
     def execute_triangular_solve(self):
-        return [tf.linalg.solve(self.vars[0], self.vars[1], self.op["lower"], self.op["adjoint"])]
+        return [tf.linalg.triangular_solve(self.vars[0], self.vars[1], self.op["lower"], self.op["adjoint"])]
 
     def execute_linear_solve(self):
         return [tf.linalg.solve(self.vars[0], self.vars[1], self.op["adjoint"])]
