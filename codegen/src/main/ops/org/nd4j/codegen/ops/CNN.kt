@@ -528,9 +528,10 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("upsampling2d") {
         javaPackage = namespaceJavaPackage
         Input(NUMERIC, "input") { description = "Input in NCHW format" }
+        Arg(INT, "scaleH") { description = "Scale to upsample in height dimension" }
+        Arg(INT, "scaleW") { description = "Scale to upsample in width dimension" }
         Arg(BOOL ,"nchw") { description = "If true: input is in NCHW (minibatch, channels, height, width) format. False: NHWC format" }
-        Input(NUMERIC, "scaleH") { description = "Scale to upsample in height dimension" }
-        Input(NUMERIC, "scaleW") { description = "Scale to upsample in width dimension" }
+
 
         Output(NUMERIC, "output"){ description = "Upsampled input" }
 
