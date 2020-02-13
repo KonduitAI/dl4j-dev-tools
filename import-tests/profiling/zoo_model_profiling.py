@@ -7,6 +7,7 @@ import psutil
 # import pip
 import pkg_resources
 import platform
+import time
 
 from tensorflow.python.client import timeline
 
@@ -53,17 +54,21 @@ def writeSystemInfo(path, data):
 
 
 def profile():
-#     outputBaseDir = "/home/alex/profiling/"
-#     inputBaseDir = "/home/alex/TF_Graphs/"
-    outputBaseDir = "/TF_Graphs/gpu_profiling/"
-    inputBaseDir = "/TF_Graphs/"
+    outputBaseDir = "/home/alex/profiling/profiling_20200213/"
+    inputBaseDir = "/home/alex/TF_Graphs/"
+#     outputBaseDir = "/TF_Graphs/gpu_profiling/"
+#     inputBaseDir = "/TF_Graphs/"
+
+    printTimes = True
 
     tfversion = tf.__version__
 
-    for test in ["densenet", "squeezenet", "nasnet_mobile", "inception_v4_2018_04_27", "inception_resnet_v2", \
-        "mobilenetv1", "mobilenetv2", "ssd_mobilenet", "faster_rcnn_resnet101_coco", "bert"]:
+#     for test in ["densenet", "squeezenet", "nasnet_mobile", "inception_v4_2018_04_27", "inception_resnet_v2", \
+#         "mobilenetv1", "mobilenetv2", "ssd_mobilenet", "faster_rcnn_resnet101_coco", "bert"]:
+    for test in ["bert"]:
 
-        for batch in [1,32]:
+#         for batch in [1,32]:
+        for batch in [4]:
 
             warmup = 3
             runs = 10
@@ -125,11 +130,11 @@ def profile():
             elif test == "bert":
                 # location: https://dl4jdata.blob.core.windows.net/testresources/bert_mrpc_frozen_v1.zip
                 testname = "bert_batch" + str(batch) + "_tf-" + tfversion
-                path = "/home/Alex/.nd4jtests/bert_mrpc_frozen_v1/bert_mrpc_frozen.pb"
-                idxs = np.load("/home/Alex/bert_temp/bert_minimal_input_IteratorGetNext.numpy")
-                segmentIdxs = np.load("/home/Alex/bert_temp/bert_minimal_input_IteratorGetNext_1.numpy")
-                mask = np.load("/home/Alex/bert_temp/bert_minimal_input_IteratorGetNext_4.numpy")
-                feed_dict = {"IteratorGetNext":idxs, "IteratorGetNext:1":segmentIdxs, "IteratorGetNext:4":mask}
+                path = "/home/alex/.nd4jtests/bert_mrpc_frozen_v1/bert_mrpc_frozen.pb"
+                idxs = np.load("/home/alex/TF_Graphs/BERT/minimal/bert_minimal_input_IteratorGetNext.numpy")
+                segmentIdxs = np.load("/home/alex/TF_Graphs/BERT/minimal/bert_minimal_input_IteratorGetNext_1.numpy")
+                mask = np.load("/home/alex/TF_Graphs/BERT/minimal/bert_minimal_input_IteratorGetNext_4.numpy")
+                feed_dict = {"IteratorGetNext:0":idxs, "IteratorGetNext:1":segmentIdxs, "IteratorGetNext:4":mask}
                 outputNames = ["bert/encoder/layer_0/output/LayerNorm/batchnorm/add_1:0"]
             else:
                 raise ValueError("Unknown test name: test")
@@ -169,7 +174,13 @@ def profile():
                     #Unfortunately, no way to combine multiple runs into one file :(
                     # https://github.com/tensorflow/tensorflow/issues/3489
                     run_metadata = tf.RunMetadata()
+                    before = time.time()*1000
                     sess.run(outputNames, feed_dict=feed_dict, options=options, run_metadata=run_metadata)
+                    after = time.time()*1000
+                    duration = (after-before)
+
+                    if printTimes:
+                        print("Runtime: ", str(duration), " ms")
 
                     # Create the Timeline object, and write it to a json file
                     fetched_timeline = timeline.Timeline(run_metadata.step_stats)
