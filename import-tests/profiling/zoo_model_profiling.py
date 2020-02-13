@@ -61,7 +61,7 @@ def profile():
     tfversion = tf.__version__
 
     for test in ["densenet", "squeezenet", "nasnet_mobile", "inception_v4_2018_04_27", "inception_resnet_v2", \
-        "mobilenetv1", "mobilenetv2", "ssd_mobilenet", "faster_rcnn_resnet101_coco"]:
+        "mobilenetv1", "mobilenetv2", "ssd_mobilenet", "faster_rcnn_resnet101_coco", "bert"]:
 
         for batch in [1,32]:
 
@@ -122,6 +122,15 @@ def profile():
                 path = inputBaseDir + "faster_rcnn_resnet101_coco_2018_01_28/frozen_inference_graph.pb"
                 outputNames = ["detection_boxes:0", "detection_scores:0", "num_detections:0", "detection_classes:0"]
                 feed_dict = {"image_tensor:0": np.random.uniform(size=[batch,600,600,3])}
+            elif test == "bert":
+                # location: https://dl4jdata.blob.core.windows.net/testresources/bert_mrpc_frozen_v1.zip
+                testname = "bert_batch" + str(batch) + "_tf-" + tfversion
+                path = "/home/Alex/.nd4jtests/bert_mrpc_frozen_v1/bert_mrpc_frozen.pb"
+                idxs = np.load("/home/Alex/bert_temp/bert_minimal_input_IteratorGetNext.numpy")
+                segmentIdxs = np.load("/home/Alex/bert_temp/bert_minimal_input_IteratorGetNext_1.numpy")
+                mask = np.load("/home/Alex/bert_temp/bert_minimal_input_IteratorGetNext_4.numpy")
+                feed_dict = {"IteratorGetNext":idxs, "IteratorGetNext:1":segmentIdxs, "IteratorGetNext:4":mask}
+                outputNames = ["bert/encoder/layer_0/output/LayerNorm/batchnorm/add_1:0"]
             else:
                 raise ValueError("Unknown test name: test")
 
