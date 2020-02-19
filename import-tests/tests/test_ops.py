@@ -2252,6 +2252,8 @@ def test_mathtransform():
         # {"opName": "triangular_solve", "outName": "triangular_solve/emptyArrayTest/float32", "varShapes": [[0, 2, 2],[0,2,2]], "varTypes": ["float32","float32"],"varInit": ["empty","empty"], "lower":True,"adjoint":True},
         # {"opName": "triangular_solve", "outName": "triangular_solve/float32_rank3_returns_int64", "varShapes": [[2,2,2],[2,2,2]], "varTypes": ["float32","float32"],  "varInit": ["uniform","uniform"], "lower":True,"adjoint":True}
 
+        # {"opName": "lstsq", "outName": "lstsq/float32_rank2", "varShapes": [[3,3],[3,3]], "varTypes": ["float32","float32"], "varInit": ["uniform","uniform"], "l2_regularizer":0.1,"fast":True},
+
         #{"opName": "linear_solve", "outName": "linear_solve/float32_rank2", "varShapes": [[3, 3], [3, 3]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": True},
         #{"opName": "linear_solve", "outName": "linear_solve/float32_rank3", "varShapes": [[2, 2, 2], [2, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": False},
         #{"opName": "linear_solve", "outName": "linear_solve/float64_rank2", "varShapes": [[3, 3], [3, 3]],  "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"], "adjoint": True},

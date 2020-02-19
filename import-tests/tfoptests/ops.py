@@ -1401,3 +1401,6 @@ class OpCreator:
 
     def execute_linear_solve(self):
         return [tf.linalg.solve(self.vars[0], self.vars[1], self.op["adjoint"])]
+
+    def execute_lstsq(self):
+        return [tf.linalg.lstsq(self.vars[0], self.vars[1], l2_regularizer = self.op["l2_regularizer"], fast = self.op["fast"])]
