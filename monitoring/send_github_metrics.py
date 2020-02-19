@@ -3,6 +3,7 @@
 
 import requests
 from datetime import datetime
+from datetime import date
 import os
 
 HOST="51.107.91.115"
@@ -14,25 +15,28 @@ def get_metric(github_user, github_repo, metric_name):
     ret = response.json()[metric_name]
     return ret
 
-def get_issues(github_user, github_repo, is_closed):
+def get_issues(github_user, github_repo, is_closed, days_back):
     url = "https://api.github.com/repos/" + github_user + "/" + github_repo + "/issues?state="
     if is_closed:
         url += "closed"
     else:
         url += "opened"
 
+    print("since: " + str(date.today()-days_back))
+    url += "&since=" + str(date.today()-days_back)
+
     response = requests.get(url)
     ret = response.json()[0]["url"]
     return ret
 
-def send_issues(github_user, github_repo):
-    data = get_issues(github_user, github_repo, True)
+def send_issues(github_user, github_repo, days_back):
+    data = get_issues(github_user, github_repo, True, days_back)
     stat = "github." + github_user + ".closed_issues"  + " " + str(data) + " `date +%s`"
     cmd = "echo " + stat + " | nc -q0 " + HOST + " " + PORT
     print(cmd)
     os.system(cmd)
 
-    data = get_issues(github_user, github_repo, False)
+    data = get_issues(github_user, github_repo, False, days_back)
     stat = "github." + github_user + ".opened_issues"  + " " + str(data) + " `date +%s`"
     cmd = "echo " + stat + " | nc -q0 " + HOST + " " + PORT
     print(cmd)
@@ -45,6 +49,7 @@ def send_metric(github_user, github_repo, metric_name):
     print(cmd)
     os.system(cmd)
 
+
 categories = [
      ["eclipse","deeplearning4j", "stargazers_count"],
      ["eclipse","deeplearning4j", "forks_count"],
@@ -54,4 +59,4 @@ categories = [
 
 for cat in categories:
     send_metric(cat[0],cat[1], cat[2])
-    send_issues(cat[0],cat[1])
+    send_issues(cat[0],cat[1], 7)
