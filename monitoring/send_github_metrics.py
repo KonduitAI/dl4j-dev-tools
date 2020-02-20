@@ -2,8 +2,7 @@
 # Use authenticated requests in case of API rate limit exceeded.
 
 import requests
-from datetime import datetime
-from datetime import date
+import datetime
 import os
 
 HOST="51.107.91.115"
@@ -22,8 +21,11 @@ def get_issues(github_user, github_repo, is_closed, days_back):
     else:
         url += "opened"
 
-    print("since: " + str(date.today()-days_back))
-    url += "&since=" + str(date.today()-days_back)
+    today = datetime.datetime.now()
+    delta = datetime.timedelta(days = days_back)
+    since_day = today - delta
+    print("since: " + str(since_day))
+    url += "&since=" + str(since_day)
 
     response = requests.get(url)
     ret = response.json()[0]["url"]
@@ -51,12 +53,12 @@ def send_metric(github_user, github_repo, metric_name):
 
 
 categories = [
-     ["eclipse","deeplearning4j", "stargazers_count"],
-     ["eclipse","deeplearning4j", "forks_count"],
-     ["KonduitAI","deeplearning4j", "stargazers_count"],
-     ["KonduitAI","deeplearning4j", "forks_count"]
+     ["eclipse","deeplearning4j", "stargazers_count", 7],
+     ["eclipse","deeplearning4j", "forks_count", 7],
+     ["KonduitAI","deeplearning4j", "stargazers_count", 7],
+     ["KonduitAI","deeplearning4j", "forks_count", 30]
    ]
 
 for cat in categories:
     send_metric(cat[0],cat[1], cat[2])
-    send_issues(cat[0],cat[1], 7)
+    send_issues(cat[0],cat[1], cat[3])
