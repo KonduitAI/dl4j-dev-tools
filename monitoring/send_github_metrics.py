@@ -15,17 +15,14 @@ def get_metric(github_user, github_repo, metric_name):
     return ret
 
 def get_issues(github_user, github_repo, is_closed, days_back):
-    url = "https://api.github.com/repos/" + github_user + "/" + github_repo + "/issues?state="
+    url = "https://api.github.com/repos/" + github_user + "/" + github_repo + "/issues?"
     if is_closed:
-        url += "closed"
-    else:
-        url += "opened"
+        url += "state=closed&"
 
     today = datetime.datetime.now()
     delta = datetime.timedelta(days = days_back)
     since_day = today - delta
-    print("since: " + str(since_day))
-    url += "&since=" + str(since_day)
+    url += "since=" + str(since_day)
 
     response = requests.get(url)
     ret = response.json()[0]["url"]
