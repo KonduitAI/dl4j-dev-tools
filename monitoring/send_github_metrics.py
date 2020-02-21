@@ -25,7 +25,7 @@ def get_issues(github_user, github_repo, is_closed, days_back):
     url += "since=" + str(since_day)
 
     response = requests.get(url)
-    ret = response.json()[0]["url"]
+    ret = len(response.json())
     return ret
 
 def send_issues(github_user, github_repo, days_back):
