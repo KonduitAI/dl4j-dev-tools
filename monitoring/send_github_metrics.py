@@ -4,8 +4,9 @@
 import requests
 import datetime
 import os
+import sys
 
-HOST="51.107.91.115"
+HOST="127.0.0.1"
 PORT="2003"
 
 def get_metric(github_user, github_repo, metric_name):
@@ -55,6 +56,10 @@ categories = [
      ["KonduitAI","deeplearning4j", "stargazers_count", 7],
      ["KonduitAI","deeplearning4j", "forks_count", 30]
    ]
+
+if len(sys.argv) > 2:
+    HOST = sys.argv[1]	
+    PORT = sys.argv[2]
 
 for cat in categories:
     send_metric(cat[0],cat[1], cat[2])
