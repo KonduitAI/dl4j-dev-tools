@@ -7,7 +7,7 @@
 #  Email         :alexander@skymind.global
 #
 #
-#  Usage example: ./send_coverage_metrics.sh ~/deeplearning4j/nd4j/nd4j-backends/nd4j-tests/logs/application.log 51.107.91.115 2003
+#  Usage example: ./send_coverage_metrics.sh ~/deeplearning4j/nd4j/nd4j-backends/nd4j-tests/logs/application.log 127.0.0.1 1111
 #
 #  Positional arguments:
 #  1. log file path

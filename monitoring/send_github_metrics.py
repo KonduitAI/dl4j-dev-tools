@@ -6,8 +6,8 @@ import datetime
 import os
 import sys
 
-HOST="127.0.0.1"
-PORT="2003"
+HOST=""
+PORT=""
 
 def get_metric(github_user, github_repo, metric_name):
     url = "https://api.github.com/repos/" + github_user + "/" + github_repo

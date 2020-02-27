@@ -5,7 +5,7 @@
 #  Author        :Alexander Stoyakin                                             
 #  Email         :alexander@skymind.global
 #
-#  Example: send_ignores.sh deeplearning4j/nd4j localhost 2003
+#  Example: send_ignores.sh deeplearning4j/nd4j 127.0.0.1 111
 #  Arguments: 
 #  1. Source code directory to search for ignored tests in.
 #  2. Graphite host

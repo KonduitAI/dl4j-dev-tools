@@ -9,13 +9,17 @@
 #
 ###############################################################################
 
-HOST="127.0.0.1"
-PORT="2003"
+HOST=
+PORT=
+JAR_PATH=
 
-if [ $# -eq 2 ]
+if [ $# -eq 3 ]
 then
    HOST=$1
    PORT=$2
+   JAR_PATH=$3
+else
+   echo "Usage: send_metrics.sh HOST PORT JAR_PATH"
 fi
 
 mvn dependency:tree > deps.txt
@@ -35,7 +39,7 @@ stat="dl4j.java.metrics.dependencies_count $cnt `date +%s`"
 echo $stat | nc -q0 $HOST $PORT
 
 mvn install
-size='stat -c%s target/deeplearning4j-monitoring-1.0.0-beta6.jar'
+size="stat -c%s $JAR_PATH"
 stat="dl4j.java.metrics.jar_size $size `date +%s`"
 echo $stat | nc -q0 $HOST $PORT
 
