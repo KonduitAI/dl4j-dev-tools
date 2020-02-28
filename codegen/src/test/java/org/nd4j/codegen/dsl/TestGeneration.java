@@ -29,7 +29,7 @@ class TestGeneration {
         List<NamespaceOps> list = Arrays.asList(MathKt.Math());
 
         for(NamespaceOps ops : list) {
-            Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java");
+            Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java", "org.nd4j.linalg.factory");
         }
 
         File[] files = f.listFiles();

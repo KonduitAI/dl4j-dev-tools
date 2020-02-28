@@ -70,8 +70,9 @@ public class Nd4jNamespaceGenerator {
 
     private Nd4jNamespaceGenerator() { }
 
-    public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className) throws IOException {
-        String basePackage = "org.nd4j.linalg.factory";
+    public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
+                                String basePackage) throws IOException {
+        //String basePackage = "org.nd4j.linalg.factory";
 
         generateEnums(outputDirectory, basePackage);
         generateConfigs(outputDirectory, basePackage);
