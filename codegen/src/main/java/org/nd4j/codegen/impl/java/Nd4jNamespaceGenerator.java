@@ -2,6 +2,7 @@ package org.nd4j.codegen.impl.java;
 
 import com.squareup.javapoet.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.ops.SDValidation;
@@ -76,12 +77,38 @@ public class Nd4jNamespaceGenerator {
 
         generateEnums(outputDirectory, basePackage);
         generateConfigs(outputDirectory, basePackage);
-        generateOpFactory(namespace, outputDirectory, className, basePackage);
+        try {
+            generateOpFactory(namespace, outputDirectory, className, basePackage, StringUtils.EMPTY);
+        }
+        catch (Exception e) {
+
+        }
     }
 
-    private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage) throws IOException {
-        TypeSpec.Builder builder = TypeSpec.classBuilder(className)
-                .addModifiers(Modifier.PUBLIC);
+    public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
+                                String basePackage, String parentClass) throws IOException {
+        //String basePackage = "org.nd4j.linalg.factory";
+
+        generateEnums(outputDirectory, basePackage);
+        generateConfigs(outputDirectory, basePackage);
+        try {
+            generateOpFactory(namespace, outputDirectory, className, basePackage, parentClass);
+        }
+        catch (Exception e) {
+
+        }
+    }
+
+    private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
+                                          String parentClass) throws IOException, ClassNotFoundException {
+
+        TypeSpec.Builder builder = StringUtils.isEmpty(parentClass) ?
+                 TypeSpec.classBuilder(className)
+                    .addModifiers(Modifier.PUBLIC) :
+
+                 TypeSpec.classBuilder(className)
+                    .superclass(Class.forName(parentClass))
+                    .addModifiers(Modifier.PUBLIC);
 
         addDefaultConstructor(builder);
 

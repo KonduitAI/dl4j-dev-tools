@@ -57,7 +57,7 @@ public class CLI {
             }
 
             if (ns == null) {
-                throw new IllegalStateException("Invalid/unknown SD namespace provided: " + s);
+                log.error("Invalid/unknown SD namespace provided: " + s);
             }
         }
 
@@ -73,7 +73,11 @@ public class CLI {
             File outputPath = new File(outputDir,  basePackagePath + javaClassName + ".java");
             log.info("Output path: {}", outputPath.getAbsolutePath());
 
-            Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage);
+            if (NS_PROJECT.ND4J == project)
+                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage);
+            else
+                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage,
+                        "org.nd4j.autodiff.samediff.ops.SDOps");
             ++cnt;
         }
         log.info("Complete - generated {} namespaces", cnt);
@@ -107,7 +111,8 @@ public class CLI {
 
         try {
             generateNamespaces(NS_PROJECT.ND4J, outputDir, "org.nd4j.linalg.factory");
-            generateNamespaces(NS_PROJECT.SAMEDIFF, outputDir, "org.nd4j.autodiff.samediff");
+            // TODO: Implement generator properly
+            //generateNamespaces(NS_PROJECT.SAMEDIFF, outputDir, "org.nd4j.autodiff.samediff");
         } catch (Exception e) {
             log.error(e.toString());
         }
