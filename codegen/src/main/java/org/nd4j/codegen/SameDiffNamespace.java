@@ -13,7 +13,8 @@ public enum SameDiffNamespace {
     MATH,
     BASE,
     LOSS,
-    VALIDATION;
+    VALIDATION,
+    LINALG;
 
 
     public static SameDiffNamespace fromString(String in){
@@ -39,6 +40,8 @@ public enum SameDiffNamespace {
                 return LOSS;
             case "validation":
                 return VALIDATION;
+            case "linalg":
+                return LINALG;
             default:
                 return null;
         }
@@ -66,6 +69,8 @@ public enum SameDiffNamespace {
                 return "SDLoss";
             case VALIDATION:
                 return "SDValidation";
+            case LINALG:
+                return "SDLinalg";
         }
         throw new IllegalStateException("No java class name defined for: " + this);
     }
@@ -90,6 +95,8 @@ public enum SameDiffNamespace {
                 return SDBaseOpsKt.SDBaseOps();
             case LOSS:
                 return SDLossKt.SDLoss();
+            case LINALG:
+                return LinalgKt.Linalg();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }
