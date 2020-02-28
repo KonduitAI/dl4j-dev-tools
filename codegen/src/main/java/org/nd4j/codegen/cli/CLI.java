@@ -37,25 +37,33 @@ public class CLI {
         List<Namespace> nd4jNamespaces = new ArrayList<>();
         List<SameDiffNamespace> sdNamespaces = new ArrayList<>();
 
-        for(String s : namespaces){
-            if("all".equalsIgnoreCase(s)){
+        for(String s : namespaces) {
+            if ("all".equalsIgnoreCase(s)) {
                 if (project == NS_PROJECT.ND4J) {
                     Collections.addAll(nd4jNamespaces, Namespace.values());
-                }
-                else {
+                } else {
                     Collections.addAll(sdNamespaces, SameDiffNamespace.values());
                 }
                 break;
             }
             Object ns = null;
-            if (project == NS_PROJECT.ND4J)
+            if (project == NS_PROJECT.ND4J) {
                 ns = Namespace.fromString(s);
-            else
+                nd4jNamespaces.add((Namespace)ns);
+            }
+            else {
                 ns = SameDiffNamespace.fromString(s);
+                sdNamespaces.add((SameDiffNamespace) ns);
+            }
 
-            if(ns == null){
+            if (ns == null) {
                 throw new IllegalStateException("Invalid/unknown SD namespace provided: " + s);
             }
+        }
+
+        int cnt = 0;
+        for (int i = 0; i < (NS_PROJECT.ND4J == project ? nd4jNamespaces.size() : sdNamespaces.size()); ++i) {
+            Object ns = NS_PROJECT.ND4J == project ? nd4jNamespaces.get(i) : sdNamespaces.get(i);
             log.info("Starting generation of namespace: {}", ns);
 
             String javaClassName = project == NS_PROJECT.ND4J ? ((Namespace)ns).javaClassName() : ((SameDiffNamespace)ns).javaClassName();
@@ -66,11 +74,9 @@ public class CLI {
             log.info("Output path: {}", outputPath.getAbsolutePath());
 
             Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage);
+            ++cnt;
         }
-        if (nd4jNamespaces.size() > 0)
-            log.info("Complete - generated {} nd4j namespaces", nd4jNamespaces.size());
-        if (sdNamespaces.size() > 0)
-            log.info("Complete - generated {} SameDiff namespaces", sdNamespaces.size());
+        log.info("Complete - generated {} namespaces", cnt);
     }
 
 
