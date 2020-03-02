@@ -45,7 +45,24 @@ fun Linalg() =  Namespace("Linalg") {
         Input(DataType.NDARRAY, "matrix") {description = "input tensor"}
         Input(DataType.NDARRAY, "rhs") {description = "input tensor"}
         Arg(DataType.BOOL, "adjoint") {description = "adjoint mode, defaults to False"}
-        Output(DataType.NDARRAY, "output"){ description = "Transformed tensor" }
+        Output(DataType.NDARRAY, "output"){ description = "Output tensor" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Solver for systems of linear questions.
+            """.trimIndent()
+        }
+    }
+
+    Op("TriangularSolve") {
+        javaPackage = "org.nd4j.linalg.api.ops.custom"
+        javaOpClass = "TriangularSolve"
+
+        Input(DataType.NDARRAY, "matrix") {description = "input tensor"}
+        Input(DataType.NDARRAY, "rhs") {description = "input tensor"}
+        Arg(DataType.BOOL, "lower") {description = "defines whether innermost matrices in matrix are lower or upper triangular"}
+        Arg(DataType.BOOL, "adjoint") {description = "adjoint mode"}
+        Output(DataType.BOOL, "adjoint"){ description = "Output tensor" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
