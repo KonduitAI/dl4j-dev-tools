@@ -27,6 +27,9 @@ public class CLI {
     @Parameter(names = "-namespaces", description = "List of namespaces to generate, or 'ALL' to generate all namespaces", required = true)
     private List<String> namespaces;
 
+    @Parameter(names = "-projects", description = "List of sub-projects - ND4J, SameDiff or both", required = false)
+    private List<String> projects;
+
     enum NS_PROJECT {
         ND4J,
         SAMEDIFF;
@@ -49,15 +52,21 @@ public class CLI {
             Object ns = null;
             if (project == NS_PROJECT.ND4J) {
                 ns = Namespace.fromString(s);
-                nd4jNamespaces.add((Namespace)ns);
+                if (ns == null) {
+                    log.error("Invalid/unknown ND4J namespace provided: " + s);
+                }
+                else {
+                    nd4jNamespaces.add((Namespace) ns);
+                }
             }
             else {
                 ns = SameDiffNamespace.fromString(s);
-                sdNamespaces.add((SameDiffNamespace) ns);
-            }
-
-            if (ns == null) {
-                log.error("Invalid/unknown SD namespace provided: " + s);
+                if (ns == null) {
+                    log.error("Invalid/unknown SD namespace provided: " + s);
+                }
+                else {
+                    sdNamespaces.add((SameDiffNamespace) ns);
+                }
             }
         }
 
@@ -110,9 +119,12 @@ public class CLI {
         }
 
         try {
-            generateNamespaces(NS_PROJECT.ND4J, outputDir, "org.nd4j.linalg.factory");
-            // TODO: Implement generator properly
-            //generateNamespaces(NS_PROJECT.SAMEDIFF, outputDir, "org.nd4j.autodiff.samediff");
+            if (projects.contains("nd4j")) {
+                generateNamespaces(NS_PROJECT.ND4J, outputDir, "org.nd4j.linalg.factory");
+            }
+            if (projects.contains("sd")) {
+                generateNamespaces(NS_PROJECT.SAMEDIFF, outputDir, "org.nd4j.autodiff.samediff");
+            }
         } catch (Exception e) {
             log.error(e.toString());
         }

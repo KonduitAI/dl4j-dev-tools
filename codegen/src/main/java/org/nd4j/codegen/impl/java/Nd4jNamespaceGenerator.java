@@ -1,10 +1,12 @@
 package org.nd4j.codegen.impl.java;
 
 import com.squareup.javapoet.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.nd4j.autodiff.samediff.SDVariable;
+import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.ops.SDValidation;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
@@ -25,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Nd4jNamespaceGenerator {
     private static Map<DataType, Class<?>> typeMapping = new HashMap<>();
     private static Map<DataType, String> validationMapping = new HashMap<>();
@@ -95,7 +98,7 @@ public class Nd4jNamespaceGenerator {
             generateOpFactory(namespace, outputDirectory, className, basePackage, parentClass);
         }
         catch (Exception e) {
-
+            log.error(e.toString());
         }
     }
 
@@ -110,7 +113,10 @@ public class Nd4jNamespaceGenerator {
                     .superclass(Class.forName(parentClass))
                     .addModifiers(Modifier.PUBLIC);
 
-        addDefaultConstructor(builder);
+        if (StringUtils.isEmpty(parentClass))
+            addDefaultConstructor(builder);
+        else
+            addSameDiffConstructor(builder);
 
         //Add ops
         namespace.getOps()
@@ -123,9 +129,14 @@ public class Nd4jNamespaceGenerator {
         TypeSpec ts = builder.build();
 
         final String opsPackage = basePackage + ".ops";
-        JavaFile jf = JavaFile.builder(opsPackage, ts)
+        JavaFile jf = StringUtils.isEmpty(parentClass) ?
+
+                JavaFile.builder(opsPackage, ts)
                 .addStaticImport(NDValidation.class, "isSameType")
-                .build();
+                .build() :
+
+                JavaFile.builder(opsPackage, ts)
+                        .build();
 
         StringBuilder sb = new StringBuilder();
         sb.append(copyright);
@@ -147,6 +158,16 @@ public class Nd4jNamespaceGenerator {
                 .build();
 
         builder.addMethod(noArg);
+    }
+
+    private static void addSameDiffConstructor(TypeSpec.Builder builder) {
+        MethodSpec ctor = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(SameDiff.class, "sameDiff")
+                .addStatement("super(sameDiff)")
+                .build();
+
+        builder.addMethod(ctor);
     }
 
     private static void generateMethods(TypeSpec.Builder builder, Op op ){
