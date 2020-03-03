@@ -62,7 +62,6 @@ fun Linalg() =  Namespace("Linalg") {
         Input(DataType.NDARRAY, "rhs") {description = "input tensor"}
         Arg(DataType.BOOL, "lower") {description = "defines whether innermost matrices in matrix are lower or upper triangular"}
         Arg(DataType.BOOL, "adjoint") {description = "adjoint mode"}
-        Output(DataType.BOOL, "adjoint"){ description = "Output tensor" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -84,13 +83,12 @@ fun Linalg() =  Namespace("Linalg") {
         }
     }
 
-    /*Op("Matmul") {
-        javaPackage = "org.nd4j.linalg.api.ops.custom"
-        javaOpClass = "Matmul"
+    Op("Matmul") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise"
+        javaOpClass = "MatMul"
 
         Input(DataType.NDARRAY, "a") {description = "input tensor"}
         Input(DataType.NDARRAY, "b") {description = "input tensor"}
-        Input(DataType.NDARRAY, "output") {description = "output tensor"}
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -99,7 +97,7 @@ fun Linalg() =  Namespace("Linalg") {
         }
     }
 
-    Op("Qr") {
+    /*Op("Qr") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "Qr"
 
