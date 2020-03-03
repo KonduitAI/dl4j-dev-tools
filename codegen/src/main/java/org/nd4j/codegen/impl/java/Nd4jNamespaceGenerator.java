@@ -186,7 +186,7 @@ public class Nd4jNamespaceGenerator {
                 .addModifiers(Modifier.PUBLIC);
         enableVarargsOnLastArg(c, op, s);
 
-        buildJavaDoc(op, s, c);
+        buildJavaDoc(op, s, c, withName);
         List<String> inNames = buildParameters(c, op, s, isSameDiff, withName);
         buildConstraints(c, op.getConstraints());
         buildExecution(c, op, inNames, isSameDiff, withName);
@@ -194,7 +194,7 @@ public class Nd4jNamespaceGenerator {
         return c.build();
     }
 
-    private static void  buildJavaDoc(Op op, Signature s, MethodSpec.Builder c) {
+    private static void buildJavaDoc(Op op, Signature s, MethodSpec.Builder c, boolean withName) {
         //Method javadoc:
         List<DocSection> doc = op.getDoc();
         if(!doc.isEmpty()){
@@ -226,7 +226,8 @@ public class Nd4jNamespaceGenerator {
 
             c.addJavadoc("\n");
         }
-
+        if (withName)
+            c.addJavadoc("@param name name May be null. Name for the output variable\n");
         List<Parameter> params = s.getParameters();
         if(!params.isEmpty()){
             for(Parameter p : params){
@@ -410,7 +411,10 @@ public class Nd4jNamespaceGenerator {
                     sb.append(".outputVariables()");
 
                 c.addStatement(sb.toString());
-                c.addStatement("return updateVariableNameAndReference(out, name)");
+                if (singleOut)
+                    c.addStatement("return updateVariableNameAndReference(out, name)");
+                else
+                    c.addStatement("return sd.updateVariableNamesAndReferences(out, new String[]{name})");
             }
             else {
                 sb.append("return new ")
