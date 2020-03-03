@@ -84,7 +84,7 @@ public class Nd4jNamespaceGenerator {
             generateOpFactory(namespace, outputDirectory, className, basePackage, StringUtils.EMPTY);
         }
         catch (Exception e) {
-
+            log.error(e.toString());
         }
     }
 
@@ -105,7 +105,9 @@ public class Nd4jNamespaceGenerator {
     private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
                                           String parentClass) throws IOException, ClassNotFoundException {
 
-        TypeSpec.Builder builder = StringUtils.isEmpty(parentClass) ?
+        boolean isSameDiff = StringUtils.isNotEmpty(parentClass);
+
+        TypeSpec.Builder builder = !isSameDiff ?
                  TypeSpec.classBuilder(className)
                     .addModifiers(Modifier.PUBLIC) :
 
@@ -113,17 +115,17 @@ public class Nd4jNamespaceGenerator {
                     .superclass(Class.forName(parentClass))
                     .addModifiers(Modifier.PUBLIC);
 
-        if (StringUtils.isEmpty(parentClass))
-            addDefaultConstructor(builder);
-        else
+        if (isSameDiff)
             addSameDiffConstructor(builder);
+        else
+            addDefaultConstructor(builder);
 
         //Add ops
         namespace.getOps()
                 .stream()
                 .filter(it -> !it.isAbstract())
                 .sorted(Comparator.comparing(Op::getOpName))
-                .forEachOrdered(o -> generateMethods(builder, o));
+                .forEachOrdered(o -> generateMethods(builder, o, isSameDiff));
 
 
         TypeSpec ts = builder.build();
@@ -170,22 +172,24 @@ public class Nd4jNamespaceGenerator {
         builder.addMethod(ctor);
     }
 
-    private static void generateMethods(TypeSpec.Builder builder, Op op ){
+    private static void generateMethods(TypeSpec.Builder builder, Op op, boolean isSameDiff ){
         List<Signature> l = op.getSignatures();
         for(Signature s : l){
-            builder.addMethod(signatureCreatorMethod(op, s));
+            builder.addMethod(signatureCreatorMethod(op, s, isSameDiff, false));
+            if (isSameDiff)
+                builder.addMethod(signatureCreatorMethod(op, s, true, true));
         }
     }
 
-    private static MethodSpec signatureCreatorMethod(Op op, Signature s){
+    private static MethodSpec signatureCreatorMethod(Op op, Signature s, boolean isSameDiff, boolean withName){
         MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()))
                 .addModifiers(Modifier.PUBLIC);
         enableVarargsOnLastArg(c, op, s);
 
         buildJavaDoc(op, s, c);
-        List<String> inNames = buildParameters(c, op, s);
+        List<String> inNames = buildParameters(c, op, s, isSameDiff, withName);
         buildConstraints(c, op.getConstraints());
-        buildExecution(c, op, inNames);
+        buildExecution(c, op, inNames, isSameDiff, withName);
 
         return c.build();
     }
@@ -260,10 +264,12 @@ public class Nd4jNamespaceGenerator {
         }
     }
 
-    private static List<String> buildParameters(MethodSpec.Builder c, Op op, Signature s) {
+    private static List<String> buildParameters(MethodSpec.Builder c, Op op, Signature s, boolean isSameDiff, boolean withName) {
         List<String> inNames = new ArrayList<>();
 
         List<Parameter> params = s.getParameters();
+        if (withName)
+            c.addParameter(String.class, "name");
         if(!params.isEmpty()){
             for(Parameter p : params){
                 if(p instanceof Input){
@@ -274,16 +280,22 @@ public class Nd4jNamespaceGenerator {
                     final Count count = i.getCount();
                     if(count == null || count.equals(exactlyOne)) {
                         //Single input
-                        c.addParameter(INDArray.class, inputName);
+                        if (isSameDiff)
+                            c.addParameter(SDVariable.class, inputName);
+                        else
+                            c.addParameter(INDArray.class, inputName);
                     } else {
                         //Array input
-                        c.addParameter(INDArray[].class, inputName);
+                        if (isSameDiff)
+                            c.addParameter(SDVariable[].class, inputName);
+                        else
+                            c.addParameter(INDArray[].class, inputName);
                     }
                     // Check for parameter types
                     final DataType paramType = i.getType();
                     String validationName = validationMapping.get(paramType);
                     if(validationName != null) {
-                        c.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", NDValidation.class, validationName, op.getOpName(), inputName, inputName));
+                        c.addStatement(CodeBlock.of("$T.$L($S, $S, $L)", isSameDiff ? SDValidation.class : NDValidation.class, validationName, op.getOpName(), inputName, inputName));
                     }
                     checkParameterCount(c, count, inputName);
                 } else if(p instanceof Arg){
@@ -350,12 +362,18 @@ public class Nd4jNamespaceGenerator {
         }
     }
 
-    private static void buildExecution(MethodSpec.Builder c, Op op, List<String> inNames) {
+    private static void buildExecution(MethodSpec.Builder c, Op op, List<String> inNames, boolean isSameDiff, boolean withName) {
         boolean singleOut = op.getOutputs().size() == 1;
         if(singleOut){
-            c.returns(INDArray.class);
+            if (isSameDiff)
+                c.returns(SDVariable.class);
+            else
+                c.returns(INDArray.class);
         } else {
-            c.returns(INDArray[].class);
+            if (isSameDiff)
+                c.returns(SDVariable[].class);
+            else
+                c.returns(INDArray[].class);
         }
 
         // We have to pass all parameters, always. But not all signatures will be taking all parameters.
@@ -371,17 +389,59 @@ public class Nd4jNamespaceGenerator {
 
         //Op execution:
         StringBuilder sb = new StringBuilder();
-        sb.append("return $T.exec(new ")
-                .append(op.getJavaPackage())
-                .append(".")
-                .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
-                .append("(")
-                .append(String.join(", ", parameters))
-                .append("))");
-        if(!op.getLegacy() && singleOut)        //Note: legacy ops Nd4j.exec(Op) returns INDArray; Nd4j.exec(CustomOp) returns INDArray[]
-            sb.append("[0]");
+        if (isSameDiff) {
+            if (withName) {
+                if (singleOut)
+                    sb.append("SDVariable out = ");
+                else
+                    sb.append("SDVariable[] out = ");
 
-        c.addStatement(sb.toString(), Nd4j.class);
+                sb.append(" new ")
+                        .append(op.getJavaPackage())
+                        .append(".")
+                        .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
+                        .append("(sd,")
+                        .append(String.join(", ", parameters))
+                        .append(")");
+
+                if (singleOut)
+                    sb.append(".outputVariable()");
+                else
+                    sb.append(".outputVariables()");
+
+                c.addStatement(sb.toString());
+                c.addStatement("return updateVariableNameAndReference(out, name)");
+            }
+            else {
+                sb.append("return new ")
+                        .append(op.getJavaPackage())
+                        .append(".")
+                        .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
+                        .append("(sd,")
+                        .append(String.join(", ", parameters))
+                        .append(")");
+                if (!op.getLegacy()) {
+                    if (singleOut)
+                        sb.append(".outputVariable()");
+                    else
+                        sb.append(".outputVariables()");
+                }
+                c.addStatement(sb.toString());
+            }
+        }
+         else{
+            sb.append("return $T.exec(new ")
+                    .append(op.getJavaPackage())
+                    .append(".")
+                    .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
+                    .append("(")
+                    .append(String.join(", ", parameters))
+                    .append("))");
+            if (!op.getLegacy() && singleOut)        //Note: legacy ops Nd4j.exec(Op) returns INDArray; Nd4j.exec(CustomOp) returns INDArray[]
+                sb.append("[0]");
+
+            c.addStatement(sb.toString(), Nd4j.class);
+        }
     }
 
     private static void enableVarargsOnLastArg(MethodSpec.Builder c, Op op, Signature s) {
