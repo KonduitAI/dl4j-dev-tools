@@ -1,7 +1,6 @@
 package org.nd4j.codegen.cli;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
+import com.beust.jcommander.*;
 import lombok.extern.slf4j.Slf4j;
 import org.nd4j.codegen.Namespace;
 import org.nd4j.codegen.SameDiffNamespace;
@@ -20,6 +19,21 @@ import java.util.List;
 @Slf4j
 public class CLI {
     private static final String relativePath = "nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/";
+    private static final String allProjects = "all";
+    private static final String sdProject = "sd";
+    private static final String ndProject = "nd4j";
+
+    public static class ProjectsValidator implements IParameterValidator {
+
+        @Override
+        public void validate(String name, String value) throws ParameterException {
+            if (name.equals("-projects")) {
+                if (!(value.equals(allProjects) || value.equals(ndProject) || value.equals(sdProject))) {
+                    throw new IllegalArgumentException("Wrong projects " + value + "  passed!");
+                }
+            }
+        }
+    }
 
     @Parameter(names = "-dir", description = "Root directory of deeplearning4j mono repo", required = true)
     private String repoRootDir;
@@ -27,7 +41,7 @@ public class CLI {
     @Parameter(names = "-namespaces", description = "List of namespaces to generate, or 'ALL' to generate all namespaces", required = true)
     private List<String> namespaces;
 
-    @Parameter(names = "-projects", description = "List of sub-projects - ND4J, SameDiff or both", required = false)
+    @Parameter(names = "-projects", description = "List of sub-projects - ND4J, SameDiff or both", required = false, validateWith = ProjectsValidator.class)
     private List<String> projects;
 
     enum NS_PROJECT {
@@ -119,10 +133,11 @@ public class CLI {
         }
 
         try {
-            if (projects.contains("nd4j")) {
+            boolean forAllProjects = projects.isEmpty() || projects.contains(allProjects);
+            if (forAllProjects || projects.contains(ndProject)) {
                 generateNamespaces(NS_PROJECT.ND4J, outputDir, "org.nd4j.linalg.factory");
             }
-            if (projects.contains("sd")) {
+            if (forAllProjects || projects.contains(sdProject)) {
                 generateNamespaces(NS_PROJECT.SAMEDIFF, outputDir, "org.nd4j.autodiff.samediff");
             }
         } catch (Exception e) {
