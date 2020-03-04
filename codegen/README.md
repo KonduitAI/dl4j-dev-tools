@@ -59,16 +59,17 @@ A script - `generate.sh` - is provided in the project root. This can be used (at
 It is assumed that the deeplearning4j mono repo and the dl4j-dev-tools repo both exist and have a common parent directory
 i.e., `somedir/deeplearning4j` and `somedir/dl4j-dev-tools` both exist.
 
-The script takes as argument the name (or names) of the ND4J namespaces to generate (not case sensitive).
+The script takes as argument the name (or names) of the ND4J namespaces to generate (not case sensitive) and projects (supported
+projects are nd4j, sd and both by default).
 
 As of 26/11, namespaces names (and hence valid args) include: `bitwise`, `neuralnetwork`, `random`, and `math`
 Note also that `all` may be passed to the script to generate all namespaces.
 
-For example, to generate both bitwise and random namespaces:
+For example, to generate both bitwise and random namespaces for both nd4j and SameDiff:
 ```
 ./generate.sh bitwise,random
 ```
-Or to generate all namespaces, use:
+Or to generate all namespaces for both nd4j and SameDiff, use:
 ```
 ./generate.sh all
 ``` 
