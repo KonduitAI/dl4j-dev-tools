@@ -3,7 +3,6 @@ package org.nd4j.codegen.cli;
 import com.beust.jcommander.*;
 import lombok.extern.slf4j.Slf4j;
 import org.nd4j.codegen.Namespace;
-import org.nd4j.codegen.SameDiffNamespace;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
 
@@ -128,6 +127,8 @@ public class CLI {
         }
 
         try {
+            if (projects == null)
+                projects.add(allProjects);
             boolean forAllProjects = projects.isEmpty() || projects.contains(allProjects);
             if (forAllProjects || projects.contains(ndProject)) {
                 generateNamespaces(NS_PROJECT.ND4J, outputDir, "org.nd4j.linalg.factory");
