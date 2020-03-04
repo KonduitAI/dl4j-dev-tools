@@ -12,7 +12,8 @@ public enum Namespace {
     RNN,
     MATH,
     BASE,
-    LOSS;
+    LOSS,
+    LINALG;
 
 
     public static Namespace fromString(String in){
@@ -36,6 +37,8 @@ public enum Namespace {
                 return BASE;
             case "loss":
                 return LOSS;
+            case "linalg":
+                return LINALG;
             default:
                 return null;
         }
@@ -61,6 +64,36 @@ public enum Namespace {
                 return "NDBase";
             case LOSS:
                 return "NDLoss";
+            case LINALG:
+                return "NDLinalg";
+        }
+        throw new IllegalStateException("No java class name defined for: " + this);
+    }
+
+    public String javaSameDiffClassName(){
+        switch (this){
+            case BITWISE:
+                return "SDBitwise";
+            case NEURALNETWORK:
+                return "SDNN";
+            case RANDOM:
+                return "SDRandom";
+            case IMAGE:
+                return "SDImage";
+            case CNN:
+                return "SDCNN";
+            case RNN:
+                return "SDRNN";
+            case MATH:
+                return "SDMath";
+            case BASE:
+                return "SDOps";
+            case LOSS:
+                return "SDLoss";
+            /*case VALIDATION:
+                return "SDValidation";*/
+            case LINALG:
+                return "SDLinalg";
         }
         throw new IllegalStateException("No java class name defined for: " + this);
     }
@@ -85,6 +118,8 @@ public enum Namespace {
                 return SDBaseOpsKt.SDBaseOps();
             case LOSS:
                 return SDLossKt.SDLoss();
+            case LINALG:
+                return LinalgKt.Linalg();
         }
         throw new IllegalStateException("No namespace definition available for: " + this);
     }

@@ -29,7 +29,7 @@ public class CLI {
         public void validate(String name, String value) throws ParameterException {
             if (name.equals("-projects")) {
                 if (!(value.equals(allProjects) || value.equals(ndProject) || value.equals(sdProject))) {
-                    throw new IllegalArgumentException("Wrong projects " + value + "  passed!");
+                    throw new ParameterException("Wrong projects " + value + "  passed! Must be one of [all, sd, nd4j]");
                 }
             }
         }
@@ -51,46 +51,41 @@ public class CLI {
 
     private void generateNamespaces(NS_PROJECT project, File outputDir, String basePackage) throws IOException {
 
-        List<Namespace> nd4jNamespaces = new ArrayList<>();
-        List<SameDiffNamespace> sdNamespaces = new ArrayList<>();
+        List<Namespace> usedNamespaces = new ArrayList<>();
 
         for(String s : namespaces) {
             if ("all".equalsIgnoreCase(s)) {
-                if (project == NS_PROJECT.ND4J) {
-                    Collections.addAll(nd4jNamespaces, Namespace.values());
-                } else {
-                    Collections.addAll(sdNamespaces, SameDiffNamespace.values());
-                }
+                Collections.addAll(usedNamespaces, Namespace.values());
                 break;
             }
-            Object ns = null;
+            Namespace ns = null;
             if (project == NS_PROJECT.ND4J) {
                 ns = Namespace.fromString(s);
                 if (ns == null) {
                     log.error("Invalid/unknown ND4J namespace provided: " + s);
                 }
                 else {
-                    nd4jNamespaces.add((Namespace) ns);
+                    usedNamespaces.add(ns);
                 }
             }
             else {
-                ns = SameDiffNamespace.fromString(s);
+                ns = Namespace.fromString(s);
                 if (ns == null) {
                     log.error("Invalid/unknown SD namespace provided: " + s);
                 }
                 else {
-                    sdNamespaces.add((SameDiffNamespace) ns);
+                    usedNamespaces.add(ns);
                 }
             }
         }
 
         int cnt = 0;
-        for (int i = 0; i < (NS_PROJECT.ND4J == project ? nd4jNamespaces.size() : sdNamespaces.size()); ++i) {
-            Object ns = NS_PROJECT.ND4J == project ? nd4jNamespaces.get(i) : sdNamespaces.get(i);
+        for (int i = 0; i < usedNamespaces.size(); ++i) {
+            Namespace ns = usedNamespaces.get(i);
             log.info("Starting generation of namespace: {}", ns);
 
-            String javaClassName = project == NS_PROJECT.ND4J ? ((Namespace)ns).javaClassName() : ((SameDiffNamespace)ns).javaClassName();
-            NamespaceOps ops = project == NS_PROJECT.ND4J ? ((Namespace)ns).getNamespace() : ((SameDiffNamespace)ns).getNamespace();
+            String javaClassName = project == NS_PROJECT.ND4J ? ns.javaClassName() : ns.javaSameDiffClassName();
+            NamespaceOps ops = ns.getNamespace();
 
             String basePackagePath = basePackage.replace(".", "/") + "/ops/";
             File outputPath = new File(outputDir,  basePackagePath + javaClassName + ".java");

@@ -11,8 +11,8 @@ fun Linalg() =  Namespace("Linalg") {
     Op("Cholesky") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms"
         javaOpClass = "Cholesky"
-        Input(DataType.NDARRAY, "input") { description = "Input tensor with inner-most 2 dimensions forming square matrices" }
-        Output(DataType.NDARRAY, "output"){ description = "Transformed tensor" }
+        Input(DataType.NUMERIC, "input") { description = "Input tensor with inner-most 2 dimensions forming square matrices" }
+        Output(DataType.NUMERIC, "output"){ description = "Transformed tensor" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -25,11 +25,11 @@ fun Linalg() =  Namespace("Linalg") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "Lstsq"
 
-        Input(DataType.NDARRAY, "matrix") {description = "input tensor"}
-        Input(DataType.NDARRAY, "rhs") {description = "input tensor"}
+        Input(DataType.NUMERIC, "matrix") {description = "input tensor"}
+        Input(DataType.NUMERIC, "rhs") {description = "input tensor"}
         Arg(DataType.FLOATING_POINT, "l2_reguralizer") {description = "regularizer"}
-        Arg(DataType.BOOL, "fast") {description = "fast mode, defaults to True"}
-        Output(DataType.NDARRAY, "output"){ description = "Transformed tensor" }
+        Arg(DataType.BOOL, "fast") {description = "fast mode, defaults to True"; defaultValue = true}
+        Output(DataType.FLOATING_POINT, "output"){ description = "Transformed tensor" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -42,10 +42,10 @@ fun Linalg() =  Namespace("Linalg") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "LinearSolve"
 
-        Input(DataType.NDARRAY, "matrix") {description = "input tensor"}
-        Input(DataType.NDARRAY, "rhs") {description = "input tensor"}
-        Arg(DataType.BOOL, "adjoint") {description = "adjoint mode, defaults to False"}
-        Output(DataType.NDARRAY, "output"){ description = "Output tensor" }
+        Input(DataType.NUMERIC, "matrix") {description = "input tensor"}
+        Input(DataType.NUMERIC, "rhs") {description = "input tensor"}
+        Arg(DataType.BOOL, "adjoint") {description = "adjoint mode, defaults to False"; defaultValue = false}
+        Output(DataType.FLOATING_POINT, "output"){ description = "Output tensor" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -58,10 +58,11 @@ fun Linalg() =  Namespace("Linalg") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "TriangularSolve"
 
-        Input(DataType.NDARRAY, "matrix") {description = "input tensor"}
-        Input(DataType.NDARRAY, "rhs") {description = "input tensor"}
+        Input(DataType.NUMERIC, "matrix") {description = "input tensor"}
+        Input(DataType.NUMERIC, "rhs") {description = "input tensor"}
         Arg(DataType.BOOL, "lower") {description = "defines whether innermost matrices in matrix are lower or upper triangular"}
         Arg(DataType.BOOL, "adjoint") {description = "adjoint mode"}
+        Output(DataType.FLOATING_POINT, "otuput")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -74,7 +75,8 @@ fun Linalg() =  Namespace("Linalg") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "Lu"
 
-        Input(DataType.NDARRAY, "input") {description = "input tensor"}
+        Input(DataType.NUMERIC, "input") {description = "input tensor"}
+        Output(DataType.FLOATING_POINT, "otuput")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -84,11 +86,12 @@ fun Linalg() =  Namespace("Linalg") {
     }
 
     Op("Matmul") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise"
-        javaOpClass = "MatMul"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
+        javaOpClass = "Mmul"
 
-        Input(DataType.NDARRAY, "a") {description = "input tensor"}
-        Input(DataType.NDARRAY, "b") {description = "input tensor"}
+        Input(DataType.NUMERIC, "a") {description = "input tensor"}
+        Input(DataType.NUMERIC, "b") {description = "input tensor"}
+        Output(DataType.FLOATING_POINT, "otuput")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -97,16 +100,101 @@ fun Linalg() =  Namespace("Linalg") {
         }
     }
 
-    /*Op("Qr") {
-        javaPackage = "org.nd4j.linalg.api.ops.custom"
+    Op("Qr") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "Qr"
 
-        Input(DataType.NDARRAY, "input") {description = "input tensor"}
+        Input(DataType.NUMERIC, "input") {description = "input tensor"}
+        Arg(DataType.BOOL, "full") {description = "full matrices mode"; defaultValue = false}
 
         Doc(Language.ANY, DocScope.ALL){
             """
              Computes QR decomposition.
             """.trimIndent()
         }
-    }*/
+    }
+
+    Op("MatrixBandPart") {
+        javaPackage = "org.nd4j.linalg.api.ops.custom"
+        javaOpClass = "MatrixBandPart"
+
+        Input(DataType.NUMERIC, "input") { description = "input tensor" }
+        Arg(DataType.INT, "minLower") { description = "lower diagonal count" }
+        Arg(DataType.INT, "maxUpper") { description = "upper diagonal count" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Computes QR decomposition.
+            """.trimIndent()
+        }
+    }
+
+    Op("cross") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "Cross"
+
+        Input(DataType.NUMERIC, "a") {"Input tensor a"}
+        Input(DataType.NUMERIC, "b") {"Input tensor b"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Computes pairwise cross product.
+            """.trimIndent()
+        }
+    }
+
+    Op("diag") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "Diag"
+
+        Input(DataType.NUMERIC, "input") {"Input tensor"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Calculates diagonal tensor.
+            """.trimIndent()
+        }
+    }
+
+    Op("diag_part") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "DiagPart"
+
+        Input(DataType.NUMERIC, "input") {"Input tensor"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Calculates diagonal tensor.
+            """.trimIndent()
+        }
+    }
+
+    Op("logdet") {
+        javaPackage = "org.nd4j.linalg.api.ops.custom"
+        javaOpClass = "Logdet"
+
+        Input(DataType.NUMERIC, "input") {"Input tensor"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Calculates log of determinant.
+            """.trimIndent()
+        }
+    }
+
+    Op("svd") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "Svd"
+
+        Input(DataType.NUMERIC, "input") {"Input tensor"}
+        Arg(DataType.BOOL, "fullUV") {"Full matrices mode"}
+        Arg(DataType.BOOL, "computeUV") {"Compute U and V"}
+        Arg(DataType.INT, "switchNum") {"Switch number"; defaultValue = 16}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Calculates singular value decomposition.
+            """.trimIndent()
+        }
+    }
 }
