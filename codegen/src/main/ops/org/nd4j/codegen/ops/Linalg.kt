@@ -49,7 +49,7 @@ fun Linalg() =  Namespace("Linalg") {
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             Solver for systems of linear questions.
+             Solver for systems of linear equations.
             """.trimIndent()
         }
     }
@@ -62,7 +62,7 @@ fun Linalg() =  Namespace("Linalg") {
         Input(DataType.NUMERIC, "rhs") {description = "input tensor"}
         Arg(DataType.BOOL, "lower") {description = "defines whether innermost matrices in matrix are lower or upper triangular"}
         Arg(DataType.BOOL, "adjoint") {description = "adjoint mode"}
-        Output(DataType.FLOATING_POINT, "otuput")
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -76,7 +76,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Lu"
 
         Input(DataType.NUMERIC, "input") {description = "input tensor"}
-        Output(DataType.FLOATING_POINT, "otuput")
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -91,7 +91,7 @@ fun Linalg() =  Namespace("Linalg") {
 
         Input(DataType.NUMERIC, "a") {description = "input tensor"}
         Input(DataType.NUMERIC, "b") {description = "input tensor"}
-        Output(DataType.FLOATING_POINT, "otuput")
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -106,10 +106,11 @@ fun Linalg() =  Namespace("Linalg") {
 
         Input(DataType.NUMERIC, "input") {description = "input tensor"}
         Arg(DataType.BOOL, "full") {description = "full matrices mode"; defaultValue = false}
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             Computes QR decomposition.
+             Computes the QR decompositions of input matrix.
             """.trimIndent()
         }
     }
@@ -124,7 +125,7 @@ fun Linalg() =  Namespace("Linalg") {
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             Computes QR decomposition.
+             Computes QR decomposition of input matrix.
             """.trimIndent()
         }
     }
@@ -135,6 +136,7 @@ fun Linalg() =  Namespace("Linalg") {
 
         Input(DataType.NUMERIC, "a") {"Input tensor a"}
         Input(DataType.NUMERIC, "b") {"Input tensor b"}
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -148,6 +150,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Diag"
 
         Input(DataType.NUMERIC, "input") {"Input tensor"}
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -161,6 +164,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "DiagPart"
 
         Input(DataType.NUMERIC, "input") {"Input tensor"}
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -174,6 +178,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Logdet"
 
         Input(DataType.NUMERIC, "input") {"Input tensor"}
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -190,6 +195,7 @@ fun Linalg() =  Namespace("Linalg") {
         Arg(DataType.BOOL, "fullUV") {"Full matrices mode"}
         Arg(DataType.BOOL, "computeUV") {"Compute U and V"}
         Arg(DataType.INT, "switchNum") {"Switch number"; defaultValue = 16}
+        Output(DataType.FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
