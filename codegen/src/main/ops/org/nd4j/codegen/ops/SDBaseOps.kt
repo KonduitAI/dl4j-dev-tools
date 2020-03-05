@@ -917,7 +917,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(INT, "seq_lengths") { description = "Length of the sequences" }
-        Arg(INT, "seqDim") { description = "Sequence dimension"}
+        Arg(INT, "seqDim") { description = "Sequence dimension"; defaultValue=-1}
         Arg(INT, "batchDim") { description = "Batch dimension"; defaultValue=0 }
         Output(NUMERIC, "output"){ description = "Reversed sequences" }
         Doc(Language.ANY, DocScope.ALL){
