@@ -1,13 +1,15 @@
 # Aliasing
 
 ## Status
-Proposed
+ACCEPTED
+
+Discussed by Alex Black and Paul Dubs on 05. March 2020. 
  
 
 ## Context
 The API surface area is very large over all those namespaces. For consistency with our previous manually created API we want to be able to alias ops into different namespaces. Those aliases are meant as a convenience for users, so they can find ops more easily. 
 
-# Proposal
+# Decision
 We introduce an aliasing mechanism `Alias(NamespaceName().op("opName"))` at the Namespace level, which can reference an op directly.
 
 When an op is aliased like that, all of that ops signatures will be available in the referencing namespace. However, they will get an additional note in their documentation saying that it is an alias to the original op. In addition, the implementation of an alias signature, is a direct call of the same signature in the original namespace.  
