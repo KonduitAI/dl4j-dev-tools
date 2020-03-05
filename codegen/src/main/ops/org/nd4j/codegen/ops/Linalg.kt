@@ -106,7 +106,8 @@ fun Linalg() =  Namespace("Linalg") {
 
         Input(DataType.NUMERIC, "input") {description = "input tensor"}
         Arg(DataType.BOOL, "full") {description = "full matrices mode"; defaultValue = false}
-        Output(DataType.FLOATING_POINT, "output")
+        Output(DataType.FLOATING_POINT, "outputQ")
+        Output(DataType.FLOATING_POINT, "outputR")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -122,6 +123,8 @@ fun Linalg() =  Namespace("Linalg") {
         Input(DataType.NUMERIC, "input") { description = "input tensor" }
         Arg(DataType.INT, "minLower") { description = "lower diagonal count" }
         Arg(DataType.INT, "maxUpper") { description = "upper diagonal count" }
+        Output(DataType.FLOATING_POINT, "output1")
+        Output(DataType.FLOATING_POINT, "output2")
 
         Doc(Language.ANY, DocScope.ALL){
             """

@@ -260,7 +260,8 @@ public class Nd4jNamespaceGenerator {
                 Output o = outputs.get(0);
                 c.addJavadoc("@return " + o.getName() + " " + (o.getDescription() == null ? "" : DocTokens.processDocText(o.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + o.getType() + " type)\n");
             } else {
-                throw new UnsupportedOperationException("Javadoc for multi-output ops not yet implemented");
+                //throw new UnsupportedOperationException("Javadoc for multi-output ops not yet implemented");
+                log.error("Javadoc for multi-output ops not yet implemented");
             }
         }
     }
