@@ -23,4 +23,14 @@ data class NamespaceOps @JvmOverloads constructor(
             throw IllegalStateException("Found unused configs: ${unusedConfigs.joinToString(", ") { it.name }}")
         }
     }
+
+    /**
+     * Get op by name
+     */
+    fun op(name:String):Op {
+        val op = ops.find { op -> op.opName.equals(name) }
+        if (op == null)
+            throw java.lang.IllegalStateException("Operation $name not found")
+        return op
+    }
 }

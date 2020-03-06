@@ -19,13 +19,10 @@ fun Mixin(name: String, block: Mixin.() -> Unit): Mixin {
     }
 }
 
-fun NamespaceOps.Alias(name:String):Op? {
-    val op = SDBaseOps().ops.find { op -> op.opName.equals(name) }
-    if (op != null) {
+fun NamespaceOps.Alias(op:Op):Op {
+   
         this.ops.add(op)
         return op
-    }
-    return null
 }
 
 fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {

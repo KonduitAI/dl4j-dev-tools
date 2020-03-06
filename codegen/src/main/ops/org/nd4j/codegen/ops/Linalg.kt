@@ -206,6 +206,6 @@ fun Linalg() =  Namespace("Linalg") {
             """.trimIndent()
         }
     }
-
-    Alias("mmul")
+    
+    Alias(SDBaseOps().op("mmul"))
 }
