@@ -423,7 +423,7 @@ public class Nd4jNamespaceGenerator {
                 if (singleOut)
                     c.addStatement("return updateVariableNameAndReference(out, name)");
                 else
-                    c.addStatement("return sd.updateVariableNamesAndReferences(out, new String[]{name})");
+                    c.addStatement("return sd.updateVariableNamesAndReferences(out, names)");
             }
             else {
                 sb.append("return new ")
