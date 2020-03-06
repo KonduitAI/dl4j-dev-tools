@@ -433,12 +433,12 @@ public class Nd4jNamespaceGenerator {
                         .append("(sd,")
                         .append(String.join(", ", parameters))
                         .append(")");
-                if (!op.getLegacy()) {
+                //if (!op.getLegacy()) {
                     if (singleOut)
                         sb.append(".outputVariable()");
                     else
                         sb.append(".outputVariables()");
-                }
+                //}
                 c.addStatement(sb.toString());
             }
         }
