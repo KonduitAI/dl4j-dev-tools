@@ -207,5 +207,5 @@ fun Linalg() =  Namespace("Linalg") {
         }
     }
     
-    Alias(SDBaseOps().op("mmul"))
+    Alias(SDBaseOps(), "mmul")
 }

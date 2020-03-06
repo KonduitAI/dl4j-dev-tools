@@ -4,7 +4,8 @@ data class NamespaceOps @JvmOverloads constructor(
     var name: String,
     var include: MutableList<String>? = null,
     var ops: MutableList<Op> = mutableListOf(),
-    var configs: MutableList<Config> = mutableListOf()
+    var configs: MutableList<Config> = mutableListOf(),
+    var parentNamespaceOps: Map<String,MutableList<Op>> = mutableMapOf()
 ) {
     fun addConfig(config: Config) {
         configs.add(config)
@@ -28,9 +29,7 @@ data class NamespaceOps @JvmOverloads constructor(
      * Get op by name
      */
     fun op(name:String):Op {
-        val op = ops.find { op -> op.opName.equals(name) }
-        if (op == null)
-            throw java.lang.IllegalStateException("Operation $name not found")
+        val op = ops.find { op -> op.opName.equals(name) } ?: throw java.lang.IllegalStateException("Operation $name not found")
         return op
     }
 }
