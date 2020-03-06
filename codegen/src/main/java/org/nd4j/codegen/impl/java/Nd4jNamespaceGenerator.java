@@ -226,8 +226,12 @@ public class Nd4jNamespaceGenerator {
 
             c.addJavadoc("\n");
         }
-        if (withName)
-            c.addJavadoc("@param name name May be null. Name for the output variable\n");
+        if (withName) {
+            if (op.getOutputs().size() == 1)
+                c.addJavadoc("@param name name May be null. Name for the output variable\n");
+            else
+                c.addJavadoc("@param names names May be null. Arrays of names for the output variables.\n");
+        }
         List<Parameter> params = s.getParameters();
         if(!params.isEmpty()){
             for(Parameter p : params){
@@ -270,8 +274,12 @@ public class Nd4jNamespaceGenerator {
         List<String> inNames = new ArrayList<>();
 
         List<Parameter> params = s.getParameters();
-        if (withName)
-            c.addParameter(String.class, "name");
+        if (withName) {
+            if (op.getOutputs().size() == 1)
+                c.addParameter(String.class, "name");
+            else
+                c.addParameter(String[].class, "names");
+        }
         if(!params.isEmpty()){
             for(Parameter p : params){
                 if(p instanceof Input){

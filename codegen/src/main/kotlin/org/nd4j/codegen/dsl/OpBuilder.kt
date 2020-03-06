@@ -3,6 +3,7 @@ package org.nd4j.codegen.dsl
 import org.nd4j.codegen.api.*
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.api.doc.DocSection
+import org.nd4j.codegen.ops.SDBaseOps
 
 fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
     val ns = NamespaceOps(name)
@@ -16,6 +17,15 @@ fun Mixin(name: String, block: Mixin.() -> Unit): Mixin {
     return Mixin(name).apply(block).also {
         it.checkInvariants()
     }
+}
+
+fun NamespaceOps.Alias(name:String):Op? {
+    val op = SDBaseOps().ops.find { op -> op.opName.equals(name) }
+    if (op != null) {
+        this.ops.add(op)
+        return op
+    }
+    return null
 }
 
 fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {

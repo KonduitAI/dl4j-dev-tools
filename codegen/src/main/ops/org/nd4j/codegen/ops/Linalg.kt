@@ -128,7 +128,7 @@ fun Linalg() =  Namespace("Linalg") {
 
         Doc(Language.ANY, DocScope.ALL){
             """
-             Computes QR decomposition of input matrix.
+             Copy a tensor setting outside a central band in each innermost matrix.
             """.trimIndent()
         }
     }
@@ -206,4 +206,6 @@ fun Linalg() =  Namespace("Linalg") {
             """.trimIndent()
         }
     }
+
+    Alias("mmul")
 }
