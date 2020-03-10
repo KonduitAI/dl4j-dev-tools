@@ -39,6 +39,8 @@ interface Parameter {
 
     fun hasDefaultValue(): Boolean
 
+    fun isVararg():Boolean
+
     /**
      * A default value only is applicable if it is a literal value, or the referenced value is either directly a part of
      * the signature, or there is a reference chain that ends in something that is actually a part of the signature
@@ -64,11 +66,15 @@ interface Tensor: Parameter
 data class Arg(
         val name: String,
         val type: DataType,
-        var description: String? = null
+        var description: String? = null,
+        var isVargarg: Boolean = false
 ) : Reference(), Parameter {
     override fun name(): String = name
     override fun defaultValue(): Any? = defaultValue
     override fun hasDefaultValue(): Boolean = defaultValueIsSet
+    override fun isVararg(): Boolean {
+        return isVargarg
+    }
 
     private var defaultValueIsSet = false
     var defaultValue: Any? = null
@@ -144,6 +150,10 @@ data class Input (
         var description: String? = null,
         var count: Count? = null
 ) : Parameter, Tensor {
+    override fun isVararg(): Boolean {
+        return false
+    }
+
     override fun name(): String = name
     override fun defaultValue(): Any? = defaultValue
     override fun hasDefaultValue(): Boolean = defaultValueIsSet
@@ -168,6 +178,10 @@ data class Output(
         var type: DataType,
         var description: String? = null
 ) : Parameter, Tensor{
+    override fun isVararg(): Boolean {
+        return false
+    }
+
     override fun name(): String = name
     override fun defaultValue(): Any? = null
     override fun hasDefaultValue(): Boolean = false
@@ -208,6 +222,10 @@ data class Config(
         val constraints: MutableList<Constraint> = mutableListOf(),
         val doc: MutableList<DocSection> = mutableListOf()
         ): Parameter {
+    override fun isVararg(): Boolean {
+        return false
+    }
+
     override fun name(): String = name
     override fun defaultValue(): Any? = null
     override fun hasDefaultValue(): Boolean = false

@@ -388,7 +388,13 @@ public class Nd4jNamespaceGenerator {
 
         // We have to pass all parameters, always. But not all signatures will be taking all parameters.
         // inNames tells us which parameters this signatures has. For all others we want to pass default values
-        List<String> parameters = op.allParameters().stream().map(it -> {
+        List<String> parameters = op.allParameters().stream().sorted(
+                (p1,p2) -> {
+                    if (p1.isVararg()) return 1;
+                    else if (p2.isVararg()) return -1;
+                    return 0;
+                }
+            ).map(it -> {
             if(inNames.contains(it.name())){
                 return it.name();
             }else{

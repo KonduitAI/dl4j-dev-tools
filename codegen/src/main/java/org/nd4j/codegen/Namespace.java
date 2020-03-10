@@ -86,8 +86,8 @@ public enum Namespace {
                 return "SDRNN";
             case MATH:
                 return "SDMath";
-            /*case BASE:
-                return "SDOps";*/
+            case BASE:
+                return "SDOps";
             case LOSS:
                 return "SDLoss";
             /*case VALIDATION:
@@ -95,7 +95,7 @@ public enum Namespace {
             case LINALG:
                 return "SDLinalg";
         }
-        throw new IllegalStateException("No java class name defined for: " + this);
+        throw new IllegalStateException("No java SameDiff class name defined for: " + this);
     }
 
     public NamespaceOps getNamespace(){
