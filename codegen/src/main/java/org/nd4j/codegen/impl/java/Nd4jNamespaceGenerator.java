@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
+import org.nd4j.autodiff.samediff.ops.SDOps;
 import org.nd4j.autodiff.samediff.ops.SDValidation;
 import org.nd4j.base.Preconditions;
 import org.nd4j.codegen.api.*;
@@ -104,10 +105,11 @@ public class Nd4jNamespaceGenerator {
 
     private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
                                           String parentClass) throws IOException, ClassNotFoundException {
-
+        boolean isBaseSameDiff = StringUtils.equals("SDOps", className);
         boolean isSameDiff = StringUtils.isNotEmpty(parentClass);
+        boolean isLoss = StringUtils.equals("SDLoss", className);
 
-        TypeSpec.Builder builder = !isSameDiff ?
+        TypeSpec.Builder builder = !isSameDiff || isBaseSameDiff ?
                  TypeSpec.classBuilder(className)
                     .addModifiers(Modifier.PUBLIC) :
 
@@ -115,8 +117,13 @@ public class Nd4jNamespaceGenerator {
                     .superclass(Class.forName(parentClass))
                     .addModifiers(Modifier.PUBLIC);
 
-        if (isSameDiff)
+        if (isSameDiff && !isBaseSameDiff) {
             addSameDiffConstructor(builder);
+        }
+        else if (isBaseSameDiff) {
+            TypeSpec.classBuilder(className).addField(TypeName.OBJECT, "sd", Modifier.PROTECTED);
+            addBaseSameDiffConstructor(builder);
+        }
         else
             addDefaultConstructor(builder);
 
@@ -125,7 +132,7 @@ public class Nd4jNamespaceGenerator {
                 .stream()
                 .filter(it -> !it.isAbstract())
                 .sorted(Comparator.comparing(Op::getOpName))
-                .forEachOrdered(o -> generateMethods(builder, o, isSameDiff));
+                .forEachOrdered(o -> generateMethods(builder, o, isSameDiff, isLoss));
 
 
         TypeSpec ts = builder.build();
@@ -138,6 +145,7 @@ public class Nd4jNamespaceGenerator {
                 .build() :
 
                 JavaFile.builder(opsPackage, ts)
+                        .addStaticImport(SDValidation.class, "isSameType")
                         .build();
 
         StringBuilder sb = new StringBuilder();
@@ -162,6 +170,17 @@ public class Nd4jNamespaceGenerator {
         builder.addMethod(noArg);
     }
 
+    private static void addBaseSameDiffConstructor(TypeSpec.Builder builder) {
+
+        MethodSpec ctor = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(SameDiff.class, "sameDiff")
+                .addStatement("this.sd = sameDiff")
+                .build();
+
+        builder.addMethod(ctor);
+    }
+
     private static void addSameDiffConstructor(TypeSpec.Builder builder) {
         MethodSpec ctor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -172,16 +191,17 @@ public class Nd4jNamespaceGenerator {
         builder.addMethod(ctor);
     }
 
-    private static void generateMethods(TypeSpec.Builder builder, Op op, boolean isSameDiff ){
+    private static void generateMethods(TypeSpec.Builder builder, Op op, boolean isSameDiff, boolean isLoss ){
         List<Signature> l = op.getSignatures();
         for(Signature s : l){
-            builder.addMethod(signatureCreatorMethod(op, s, isSameDiff, false));
+            builder.addMethod(signatureCreatorMethod(op, s, isSameDiff, false, isLoss));
             if (isSameDiff)
-                builder.addMethod(signatureCreatorMethod(op, s, true, true));
+                builder.addMethod(signatureCreatorMethod(op, s, true, true, isLoss));
         }
     }
 
-    private static MethodSpec signatureCreatorMethod(Op op, Signature s, boolean isSameDiff, boolean withName){
+    private static MethodSpec signatureCreatorMethod(Op op, Signature s, boolean isSameDiff, boolean withName,
+                                                     boolean isLoss){
         MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()))
                 .addModifiers(Modifier.PUBLIC);
         enableVarargsOnLastArg(c, op, s);
@@ -189,7 +209,7 @@ public class Nd4jNamespaceGenerator {
         buildJavaDoc(op, s, c, withName);
         List<String> inNames = buildParameters(c, op, s, isSameDiff, withName);
         buildConstraints(c, op.getConstraints());
-        buildExecution(c, op, inNames, isSameDiff, withName);
+        buildExecution(c, op, inNames, isSameDiff, withName, isLoss);
 
         return c.build();
     }
@@ -372,7 +392,8 @@ public class Nd4jNamespaceGenerator {
         }
     }
 
-    private static void buildExecution(MethodSpec.Builder c, Op op, List<String> inNames, boolean isSameDiff, boolean withName) {
+    private static void buildExecution(MethodSpec.Builder c, Op op, List<String> inNames, boolean isSameDiff,
+                                       boolean withName, boolean isLoss) {
         boolean singleOut = op.getOutputs().size() == 1;
         if(singleOut){
             if (isSameDiff)
@@ -426,26 +447,44 @@ public class Nd4jNamespaceGenerator {
                     sb.append(".outputVariables()");
 
                 c.addStatement(sb.toString());
+                if (isLoss)
+                    c.addStatement("out.markAsLoss()");
+
                 if (singleOut)
-                    c.addStatement("return updateVariableNameAndReference(out, name)");
+                    c.addStatement("return sd.updateVariableNameAndReference(out, name)");
                 else
                     c.addStatement("return sd.updateVariableNamesAndReferences(out, names)");
             }
             else {
-                sb.append("return new ")
-                        .append(op.getJavaPackage())
-                        .append(".")
-                        .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
-                        .append("(sd,")
-                        .append(String.join(", ", parameters))
-                        .append(")");
-                //if (!op.getLegacy()) {
+                if (isLoss) {
+                    sb.append("SDVariable out = new ")
+                            .append(op.getJavaPackage())
+                            .append(".")
+                            .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
+                            .append("(sd,")
+                            .append(String.join(", ", parameters))
+                            .append(")");
+                }
+                else {
+                    sb.append("return new ")
+                            .append(op.getJavaPackage())
+                            .append(".")
+                            .append(op.getJavaOpClass() == null ? GenUtil.ensureFirstIsCap(op.getOpName()) : op.getJavaOpClass())
+                            .append("(sd,")
+                            .append(String.join(", ", parameters))
+                            .append(")");
+                }
+                    //if (!op.getLegacy()) {
                     if (singleOut)
                         sb.append(".outputVariable()");
                     else
                         sb.append(".outputVariables()");
-                //}
+                    //}
                 c.addStatement(sb.toString());
+                if (isLoss) {
+                    c.addStatement("out.markAsLoss()");
+                    c.addStatement("return out");
+                }
             }
         }
          else{
