@@ -46,7 +46,7 @@ val scalar = Mixin("scalar"){
 val reduce = Mixin("reduce"){
     legacy = true
     Input(DataType.NUMERIC, "in") { description = "Input variable" }
-    Arg(DataType.INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+    Arg(DataType.INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
     Output(DataType.NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
 }
 

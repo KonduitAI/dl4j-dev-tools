@@ -4,6 +4,7 @@
 package org.nd4j.codegen.ops
 
 import org.nd4j.codegen.api.AtLeast
+import org.nd4j.codegen.api.DataType
 import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
@@ -455,6 +456,7 @@ fun Math() =  Namespace("Math"){
         Arg(INT, "rows") { description = "Number of rows" }
         Arg(INT, "cols") { description = "Number of columns" }
         Arg(DATA_TYPE, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Arg(DataType.INT, "dimensions"){ count = AtLeast(0)}
         Output(NUMERIC, "output"){ description = "Identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -658,7 +660,9 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("log", transformStrict) {
-        Input(NUMERIC, "base") { description = "Logarithm base" }
+        javaOpClass = "LogX"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        Arg(NUMERIC, "base") { description = "Logarithm base" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise logarithm function (with specified base): out = log_{base}(x)
@@ -772,7 +776,8 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "input") { description = "Input to calculate moments for" }
         Arg(INT, "axes"){ count = AtLeast(0); description = "Dimensions to perform calculation over" }
-        Output(NUMERIC, "output"){ description = "Mean and variance variables" }
+        Output(NUMERIC, "output_mean"){ description = "Mean variable" }
+        Output(NUMERIC, "output_variance"){ description = "Variance variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Calculate the mean and (population) variance for the input variable, for the specified axis
@@ -795,7 +800,8 @@ fun Math() =  Namespace("Math"){
         Input(NUMERIC, "means") { description = "Mean-value sufficient statistics: this is the SUM of all data values" }
         Input(NUMERIC, "variances") { description = "Variaance sufficient statistics: this is the squared sum of all data values" }
         Arg(NUMERIC, "shift") { description = "Shift value, possibly 0, used when calculating the sufficient statistics (for numerical stability)" }
-        Output(NUMERIC, "output"){ description = "Output variables: mean and population variance" }
+        Output(NUMERIC, "output_mean"){ description = "Mean variable" }
+        Output(NUMERIC, "output_population"){ description = "Population variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Calculate the mean and variance from the sufficient statistics
