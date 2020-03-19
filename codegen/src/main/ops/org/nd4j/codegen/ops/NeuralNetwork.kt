@@ -483,4 +483,19 @@ fun NN() = Namespace("SDNN") {
             """.trimIndent()
         }
     }
+
+    Op("pad") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms"
+        Input(NUMERIC, "input") { description = "Input tensor"}
+        Input(NUMERIC, "padding") { description = "Padding value" }
+        Arg(NUMERIC, "constant") { description = "Padding constant" }
+
+        Output(NUMERIC, "output"){ description = "Padded input" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Padding operation 
+            """.trimIndent()
+        }
+    }
 }
