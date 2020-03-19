@@ -70,7 +70,7 @@ val reduce3 = Mixin("reduce3"){
     javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
     Input(DataType.NUMERIC, "x") { description = "Input variable x" }
     Input(DataType.NUMERIC, "y") { description = "Input variable y" }
-    Arg(DataType.INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate %OPNAME% over" }
+    Arg(DataType.INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate %OPNAME% over" }
     Output(DataType.NUMERIC, "output"){ description = "Output variable" }
 }
 
