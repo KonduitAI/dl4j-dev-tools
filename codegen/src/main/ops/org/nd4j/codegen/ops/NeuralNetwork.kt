@@ -133,7 +133,7 @@ fun NN() = Namespace("SDNN") {
         javaOpClass = "LeakyReLU"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "alpha") { description = "Cutoff - commonly 0.01" }
+        Arg(NUMERIC, "alpha") { description = "Cutoff - commonly 0.01" }
 
         Output(NUMERIC, "output") { description = "Output variable" }
 
@@ -321,7 +321,7 @@ fun NN() = Namespace("SDNN") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "SoftMax"
         Input(NUMERIC, "x") { description = "Input" }
-        Arg(INT, "dimension") { description = "Dimension along which to apply softmax" }
+        Arg(INT, "dimension") { description = "Dimension along which to apply softmax"; defaultValue = -1 }
         Output(NUMERIC, "output") { description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -498,4 +498,6 @@ fun NN() = Namespace("SDNN") {
             """.trimIndent()
         }
     }
+
+    Alias(Math(), "tanh")
 }
