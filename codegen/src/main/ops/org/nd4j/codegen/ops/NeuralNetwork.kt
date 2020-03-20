@@ -152,7 +152,7 @@ fun NN() = Namespace("SDNN") {
         javaOpClass = "LeakyReLUDerivative"
         legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(NUMERIC, "alpha") { description = "Cutoff - commonly 0.01" }
+        Arg(FLOATING_POINT, "alpha") { description = "Cutoff - commonly 0.01" }
 
         Output(NUMERIC, "output") { description = "Output variable" }
 

@@ -1031,4 +1031,33 @@ fun Math() =  Namespace("Math"){
             """.trimIndent()
         }
     }
+
+    Op("listDiff") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable X" }
+        Input(NUMERIC, "y") { description = "Input variable Y" }
+        Output(NUMERIC, "output1"){ description = "Calculated difference between X and Y" }
+        Output(NUMERIC, "output2"){ description = "Calculated difference between X and Y" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Calculates difference between inputs X and Y.
+            """.trimIndent()
+        }
+    }
+
+    Op("meshgrid") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "MeshGrid"
+        Arg(BOOL, "cartesian")
+        Arg(NDARRAY, "inputs") { count = AtLeast(0) }
+
+        Output(NUMERIC, "output1"){ description = "Output array" }
+        Output(NUMERIC, "output2"){ description = "Output array" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Broadcasts parameters for evaluation on an N-D grid.
+            """.trimIndent()
+        }
+    }
 }
