@@ -1049,7 +1049,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         javaOpClass = "MeshGrid"
         Arg(BOOL, "cartesian")
-        Arg(NDARRAY, "inputs") { count = AtLeast(0) }
+        Input(NUMERIC, "inputs") { count = AtLeast(0) }
 
         Output(NUMERIC, "output1"){ description = "Output array" }
         Output(NUMERIC, "output2"){ description = "Output array" }
@@ -1057,6 +1057,62 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Broadcasts parameters for evaluation on an N-D grid.
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShift") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "ShiftBits"
+        Input(NUMERIC, "x") {description = "input"}
+        Input(NUMERIC, "shift") {description = "shift value"}
+        Output(NUMERIC, "output") {description = "shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Bit shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRight") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "RShiftBits"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "shift") {description = "shift argument"}
+        Output(NUMERIC, "output") {description = "shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Right bit shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRotl") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicShiftBits"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "shift") {description = "shift argy=ument"}
+        Output(NUMERIC, "output") {description = "shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Cyclic bit shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRotr") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicRShiftBits"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "shift") {description = "Shift argument"}
+        Output(NUMERIC, "output") {description = "Shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Cyclic right shift operation
             """.trimIndent()
         }
     }
