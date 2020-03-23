@@ -118,8 +118,8 @@ data class Arg(
         is DoubleArray -> isArray() && (type == DataType.FLOATING_POINT || type == DataType.NUMERIC) && countMatches(value.size)
         is BooleanArray -> isArray() && type == DataType.BOOL && countMatches(value.size)
         is Arg -> value.count == count && value.type == type
-        is String -> type == DataType.STRING
-        is String -> type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
+        is String -> type == DataType.STRING || type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
+        //is String -> type == DataType.ENUM && possibleValues != null && possibleValues?.contains(value) ?: false
         is org.nd4j.linalg.api.buffer.DataType -> type == DataType.DATA_TYPE
         is org.nd4j.codegen.api.LossReduce -> type == DataType.LOSS_REDUCE
         null -> true
