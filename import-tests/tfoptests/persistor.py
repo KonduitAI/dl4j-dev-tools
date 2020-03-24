@@ -318,10 +318,10 @@ class TensorFlowPersistor:
                 sess.run(init)
                 tf.compat.v1.disable_eager_execution()
                 predictions = sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
-                self._save_graph(sess, tf.compat.v1.train.Saver())
+                self._save_graph(sess, all_saver, tf.compat.v1.train.Saver())
         else:
             predictions = self._sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
-            self._save_graph(self._sess, tf.compat.v1.train.Saver())
+            self._save_graph(self._sess, all_saver, tf.compat.v1.train.Saver())
             self._sess.close
         flattened_predictions = []
         # print("OUTPUT TENSORS: ", self._output_tensors)

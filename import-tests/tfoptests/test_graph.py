@@ -1,10 +1,14 @@
 import tensorflow as tf
 import numpy as np
 
+isApiV2 = tf.version.VERSION.startswith("2.")
 
 class TestGraph(object):
     def __init__(self, seed=None, verbose=True):
-        tf.random.set_seed(1)
+        if isApiV2:
+            tf.random.set_seed(1)
+        else:
+            tf.set_random_seed(1)
         seed = 713 if seed is None else seed
         np.random.seed(seed=seed)
         self.verbose = verbose
