@@ -22,7 +22,7 @@ def get_save_dir(model_file):
 
 def print_nodes():
     # Helper to find input and output nodes
-    nodes = [n for n in tf.get_default_graph().as_graph_def().node]
+    nodes = [n for n in tf.compat.v1.get_default_graph().as_graph_def().node]
     for node in nodes :
         if last.name in node.name:
             print(node.name)
@@ -66,8 +66,8 @@ if __name__ == '__main__':
     out_name = '{}{}'.format(last.name, out_arg)
     out_node = graph.get_tensor_by_name(out_name + ':0')
 
-    with tf.Session(graph=graph) as sess:
-        init_op = tf.global_variables_initializer()
+    with tf.compat.v1.Session(graph=graph) as sess:
+        init_op = tf.compat.v1.global_variables_initializer()
         sess.run(init_op)
         inValue = np.random.rand(*shape)
         out = sess.run(out_node, feed_dict={

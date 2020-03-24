@@ -40,7 +40,7 @@ class NNImageOps:
         if filter_size_val is not None:
             self.filter_size = filter_size_val
         # filter/kernel: [filter_height, filter_width, in_channels, out_channels]
-        self.filter = tf.Variable(tf.random_normal(self.filter_size), name="filterW" + str(self.node_num),
+        self.filter = tf.Variable(tf.random.normal(self.filter_size), name="filterW" + str(self.node_num),
                                   dtype=tf.float32)
 
     def set_stride_size(self, stride_val):
@@ -53,7 +53,7 @@ class NNImageOps:
         self.rate = rate
 
     def set_pointwise_filter(self, pointwise_filter):
-        self.pointwise_filter = tf.Variable(tf.random_normal(pointwise_filter), name="pointwise_filterW" + str(self.node_num),
+        self.pointwise_filter = tf.Variable(tf.random.normal(pointwise_filter), name="pointwise_filterW" + str(self.node_num),
                                   dtype=tf.float32)
 
     def execute(self, some_op):
@@ -67,7 +67,7 @@ class NNImageOps:
             return method()
 
     def execute_avg_pool(self):
-        return tf.nn.avg_pool(self.inp, ksize=self.kernel_size, strides=self.strides, padding=self.padding,
+        return tf.nn.avg_pool2d(input=self.inp, ksize=self.kernel_size, strides=self.strides, padding=self.padding,
                               name="avg_pool" + str(self.node_num))
 
     def execute_avg_pool3d(self):
@@ -76,13 +76,13 @@ class NNImageOps:
 
     def execute_conv2d(self):
         self.set_filter_size()
-        return tf.nn.conv2d(self.inp, self.filter, self.strides, self.padding, name="conv2d" + str(self.node_num))
+        return tf.nn.conv2d(input=self.inp, filters=self.filter, strides=self.strides, padding=self.padding, name="conv2d" + str(self.node_num))
 
     def execute_conv3d(self):
         return tf.nn.conv3d(self.inp, self.filter, self.strides, self.padding, name="conv3d" + str(self.node_num))
 
     def execute_max_pool(self):
-        return tf.nn.max_pool(self.inp, self.kernel_size, self.strides, self.padding,
+        return tf.nn.max_pool2d(input=self.inp, ksize=self.kernel_size, strides=self.strides, padding=self.padding,
                               name="max_pool" + str(self.node_num))
 
     def execute_conv2d_transpose(self):
@@ -94,16 +94,16 @@ class NNImageOps:
                                              name="atrous_conv2d_transpose" + str(self.node_num))
 
     def execute_conv1d(self):
-        return tf.nn.conv1d(self.inp, self.filter, self.strides, self.padding,
+        return tf.nn.conv1d(input=self.inp, filters=self.filter, stride=self.strides, padding=self.padding,
                             name="conv1d" + str(self.node_num))
 
     def execute_depthwise_conv2d(self):
-        return tf.nn.depthwise_conv2d(self.inp, self.filter, self.strides, self.padding, self.rate,
+        return tf.nn.depthwise_conv2d(input=self.inp, filter=self.filter, strides=self.strides, padding=self.padding, dilations=self.rate,
                                       name="depthwise_conv2d" + str(self.node_num))
 
     def execute_separable_conv2d(self):
-        return tf.nn.separable_conv2d(self.inp, self.filter, self.pointwise_filter, self.strides, self.padding,
-                                      self.rate, name="separable_conv2d" + str(self.node_num))
+        return tf.nn.separable_conv2d(input=self.inp, depthwise_filter=self.filter, pointwise_filter=self.pointwise_filter, strides=self.strides, padding=self.padding,
+                                      dilations=self.rate, name="separable_conv2d" + str(self.node_num))
 
     def flatten_convolution(self, tensor_in):
         tensor_in_shape = tensor_in.get_shape()

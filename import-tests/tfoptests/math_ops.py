@@ -52,7 +52,7 @@ class DifferentiableMathOps:
         '''
 
     def execute_ceil(self):
-        return tf.ceil(self.a, name="ceil" + str(self.node_num))
+        return tf.math.ceil(self.a, name="ceil" + str(self.node_num))
 
     def execute_cos(self):
         return tf.cos(self.a, name="cos" + str(self.node_num))
@@ -76,46 +76,46 @@ class DifferentiableMathOps:
         return tf.atanh(self.a, name="atanh" + str(self.node_num))
 
     def execute_count_nonzero(self):
-        return tf.count_nonzero(self.a, name="count_nonzero" + str(self.node_num))
+        return tf.math.count_nonzero(self.a, name="count_nonzero" + str(self.node_num))
 
     def execute_cross(self):
-        return tf.cross(self.a, self.b, name="cross" + str(self.node_num))
+        return tf.linalg.cross(self.a, self.b, name="cross" + str(self.node_num))
 
     def execute_cumprod(self):
-        return tf.cumprod(self.a, name="cumprod" + str(self.node_num))
+        return tf.math.cumprod(self.a, name="cumprod" + str(self.node_num))
 
     def execute_cumsum(self):
         return tf.cumsum(self.a, name="cumsum" + str(self.node_num), axis=self.extra['axis'], exclusive=self.extra['exclusive'], reverse=self.extra['reverse'] )
 
     def execute_prod(self):
-        return tf.cumprod(self.a, name="cumsum" + str(self.node_num), axis=self.extra['axis'], exclusive=self.extra['exclusive'], reverse=self.extra['reverse'] )
+        return tf.math.cumprod(self.a, name="cumsum" + str(self.node_num), axis=self.extra['axis'], exclusive=self.extra['exclusive'], reverse=self.extra['reverse'] )
 
     def execute_exp(self):
         return tf.exp(self.a, name='exp' + str(self.node_num))
 
     def execute_log(self):
-        return tf.log(self.a, name='log' + str(self.node_num))
+        return tf.math.log(self.a, name='log' + str(self.node_num))
 
     def execute_log1p(self):
-        return tf.log1p(self.a, name='log1p' + str(self.node_num))
+        return tf.math.log1p(self.a, name='log1p' + str(self.node_num))
 
     def execute_mod(self):
-        return tf.mod(self.a, self.b, name='mode' + str(self.node_num))
+        return tf.math.mod(self.a, self.b, name='mode' + str(self.node_num))
 
     def execute_erf(self):
-        return tf.erf(self.a, name='erf' + str(self.node_num))
+        return tf.math.erf(self.a, name='erf' + str(self.node_num))
 
     def execute_diag(self):
-        return tf.diag(self.a, name="diag" + str(self.node_num))
+        return tf.linalg.tensor_diag(self.a, name="diag" + str(self.node_num))
 
     def execute_diag_part(self):
-        return tf.diag_part(self.a, name="diag_part" + str(self.node_num))
+        return tf.linalg.tensor_diag_part(self.a, name="diag_part" + str(self.node_num))
 
     def execute_elu(self):
         return tf.nn.elu(self.a, name="elu" + str(self.node_num))
 
     def execute_expm(self):
-        return tf.expm1(self.a, name="expm" + str(self.node_num))
+        return tf.math.expm1(self.a, name="expm" + str(self.node_num))
 
     def execute_floor(self):
         return tf.floor(self.a, name="floor" + str(self.node_num))
@@ -127,16 +127,16 @@ class DifferentiableMathOps:
         return tf.sinh(self.a, name="sinh" + str(self.node_num))
 
     def execute_mean(self):
-        return tf.metrics.mean(self.a, self.b, name="mean" + str(self.node_num))
+        return tf.compat.v1.metrics.mean(self.a, self.b, name="mean" + str(self.node_num))
 
     def execute_log_sigmoid(self):
-        return tf.log_sigmoid(self.a, name="log_sigmoid" + str(self.node_num))
+        return tf.math.log_sigmoid(self.a, name="log_sigmoid" + str(self.node_num))
 
     def execute_atan2(self):
         return tf.atan2(self.a, self.b, name="atan2-" + str(self.node_num))
 
     def execute_div(self):
-        return tf.div(self.a, self.b, name="div-" + str(self.node_num))
+        return tf.compat.v1.div(self.a, self.b, name="div-" + str(self.node_num))
 
     def execute_equal(self):
         return tf.equal(self.a, self.b, name="equal-" + str(self.node_num))
@@ -184,7 +184,7 @@ class DifferentiableMathOps:
         return tf.logical_or(self.a, self.b, name="logicalor" + str(self.node_num))
 
     def execute_logicalxor(self):
-        return tf.logical_xor(self.a, self.b, name="logicalxor" + str(self.node_num))
+        return tf.math.logical_xor(self.a, self.b, name="logicalxor" + str(self.node_num))
 
     def execute_logicaland(self):
         return tf.logical_and(self.a, self.b, name="logicaland" + str(self.node_num))
