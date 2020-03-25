@@ -275,6 +275,9 @@ public class Nd4jNamespaceGenerator {
         TypeName type;
         if(argType == DataType.ENUM){
             type = enumMapping.get(arg);
+            if(type == null){
+                throw new IllegalStateException(arg + " is using an unregistered ENUM. This is probably a bug.");
+            }
         }else{
             if(!typeMapping.containsKey(argType)){
                 return null;
