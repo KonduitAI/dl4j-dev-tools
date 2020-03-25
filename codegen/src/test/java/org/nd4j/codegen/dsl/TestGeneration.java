@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
-import org.nd4j.codegen.ops.BitwiseKt;
-import org.nd4j.codegen.ops.MathKt;
-import org.nd4j.codegen.ops.RandomKt;
+import org.nd4j.codegen.ops.RNNKt;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +24,7 @@ class TestGeneration {
         File f = testDir;
 
 //        List<NamespaceOps> list = Arrays.asList(BitwiseKt.Bitwise(), RandomKt.Random());
-        List<NamespaceOps> list = Arrays.asList(MathKt.Math());
+        List<NamespaceOps> list = Arrays.asList(RNNKt.SDRNN());
 
         for(NamespaceOps ops : list) {
             Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java");
