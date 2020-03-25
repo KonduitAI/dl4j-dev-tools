@@ -1395,3 +1395,12 @@ class OpCreator:
         if ("output_idx_type" in self.op):
             output_idx_type = self.op["output_idx_type"]
         return tf.linalg.lu(self.vars[0], output_idx_type)
+
+    def execute_triangular_solve(self):
+        return [tf.linalg.triangular_solve(self.vars[0], self.vars[1], self.op["lower"], self.op["adjoint"])]
+
+    def execute_linear_solve(self):
+        return [tf.linalg.solve(self.vars[0], self.vars[1], self.op["adjoint"])]
+
+    def execute_lstsq(self):
+        return [tf.linalg.lstsq(self.vars[0], self.vars[1], l2_regularizer = self.op["l2_regularizer"], fast = self.op["fast"])]

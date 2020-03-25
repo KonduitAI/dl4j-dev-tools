@@ -1309,6 +1309,7 @@ def test_mathtransform():
         # {"opName": "resize_bicubic", "outName": "resize_bicubic/int32", "varShapes": [[2, 5, 5, 1],[2]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"], "size":0, "align_corners":False, "half_pixel_centers":True},
         # {"opName": "resize_bicubic", "outName": "resize_bicubic/float32_1", "varShapes": [[2, 5, 5, 3],[2]],   "varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "size":100, "align_corners":False, "half_pixel_centers":False},
 
+        # TODO: more tests
         # {"opName": "resize_area", "outName": "resize_area/float32", "varShapes": [[2,5,5,3],[2]],"varTypes": ["float32","int32"], "varInit": ["uniform","uniform_int10"], "align_corners":True},
         # {"opName": "resize_area", "outName": "resize_area/float64", "varShapes": [[2, 5, 5, 1],[2]],  "varTypes": ["float64","int32"], "varInit": ["uniform","uniform_int10"], "size":10, "align_corners":True},
         # {"opName": "resize_area", "outName": "resize_area/int32", "varShapes": [[2, 5, 5, 1],[2]], "varTypes": ["int32","int32"], "varInit": ["uniform_int10","uniform_int10"], "size":0, "align_corners":False},
@@ -2243,6 +2244,22 @@ def test_mathtransform():
         #{"opName": "lu", "outName": "lu/float32_rank3", "varShapes": [[2,2,2]], "varTypes": ["float32"], "varInit": ["uniform"]},
         #{"opName": "lu", "outName": "lu/emptyArrayTest/float32", "varShapes": [[0, 2, 2]], "varTypes": ["float32"],"varInit": ["empty"]},
         #{"opName": "lu", "outName": "lu/float32_rank3_returns_int64", "varShapes": [[2,2,2]], "varTypes": ["float32"],  "varInit": ["uniform"], "output_idx_type": "int64"}
+
+        # {"opName": "triangular_solve", "outName": "triangular_solve/float32_rank2", "varShapes": [[3,3],[3,3]], "varTypes": ["float32","float32"], "varInit": ["uniform","uniform"], "lower":False,"adjoint":True},
+        # {"opName": "triangular_solve", "outName": "triangular_solve/float32_rank3", "varShapes": [[2,2,2],[2,2,2]], "varTypes": ["float32","float32"], "varInit": ["uniform","uniform"], "lower":False,"adjoint":False},
+        #{"opName": "triangular_solve", "outName": "triangular_solve/float64_rank2", "varShapes": [[3, 3], [3, 3]], "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"], "lower": False, "adjoint": True},
+        #{"opName": "triangular_solve", "outName": "triangular_solve/float64_rank3", "varShapes": [[2, 2, 2], [2, 2, 2]], "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"], "lower": False, "adjoint": False},
+        # {"opName": "triangular_solve", "outName": "triangular_solve/emptyArrayTest/float32", "varShapes": [[0, 2, 2],[0,2,2]], "varTypes": ["float32","float32"],"varInit": ["empty","empty"], "lower":True,"adjoint":True},
+        # {"opName": "triangular_solve", "outName": "triangular_solve/float32_rank3_returns_int64", "varShapes": [[2,2,2],[2,2,2]], "varTypes": ["float32","float32"],  "varInit": ["uniform","uniform"], "lower":True,"adjoint":True}
+
+        # {"opName": "lstsq", "outName": "lstsq/float32_rank2", "varShapes": [[3,3],[3,3]], "varTypes": ["float32","float32"], "varInit": ["uniform","uniform"], "l2_regularizer":0.1,"fast":True},
+
+        #{"opName": "linear_solve", "outName": "linear_solve/float32_rank2", "varShapes": [[3, 3], [3, 3]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": True},
+        #{"opName": "linear_solve", "outName": "linear_solve/float32_rank3", "varShapes": [[2, 2, 2], [2, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": False},
+        #{"opName": "linear_solve", "outName": "linear_solve/float64_rank2", "varShapes": [[3, 3], [3, 3]],  "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"], "adjoint": True},
+        #{"opName": "linear_solve", "outName": "linear_solve/float64_rank3", "varShapes": [[2, 2, 2], [2, 2, 2]],  "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"],  "adjoint": False},
+        #{"opName": "linear_solve", "outName": "linear_solve/emptyArrayTest/float32",  "varShapes": [[0, 2, 2], [0, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["empty", "empty"], "adjoint": True},
+        #{"opName": "linear_solve", "outName": "linear_solve/float32_rank3_returns_int64", "varShapes": [[2, 2, 2], [2, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": True}
      ]
 
     '''
