@@ -26,7 +26,7 @@ fun SDRNN() = Namespace("SDRNN") {
     }
 
 
-    val LSTMLayerConfig = Mixin("LSTMLayerConfig") {
+    val LSTMLayerConfig = Config("LSTMLayerConfig") {
 
         Arg(ENUM, "LSTMDataFormat") {
             possibleValues = listOf("TNS", "NST", "NTS", "T2NS");
@@ -151,6 +151,7 @@ fun SDRNN() = Namespace("SDRNN") {
     }
 
 
+
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
     Op("gru") {
         javaPackage = namespaceJavaPackage
@@ -218,7 +219,7 @@ fun SDRNN() = Namespace("SDRNN") {
         Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]" }
         Input(NUMERIC, "maxTSLength")
         useConfig(LSTMLayerWeights)
-        useMixin(LSTMLayerConfig)
+        useConfig(LSTMLayerConfig)
 
         Output(NUMERIC, "output") { description = "The layer's outputs." }
 
