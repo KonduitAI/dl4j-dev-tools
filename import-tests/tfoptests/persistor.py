@@ -161,6 +161,18 @@ class TensorFlowPersistor:
             tf.io.write_graph(graph_def, "{}/{}/".format(self.base_dir, self.save_dir),
                                  'frozen_graph.pbtxt', True)
 
+    def write_saved_model_graph(self, model_file='model.txt'):
+            graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
+            with tf.io.gfile.GFile(graph_filename, "r") as f:
+                 graph_def = tf.compat.v1.GraphDef()
+                 str_graph = f.read()
+                 pbtf.Parse(str_graph, graph_def)
+                 #tf.saved_model.save(tf.graph_util.import_graph_def(graph_def), "{}/{}/".format(self.base_dir, self.save_dir))
+                 from tensorflow.python.saved_model import builder
+                 b = builder.SavedModelBuilder("{}/{}/saved_model".format(self.base_dir, self.save_dir))
+                 b.save()
+                 print("Saved model " + self.base_dir + "/" + self.save_dir + "/saved_graph")
+
     def load_frozen_graph(self, model_file='frozen_model.pb'):
         graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
         graph = tf.Graph()
@@ -389,7 +401,9 @@ class TensorFlowPersistor:
         tf.compat.v1.reset_default_graph()
         self._freeze_n_save_graph(output_node_names=",".join(self._list_output_nodes_for_freeze_graph()))
         if isApiV2 == True:
+            # With TF2 we can export frozen or/and saved model.
             self.write_frozen_graph_txt_v2()
+            #self.write_saved_model_graph()
         else:
             self.write_frozen_graph_txt()
         if not skip_intermediate and isApiV2 == False:
