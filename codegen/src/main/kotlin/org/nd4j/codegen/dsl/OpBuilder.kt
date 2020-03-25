@@ -226,6 +226,10 @@ fun Config.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null
     if (block != null) input.block()
 
     this.addArgument(input)
+    if(dataType == DataType.ENUM){
+        Registry.registerEnum(input)
+    }
+
     return input
 }
 
