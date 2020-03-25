@@ -39,11 +39,6 @@ fun SDRNN() = Namespace("SDRNN") {
         }
 
 
-
-
-
-
-
         Arg(ENUM, "LSTMDirectionMode") {
             possibleValues = listOf("FWD", "BWD", "BS", "BC", "BE"); description = "direction <br>\n" +
                 " FWD: 0 = fwd\n" +
@@ -98,9 +93,6 @@ fun SDRNN() = Namespace("SDRNN") {
         }
 
 
-
-
-
         Arg(BOOL, "retFullSequence") { description = "indicates whether to return whole time sequence h {h_0, h_1, ... , h_sL-1}"; defaultValue = true }
         Arg(BOOL, "retLastH") {
             description = "indicates whether to return output at last time step only,\n" +
@@ -111,6 +103,8 @@ fun SDRNN() = Namespace("SDRNN") {
                     " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)";
         }
         Arg(NUMERIC, "cellClip") { description = "Cell clipping value, if it = 0 then do not apply clipping"; }
+
+        javaClassOverride =  "org.nd4j.linalg.api.ops.impl.layers.recurrent.config.LSTMLayerConfig"
 
 
     }
@@ -149,7 +143,6 @@ fun SDRNN() = Namespace("SDRNN") {
 
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.LSTMLayerWeights"
     }
-
 
 
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
