@@ -388,7 +388,10 @@ class TensorFlowPersistor:
         self._save_node_dtypes(dtypesToSave)
         tf.compat.v1.reset_default_graph()
         self._freeze_n_save_graph(output_node_names=",".join(self._list_output_nodes_for_freeze_graph()))
-        self.write_frozen_graph_txt_v2()
+        if isApiV2 == True:
+            self.write_frozen_graph_txt_v2()
+        else:
+            self.write_frozen_graph_txt()
         if not skip_intermediate and isApiV2 == False:
             second_pass_dict = self._save_intermediate_nodes(self._placeholder_name_value_dict)
             # assert second_pass_dict.keys() == first_pass_dict.keys()
