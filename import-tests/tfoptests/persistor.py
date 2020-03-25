@@ -15,9 +15,11 @@ import traceback
 from tensorflow.python.tools import freeze_graph
 from google.protobuf import text_format as pbtf
 
-BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples' + tf.version.VERSION
 isApiV2 = tf.version.VERSION.startswith("2.")
-
+if isApiV2:
+    BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples' + tf.version.VERSION
+else:
+    BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
 
 class TensorFlowPersistor:
     '''
