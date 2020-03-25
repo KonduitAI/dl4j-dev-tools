@@ -129,23 +129,31 @@ class TensorFlowPersistor:
             print(input_checkpoint)
         output_graph = "{}/{}/frozen_model.pb".format(self.base_dir, self.save_dir)
         input_graph = "{}/{}/model.txt".format(self.base_dir, self.save_dir)
-        """freeze_graph.freeze_graph(input_graph=input_graph,
-                                  input_saver="",
-                                  input_checkpoint=input_checkpoint,
-                                  output_graph=output_graph,
-                                  input_binary=False,
-                                  output_node_names=output_node_names,
-                                  restore_op_name=restore_op_name,
-                                  filename_tensor_name=filename_tensor_name,
-                                  clear_devices=True,
-                                  initializer_nodes="")"""
+        if isApiV2 == False:
+            freeze_graph.freeze_graph(input_graph=input_graph,
+                                      input_saver="",
+                                      input_checkpoint=input_checkpoint,
+                                      output_graph=output_graph,
+                                      input_binary=False,
+                                      output_node_names=output_node_names,
+                                      restore_op_name=restore_op_name,
+                                      filename_tensor_name=filename_tensor_name,
+                                      clear_devices=True,
+                                      initializer_nodes="")
 
-    def write_frozen_graph_txt(self, model_file='model.txt'):
+    def write_frozen_graph_txt(self, model_file='frozen_model.pb'):
+        graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
+        with tf.io.gfile.GFile(graph_filename, "rb") as f:
+            graph_def = tf.compat.v1.GraphDef()
+            graph_def.ParseFromString(f.read())
+            tf.io.write_graph(graph_def, "{}/{}/".format(self.base_dir, self.save_dir),
+                                 'frozen_graph.pbtxt', True)
+
+    def write_frozen_graph_txt_v2(self, model_file='model.txt'):
         graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
         print("Opening " + graph_filename)
         with tf.io.gfile.GFile(graph_filename, "r") as f:
             graph_def = tf.compat.v1.GraphDef()
-            #graph_def.ParseFromString(f.read())
             str_graph = f.read()
             pbtf.Parse(str_graph, graph_def)
             tf.io.write_graph(graph_def, "{}/{}/".format(self.base_dir, self.save_dir),
@@ -156,10 +164,11 @@ class TensorFlowPersistor:
         graph = tf.Graph()
         with tf.io.gfile.GFile(graph_filename, "rb") as f:
             graph_def = tf.compat.v1.GraphDef()
-            #graph_def.ParseFromString(f.read())
-            str_graph = f.read()
-
-            pbtf.Parse(str_graph, graph_def)
+            if isApiV2 == False:
+                graph_def.ParseFromString(f.read())
+            else:
+                str_graph = f.read()
+                pbtf.Parse(str_graph, graph_def)
         with graph.as_default():
             # tf.import_graph_def(graph_def, name=None)
             tf.import_graph_def(graph_def, name="")
@@ -329,16 +338,10 @@ class TensorFlowPersistor:
                 sess.run(init)
                 tf.compat.v1.disable_eager_execution()
                 predictions = sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
-                """if isApiV2:
-                    self._save_graph_v2(self, tf.compat.v1.train.Saver())
-                else:"""
                 self._save_graph(sess, tf.compat.v1.train.Saver())
         else:
             all_saver = tf.compat.v1.train.Saver()
             predictions = self._sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
-            """if isApiV2:
-                self._save_graph_v2(self._sess.graph_def, tf.compat.v1.train.Saver())
-            else:"""
             self._save_graph(self._sess, all_saver, tf.compat.v1.train.Saver())
             self._sess.close
         flattened_predictions = []
@@ -383,9 +386,9 @@ class TensorFlowPersistor:
         self._save_node_dtypes(dtypesToSave)
         tf.compat.v1.reset_default_graph()
         self._freeze_n_save_graph(output_node_names=",".join(self._list_output_nodes_for_freeze_graph()))
-        self.write_frozen_graph_txt()
-        #if not skip_intermediate:
-            #second_pass_dict = self._save_intermediate_nodes(self._placeholder_name_value_dict)
+        self.write_frozen_graph_txt_v2()
+        if not skip_intermediate and isApiV2 == False:
+            second_pass_dict = self._save_intermediate_nodes(self._placeholder_name_value_dict)
             # assert second_pass_dict.keys() == first_pass_dict.keys()
             # for a_output in second_pass_dict.keys():
             #    np.testing.assert_equal(first_pass_dict[a_output], second_pass_dict[a_output])
