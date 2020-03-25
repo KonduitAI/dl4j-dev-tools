@@ -5,7 +5,8 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
-fun SDRNN() =  Namespace("SDRNN") {
+fun SDRNN() = Namespace("SDRNN") {
+
 
     val LSTMConfiguration = Config("LSTMConfiguration") {
 
@@ -16,6 +17,7 @@ fun SDRNN() =  Namespace("SDRNN") {
                 " NTS -> [batchSize, timeSteps, inSize]<br>"
         }
 
+
         Arg(BOOL, "peepHole") { description = "Whether to provide peephole connections"; }
         Arg(NUMERIC, "forgetBias") { description = "The bias added to forget gates in order to reduce the scale of forgetting in the beginning of the training."; }
         Arg(NUMERIC, "clippingCellValue") { description = "The bias added to forget gates in order to reduce the scale of forgetting in the beginning of the training."; }
@@ -23,7 +25,98 @@ fun SDRNN() =  Namespace("SDRNN") {
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.config.LSTMConfiguration"
     }
 
-    val GRUWeights = Config("GRUWeights"){
+
+    val LSTMLayerConfig = Mixin("LSTMLayerConfig") {
+
+        Arg(ENUM, "LSTMDataFormat") {
+            possibleValues = listOf("TNS", "NST", "NTS", "T2NS");
+            description = "for unidirectional:\n" +
+                    "  TNS: shape [timeLength, numExamples, inOutSize] - sometimes referred to as \"time major\"<br>\n" +
+                    "  NST: shape [numExamples, inOutSize, timeLength]<br>\n" +
+                    "  NTS: shape [numExamples, timeLength, inOutSize] - TF \"time_major=false\" layout<br>\n" +
+                    " for bidirectional:\n" +
+                    "   T2NS: 3 = [timeLength, 2, numExamples, inOutSize] (for ONNX)"
+        }
+
+
+
+
+
+
+
+        Arg(ENUM, "LSTMDirectionMode") {
+            possibleValues = listOf("FWD", "BWD", "BS", "BC", "BE"); description = "direction <br>\n" +
+                " FWD: 0 = fwd\n" +
+                " BWD: 1 = bwd\n" +
+                " BS: 2 = bidirectional sum\n" +
+                " BC: 3 = bidirectional concat\n" +
+                " BE: 4 = bidirectional extra output dim (in conjunction with format dataFormat = 3)"
+        }
+
+        Arg(ENUM, "gateAct") {
+            possibleValues = listOf("TANH",
+                    "RELU",
+                    "SIGMOID",
+                    "AFFINE",
+                    "LEAKY_RELU",
+                    "THRESHHOLD_RELU",
+                    "SCALED_TAHN",
+                    "HARD_SIGMOID",
+                    "ELU",
+                    "SOFTSIGN",
+                    "SOFTPLUS"); description = "Activations"
+        }
+
+
+        Arg(ENUM, "cellAct") {
+            possibleValues = listOf("TANH",
+                    "RELU",
+                    "SIGMOID",
+                    "AFFINE",
+                    "LEAKY_RELU",
+                    "THRESHHOLD_RELU",
+                    "SCALED_TAHN",
+                    "HARD_SIGMOID",
+                    "ELU",
+                    "SOFTSIGN",
+                    "SOFTPLUS"); description = "Activations"
+        }
+
+
+        Arg(ENUM, "outAct") {
+            possibleValues = listOf("TANH",
+                    "RELU",
+                    "SIGMOID",
+                    "AFFINE",
+                    "LEAKY_RELU",
+                    "THRESHHOLD_RELU",
+                    "SCALED_TAHN",
+                    "HARD_SIGMOID",
+                    "ELU",
+                    "SOFTSIGN",
+                    "SOFTPLUS"); description = "Activations"
+        }
+
+
+
+
+
+        Arg(BOOL, "retFullSequence") { description = "indicates whether to return whole time sequence h {h_0, h_1, ... , h_sL-1}"; defaultValue = true }
+        Arg(BOOL, "retLastH") {
+            description = "indicates whether to return output at last time step only,\n" +
+                    " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)";
+        }
+        Arg(BOOL, "retLastC") {
+            description = "indicates whether to return cells state at last time step only,\n" +
+                    " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)";
+        }
+        Arg(NUMERIC, "cellClip") { description = "Cell clipping value, if it = 0 then do not apply clipping"; }
+
+
+    }
+
+
+    val GRUWeights = Config("GRUWeights") {
         Input(NUMERIC, "ruWeight")
         Input(NUMERIC, "cWeight")
         Input(NUMERIC, "ruBias")
@@ -31,13 +124,13 @@ fun SDRNN() =  Namespace("SDRNN") {
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.GRUWeights"
     }
 
-    val SRUWeights = Config("SRUWeights"){
+    val SRUWeights = Config("SRUWeights") {
         Input(NUMERIC, "weights")
         Input(NUMERIC, "bias")
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.SRUWeights"
     }
 
-    val LSTMWeights = Config("LSTMWeights"){
+    val LSTMWeights = Config("LSTMWeights") {
         Input(NUMERIC, "ruWeight")
         Input(NUMERIC, "inputPeepholeWeights")
         Input(NUMERIC, "forgetPeepholeWeights")
@@ -45,6 +138,16 @@ fun SDRNN() =  Namespace("SDRNN") {
         Input(NUMERIC, "bias")
 
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.LSTMWeights"
+    }
+
+    val LSTMLayerWeights = Config("LSTMLayerWeights") {
+        Input(NUMERIC, "iWeights")
+        Input(NUMERIC, "iInputPeepholeWeights")
+        Input(NUMERIC, "iForgetPeepholeWeights")
+        Input(NUMERIC, "iOutputPeepholeWeights")
+        Input(NUMERIC, "iBias")
+
+        javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.LSTMLayerWeights"
     }
 
 
@@ -86,9 +189,9 @@ fun SDRNN() =  Namespace("SDRNN") {
 
 
 
-    Op("lstmLayer") {
+    Op("lstmblock") {
         javaPackage = namespaceJavaPackage
-        javaOpClass = "LSTMLayer"
+        javaOpClass = "LSTMBlock"
         Input(NUMERIC, "maxTSLength")
         Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
         Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]" }
@@ -100,7 +203,28 @@ fun SDRNN() =  Namespace("SDRNN") {
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-             The LSTM layer.  Does multiple time steps.
+             The LSTM block
+            """.trimIndent()
+        }
+    }
+
+
+
+    Op("lstmlayer") {
+        javaPackage = namespaceJavaPackage
+        javaOpClass = "LSTMLayer"
+        Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
+        Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]" }
+        Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]" }
+        Input(NUMERIC, "maxTSLength")
+        useConfig(LSTMLayerWeights)
+        useMixin(LSTMLayerConfig)
+
+        Output(NUMERIC, "output") { description = "The layer's outputs." }
+
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+             The LSTM layer
             """.trimIndent()
         }
     }
@@ -129,7 +253,7 @@ fun SDRNN() =  Namespace("SDRNN") {
         javaOpClass = "SRU"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "initialC") { description = "Initial cell state, with shape [batchSize, inSize]" }
-        Input(NUMERIC, "mask") { description = "An optional dropout mask, with shape [batchSize, inSize]"; defaultValue=null }
+        Input(NUMERIC, "mask") { description = "An optional dropout mask, with shape [batchSize, inSize]"; defaultValue = null }
 
         useConfig(SRUWeights)
 
