@@ -40,7 +40,7 @@ fun BaseOps() = Namespace("BaseOps"){
 }
 
 fun Linalg() = Namespace("Linalg"){
-    Alias(BaseOps(), "mmul")
+    Alias(BaseOps().op("mmul"))
 }
 ```
 
