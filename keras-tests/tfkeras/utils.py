@@ -1,11 +1,24 @@
 import os
 import itertools
 import inspect
+import sys
+
 
 dl4j_test_resources = os.environ.get('DL4J_TEST_RESOURCES')
 
 if dl4j_test_resources is None:
-    raise Exception('Environment variable not set: DL4J_TEST_RESOURCES')
+    # Try and auto detect dl4j_test_resources.
+    # We are assuming that dl4j-test-resources and dl4j-dev-tools
+    # are cloned in parallel (i.e they are in the same parent directory)
+    # NOTE: code should be adapted in case this file is refactored
+    dirname = os.path.dirname
+    dl4j_test_resources = os.path.join(
+        dirname(dirname(dirname(dirname(os.path.abspath(__file__))))),
+        'dl4j-test-resources')
+    if os.path.isdir(dl4j_test_resources):
+        print('Aoto detected dl4j-test-resources: ' + dl4j_test_resources)
+    else:
+        raise Exception('Environment variable not set: DL4J_TEST_RESOURCES')
 
 tfkeras_dir = os.path.join(dl4j_test_resources,
                            'src', 'main', 'resources',
