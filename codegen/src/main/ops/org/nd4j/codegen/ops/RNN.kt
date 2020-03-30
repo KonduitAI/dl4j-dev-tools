@@ -40,12 +40,12 @@ fun SDRNN() = Namespace("SDRNN") {
 
 
         Arg(ENUM, "LSTMDirectionMode") {
-            possibleValues = listOf("FWD", "BWD", "BS", "BC", "BE"); description = "direction <br>\n" +
+            possibleValues = listOf("FWD", "BWD", "BIDIR_SUM", "BIDIR_CONCAT", "BIDIR_EXTRA_DIM"); description = "direction <br>\n" +
                 " FWD: 0 = fwd\n" +
                 " BWD: 1 = bwd\n" +
-                " BS: 2 = bidirectional sum\n" +
-                " BC: 3 = bidirectional concat\n" +
-                " BE: 4 = bidirectional extra output dim (in conjunction with format dataFormat = 3)"
+                " BIDIR_SUM: 2 = bidirectional sum\n" +
+                " BIDIR_CONCAT: 3 = bidirectional concat\n" +
+                " BIDIR_EXTRA_DIM: 4 = bidirectional extra output dim (in conjunction with format dataFormat = 3)"
         }
 
         Arg(ENUM, "gateAct") {
@@ -96,15 +96,23 @@ fun SDRNN() = Namespace("SDRNN") {
         Arg(BOOL, "retFullSequence") { description = "indicates whether to return whole time sequence h {h_0, h_1, ... , h_sL-1}"; defaultValue = true }
         Arg(BOOL, "retLastH") {
             description = "indicates whether to return output at last time step only,\n" +
-                    " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)";
+                    " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)"; defaultValue = false
         }
         Arg(BOOL, "retLastC") {
             description = "indicates whether to return cells state at last time step only,\n" +
-                    " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)";
+                    " in this case shape would be [bS, nOut] (exact shape depends on dataFormat argument)"; defaultValue = false
         }
-        Arg(NUMERIC, "cellClip") { description = "Cell clipping value, if it = 0 then do not apply clipping"; }
+        Arg(NUMERIC, "cellClip") { description = "Cell clipping value, if it = 0 then do not apply clipping"; defaultValue = 0.0}
 
-        javaClassOverride =  "org.nd4j.linalg.api.ops.impl.layers.recurrent.config.LSTMLayerConfig"
+        Arg(NUMERIC, "gateAlpha") {defaultValue=0.0}
+        Arg(NUMERIC, "gateBeta") {defaultValue=0.0}
+        Arg(NUMERIC, "cellAlpha") {defaultValue=0.0}
+        Arg(NUMERIC, "cellBeta") {defaultValue=0.0}
+        Arg(NUMERIC, "outAlpha") {defaultValue=0.0}
+        Arg(NUMERIC, "outBeta") {defaultValue=0.0}
+
+
+       javaClassOverride =  "org.nd4j.linalg.api.ops.impl.layers.recurrent.config.LSTMLayerConfig"
 
 
     }
@@ -135,11 +143,27 @@ fun SDRNN() = Namespace("SDRNN") {
     }
 
     val LSTMLayerWeights = Config("LSTMLayerWeights") {
-        Input(NUMERIC, "iWeights")
-        Input(NUMERIC, "iInputPeepholeWeights")
-        Input(NUMERIC, "iForgetPeepholeWeights")
-        Input(NUMERIC, "iOutputPeepholeWeights")
-        Input(NUMERIC, "iBias")
+        Input(NUMERIC, "inputWeights") {description="input weights Wx:\n" +
+                " 1) shapes [nIn, 4*nOut] for FWD,BWD " +
+                " 2) shapes [2, nIn, 4*nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
+        Input(NUMERIC, "recurrentWeights") {description="// recurrent weights Wr:\n" +
+                " 1) shapes[nIn, 4*nOut] for FWD, BWD " +
+                " 2) shapes [2, nIn, 4*nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
+        Input(NUMERIC, "biases") {description="biases\n"+
+                " 1) shapes [4*nOut] for FWD, BWD " +
+                " 2) shapes [2, 4*nOut] for BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"
+                  defaultValue=null}
+        Arg(INT,"seqLen") {description="seqLen vector with shape [bS]"}
+        Input(NUMERIC, "hI") {description="initial output"
+                " 1) shapes [bS, nOut] for FWD,BWD " +
+                " 2) shapes [2, bS, nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
+        Input(NUMERIC, "cI") {description="initial cell state"
+                 " 1) shapes [bS, nOut] for FWD,BWD " +
+                 " 2) shapes [2, bS, nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
+        Input(NUMERIC, "peepholeWeights") {description="peephole weights Wp:\n" +
+                "  1) [3*nOut]    when directionMode <  2\n" +
+                "  2) [2, 3*nOut] when directionMode >= 2"; defaultValue=null}
+
 
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.LSTMLayerWeights"
     }
@@ -186,10 +210,10 @@ fun SDRNN() = Namespace("SDRNN") {
     Op("lstmblock") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "LSTMBlock"
-        Input(NUMERIC, "maxTSLength")
+        Input(NUMERIC, "maxTSLength") {defaultValue=null}
         Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
-        Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]" }
-        Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]" }
+        Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]" ; defaultValue=null}
+        Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]" ; defaultValue=null }
         useConfig(LSTMWeights)
         useConfig(LSTMConfiguration)
 
@@ -210,7 +234,7 @@ fun SDRNN() = Namespace("SDRNN") {
         Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
         Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]" }
         Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]" }
-        Input(NUMERIC, "maxTSLength")
+        Input(NUMERIC, "maxTSLength") { description = "maxTSLength with shape [batchSize]" }
         useConfig(LSTMLayerWeights)
         useConfig(LSTMLayerConfig)
 
@@ -218,7 +242,24 @@ fun SDRNN() = Namespace("SDRNN") {
 
         Doc(Language.ANY, DocScope.ALL) {
             """
-             The LSTM layer
+             Long Short-Term Memory layer - Hochreiter 1997.
+             SUPPORTS following data formats:\n
+             for unidirectional: \n" +
+             TNS: shapes [timeLength, numExamples, inOutSize]\n
+             NST: shapes [numExamples, inOutSize, timeLength]\n
+             NTS: shapes [numExamples, timeLength, inOutSize]
+             for bidirectional:\n
+             T2NS: shapes [timeLength, 2, numExamples, inOutSize] (for ONNX)\n
+             SUPPORTS following direction modes:\n
+             FWD: forward
+             BWD: backward
+             BIDIR_SUM: bidirectional sum\n
+             BIDIR_CONCAT: bidirectional concat\n" +
+             BIDIR_EXTRA_DIM: bidirectional extra output dim (in conjunction with format dataFormat - T2NS)"
+             You may use different gate configurations:
+             specify gate/cell/out aplha/beta and numbers of activations for gate/cell/out described in activations enum\n
+             ("RELU","SIGMOID","AFFINE","LEAKY_RELU","THRESHHOLD_RELU","SCALED_TAHN","HARD_SIGMOID","ELU","SOFTSIGN","SOFTPLUS")\n
+             Also this layer supports MKLDNN (DNNL) and cuDNN acceleration
             """.trimIndent()
         }
     }
