@@ -1,6 +1,6 @@
 
 #pip install tf2onnx
-
+	
 cd $DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples
 
 find . -name "frozen_model.pb" -print | while read f;do
@@ -12,7 +12,8 @@ find . -name "frozen_model.pb" -print | while read f;do
 	cd $curr
 	if [ ! -z $stripped_output_name ]
         then
-	  python3 -m tf2onnx.convert --input $f --inputs in:0  --outputs $stripped_output_name:0 --output $f.onnx 2>/dev/null
+      effective_file_name="$DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples/$f"
+	  python3 -m tf2onnx.convert --input $f --inputs in:0  --outputs $stripped_output_name:0 --output $effective_file_name.onnx 2>/dev/null
 	fi
 done
 
