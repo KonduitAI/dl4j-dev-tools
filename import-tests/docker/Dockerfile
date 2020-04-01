@@ -1,5 +1,6 @@
 FROM continuumio/miniconda3:latest
-RUN conda install tensorflow=1.15.0
+#RUN conda install tensorflow=1.15.0
+RUN conda install tensorflow=2.0
 RUN conda install psutil
 ENV DL4J_TEST_RESOURCES=/dl4j-test-resources
 

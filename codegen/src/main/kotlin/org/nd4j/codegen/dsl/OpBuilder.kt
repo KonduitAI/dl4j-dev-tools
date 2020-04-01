@@ -3,6 +3,8 @@ package org.nd4j.codegen.dsl
 import org.nd4j.codegen.api.*
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.api.doc.DocSection
+import org.nd4j.codegen.ops.SDBaseOps
+import java.lang.IllegalStateException
 
 fun Namespace(name: String, block: NamespaceOps.() -> Unit): NamespaceOps {
     val ns = NamespaceOps(name)
@@ -16,6 +18,16 @@ fun Mixin(name: String, block: Mixin.() -> Unit): Mixin {
     return Mixin(name).apply(block).also {
         it.checkInvariants()
     }
+}
+
+fun NamespaceOps.Alias(ns:NamespaceOps, opName:String):Op {
+        val op:Op? = ns.op(opName)
+        op?.let {
+            this.parentNamespaceOps[ns.name]?.add(op)
+            this.ops.add(op)
+            return op
+        }
+        throw IllegalStateException("Failed to create alias for op: $opName")
 }
 
 fun NamespaceOps.Op(name: String, block: Op.() -> Unit): Op {

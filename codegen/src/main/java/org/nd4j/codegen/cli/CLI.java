@@ -1,13 +1,13 @@
 package org.nd4j.codegen.cli;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
+import com.beust.jcommander.*;
 import lombok.extern.slf4j.Slf4j;
 import org.nd4j.codegen.Namespace;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +18,21 @@ import java.util.List;
 @Slf4j
 public class CLI {
     private static final String relativePath = "nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/";
+    private static final String allProjects = "all";
+    private static final String sdProject = "sd";
+    private static final String ndProject = "nd4j";
 
+    public static class ProjectsValidator implements IParameterValidator {
+
+        @Override
+        public void validate(String name, String value) throws ParameterException {
+            if (name.equals("-projects")) {
+                if (!(value.equals(allProjects) || value.equals(ndProject) || value.equals(sdProject))) {
+                    throw new ParameterException("Wrong projects " + value + "  passed! Must be one of [all, sd, nd4j]");
+                }
+            }
+        }
+    }
 
     @Parameter(names = "-dir", description = "Root directory of deeplearning4j mono repo", required = true)
     private String repoRootDir;
@@ -26,6 +40,65 @@ public class CLI {
     @Parameter(names = "-namespaces", description = "List of namespaces to generate, or 'ALL' to generate all namespaces", required = true)
     private List<String> namespaces;
 
+    @Parameter(names = "-projects", description = "List of sub-projects - ND4J, SameDiff or both", required = false, validateWith = ProjectsValidator.class)
+    private List<String> projects;
+
+    enum NS_PROJECT {
+        ND4J,
+        SAMEDIFF;
+    }
+
+    private void generateNamespaces(NS_PROJECT project, File outputDir, String basePackage) throws IOException {
+
+        List<Namespace> usedNamespaces = new ArrayList<>();
+
+        for(String s : namespaces) {
+            if ("all".equalsIgnoreCase(s)) {
+                Collections.addAll(usedNamespaces, Namespace.values());
+                break;
+            }
+            Namespace ns = null;
+            if (project == NS_PROJECT.ND4J) {
+                ns = Namespace.fromString(s);
+                if (ns == null) {
+                    log.error("Invalid/unknown ND4J namespace provided: " + s);
+                }
+                else {
+                    usedNamespaces.add(ns);
+                }
+            }
+            else {
+                ns = Namespace.fromString(s);
+                if (ns == null) {
+                    log.error("Invalid/unknown SD namespace provided: " + s);
+                }
+                else {
+                    usedNamespaces.add(ns);
+                }
+            }
+        }
+
+        int cnt = 0;
+        for (int i = 0; i < usedNamespaces.size(); ++i) {
+            Namespace ns = usedNamespaces.get(i);
+            log.info("Starting generation of namespace: {}", ns);
+
+            String javaClassName = project == NS_PROJECT.ND4J ? ns.javaClassName() : ns.javaSameDiffClassName();
+            NamespaceOps ops = ns.getNamespace();
+
+            String basePackagePath = basePackage.replace(".", "/") + "/ops/";
+            File outputPath = new File(outputDir,  basePackagePath + javaClassName + ".java");
+            log.info("Output path: {}", outputPath.getAbsolutePath());
+
+            if (NS_PROJECT.ND4J == project)
+                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage);
+            else
+                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage,
+                        "org.nd4j.autodiff.samediff.ops.SDOps");
+            ++cnt;
+        }
+        log.info("Complete - generated {} namespaces", cnt);
+    }
 
 
     public static void main(String[] args) throws Exception {
@@ -53,32 +126,18 @@ public class CLI {
             throw new IllegalStateException("No namespaces were provided");
         }
 
-        List<Namespace> n = new ArrayList<>();
-        for(String s : namespaces){
-            if("all".equalsIgnoreCase(s)){
-                Collections.addAll(n, Namespace.values());
-                break;
+        try {
+            if (projects == null)
+                projects.add(allProjects);
+            boolean forAllProjects = projects.isEmpty() || projects.contains(allProjects);
+            if (forAllProjects || projects.contains(ndProject)) {
+                generateNamespaces(NS_PROJECT.ND4J, outputDir, "org.nd4j.linalg.factory");
             }
-
-            Namespace ns = Namespace.fromString(s);
-            if(ns == null){
-                throw new IllegalStateException("Invalid/unknown namespace provided: " + s);
+            if (forAllProjects || projects.contains(sdProject)) {
+                generateNamespaces(NS_PROJECT.SAMEDIFF, outputDir, "org.nd4j.autodiff.samediff");
             }
-            n.add(ns);
+        } catch (Exception e) {
+            log.error(e.toString());
         }
-
-        for(Namespace ns : n){
-            log.info("Starting generation of namespace: {}", ns);
-
-            NamespaceOps ops = ns.getNamespace();
-            File outputPath = new File(outputDir,  "org/nd4j/linalg/factory/ops/" + ns.javaClassName() + ".java");
-            log.info("Output path: {}", outputPath.getAbsolutePath());
-
-
-
-            Nd4jNamespaceGenerator.generate(ops, null, outputDir, ns.javaClassName());
-        }
-
-        log.info("Complete - generated {} namespaces", n.size());
     }
 }

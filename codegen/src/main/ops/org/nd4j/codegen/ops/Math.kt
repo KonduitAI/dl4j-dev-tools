@@ -4,6 +4,7 @@
 package org.nd4j.codegen.ops
 
 import org.nd4j.codegen.api.AtLeast
+import org.nd4j.codegen.api.DataType
 import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
@@ -455,6 +456,7 @@ fun Math() =  Namespace("Math"){
         Arg(INT, "rows") { description = "Number of rows" }
         Arg(INT, "cols") { description = "Number of columns" }
         Arg(DATA_TYPE, "dataType") { description = "Data type" } //TODO: Mapped DataType to INT.
+        Arg(DataType.INT, "dimensions"){ count = AtLeast(0)}
         Output(NUMERIC, "output"){ description = "Identity matrix" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -658,7 +660,9 @@ fun Math() =  Namespace("Math"){
     }
 
     Op("log", transformStrict) {
-        Input(NUMERIC, "base") { description = "Logarithm base" }
+        javaOpClass = "LogX"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        Arg(NUMERIC, "base") { description = "Logarithm base" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise logarithm function (with specified base): out = log_{base}(x)
@@ -772,7 +776,8 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "input") { description = "Input to calculate moments for" }
         Arg(INT, "axes"){ count = AtLeast(0); description = "Dimensions to perform calculation over" }
-        Output(NUMERIC, "output"){ description = "Mean and variance variables" }
+        Output(NUMERIC, "output_mean"){ description = "Mean variable" }
+        Output(NUMERIC, "output_variance"){ description = "Variance variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Calculate the mean and (population) variance for the input variable, for the specified axis
@@ -795,7 +800,8 @@ fun Math() =  Namespace("Math"){
         Input(NUMERIC, "means") { description = "Mean-value sufficient statistics: this is the SUM of all data values" }
         Input(NUMERIC, "variances") { description = "Variaance sufficient statistics: this is the squared sum of all data values" }
         Arg(NUMERIC, "shift") { description = "Shift value, possibly 0, used when calculating the sufficient statistics (for numerical stability)" }
-        Output(NUMERIC, "output"){ description = "Output variables: mean and population variance" }
+        Output(NUMERIC, "output_mean"){ description = "Mean variable" }
+        Output(NUMERIC, "output_population"){ description = "Population variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
                 Calculate the mean and variance from the sufficient statistics
@@ -1022,6 +1028,91 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Full array zero fraction array reduction operation, optionally along specified dimensions: out = (count(x == 0) / length(x))
+            """.trimIndent()
+        }
+    }
+
+    Op("listDiff") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        Input(NUMERIC, "x") { description = "Input variable X" }
+        Input(NUMERIC, "y") { description = "Input variable Y" }
+        Output(NUMERIC, "output1"){ description = "Calculated difference between X and Y" }
+        Output(NUMERIC, "output2"){ description = "Calculated difference between X and Y" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Calculates difference between inputs X and Y.
+            """.trimIndent()
+        }
+    }
+
+    Op("meshgrid") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "MeshGrid"
+        Arg(BOOL, "cartesian")
+        Input(NUMERIC, "inputs") { count = AtLeast(0) }
+
+        Output(NUMERIC, "output1"){ description = "Output array" }
+        Output(NUMERIC, "output2"){ description = "Output array" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Broadcasts parameters for evaluation on an N-D grid.
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShift") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "ShiftBits"
+        Input(NUMERIC, "x") {description = "input"}
+        Input(NUMERIC, "shift") {description = "shift value"}
+        Output(NUMERIC, "output") {description = "shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Bit shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRight") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "RShiftBits"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "shift") {description = "shift argument"}
+        Output(NUMERIC, "output") {description = "shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Right bit shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRotl") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicShiftBits"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "shift") {description = "shift argy=ument"}
+        Output(NUMERIC, "output") {description = "shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Cyclic bit shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("bitShiftRotr") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CyclicRShiftBits"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "shift") {description = "Shift argument"}
+        Output(NUMERIC, "output") {description = "Shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Cyclic right shift operation
             """.trimIndent()
         }
     }
