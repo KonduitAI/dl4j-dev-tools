@@ -153,13 +153,6 @@ fun SDRNN() = Namespace("SDRNN") {
                 " 1) shapes [4*nOut] for FWD, BWD " +
                 " 2) shapes [2, 4*nOut] for BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"
                   defaultValue=null}
-        Arg(INT,"seqLen") {description="seqLen vector with shape [bS]"}
-        Input(NUMERIC, "hI") {description="initial output"
-                " 1) shapes [bS, nOut] for FWD,BWD " +
-                " 2) shapes [2, bS, nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
-        Input(NUMERIC, "cI") {description="initial cell state"
-                 " 1) shapes [bS, nOut] for FWD,BWD " +
-                 " 2) shapes [2, bS, nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
         Input(NUMERIC, "peepholeWeights") {description="peephole weights Wp:\n" +
                 "  1) [3*nOut]    when directionMode <  2\n" +
                 "  2) [2, 3*nOut] when directionMode >= 2"; defaultValue=null}
@@ -228,7 +221,7 @@ fun SDRNN() = Namespace("SDRNN") {
 
 
 
-    Op("lstmlayer") {
+    Op("lstmLayer") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "LSTMLayer"
         Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
