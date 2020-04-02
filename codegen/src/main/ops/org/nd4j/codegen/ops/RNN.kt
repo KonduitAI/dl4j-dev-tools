@@ -232,9 +232,9 @@ fun SDRNN() = Namespace("SDRNN") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "LSTMLayer"
         Input(NUMERIC, "x") { description = " Input, with shape dependent on the data format (in config)." }
-        Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]" }
-        Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]" }
-        Input(NUMERIC, "maxTSLength") { description = "maxTSLength with shape [batchSize]" }
+        Input(NUMERIC, "cLast") { description = "Previous/initial cell state, with shape [batchSize, numUnits]"; defaultValue=null }
+        Input(NUMERIC, "yLast") { description = "Previous/initial cell output, with shape [batchSize, numUnits]"; defaultValue=null }
+        Input(NUMERIC, "maxTSLength") { description = "maxTSLength with shape [batchSize]"; defaultValue=null }
         useConfig(LSTMLayerWeights)
         useConfig(LSTMLayerConfig)
 
