@@ -46,7 +46,7 @@ val scalar = Mixin("scalar"){
 val reduce = Mixin("reduce"){
     legacy = true
     Input(DataType.NUMERIC, "in") { description = "Input variable" }
-    Arg(DataType.INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+    Arg(DataType.INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
     Output(DataType.NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
 }
 
@@ -70,7 +70,7 @@ val reduce3 = Mixin("reduce3"){
     javaPackage = "org.nd4j.linalg.api.ops.impl.reduce3"
     Input(DataType.NUMERIC, "x") { description = "Input variable x" }
     Input(DataType.NUMERIC, "y") { description = "Input variable y" }
-    Arg(DataType.INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to calculate %OPNAME% over" }
+    Arg(DataType.INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to calculate %OPNAME% over" }
     Output(DataType.NUMERIC, "output"){ description = "Output variable" }
 }
 
@@ -79,7 +79,7 @@ val indexAccum = Mixin("indexAccum"){
     javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
     val input = Input(DataType.NUMERIC, "in") { description = "Input variable" }
     val keepDims = Arg(DataType.BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as length 1). False: remove the reduction dimensions"; defaultValue = false }
-    val dims = Arg(DataType.INT, "dimensions"){ count = AtLeast(1); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
+    val dims = Arg(DataType.INT, "dimensions"){ count = AtLeast(1); isVargarg = true; description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
     Output(DataType.NUMERIC, "output"){ description = "Reduced array of rank (input rank - num dimensions)" }
 
     Signature(input, dims)

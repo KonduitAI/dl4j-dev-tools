@@ -104,9 +104,9 @@ fun SDLoss() =  Namespace("SDLoss"){
         javaOpClass = "LogLoss"
         Input(NUMERIC, "label") { description = "Label array" }
         Input(NUMERIC, "predictions") { description = "Predictions array" }
-        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used" }
+        Input(NUMERIC, "weights") { description = "Weights array. May be null. If null, a weight of 1.0 is used"; defaultValue = null }
         Arg(LOSS_REDUCE, "lossReduce") { description = "Reduction type for the loss. See {@link LossReduce} for more details. Default: {@link LossReduce#MEAN_BY_NONZERO_WEIGHT_COUNT}"; defaultValue = LossReduce.MEAN_BY_NONZERO_WEIGHT_COUNT}
-        Arg(FLOATING_POINT, "epsilon") { description = "epsilon" }
+        Arg(FLOATING_POINT, "epsilon") { description = "epsilon"; defaultValue = 0.0 }
         Output(NUMERIC, "output"){ description = "Log loss " }
         Doc(Language.ANY, DocScope.ALL){
             """
