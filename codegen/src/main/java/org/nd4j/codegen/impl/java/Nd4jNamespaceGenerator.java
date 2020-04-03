@@ -105,7 +105,7 @@ public class Nd4jNamespaceGenerator {
 
     private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
                                           String parentClass) throws IOException, ClassNotFoundException {
-        boolean isBaseSameDiff = StringUtils.equals("SDOps", className);
+        boolean isBaseSameDiff = StringUtils.equals("SDBaseOps", className);
         boolean isSameDiff = StringUtils.isNotEmpty(parentClass);
         boolean isLoss = StringUtils.equals("SDLoss", className);
 
@@ -121,7 +121,7 @@ public class Nd4jNamespaceGenerator {
             addSameDiffConstructor(builder);
         }
         else if (isBaseSameDiff) {
-            TypeSpec.classBuilder(className).addField(TypeName.OBJECT, "sd", Modifier.PROTECTED);
+            builder.addField(TypeName.get(SameDiff.class), "sd", Modifier.PROTECTED);
             addBaseSameDiffConstructor(builder);
         }
         else
@@ -247,7 +247,7 @@ public class Nd4jNamespaceGenerator {
             c.addJavadoc("\n");
         }
         if (withName) {
-            if (op.getOutputs().size() == 1)
+            if (op.getOutputs().size() == 1 && !op.getOutputs().get(0).getMultiOutput())
                 c.addJavadoc("@param name name May be null. Name for the output variable\n");
             else
                 c.addJavadoc("@param names names May be null. Arrays of names for the output variables.\n");
@@ -280,7 +280,7 @@ public class Nd4jNamespaceGenerator {
         //Outputs:
         List<Output> outputs = op.getOutputs();
         if(!outputs.isEmpty()){
-            if(outputs.size() == 1){
+            if(outputs.size() == 1 && !outputs.get(0).getMultiOutput()){
                 Output o = outputs.get(0);
                 c.addJavadoc("@return " + o.getName() + " " + (o.getDescription() == null ? "" : DocTokens.processDocText(o.getDescription(), op, DocTokens.GenerationType.ND4J)) + " (" + o.getType() + " type)\n");
             } else {
@@ -294,14 +294,24 @@ public class Nd4jNamespaceGenerator {
         List<String> inNames = new ArrayList<>();
 
         List<Parameter> params = s.getParameters();
+
+        if(op.getArgsFirst()){
+            //Assuming sort is stable (doesn't change order of equal elements)
+            params.sort((p1,p2) -> Boolean.compare(p1 instanceof Input, p2 instanceof Input));
+            System.out.println(op.getOpName() + " - " + params);
+        }
+
         if (withName) {
-            if (op.getOutputs().size() == 1)
+            if (op.getOutputs().size() == 1 && !op.getOutputs().get(0).getMultiOutput())
                 c.addParameter(String.class, "name");
             else
                 c.addParameter(String[].class, "names");
         }
         if(!params.isEmpty()){
+            int pCount = 0;
             for(Parameter p : params){
+                pCount++;
+                boolean isLast = pCount == params.size();
                 if(p instanceof Input){
                     Input i = (Input)p;
                     final String inputName = i.getName();
@@ -317,9 +327,9 @@ public class Nd4jNamespaceGenerator {
                     } else {
                         //Array input
                         if (isSameDiff)
-                            c.addParameter(SDVariable[].class, inputName);
+                            c.addParameter(SDVariable[].class, inputName).varargs(isLast);
                         else
-                            c.addParameter(INDArray[].class, inputName);
+                            c.addParameter(INDArray[].class, inputName).varargs(isLast);
                     }
                     // Check for parameter types
                     final DataType paramType = i.getType();
@@ -397,7 +407,7 @@ public class Nd4jNamespaceGenerator {
 
     private static void buildExecution(MethodSpec.Builder c, Op op, List<String> inNames, boolean isSameDiff,
                                        boolean withName, boolean isLoss) {
-        boolean singleOut = op.getOutputs().size() == 1;
+        boolean singleOut = op.getOutputs().size() == 1 && !op.getOutputs().get(0).getMultiOutput();
         if(singleOut){
             if (isSameDiff)
                 c.returns(SDVariable.class);
@@ -552,7 +562,7 @@ public class Nd4jNamespaceGenerator {
 
     private static void generateEnums(File outputDirectory, String basePackage) throws IOException {
         for (Arg it : Registry.INSTANCE.enums()) {
-            generateEnum(outputDirectory, basePackage + ".enums", it);
+            generateEnum(outputDirectory, "org.nd4j.enums", it);
         }
     }
 

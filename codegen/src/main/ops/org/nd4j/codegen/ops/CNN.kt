@@ -216,7 +216,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         javaOpClass = "Conv1D"
         Input(NUMERIC, "input") { description = "the inputs to conv1d" }
         Input(NUMERIC, "weights") { description = "weights for conv1d op - rank 3 array with shape [kernelSize, inputChannels, outputChannels]" }
-        Input(NUMERIC, "bias") { description = "bias for conv1d op - rank 1 array with shape [outputChannels]. May be null."/*; defaultValue=null*/ }
+        Input(NUMERIC, "bias") { description = "bias for conv1d op - rank 1 array with shape [outputChannels]. May be null."; defaultValue=null }
         useConfig(conv1DConfig)
 
         Output(NUMERIC, "output"){ description = "result of conv1d op" }

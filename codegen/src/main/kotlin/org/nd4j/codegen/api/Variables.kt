@@ -176,6 +176,7 @@ data class Input (
 data class Output(
         var name: String,
         var type: DataType,
+        var multiOutput: Boolean,
         var description: String? = null
 ) : Parameter, Tensor{
     override fun isVararg(): Boolean {

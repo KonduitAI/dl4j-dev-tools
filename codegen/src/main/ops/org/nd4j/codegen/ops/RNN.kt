@@ -1,5 +1,6 @@
 package org.nd4j.codegen.ops
 
+import org.nd4j.codegen.api.AtLeast
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
@@ -169,7 +170,10 @@ fun SDRNN() = Namespace("SDRNN") {
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
         Input(NUMERIC, "hLast") { description = "Output of the previous cell/time step, with shape [batchSize, numUnits]" }
         useConfig(GRUWeights)
-        Output(NUMERIC, "output") { description = "The cell's outputs." }
+        Output(NUMERIC, "r") { description = "Reset gate output" }
+        Output(NUMERIC, "u") { description = "Update gate output" }
+        Output(NUMERIC, "c") { description = "Cell gate output" }
+        Output(NUMERIC, "h") { description = "Cell output" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -189,7 +193,13 @@ fun SDRNN() = Namespace("SDRNN") {
         useConfig(LSTMWeights)
         useConfig(LSTMConfiguration)
 
-        Output(NUMERIC, "output") { description = "The cell's outputs" }
+        Output(NUMERIC, "i") { description = "Output - input modulation gate activations [batchSize, numUnits]." }
+        Output(NUMERIC, "c") { description = "Output - Activations, cell state (pre tanh) [batchSize, numUnits]." }
+        Output(NUMERIC, "f") { description = "Output - forget gate activations [batchSize, numUnits]." }
+        Output(NUMERIC, "o") { description = "Output - output gate activations [batchSize, numUnits]." }
+        Output(NUMERIC, "z") { description = "Output - input gate activations [batchSize, numUnits]." }
+        Output(NUMERIC, "h") { description = "Cell state, post tanh [batchSize, numUnits]." }
+        Output(NUMERIC, "y") { description = "Current cell output [batchSize, numUnits]." }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -231,7 +241,10 @@ fun SDRNN() = Namespace("SDRNN") {
         useConfig(LSTMLayerWeights)
         useConfig(LSTMLayerConfig)
 
-        Output(NUMERIC, "output") { description = "The layer's outputs." }
+        //TODO these are optional
+        Output(NUMERIC, "output") { description = "The layer's outputs - full time series" }
+        Output(NUMERIC, "yLast") { description = "The layer's outputs - last time step activations (yLast)" }
+        Output(NUMERIC, "cLast") { description = "The layer's outputs - last time step cell state (cLast)" }
 
         Doc(Language.ANY, DocScope.ALL) {
             """
