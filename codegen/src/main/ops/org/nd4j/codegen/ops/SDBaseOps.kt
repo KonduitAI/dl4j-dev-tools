@@ -227,8 +227,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("dynamicStitch") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicStitch"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variables." }
         Input(INT, "indices") {count = AtLeast(1); description = "Indices to use when merging. Must be >= 1, same length as input variables" }
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variables." }
         Output(NUMERIC, "output"){ description = "Merged output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -918,6 +918,23 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             """
                 Element-wise replace where condition:
                 out[i] = from[i] if condition(update[i]) is satisfied, or
+                out[i] = update[i] if condition(update[i]) is NOT satisfied
+            """.trimIndent()
+        }
+    }
+
+    Op("replaceWhere") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.comparison"
+        javaOpClass = "CompareAndSet"
+        legacy = true
+        Input(NUMERIC, "update") { description = "Source array" }
+        Arg(NUMERIC, "value") { description = "Value to set at the output, if the condition is satisfied" }
+        Arg(CONDITION, "condition") { description = "Condition to check on update array elements" }
+        Output(NUMERIC, "output"){ description = "New array with values replaced where condition is satisfied" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Element-wise replace where condition:
+                out[i] = value if condition(update[i]) is satisfied, or
                 out[i] = update[i] if condition(update[i]) is NOT satisfied
             """.trimIndent()
         }

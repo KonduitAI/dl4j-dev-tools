@@ -434,6 +434,23 @@ fun SDCNN() =  Namespace("SDCNN"){
         }
     }
 
+    Op("maxPoolWithArgmax") {
+        javaPackage = namespaceJavaPackage
+        javaOpClass = "MaxPoolWithArgmax"
+        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
+                "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        useConfig(pooling2DConfig)
+
+        Output(NUMERIC, "output"){ description = "Result after applying max pooling on the input" }
+        Output(NUMERIC, "indexes"){ description = "Argmax array" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             2D Convolution layer operation - Max pooling on the input and outputs both max values and indices 
+            """.trimIndent()
+        }
+    }
+
     Op("maxPooling3d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "MaxPooling3D"
