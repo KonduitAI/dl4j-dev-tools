@@ -41,7 +41,7 @@ public class CLI {
     private List<String> namespaces;
 
     @Parameter(names = "-projects", description = "List of sub-projects - ND4J, SameDiff or both", required = false, validateWith = ProjectsValidator.class)
-    private List<String> projects;
+    private List<String> projects = Collections.singletonList("all");
 
     enum NS_PROJECT {
         ND4J,

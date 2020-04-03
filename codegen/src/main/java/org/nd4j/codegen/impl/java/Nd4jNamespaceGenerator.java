@@ -298,7 +298,6 @@ public class Nd4jNamespaceGenerator {
         if(op.getArgsFirst()){
             //Assuming sort is stable (doesn't change order of equal elements)
             params.sort((p1,p2) -> Boolean.compare(p1 instanceof Input, p2 instanceof Input));
-            System.out.println(op.getOpName() + " - " + params);
         }
 
         if (withName) {
