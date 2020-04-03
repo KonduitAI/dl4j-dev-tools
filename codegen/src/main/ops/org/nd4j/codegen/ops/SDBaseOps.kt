@@ -1593,7 +1593,6 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("castTo"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.dtype"
-        legacy = true
         javaOpClass = "Cast"
         Input(NDARRAY, "arg") { description = "Input variable to cast"}
         Arg(DATA_TYPE, "datatype"){ description = "Datatype to cast to"}
