@@ -1,41 +1,31 @@
 import tensorflow as tf
 import mlp
 import rnn
+import cnn
+import merge
+import activations
+import advanced_activations
 import utils
 import os
+import gc
+import warnings
+import json
+from utils import tqdm
+import sys
+import subprocess
 
+jobs = [mlp, rnn, cnn, merge, activations, advanced_activations]
+jobs.remove(cnn)
+jobs.remove(rnn)
+def run_sequential():
+    for job in jobs:
+        job.run()
 
-mlp.run()
-rnn.run()
+def run_sequential_subprocess():
+    for job in jobs:
+        subprocess.Popen(f'"{sys.executable}" "{job.__file__}"', stdout=subprocess.PIPE).stdout.readlines()
 
+#run_sequential()
+run_sequential_subprocess()
 
-
-# calculate layer coverage TODO: op coverage
-
-all_layers = [l for l in dir(tf.keras.layers) if l[0].isupper()]
-
-def get_layers(model):
-    if hasattr(model, 'layers'):
-        layers = []
-        for layer in model.layers:
-            layers += get_layers(layer)
-        return layers
-    else:
-        return [model.__class__.__name__]
-
-used_layers = set()
-for r, _, fs in os.walk(utils.tfkeras_dir):
-    for f in fs:
-        if f.lower().endswith('.h5'):
-            model = tf.keras.models.load_model(os.path.join(r, f))
-            used_layers.update(get_layers(model))
-
-
-unused_layers = [l for l in all_layers if l not in used_layers]
-coverage = len(used_layers) / len(all_layers)
-
-print('Layers not covered:')
-for l in unused_layers:
-    print(l)
-
-print('Layer coverage: ' + str(int(coverage * 100)) + '%')
+import coverage

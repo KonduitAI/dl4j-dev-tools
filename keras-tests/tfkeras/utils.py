@@ -2,9 +2,18 @@ import os
 import itertools
 import inspect
 import sys
+import tensorflow as tf
+import json
+import os
+try:
+    from tqdm import tqdm
+except ImportError:
+    import warnings
+    tqdm = lambda _: [_,warnings.warn("Install tqdm for fancy progress bars!")][0]
 
 
 dl4j_test_resources = os.environ.get('DL4J_TEST_RESOURCES')
+
 
 if dl4j_test_resources is None:
     # Try and auto detect dl4j_test_resources.
@@ -25,10 +34,35 @@ tfkeras_dir = os.path.join(dl4j_test_resources,
                            'modelimport', 'keras', 'tfkeras')
 
 
+
+def _get_layers(model):
+    if hasattr(model, 'layers'):
+        layers = []
+        for layer in model.layers:
+            layers += _get_layers(layer)
+        return layers
+    else:
+        return [model.__class__.__name__]
+
+used_layers_file = 'used_layers.json'
+if os.path.isfile(used_layers_file):
+    with open(used_layers_file, 'r') as f:
+        _used_layers = set(json.load(f))
+else:
+    _used_layers = set()
+
+def _update_used_layers(model):
+    layers = _get_layers(model)
+    _used_layers.update(layers)
+    with open(used_layers_file, 'w') as f:
+        json.dump(list(_used_layers), f)
+
 def save_model(model, file_name):
     path = os.path.join(tfkeras_dir, file_name)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     model.save(path)
+    _update_used_layers(model)
+
 
 
 def grid(*args, **kwargs):
@@ -54,9 +88,45 @@ def grid(*args, **kwargs):
                         else:
                             raise Exception('Unable to resolve value for argument ' + arg)
                     self.args = itertools.product(*args)
+                    n = 1
+                    for a in args:
+                        n *= len(a)
+                    self.n = n
+                def __len__(self): return self.n
                 def __iter__(self): return self
                 def __next__(self): return self.next()
                 def __next__(self): return f(*next(self.args))
             return ArgIterator(args, kwargs)
         return grid_call
     return inner
+
+
+def get_coverage():
+    ret = {}
+    # calculate layer coverage TODO: op coverage
+    all_layers = [l for l in dir(tf.keras.layers)
+                if inspect.isclass(getattr(tf.keras.layers, l)) and
+                issubclass(getattr(tf.keras.layers, l), tf.keras.layers.Layer) and
+                l[0].isupper() and
+                not l.startswith('Abstract') and
+                not l.endswith('Cell')
+                ]
+    all_layers = []
+    all_layers_set = set()
+    for l in dir(tf.keras.layers):
+        layer = getattr(tf.keras.layers, l)
+        if inspect.isclass(layer) and issubclass(layer, tf.keras.layers.Layer) \
+            and l[0].isupper() and not l.startswith('Abstract') and \
+                not l.endswith('Cell') and l not in ('RNN', 'Layer', 'Wrapper'):
+                    if layer not in all_layers_set:
+                        all_layers_set.add(layer)
+                        all_layers.append(l)
+    ret['all_layers'] = all_layers
+    with open(used_layers_file, 'r') as f:
+        used_layers = json.load(f)
+    unused_layers = [l for l in all_layers if l not in used_layers]
+    coverage = len(used_layers) / len(all_layers)
+    ret['covered_layers'] = used_layers
+    ret['uncovered_layers'] = unused_layers
+    ret['coverage'] = coverage
+    return ret

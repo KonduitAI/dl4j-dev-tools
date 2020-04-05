@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from utils import grid, save_model
+from utils import tqdm
 
 np.random.seed(1337)
 
@@ -10,10 +11,10 @@ layer_output_sizes = list(np.random.randint(3, 7, (max_num_layers,)))
 
 #grid
 input_shape = [(3, 4), (1, 5), (4, 1), (None, 3), (None, 1)]
-num_layers = list(range(max_num_layers))
+num_layers = [i + 1 for i in range(max_num_layers)]
 activation_type = ['layer', 'arg', 'recurrent']
-activation = ['relu', 'tanh']
-rnn_type = [tf.keras.layers.LSTM, tf.keras.layers.GRU]
+activation = ['relu']#, 'tanh']
+rnn_type = [tf.keras.layers.LSTM, tf.keras.layers.GRU, tf.keras.layers.SimpleRNN]
 return_sequences = [True, False]
 dense_after = [False]#[True, False]
 compile_args = [None]#, {'loss': 'mse', 'optimizer': 'sgd'}]
@@ -28,6 +29,8 @@ def generate_rnns(input_shape,
                   return_sequences,
                   dense_after,
                   compile_args):
+    if rnn_type == tf.keras.layers.SimpleRNN and activation_type == 'recurrent':
+        return
     inp = tf.keras.layers.Input(input_shape)
     x = inp
     for i in range(num_layers):
@@ -48,8 +51,10 @@ def generate_rnns(input_shape,
     return model
 
 def run():
-    for i, model in enumerate(generate_rnns()):
-        save_model(model, 'rnn_' + str(i) + '.h5')
+    gen = generate_rnns()
+    for i, model in tqdm(enumerate(gen), total=len(gen)):
+        if model:
+            save_model(model, 'rnn_' + str(i) + '.h5')
 
 if __name__ == '__main__':
     run()
