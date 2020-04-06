@@ -18,7 +18,7 @@ rnn_type = [tf.keras.layers.LSTM, tf.keras.layers.GRU, tf.keras.layers.SimpleRNN
 return_sequences = [True, False]
 dense_after = [False]#[True, False]
 compile_args = [None]#, {'loss': 'mse', 'optimizer': 'sgd'}]
-
+bidirectional = [None, 'concat']#, 'sum', 'mul']
 
 @grid(**globals())
 def generate_rnns(input_shape,
@@ -28,18 +28,23 @@ def generate_rnns(input_shape,
                   rnn_type,
                   return_sequences,
                   dense_after,
+                  bidirectional,
                   compile_args):
     if rnn_type == tf.keras.layers.SimpleRNN and activation_type == 'recurrent':
         return
     inp = tf.keras.layers.Input(input_shape)
     x = inp
     for i in range(num_layers):
-        if activation_type == 'arg':
-            x = rnn_type(layer_output_sizes[i], return_sequences=return_sequences, activation=activation)(x)
-        elif activation_type == 'recurrent':
-            x = rnn_type(layer_output_sizes[i], return_sequences=return_sequences, recurrent_activation=activation)(x)
+        if bidirectional:
+            f = lambda *args, **kwargs: tf.keras.layers.Bidirectional(rnn_type(*args, **kwargs), merge_mode=bidirectional)
         else:
-            x = rnn_type(layer_output_sizes[i], return_sequences=return_sequences)(x)
+            f = rnn_type
+        if activation_type == 'arg':
+            x = f(layer_output_sizes[i], return_sequences=return_sequences, activation=activation)(x)
+        elif activation_type == 'recurrent':
+            x = f(layer_output_sizes[i], return_sequences=return_sequences, recurrent_activation=activation)(x)
+        else:
+            x = f(layer_output_sizes[i], return_sequences=return_sequences)(x)
             x = tf.keras.layers.Activation(activation)(x)
         if dense_after:
             x = tf.keras.layers.Dense(int(layer_output_sizes[i] / 2) + 1)(x)   

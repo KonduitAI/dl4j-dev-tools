@@ -35,6 +35,12 @@ def get_misc_models():
     x = tf.keras.layers.Permute((2, 1))(inp)
     models.append(tf.keras.models.Model(inp, x))
 
+    inp = tf.keras.layers.Input((2, 3))
+    x = tf.keras.layers.Dense(5)(inp)
+    x = tf.keras.layers.AlphaDropout(0.5)(x)
+    models.append(tf.keras.models.Model(inp, x))
+
+
     return models
 
 def run():

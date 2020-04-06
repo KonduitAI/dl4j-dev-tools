@@ -52,10 +52,12 @@ else:
     _used_layers = set()
 
 def _update_used_layers(model):
+    n = len(_used_layers)
     layers = _get_layers(model)
     _used_layers.update(layers)
-    with open(used_layers_file, 'w') as f:
-        json.dump(list(_used_layers), f)
+    if len(_used_layers) > n:
+        with open(used_layers_file, 'w') as f:
+            json.dump(list(_used_layers), f)
 
 def save_model(model, file_name):
     path = os.path.join(tfkeras_dir, file_name)
@@ -104,23 +106,18 @@ def grid(*args, **kwargs):
 def get_coverage():
     ret = {}
     # calculate layer coverage TODO: op coverage
-    all_layers = [l for l in dir(tf.keras.layers)
-                if inspect.isclass(getattr(tf.keras.layers, l)) and
-                issubclass(getattr(tf.keras.layers, l), tf.keras.layers.Layer) and
-                l[0].isupper() and
-                not l.startswith('Abstract') and
-                not l.endswith('Cell')
-                ]
     all_layers = []
     all_layers_set = set()
     for l in dir(tf.keras.layers):
         layer = getattr(tf.keras.layers, l)
-        if inspect.isclass(layer) and issubclass(layer, tf.keras.layers.Layer) \
-            and l[0].isupper() and not l.startswith('Abstract') and \
-                not l.endswith('Cell') and l not in ('RNN', 'Layer', 'Wrapper'):
-                    if layer not in all_layers_set:
-                        all_layers_set.add(layer)
-                        all_layers.append(l)
+        if inspect.isclass(layer):
+            l = layer.__name__
+            if issubclass(layer, tf.keras.layers.Layer) \
+                and l[0].isupper() and not l.startswith('Abstract') and \
+                    not l.endswith('Cell') and l not in ('RNN', 'Layer', 'Wrapper'):
+                        if layer not in all_layers_set:
+                            all_layers_set.add(layer)
+                            all_layers.append(l)
     ret['all_layers'] = all_layers
     with open(used_layers_file, 'r') as f:
         used_layers = json.load(f)
