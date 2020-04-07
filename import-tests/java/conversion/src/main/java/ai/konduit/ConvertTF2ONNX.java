@@ -10,11 +10,13 @@ import org.apache.commons.io.FileUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ConvertTF2ONNX {
 
     public static final String UNSUPPORTED_OPS = "Unsupported ops";
+    public static final String BAD_OUTPUT_NAME = "is not in graph";
 
     @Parameter
     private String baseDir = "/dl4j-test-resources/src/main/resources/tf_graphs";
@@ -37,6 +39,8 @@ public class ConvertTF2ONNX {
 
         int countSuccess8 = 0;
         int countSuccess11 = 0;
+
+        List<String> badGraphs = new ArrayList<>();
 
 
         for(File f : files){
@@ -96,6 +100,14 @@ public class ConvertTF2ONNX {
                 ok8 = false;
             }
 
+            if(p.getOutput().contains(BAD_OUTPUT_NAME)){
+                badGraphs.add(inPath);
+                if(out8.exists())
+                    out8.delete();
+                System.out.println("Skipping graph with bad outputs: " + inPath);
+                continue;
+            }
+
             if(ok8)
                 countSuccess8++;
 
@@ -125,6 +137,11 @@ public class ConvertTF2ONNX {
 
         System.out.println("===== CONVERSION COMPLETE IN " + (end-startTime) + " MS =====");
         System.out.println("Files: " + files.size() + " - opset 8 converted successfully: " + countSuccess8 + "; opset 11 converted successfully: " + countSuccess11);
+        System.out.println("Bad graphs with files for non-existent outputs: " + badGraphs);
+        String s = String.join("\n", badGraphs);
+        File f = new File("bad_graphs.txt");
+        FileUtils.writeStringToFile(f, s, StandardCharsets.UTF_8);
+        System.out.println("Graphs with bad outputs: written to file " + f.getAbsolutePath());
     }
 
     private Pair launchAndGetOutput(ProcessBuilder pb) throws Exception {
