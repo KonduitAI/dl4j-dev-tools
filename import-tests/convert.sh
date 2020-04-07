@@ -1,19 +1,8 @@
 
-#pip install tf2onnx
-	
-cd $DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples
+pip install tf2onnx
+pip install tensorflow=1.15.0
 
-find . -name "frozen_model.pb" -print | while read f;do
-	set curr = pwd
-	cd `dirname $DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples/$f`
-	output_name=`ls *.prediction.csv 2>/dev/null`
-	stripped_output_name=`echo $output_name | cut -d"." -f1`
-	echo $stripped_output_name
-	cd $curr
-	if [ ! -z $stripped_output_name ]
-        then
-      effective_file_name="$DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples/$f"
-	  python3 -m tf2onnx.convert --input $f --inputs in:0  --outputs $stripped_output_name:0 --output $effective_file_name.onnx 2>/dev/null
-	fi
-done
-
+cd / && wget https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz && tar -xf OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz && export PATH=$PWD/jdk8u242-b08/bin:$PATH
+cd / && wget http://apache.mirror.amaze.com.au/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && tar -xf apache-maven-3.6.3-bin.tar.gz && export PATH=/apache-maven-3.6.3/bin:$PATH
+cd /ImportTests/java/conversion && mvn package -DskipTests
+java -cp target/conversion-1.0-SNAPSHOT-bin.jar ai.konduit.ConvertTF2ONNX
