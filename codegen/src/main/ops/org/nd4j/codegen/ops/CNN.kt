@@ -11,10 +11,19 @@ fun SDCNN() =  Namespace("SDCNN"){
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
     val dataFormat = Mixin("dataFormat"){
-        Arg(ENUM, "dataFormat") { possibleValues = listOf("NCHW", "NHWC"); description = "Data format: \"NCHW\" or \"NHWC\"" }
+        val javaPackage = "org.nd4j.enums"
+        val namespaceJavaPackage = "org.nd4j.enums"
+        Arg(ENUM, "dataFormat") { possibleValues = listOf("NCHW", "NHWC"); description = "" +
+                " \"NCHW\" or \"NHWC\"" }
 
     }
 
+    val weightsFormat = Mixin("weightsFormat") {
+        val javaPackage = "org.nd4j"
+        val namespaceJavaPackage = "org.nd4j"
+        Arg(ENUM, "weightsFormat") {possibleValues = listOf("YXIO", "OIYX", "OYXI");
+            description = "Weights format: [kH, kW, iC, oC] or [oC, iC, kH, kW], or [oC, kH, kW, iC]"}
+    }
 
     val conv1DConfig = Config("Conv1DConfig"){
         Arg(LONG, "k"){ description = "Kernel"; defaultValue=-1L}
@@ -37,6 +46,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         Arg(LONG, "dW"){ description = "Dilation along width dimension"; defaultValue=1};
         Arg(BOOL, "isSameMode"){ description = "Same mode"; defaultValue=true}
         Arg(STRING, "dataFormat"){ description = "Data format"; defaultValue="NCHW"}
+        Arg(INT, "weightsFormat"){ description = "Weights format"; defaultValue=0}
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.convolution.config.Conv2DConfig"
     }
 
@@ -430,6 +440,23 @@ fun SDCNN() =  Namespace("SDCNN"){
         Doc(Language.ANY, DocScope.ALL){
             """
              2D Convolution layer operation - max pooling 2d 
+            """.trimIndent()
+        }
+    }
+
+    Op("maxPoolWithArgmax") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
+        javaOpClass = "MaxPoolWithArgmax"
+        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
+                "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        useConfig(pooling2DConfig)
+
+        Output(NUMERIC, "indices"){ description = "Max indices" }
+        Output(NUMERIC, "argmax"){ description = "Max values" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Max pooling with argmax operation 
             """.trimIndent()
         }
     }

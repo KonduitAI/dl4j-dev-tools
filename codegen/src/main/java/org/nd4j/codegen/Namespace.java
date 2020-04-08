@@ -87,7 +87,7 @@ public enum Namespace {
             case MATH:
                 return "SDMath";
             case BASE:
-                return "SDOps";
+                return "SDBaseOps";
             case LOSS:
                 return "SDLoss";
             /*case VALIDATION:
