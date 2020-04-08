@@ -19,8 +19,8 @@ fun SDCNN() =  Namespace("SDCNN"){
     }
 
     val weightsFormat = Mixin("weightsFormat") {
-        val javaPackage = "org.nd4j"
-        val namespaceJavaPackage = "org.nd4j"
+        val javaPackage = "org.nd4j.enums"
+        val namespaceJavaPackage = "org.nd4j.enums"
         Arg(ENUM, "weightsFormat") {possibleValues = listOf("YXIO", "OIYX", "OYXI");
             description = "Weights format: [kH, kW, iC, oC] or [oC, iC, kH, kW], or [oC, kH, kW, iC]"}
     }
