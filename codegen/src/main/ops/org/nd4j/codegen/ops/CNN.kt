@@ -11,10 +11,19 @@ fun SDCNN() =  Namespace("SDCNN"){
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
     val dataFormat = Mixin("dataFormat"){
-        Arg(ENUM, "dataFormat") { possibleValues = listOf("NCHW", "NHWC"); description = "Data format: \"NCHW\" or \"NHWC\"" }
+        val javaPackage = "org.nd4j.enums"
+        val namespaceJavaPackage = "org.nd4j.enums"
+        Arg(ENUM, "dataFormat") { possibleValues = listOf("NCHW", "NHWC"); description = "" +
+                " \"NCHW\" or \"NHWC\"" }
 
     }
 
+    val weightsFormat = Mixin("weightsFormat") {
+        val javaPackage = "org.nd4j"
+        val namespaceJavaPackage = "org.nd4j"
+        Arg(ENUM, "weightsFormat") {possibleValues = listOf("YXIO", "OIYX", "OYXI");
+            description = "Weights format: [kH, kW, iC, oC] or [oC, iC, kH, kW], or [oC, kH, kW, iC]"}
+    }
 
     val conv1DConfig = Config("Conv1DConfig"){
         Arg(LONG, "k"){ description = "Kernel"; defaultValue=-1L}
@@ -37,6 +46,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         Arg(LONG, "dW"){ description = "Dilation along width dimension"; defaultValue=1};
         Arg(BOOL, "isSameMode"){ description = "Same mode"; defaultValue=true}
         Arg(STRING, "dataFormat"){ description = "Data format"; defaultValue="NCHW"}
+        Arg(INT, "weightsFormat"){ description = "Weights format"; defaultValue=0}
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.convolution.config.Conv2DConfig"
     }
 

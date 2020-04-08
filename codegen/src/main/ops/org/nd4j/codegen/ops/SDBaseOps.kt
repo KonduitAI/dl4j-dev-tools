@@ -1019,6 +1019,20 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
+    Op("scalarFloorDiv") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        javaOpClass = "ScalarDivision"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Element-wise scalar floor division operation: out = floorDiv(in, value).
+            """.trimIndent()
+        }
+    }
+
     Op("scalarMax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         legacy = true
@@ -1568,7 +1582,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("any") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
         legacy = true
-        Input(BOOL, "x") { description = " Input variable" }
+        Input(NUMERIC, "x") { description = " Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(BOOL, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1581,7 +1595,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("all") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
         legacy = true
-        Input(BOOL, "x") { description = "Input variable" }
+        Input(NUMERIC, "x") { description = "Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(BOOL, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
