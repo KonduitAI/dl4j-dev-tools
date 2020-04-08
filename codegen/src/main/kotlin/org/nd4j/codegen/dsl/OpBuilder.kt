@@ -92,7 +92,7 @@ fun OpLike.Arg(dataType: DataType, name: String, block: (Arg.() -> Unit)? = null
 }
 
 fun OpLike.Output(dataType: DataType, name: String, block: (Output.() -> Unit)? = null): Output {
-    val output = Output(name, dataType)
+    val output = Output(name, dataType, false)
     if (block != null) output.block()
 
     if (!dataType.isTensorDataType()) {

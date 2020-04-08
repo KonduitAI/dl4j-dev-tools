@@ -130,7 +130,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("concat") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         javaOpClass = "Concat"
-        //TODO: The generator flips the order of dimension and inputs.
+        argsFirst = true
         Arg(INT, "dimension"){ description = "Dimension to concatenate on" }
         val inputs = Input(NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
         Output(NUMERIC, "output"){ description = "" }
@@ -205,9 +205,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicPartition"
         Input(NUMERIC, "x") { description = "Input variable" }
-        Input(INT, "partitions") { count = AtLeast(1); description = "1D input with values 0 to numPartitions-1" }
+        Input(INT, "partitions") { description = "1D input with values 0 to numPartitions-1" }
         Arg(INT, "numPartitions") { description = "Number of partitions, >= 1" }
-        Output(NUMERIC, "output"){ description = "Output variables (equal in number to numPartitions)" }
+        Output(NUMERIC, "output"){ multiOutput=true; description = "Output variables (equal in number to numPartitions)" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -227,8 +227,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("dynamicStitch") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "DynamicStitch"
-        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variables." }
         Input(INT, "indices") {count = AtLeast(1); description = "Indices to use when merging. Must be >= 1, same length as input variables" }
+        Input(NUMERIC, "x") { count = AtLeast(1); description = "Input variables." }
         Output(NUMERIC, "output"){ description = "Merged output variable" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -331,8 +331,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("gatherNd") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         javaOpClass = "GatherNd"
-        Input(NUMERIC, "df") {count = AtLeast(1); description = "" }
-        Input(NUMERIC, "indices") {count = AtLeast(1); description = "" }
+        Input(NUMERIC, "df") {description = "" }
+        Input(NUMERIC, "indices") {description = "" }
         Output(NUMERIC, "output"){ description = "" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -445,6 +445,22 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(NUMERIC, "start") { description = "Start value" }
         Arg(NUMERIC, "stop") { description = "Stop value" }
         Arg(LONG, "number") { description = "Number of values to generate" }
+        Output(NUMERIC, "output"){ description = "INDArray  with linearly spaced elements" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Create a new 1d array with values evenly spaced between values 'start' and 'stop'
+                For example, linspace(start=3.0, stop=4.0, number=3) will generate [3.0, 3.5, 4.0]
+            """.trimIndent()
+        }
+    }
+
+    Op("linspace") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "start") { description = "Start value" }
+        Input(NUMERIC, "stop") { description = "Stop value" }
+        Input(LONG, "number") { description = "Number of values to generate" }
+        Arg(DATA_TYPE, "dataType") { description = "Data type of the output array" }
         Output(NUMERIC, "output"){ description = "INDArray  with linearly spaced elements" }
 
         Doc(Language.ANY, DocScope.ALL){
@@ -793,6 +809,19 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("permute") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "x") { description = "Input variable" }
+        Input(INT, "dimensions") { description = "Permute dimensions" }
+        Output(NUMERIC, "output"){ description = "Output variable (permuted input)" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Array permutation operation: permute the dimensions according to the specified permutation indices.
+                Example: if input has shape [a,b,c] and dimensions = [2,0,1] the output has shape [c,a,b]
+            """.trimIndent()
+        }
+    }
+
+    Op("permute") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
         Arg(INT, "dimensions") { count = AtLeast(0); description = "" }
         Output(NUMERIC, "output"){ description = "Output variable (permuted input)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -823,6 +852,23 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Arg(NUMERIC, "from") { description = "Initial/smallest value" }
         Arg(NUMERIC, "to") { description = "Largest value (exclusive)" }
         Arg(NUMERIC, "step") { description = "Step size" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
+        Output(NUMERIC, "output"){ description = "INDArray  with the specified values" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Create a new variable with a 1d array, where the values start at from and increment by step
+                up to (but not including) limit.
+                For example, range(1.0, 3.0, 0.5) will return [1.0, 1.5, 2.0, 2.5]
+            """.trimIndent()
+        }
+    }
+
+    Op("range") {
+        javaPackage = "org.nd4j.linalg.api.ops.random.impl"
+        Input(NUMERIC, "from") { description = "Initial/smallest value" }
+        Input(NUMERIC, "to") { description = "Largest value (exclusive)" }
+        Input(NUMERIC, "step") { description = "Step size" }
         Arg(DATA_TYPE, "dataType") { description = "" }
         Output(NUMERIC, "output"){ description = "INDArray  with the specified values" }
 
@@ -877,10 +923,41 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
+    Op("replaceWhere") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.comparison"
+        javaOpClass = "CompareAndSet"
+        legacy = true
+        Input(NUMERIC, "update") { description = "Source array" }
+        Arg(NUMERIC, "value") { description = "Value to set at the output, if the condition is satisfied" }
+        Arg(CONDITION, "condition") { description = "Condition to check on update array elements" }
+        Output(NUMERIC, "output"){ description = "New array with values replaced where condition is satisfied" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Element-wise replace where condition:
+                out[i] = value if condition(update[i]) is satisfied, or
+                out[i] = update[i] if condition(update[i]) is NOT satisfied
+            """.trimIndent()
+        }
+    }
+
     Op("reshape") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "x") { description = "Input variable" }
         Input(NUMERIC, "shape") { description = "New shape for variable" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Reshape the input variable to the specified (fixed) shape. The output variable will have the same values as the
+                input, but with the specified shape.
+                Note that prod(shape) must match length(input) == prod(input.shape)
+            """.trimIndent()
+        }
+    }
+
+    Op("reshape") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(LONG, "shape") { count=AtLeast(0); description = "New shape for variable" }
         Output(NUMERIC, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -1117,6 +1194,20 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("sequenceMask") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "lengths") { description = "Lengths of the sequences" }
+        Input(INT, "maxLen") { description = "Maximum sequence length" }
+        Arg(DATA_TYPE, "dataType") { description = "" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                 Generate a sequence mask (with values 0 or 1) based on the specified lengths 
+                 Specifically, out[i, ..., k, j] = (j < lengths[i, ..., k] ? 1.0 : 0.0)
+            """.trimIndent()
+        }
+    }
+
+    Op("sequenceMask") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "lengths") { description = "" }
         Arg(DATA_TYPE,  "dataType") { description = "" }
         Output(NUMERIC, "output"){ description = "" }
@@ -1183,6 +1274,26 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
+    Op("slice") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NUMERIC, "input") { description = "input Variable to get subset of" }
+        Input(INT, "begin") { description = "Beginning index. Must be same length as rank of input array" }
+        Input(INT, "size") { description = "Size of the output array. Must be same length as rank of input array" }
+        Output(NUMERIC, "output"){ description = "Subset of the input" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Get a subset of the specified input, by specifying the first element and the size of the array.
+                For example, if input is:
+                [a, b, c]
+                [d, e, f]
+                then slice(input, begin=[0,1], size=[2,1] will return:
+                [b]
+                [e]
+                Note that for each dimension i, begin[i] + size[i] <= input.size(i)
+            """.trimIndent()
+        }
+    }
+
     Op("squaredNorm") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.floating"
         legacy = true
@@ -1213,8 +1324,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
 
     Op("stack") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
-        //TODO: Flip the variables back to the original order.
-        Input(NDARRAY, "values") { description = "Input variables to stack. Must have the same shape for all inputs" }
+        argsFirst = true
+        Input(NDARRAY, "values") { count=AtLeast(1); description = "Input variables to stack. Must have the same shape for all inputs" }
         Arg(INT, "axis") { description = "Axis to stack on" }
         Output(NDARRAY, "output"){ description = "Output variable" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1249,9 +1360,9 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("stridedSlice") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         Input(NUMERIC, "in") { description = "Variable to get subset of" }
-        Arg(INT, "begin") { count = AtLeast(1); description = "Beginning index" }
-        Arg(INT, "end") { count = AtLeast(1); description = "End index" }
-        Arg(INT, "strides") { count = AtLeast(1); description = "Stride (\"step size\") for each dimension. For example, stride of 2 means take every second element." }
+        Arg(LONG, "begin") { count = AtLeast(1); description = "Beginning index" }
+        Arg(LONG, "end") { count = AtLeast(1); description = "End index" }
+        Arg(LONG, "strides") { count = AtLeast(1); description = "Stride (\"step size\") for each dimension. For example, stride of 2 means take every second element." }
         Arg(INT, "beginMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the begin long[] is ignored, and a value of 0 is used instead for the beginning index for that dimension"; defaultValue=0 }
         Arg(INT, "endMask") { description = "Bit mask: If the ith bit is set to 1, then the value in the end long[] is ignored, and a value of size(i)-1 is used instead for the end index for that dimension"; defaultValue=0 }
         Arg(INT, "ellipsisMask") { description = "Bit mask: only one non-zero value is allowed here. If a non-zero value is set, then other dimensions are inserted as required at the specified position"; defaultValue=0 }
@@ -1476,6 +1587,58 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Boolean and array reduction operation, optionally along specified dimensions
+            """.trimIndent()
+        }
+    }
+
+    Op("castTo"){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.dtype"
+        javaOpClass = "Cast"
+        Input(NDARRAY, "arg") { description = "Input variable to cast"}
+        Arg(DATA_TYPE, "datatype"){ description = "Datatype to cast to"}
+        Output(NDARRAY, "output"){ description = "Output array (after casting)"}
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Cast the array to a new datatype - for example, Integer -> Float
+            """.trimIndent()
+        }
+    }
+
+
+    Op("batchMmul"){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.custom"
+        Input(NUMERIC, "inputsA"){ count = AtLeast(1); description = "First array of input matrices, all of shape (M, N) or (N, M)"}
+        Input(NUMERIC, "inputsB"){ count = AtLeast(1); description = " Second array of input matrices, all of shape (N, K) or (K, N)"}
+        Arg(BOOL, "transposeA"){ description = "Whether to transpose A arrays or not"; defaultValue=false}
+        Arg(BOOL, "transposeB"){ description = "Whether to transpose B arrays or not"; defaultValue=false}
+        Output(NUMERIC, "output1"){multiOutput=true; description = "Array of multiplied SDVariables of shape (M, K)"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Matrix multiply a batch of matrices. matricesA and matricesB have to be arrays of same
+                length and each pair taken from these sets has to have dimensions (M, N) and (N, K),
+                respectively. If transposeA is true, matrices from matricesA will have shape (N, M) instead.
+                Likewise, if transposeB is true, matrices from matricesB will have shape (K, N).
+                
+                The result of this operation will be a batch of multiplied matrices. The
+                result has the same length as both input batches and each output matrix is of shape (M, K).
+            """.trimIndent()
+        }
+    }
+
+    Op("unstack"){
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        Input(NDARRAY, "value"){ description="Input variable to unstack"}
+        Arg(INT, "axis"){description = "Axis to unstack on"}
+        Arg(INT, "num"){ description = "Number of output variables"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Unstack a variable of rank X into N rank X-1 variables by taking slices along the specified axis.
+                If input has shape [a,b,c] then output has shape:
+                axis = 0: [b,c]
+                axis = 1: [a,c]
+                axis = 2: [a,b]
             """.trimIndent()
         }
     }

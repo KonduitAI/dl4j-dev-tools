@@ -34,6 +34,7 @@ data class Op (
         var javaOpClass: String? = null,
         var isAbstract: Boolean = false,
         var legacy: Boolean = false,
+        var argsFirst: Boolean = false,
         var javaPackage: String? = null,
         val inputs: MutableList<Input> = mutableListOf(),
         val outputs: MutableList<Output> = mutableListOf(),

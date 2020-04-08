@@ -216,7 +216,7 @@ fun SDCNN() =  Namespace("SDCNN"){
         javaOpClass = "Conv1D"
         Input(NUMERIC, "input") { description = "the inputs to conv1d" }
         Input(NUMERIC, "weights") { description = "weights for conv1d op - rank 3 array with shape [kernelSize, inputChannels, outputChannels]" }
-        Input(NUMERIC, "bias") { description = "bias for conv1d op - rank 1 array with shape [outputChannels]. May be null."/*; defaultValue=null*/ }
+        Input(NUMERIC, "bias") { description = "bias for conv1d op - rank 1 array with shape [outputChannels]. May be null."; defaultValue=null }
         useConfig(conv1DConfig)
 
         Output(NUMERIC, "output"){ description = "result of conv1d op" }
@@ -430,6 +430,23 @@ fun SDCNN() =  Namespace("SDCNN"){
         Doc(Language.ANY, DocScope.ALL){
             """
              2D Convolution layer operation - max pooling 2d 
+            """.trimIndent()
+        }
+    }
+
+    Op("maxPoolWithArgmax") {
+        javaPackage = namespaceJavaPackage
+        javaOpClass = "MaxPoolWithArgmax"
+        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
+                "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        useConfig(pooling2DConfig)
+
+        Output(NUMERIC, "output"){ description = "Result after applying max pooling on the input" }
+        Output(NUMERIC, "indexes"){ description = "Argmax array" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             2D Convolution layer operation - Max pooling on the input and outputs both max values and indices 
             """.trimIndent()
         }
     }
