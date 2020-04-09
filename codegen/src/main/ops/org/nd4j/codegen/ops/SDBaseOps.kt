@@ -1004,34 +1004,6 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
     }
 
-    Op("scalarFloorMod") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
-        javaOpClass = "ScalarFMod"
-        legacy = true
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Element-wise scalar floor modulus operation: out = floorMod(in, value).
-                i.e., returns the remainder after division by 'value'
-            """.trimIndent()
-        }
-    }
-
-    Op("scalarFloorDiv") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
-        javaOpClass = "ScalarDivision"
-        legacy = true
-        Input(NUMERIC, "in") { description = "Input variable" }
-        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
-        Output(NUMERIC, "output"){ description = "Output variable" }
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Element-wise scalar floor division operation: out = floorDiv(in, value).
-            """.trimIndent()
-        }
-    }
 
     Op("scalarMax") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
@@ -1653,6 +1625,48 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 axis = 0: [b,c]
                 axis = 1: [a,c]
                 axis = 2: [a,b]
+            """.trimIndent()
+        }
+    }
+
+    Op("noop") {
+        javaPackage = "org.nd4j.linalg.api.ops"
+        javaOpClass = "NoOp"
+
+        Input(NUMERIC, "input"){ description="Input variable"}
+        Output(BOOL, "value"){ description="Output variable"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                No-op implementation - does nothing.
+            """.trimIndent()
+        }
+    }
+
+    Op("merge") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.controlflow.compat"
+        javaOpClass = "Merge"
+        val inputs = Input(org.nd4j.codegen.api.DataType.NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
+        Output(org.nd4j.codegen.api.DataType.NUMERIC, "output") { description = "Merged input tensors"}
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Merges input tensors.
+            """.trimIndent()
+        }
+    }
+
+    Op("switchOp") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.controlflow.compat"
+        javaOpClass = "Switch"
+
+        Input(org.nd4j.codegen.api.DataType.NUMERIC, "input") {"Input tensor"}
+        Input(org.nd4j.codegen.api.DataType.BOOL, "predicate") {"Predicate tensor"}
+
+        Output(org.nd4j.codegen.api.DataType.NUMERIC, "output") { description = "Output tensor"}
+        Output(org.nd4j.codegen.api.DataType.NUMERIC, "output1") { description = "Output tensor"}
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Switch op forwards input to one of two outputs based on the value of a predicate.
             """.trimIndent()
         }
     }

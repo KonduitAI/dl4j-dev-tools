@@ -210,32 +210,5 @@ fun Linalg() =  Namespace("Linalg") {
     
     Alias(SDBaseOps(), "mmul")
 
-    Op("merge") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.controlflow.compat"
-        javaOpClass = "Merge"
-        val inputs = Input(DataType.NUMERIC, "inputs") {count = AtLeast(1); description = "Input variables" }
-        Output(DataType.NUMERIC, "output") { description = "Merged input tensors"}
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Merges input tensors.
-            """.trimIndent()
-        }
-    }
-
-    Op("switchOp") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.controlflow.compat"
-        javaOpClass = "Switch"
-
-        Input(DataType.NUMERIC, "input") {"Input tensor"}
-        Input(DataType.BOOL, "predicate") {"Predicate tensor"}
-
-        Output(DataType.NUMERIC, "output") { description = "Output tensor"}
-        Output(DataType.NUMERIC, "output1") { description = "Output tensor"}
-        Doc(Language.ANY, DocScope.ALL){
-            """
-                Switch op forwards input to one of two outputs based on the value of a predicate.
-            """.trimIndent()
-        }
-    }
 
 }

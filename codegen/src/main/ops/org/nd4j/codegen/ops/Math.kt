@@ -992,6 +992,22 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("rationalTanh", transformStrict) {
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Elementwise rational tanh operation.
+            """.trimIndent()
+        }
+    }
+
+    Op("rectifiedTanh", transformStrict) {
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Elementwise rectified tanh operation.
+            """.trimIndent()
+        }
+    }
+
     Op("trace") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         Input(NUMERIC, "in") { description = "Input variable" }
@@ -1113,6 +1129,48 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Cyclic right shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("squaredDifference") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
+        javaOpClass = "SquaredDifferenceOp"
+        Input(NUMERIC, "input") {count = AtLeast(1); description = "Input tensor"}
+        Output(NUMERIC, "output") {description = "Calculated difference"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Squared difference operation.
+            """.trimIndent()
+        }
+    }
+
+    Op("floorMod") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        javaOpClass = "ScalarFMod"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Element-wise scalar floor modulus operation: out = floorMod(in, value).
+                i.e., returns the remainder after division by 'value'
+            """.trimIndent()
+        }
+    }
+
+    Op("floorDiv") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
+        javaOpClass = "ScalarDivision"
+        legacy = true
+        Input(NUMERIC, "in") { description = "Input variable" }
+        Arg(NUMERIC, "value") { description = "Scalar value to compare" }
+        Output(NUMERIC, "output"){ description = "Output variable" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Element-wise scalar floor division operation: out = floorDiv(in, value).
             """.trimIndent()
         }
     }

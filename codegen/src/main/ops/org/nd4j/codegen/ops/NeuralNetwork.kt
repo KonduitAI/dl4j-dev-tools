@@ -94,6 +94,16 @@ fun NN() = Namespace("SDNN") {
         }
     }
 
+    Op("preciseGelu", transformStrict) {
+        javaOpClass = "PreciseGELU"
+
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+             GELU activation function in precise mode - Gaussian Error Linear Units
+            """.trimIndent()
+        }
+    }
+
     Op("hardSigmoid", transformStrict) {
         Doc(Language.ANY, DocScope.ALL) {
             """
@@ -484,10 +494,19 @@ fun NN() = Namespace("SDNN") {
         }
     }
 
+    val padMode = Mixin("padMode"){
+        val javaPackage = "org.nd4j.linalg.api.ops.impl.transforms"
+        val javaOpClass = "PadMode"
+        Arg(ENUM, "padMode") { possibleValues = listOf("CONSTANT", "REFLECT", "SYMMETRIC"); description = "" +
+                " \"Constant\" or \"Reflect\" or \"Symmetric\"" }
+
+    }
+
     Op("pad") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms"
         Input(NUMERIC, "input") { description = "Input tensor"}
         Input(NUMERIC, "padding") { description = "Padding value" }
+        useMixin(padMode)
         Arg(NUMERIC, "constant") { description = "Padding constant" }
 
         Output(NUMERIC, "output"){ description = "Padded input" }
