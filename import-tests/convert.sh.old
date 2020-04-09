@@ -1,0 +1,31 @@
+
+#pip install tf2onnx
+#pip install tensorflow=1.15.0
+	
+cd $DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples
+echo "DL4J_TEST_RESOURCES: " $DL4J_TEST_RESOURCES
+
+find . -name "frozen_model.pb" -print | while read f;do
+    echo "Attempting to convert model: " $f
+	set curr = pwd
+	cd `dirname $DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples/$f`
+	output_name=`ls *.prediction.csv 2>/dev/null`
+	stripped_output_name=`echo $output_name | cut -d"." -f1`
+	echo "Output name 0: " $output_name
+	echo "Output name: " $stripped_output_name
+	cd $curr
+	if [ ! -z $stripped_output_name ]
+        then
+	  p1=${f:2}
+      inpath="$DL4J_TEST_RESOURCES/src/main/resources/tf_graphs/examples/$p1"
+	  outpath8="${inpath::-3}_opset8.onnx"
+	  outpath11="${inpath::-3}_opset11.onnx"
+	  echo "In path: " $inpath
+	  echo "Out path, opset 8: " $outpath8
+	  echo "Out path, opset 11: " $outpath11
+	  python3 -m tf2onnx.convert --input $inpath --inputs in:0  --outputs $stripped_output_name:0 --output $outpath8 --opset 8
+	  python3 -m tf2onnx.convert --input $inpath --inputs in:0  --outputs $stripped_output_name:0 --output $outpath11 --opset 11
+	  #2>/dev/null
+	fi
+done
+
