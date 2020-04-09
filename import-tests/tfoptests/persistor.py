@@ -20,6 +20,7 @@ if isApiV2:
     BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples' + tf.version.VERSION
 else:
     BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
+SRC_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
 
 class TensorFlowPersistor:
     '''
@@ -33,6 +34,7 @@ class TensorFlowPersistor:
     def __init__(self, save_dir, base_dir=None, verbose=True):
         self.save_dir = save_dir
         self.base_dir = BASE_DIR if base_dir is None else base_dir
+        self.src_dir = SRC_DIR
         self.verbose = verbose
         self._sess = None
         self._placeholders = None
@@ -144,7 +146,7 @@ class TensorFlowPersistor:
                                       initializer_nodes="")
 
     def write_frozen_graph_txt(self, model_file='frozen_model.pb'):
-        graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
+        graph_filename = "{}/{}/{}".format(self.src_dir, self.save_dir, model_file)
         with tf.io.gfile.GFile(graph_filename, "rb") as f:
             graph_def = tf.compat.v1.GraphDef()
             graph_def.ParseFromString(f.read())
@@ -152,7 +154,7 @@ class TensorFlowPersistor:
                                  'frozen_graph.pbtxt', True)
 
     def write_frozen_graph_txt_v2(self, model_file='model.txt'):
-        graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
+        graph_filename = "{}/{}/{}".format(self.src_dir, self.save_dir, model_file)
         print("Opening " + graph_filename)
         with tf.io.gfile.GFile(graph_filename, "r") as f:
             graph_def = tf.compat.v1.GraphDef()
