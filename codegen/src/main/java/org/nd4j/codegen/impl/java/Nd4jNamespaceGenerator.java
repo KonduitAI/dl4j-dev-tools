@@ -78,7 +78,7 @@ public class Nd4jNamespaceGenerator {
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
                                 String basePackage) throws IOException {
         //String basePackage = "org.nd4j.linalg.factory";
-
+        generateDocs(namespace, outputDirectory, basePackage);
         generateEnums(outputDirectory, basePackage);
         generateConfigs(outputDirectory, basePackage);
         try {
@@ -563,6 +563,58 @@ public class Nd4jNamespaceGenerator {
         for (Arg it : Registry.INSTANCE.enums()) {
             generateEnum(outputDirectory, "org.nd4j.enums", it);
         }
+    }
+
+    private static void generateDocs(NamespaceOps namespace, File outputDirectory, String basePackage) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Namespace " + namespace.getName() + System.lineSeparator());
+        List<Op> ops = namespace.getOps();
+        for (Op op : ops) {
+            sb.append("## " + op.name()  + System.lineSeparator());
+            List<DocSection> doc = op.getDoc();
+            if(!doc.isEmpty()) {
+
+                for (DocSection ds : doc) {
+                    //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
+                        sb.append("```" + ds.getLanguage() + System.lineSeparator());
+                        String text = ds.getText();
+                        String[] lines = text.split("\n");
+                        for( int i=0; i<lines.length; i++ ){
+                            if(!lines[i].endsWith("<br>")){
+                                lines[i] = lines[i] + System.lineSeparator();
+                            }
+                        }
+                        text = String.join("\n", lines);
+                        sb.append(text + System.lineSeparator());
+                    //}
+                }
+                sb.append("```" + System.lineSeparator());
+
+                List<Signature> l = op.getSignatures();
+                for(Signature s : l) {
+                    List<Parameter> params = s.getParameters();
+                    for (Parameter p : params) {
+                        if(p instanceof Input){
+                            Input i = (Input)p;
+                            sb.append("* " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
+                                    op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)" + System.lineSeparator());
+                        } else if(p instanceof Arg) {
+                            Arg arg = (Arg) p;
+                            final Count count = arg.getCount();
+                            if (count == null || count.equals(exactlyOne)) {
+                                sb.append("* " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
+                                        op, DocTokens.GenerationType.ND4J)) +  System.lineSeparator());
+                            } else {
+                                sb.append("* " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
+                                        op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() +  System.lineSeparator());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        File outFile = new File(outputDirectory + "/ops", "/namespace-" + namespace.getName() + ".md");
+        FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
     private static void generateEnum(File outputDirectory, String targetPackage, Arg arg) throws IOException {
