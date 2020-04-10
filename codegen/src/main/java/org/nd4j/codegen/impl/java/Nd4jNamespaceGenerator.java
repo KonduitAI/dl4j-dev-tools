@@ -565,22 +565,57 @@ public class Nd4jNamespaceGenerator {
         }
     }
 
+    private static String generateMethodText(Op op, Signature s, boolean isSameDiff, boolean isLoss) {
+        StringBuilder sb = new StringBuilder();
+        MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()));
+        List<Parameter> params = s.getParameters();
+        List<Output> outs = op.getOutputs();
+        String retType = "void";
+
+        if (outs.size() == 1) {
+            retType = outs.get(0).getType().toString();
+        }
+        else if (outs.size() >= 1) {
+            retType = outs.get(0).getType().toString() + "[]";
+        }
+        sb.append(retType + " " + op.getOpName() + "(");
+        boolean first = true;
+        for (Parameter param : params) {
+            if (param instanceof Arg) {
+                Arg arg = (Arg) param;
+                if (!first)
+                    sb.append(",");
+                sb.append(arg.getType().toString() + " " + arg.name());
+                first = false;
+            }
+            else if (param instanceof Input) {
+                Input arg = (Input) param;
+                if (!first)
+                    sb.append(",");
+                sb.append(arg.getType().toString() + " " + arg.name());
+                first = false;
+            }
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
     private static void generateDocs(NamespaceOps namespace, File outputDirectory, String basePackage) throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append("# Namespace " + namespace.getName() + System.lineSeparator());
+        sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
         List<Op> ops = namespace.getOps();
         for (Op op : ops) {
             sb.append("## " + op.name()  + System.lineSeparator());
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
-
                 boolean first = true;
                 for(Signature s : op.getSignatures()) {
                     if (first) {
-                        sb.append("````" + System.lineSeparator());
+                        sb.append("````" + doc.get(0).getLanguage() + System.lineSeparator());
                         first = false;
                     }
-                    sb.append(s.toString() + System.lineSeparator());
+                    String code = generateMethodText(op, s, false, false);
+                    sb.append(code + System.lineSeparator());
                 }
                 sb.append("````" + System.lineSeparator());
                 for (DocSection ds : doc) {
