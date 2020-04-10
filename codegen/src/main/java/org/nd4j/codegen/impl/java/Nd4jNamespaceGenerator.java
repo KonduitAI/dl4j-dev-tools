@@ -574,9 +574,17 @@ public class Nd4jNamespaceGenerator {
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
 
+                boolean first = true;
+                for(Signature s : op.getSignatures()) {
+                    if (first) {
+                        sb.append("````" + System.lineSeparator());
+                        first = false;
+                    }
+                    sb.append(s.toString() + System.lineSeparator());
+                }
+                sb.append("````" + System.lineSeparator());
                 for (DocSection ds : doc) {
                     //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
-                        sb.append("```" + ds.getLanguage() + System.lineSeparator());
                         String text = ds.getText();
                         String[] lines = text.split("\n");
                         for( int i=0; i<lines.length; i++ ){
@@ -588,7 +596,6 @@ public class Nd4jNamespaceGenerator {
                         sb.append(text + System.lineSeparator());
                     //}
                 }
-                sb.append("```" + System.lineSeparator());
 
                 List<Signature> l = op.getSignatures();
                 for(Signature s : l) {
@@ -610,6 +617,20 @@ public class Nd4jNamespaceGenerator {
                             }
                         }
                     }
+                }
+                sb.append(System.lineSeparator());
+                for (DocSection ds : doc) {
+                    //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
+                    String text = ds.getText();
+                    String[] lines = text.split("\n");
+                    for( int i=0; i<lines.length; i++ ){
+                        if(!lines[i].endsWith("<br>")){
+                            lines[i] = lines[i] + System.lineSeparator();
+                        }
+                    }
+                    text = String.join("\n", lines);
+                    sb.append(text + System.lineSeparator());
+                    //}
                 }
             }
         }
