@@ -565,7 +565,7 @@ public class Nd4jNamespaceGenerator {
         }
     }
 
-    private static String generateMethodText(Op op, Signature s, boolean isSameDiff, boolean isLoss) {
+    private static String generateMethodText(Op op, Signature s, boolean isSameDiff, boolean isLoss, boolean withName) {
         StringBuilder sb = new StringBuilder();
         MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()));
         List<Parameter> params = s.getParameters();
@@ -573,10 +573,10 @@ public class Nd4jNamespaceGenerator {
         String retType = "void";
 
         if (outs.size() == 1) {
-            retType = outs.get(0).getType().toString();
+            retType = isSameDiff ? "SDVariable" : "INDArray";
         }
         else if (outs.size() >= 1) {
-            retType = outs.get(0).getType().toString() + "[]";
+            retType = isSameDiff ? "SDVariable[]" : "INDArray[]";
         }
         sb.append(retType + " " + op.getOpName() + "(");
         boolean first = true;
@@ -585,14 +585,19 @@ public class Nd4jNamespaceGenerator {
                 Arg arg = (Arg) param;
                 if (!first)
                     sb.append(",");
-                sb.append(arg.getType().toString() + " " + arg.name());
+                else if (withName)
+                    sb.append("String name,");
+                TypeName tu = getArgType(arg);
+                sb.append(tu.toString() + " " + arg.name());
                 first = false;
             }
             else if (param instanceof Input) {
                 Input arg = (Input) param;
                 if (!first)
                     sb.append(",");
-                sb.append(arg.getType().toString() + " " + arg.name());
+                else if (withName)
+                    sb.append("String name,");
+                sb.append((isSameDiff ? "SDVariable " : "INDArray ") + arg.name());
                 first = false;
             }
         }
@@ -614,8 +619,12 @@ public class Nd4jNamespaceGenerator {
                         sb.append("````" + doc.get(0).getLanguage() + System.lineSeparator());
                         first = false;
                     }
-                    String code = generateMethodText(op, s, false, false);
-                    sb.append(code + System.lineSeparator());
+                    String ndCode = generateMethodText(op, s, false, false, false);
+                    sb.append(ndCode + System.lineSeparator());
+                    String sdCode = generateMethodText(op, s, true, false, false);
+                    sb.append(sdCode + System.lineSeparator());
+                    String withNameCode = generateMethodText(op, s, true, false, true);
+                    sb.append(withNameCode + System.lineSeparator());
                 }
                 sb.append("````" + System.lineSeparator());
                 for (DocSection ds : doc) {
