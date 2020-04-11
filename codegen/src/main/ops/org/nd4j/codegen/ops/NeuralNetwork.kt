@@ -166,7 +166,6 @@ fun NN() = Namespace("SDNN") {
     Op("CReLU") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "CReLU"
-        legacy = true
         Input(NUMERIC, "x") { description = "Input variable" }
         Output(NUMERIC, "output") { description = "Output variable" }
 
