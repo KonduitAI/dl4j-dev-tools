@@ -163,6 +163,20 @@ fun NN() = Namespace("SDNN") {
         }
     }
 
+    Op("CReLU") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
+        javaOpClass = "CReLU"
+        legacy = true
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Output(NUMERIC, "output") { description = "Output variable" }
+
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+             Concatenates a ReLU which selects only the positive part of the activation with a ReLU which selects only the negative part of the activation. Note that as a result this non-linearity doubles the depth of the activations.
+            """.trimIndent()
+        }
+    }
+
     Op("linear") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
         javaOpClass = "XwPlusB"
