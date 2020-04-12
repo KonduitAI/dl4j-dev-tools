@@ -5,6 +5,8 @@ import sys
 import tensorflow as tf
 import json
 import os
+import h5py
+import numpy as np
 try:
     from tqdm import tqdm
 except ImportError:
@@ -59,13 +61,39 @@ def _update_used_layers(model):
         with open(used_layers_file, 'w') as f:
             json.dump(list(_used_layers), f)
 
-def save_model(model, file_name):
-    path = os.path.join(tfkeras_dir, file_name)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    model.save(path)
-    _update_used_layers(model)
+def rand(shape):
+    shape = [d if d is not None else 1 for d in shape]
+    return np.random.random(shape)
 
+def put_data(model, input_arrays, output_arrays, h5file):
+    input_names = [i.encode('utf8') for i in model.input_names]
+    output_names = [o.encode('utf8') for o in model.output_names]
+    f = h5py.File(h5file, mode='w')
+    data = f.create_group('data')
+    data.attrs['input_names'] = input_names
+    data.attrs['output_names'] = output_names
+    for name, arr in zip(input_names, input_arrays):
+        data.create_dataset(name, shape=arr.shape, dtype='f', data=arr)
+    for name, arr in zip(output_names, output_arrays):
+        data.create_dataset(name, shape=arr.shape, dtype='f', data=arr)
 
+def put_rand_data(model, h5file):
+    input_shapes = [tuple(i.shape) for i in model.inputs]
+    input_arrays = list(map(rand, input_shapes))
+    output_arrays = model.predict(input_arrays)
+    if not isinstance(output_arrays, list):
+        output_arrays = [output_arrays]
+    return put_data(model, input_arrays, output_arrays, h5file)
+
+def save_model(model, file_name, data='rand'):
+    try:
+        path = os.path.join(tfkeras_dir, file_name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        model.save(path)
+        put_rand_data(model, path)
+        _update_used_layers(model)
+    except:
+        pass
 
 def grid(*args, **kwargs):
     if args and callable(args[0]):

@@ -32,9 +32,9 @@ def generate_merge_models(input_shapes_and_axis, merger):
         merge_args = {}
     try:
         merged = merger(**merge_args)(inputs)
+        model = tf.keras.models.Model(inputs, merged)
     except:
         return
-    model = tf.keras.models.Model(inputs, merged)
     return model
 
 

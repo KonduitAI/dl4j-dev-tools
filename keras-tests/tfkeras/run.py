@@ -15,8 +15,7 @@ import sys
 import subprocess
 
 jobs = [mlp, rnn, cnn, merge, activations, advanced_activations]
-jobs.remove(cnn)
-jobs.remove(rnn)
+
 def run_sequential():
     for job in jobs:
         job.run()
