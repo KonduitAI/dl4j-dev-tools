@@ -275,7 +275,6 @@ def _start_proc(f):
     p.join()
 
 def _run_1d():
-    return
     gen = generate_cnn1ds()
     for i, model in tqdm(enumerate(gen), total=len(gen)):
         if model:
@@ -300,9 +299,9 @@ def _run_3d():
             gc.collect()
 
 def run():
-    #_start_proc(_run_1d)
+    _start_proc(_run_1d)
     _start_proc(_run_2d)
-    #_start_proc(_run_3d)
+    _start_proc(_run_3d)
 
 if __name__ == '__main__':
     run()

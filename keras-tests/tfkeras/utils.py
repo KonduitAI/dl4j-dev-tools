@@ -7,6 +7,7 @@ import json
 import os
 import h5py
 import numpy as np
+import click
 try:
     from tqdm import tqdm
 except ImportError:
@@ -68,7 +69,7 @@ def rand(shape):
 def put_data(model, input_arrays, output_arrays, h5file):
     input_names = [i.encode('utf8') for i in model.input_names]
     output_names = [o.encode('utf8') for o in model.output_names]
-    f = h5py.File(h5file, mode='w')
+    f = h5py.File(h5file)
     data = f.create_group('data')
     data.attrs['input_names'] = input_names
     data.attrs['output_names'] = output_names
@@ -76,6 +77,7 @@ def put_data(model, input_arrays, output_arrays, h5file):
         data.create_dataset(name, shape=arr.shape, dtype='f', data=arr)
     for name, arr in zip(output_names, output_arrays):
         data.create_dataset(name, shape=arr.shape, dtype='f', data=arr)
+    f.close()
 
 def put_rand_data(model, h5file):
     input_shapes = [tuple(i.shape) for i in model.inputs]
@@ -92,7 +94,7 @@ def save_model(model, file_name, data='rand'):
         model.save(path)
         put_rand_data(model, path)
         _update_used_layers(model)
-    except:
+    except Exception as e:
         pass
 
 def grid(*args, **kwargs):
