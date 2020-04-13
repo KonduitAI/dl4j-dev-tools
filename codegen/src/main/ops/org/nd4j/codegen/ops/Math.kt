@@ -1136,7 +1136,8 @@ fun Math() =  Namespace("Math"){
     Op("squaredDifference") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
         javaOpClass = "SquaredDifferenceOp"
-        Input(NUMERIC, "input") {count = AtLeast(1); description = "Input tensor"}
+        Input(NUMERIC, "x") {description = "First argument - Input tensor"}
+        Input(NUMERIC, "y") {description = "Second argument - Input tensor"}
         Output(NUMERIC, "output") {description = "Calculated difference"}
 
         Doc(Language.ANY, DocScope.ALL){
