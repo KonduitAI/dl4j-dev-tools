@@ -2321,7 +2321,7 @@ def test_mathtransform():
 
 
     for op in ops:
-        tf.reset_default_graph()
+        tf.compat.v1.reset_default_graph()
         print("Running " + str(op))
         test = OpTest(seed=19, op=op)
 
@@ -2352,6 +2352,8 @@ def test_mathtransform():
             .set_verbose(True) \
             .build_save_frozen_graph()
 
+print("TF version: " + tf.version.VERSION)
+tf.compat.v1.disable_eager_execution()
 
 if __name__ == '__main__':
     test_mathtransform()

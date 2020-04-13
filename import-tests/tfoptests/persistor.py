@@ -13,9 +13,14 @@ import tensorflow as tf
 import numpy as np
 import traceback
 from tensorflow.python.tools import freeze_graph
+from google.protobuf import text_format as pbtf
 
-BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
-
+isApiV2 = tf.version.VERSION.startswith("2.")
+if isApiV2:
+    BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples' + tf.version.VERSION
+else:
+    BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
+SRC_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
 
 class TensorFlowPersistor:
     '''
@@ -29,6 +34,7 @@ class TensorFlowPersistor:
     def __init__(self, save_dir, base_dir=None, verbose=True):
         self.save_dir = save_dir
         self.base_dir = BASE_DIR if base_dir is None else base_dir
+        self.src_dir = SRC_DIR
         self.verbose = verbose
         self._sess = None
         self._placeholders = None
@@ -107,8 +113,12 @@ class TensorFlowPersistor:
     def _save_graph(self, sess, all_saver, data_path="data-all", model_file="model.txt"):
         all_saver.save(sess, "{}/{}/{}".format(self.base_dir, self.save_dir, data_path),
                        global_step=1000)
-        tf.train.write_graph(sess.graph_def, "{}/{}".format(self.base_dir, self.save_dir),
+        tf.io.write_graph(sess.graph_def, "{}/{}".format(self.base_dir, self.save_dir),
                              model_file, True)
+        print("Saved: " +  self.base_dir + "/" + self.save_dir + "/" + model_file)
+
+    def _save_graph_v2(self, sess, data_path="data-all-v2"):
+        tf.saved_model.save(self, data_path)
 
     def _freeze_n_save_graph(self, output_node_names="output",
                              restore_op_name="save/restore_all",
@@ -123,31 +133,46 @@ class TensorFlowPersistor:
             print(input_checkpoint)
         output_graph = "{}/{}/frozen_model.pb".format(self.base_dir, self.save_dir)
         input_graph = "{}/{}/model.txt".format(self.base_dir, self.save_dir)
-        freeze_graph.freeze_graph(input_graph=input_graph,
-                                  input_saver="",
-                                  input_checkpoint=input_checkpoint,
-                                  output_graph=output_graph,
-                                  input_binary=False,
-                                  output_node_names=output_node_names,
-                                  restore_op_name=restore_op_name,
-                                  filename_tensor_name=filename_tensor_name,
-                                  clear_devices=True,
-                                  initializer_nodes="")
+        if isApiV2 == False:
+            freeze_graph.freeze_graph(input_graph=input_graph,
+                                      input_saver="",
+                                      input_checkpoint=input_checkpoint,
+                                      output_graph=output_graph,
+                                      input_binary=False,
+                                      output_node_names=output_node_names,
+                                      restore_op_name=restore_op_name,
+                                      filename_tensor_name=filename_tensor_name,
+                                      clear_devices=True,
+                                      initializer_nodes="")
 
     def write_frozen_graph_txt(self, model_file='frozen_model.pb'):
-        graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
-        with tf.gfile.GFile(graph_filename, "rb") as f:
-            graph_def = tf.GraphDef()
+        graph_filename = "{}/{}/{}".format(self.src_dir, self.save_dir, model_file)
+        with tf.io.gfile.GFile(graph_filename, "rb") as f:
+            graph_def = tf.compat.v1.GraphDef()
             graph_def.ParseFromString(f.read())
-            tf.train.write_graph(graph_def, "{}/{}/".format(self.base_dir, self.save_dir),
+            tf.io.write_graph(graph_def, "{}/{}/".format(self.base_dir, self.save_dir),
+                                 'frozen_graph.pbtxt', True)
+
+    def write_frozen_graph_txt_v2(self, model_file='model.txt'):
+        graph_filename = "{}/{}/{}".format(self.src_dir, self.save_dir, model_file)
+        print("Opening " + graph_filename)
+        with tf.io.gfile.GFile(graph_filename, "r") as f:
+            graph_def = tf.compat.v1.GraphDef()
+            str_graph = f.read()
+            pbtf.Parse(str_graph, graph_def)
+            tf.io.write_graph(graph_def, "{}/{}/".format(self.base_dir, self.save_dir),
                                  'frozen_graph.pbtxt', True)
 
     def load_frozen_graph(self, model_file='frozen_model.pb'):
         graph_filename = "{}/{}/{}".format(self.base_dir, self.save_dir, model_file)
         graph = tf.Graph()
-        with tf.gfile.GFile(graph_filename, "rb") as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
+        with tf.io.gfile.GFile(graph_filename, "rb") as f:
+            graph_def = tf.compat.v1.GraphDef()
+            if isApiV2 == False:
+                graph_def.ParseFromString(f.read())
+            else:
+                str_graph = f.read()
+                pbtf.Parse(str_graph, graph_def)
         with graph.as_default():
             # tf.import_graph_def(graph_def, name=None)
             tf.import_graph_def(graph_def, name="")
@@ -192,7 +217,7 @@ class TensorFlowPersistor:
             for op_output in op.outputs:
                 if self.verbose:
                     print(op_output.name)
-                with tf.Session(graph=graph) as sess:
+                with tf.compat.v1.Session(graph=graph) as sess:
                     try:
                         if op_output.dtype.is_bool and self.skipBoolean is True:
                             if self.verbose:
@@ -227,7 +252,7 @@ class TensorFlowPersistor:
 
     def load_external_graph(self, model_file):
         graph = tf.Graph()
-        graph_def = tf.GraphDef()
+        graph_def = tf.compat.v1.GraphDef()
 
         with open(model_file, "rb") as f:
             graph_def.ParseFromString(f.read())
@@ -253,8 +278,11 @@ class TensorFlowPersistor:
         if self._placeholders is None:
             raise ValueError("Input tensor placeholder list not set")
 
-    def _clean_dir(self):
-        working_dir = "{}/{}".format(self.base_dir, self.save_dir)
+    def _clean_dir(self, custom_directory = ""):
+        if custom_directory == "":
+            working_dir = "{}/{}".format(self.base_dir, self.save_dir)
+        else:
+            working_dir = "{}/{}/{}".format(self.base_dir, self.save_dir, custom_directory)
         if os.path.exists(working_dir):
             shutil.rmtree(working_dir)
         try:
@@ -311,16 +339,17 @@ class TensorFlowPersistor:
         self._check_outputs()  # make sure outputs are set
         self._clean_dir()  # clean contents of dir
         placeholder_feed_dict = self._get_placeholder_dict()
-        all_saver = tf.train.Saver()
         if self._sess is None:
-            init = tf.global_variables_initializer()
-            with tf.Session() as sess:
+            init = tf.compat.v1.global_variables_initializer()
+            with tf.compat.v1.Session() as sess:
                 sess.run(init)
+                tf.compat.v1.disable_eager_execution()
                 predictions = sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
-                self._save_graph(sess, all_saver)
+                self._save_graph(sess, tf.compat.v1.train.Saver())
         else:
+            all_saver = tf.compat.v1.train.Saver()
             predictions = self._sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
-            self._save_graph(self._sess, all_saver)
+            self._save_graph(self._sess, all_saver, tf.compat.v1.train.Saver())
             self._sess.close
         flattened_predictions = []
         # print("OUTPUT TENSORS: ", self._output_tensors)
@@ -362,12 +391,34 @@ class TensorFlowPersistor:
             dtypesToSave[outName] = str(outVal.dtype)
         print("dtypesToSave: ", dtypesToSave)
         self._save_node_dtypes(dtypesToSave)
-        tf.reset_default_graph()
+        tf.compat.v1.reset_default_graph()
         self._freeze_n_save_graph(output_node_names=",".join(self._list_output_nodes_for_freeze_graph()))
         self.write_frozen_graph_txt()
-        if not skip_intermediate:
+        if not skip_intermediate and isApiV2 == False:
             second_pass_dict = self._save_intermediate_nodes(self._placeholder_name_value_dict)
             # assert second_pass_dict.keys() == first_pass_dict.keys()
             # for a_output in second_pass_dict.keys():
             #    np.testing.assert_equal(first_pass_dict[a_output], second_pass_dict[a_output])
         return predictions
+
+    SAVED_MODEL_DIR = "saved_model"
+
+    def build_save_saved_model(self):
+
+        self._check_inputs()  # make sure input placeholders are set
+        self._check_outputs()  # make sure outputs are set
+        self._clean_dir(self.SAVED_MODEL_DIR)  # clean contents of dir
+        placeholder_feed_dict = self._get_placeholder_dict()
+        if self._sess is None:
+            init = tf.compat.v1.global_variables_initializer()
+            with tf.compat.v1.Session() as sess:
+                sess.run(init)
+                predictions = sess.run(self._output_tensors, feed_dict=placeholder_feed_dict)
+                path = "{}/{}/{}".format(self.base_dir, self.save_dir, self.SAVED_MODEL_DIR)
+                builder = tf.compat.v1.saved_model.Builder(path)
+                builder.add_meta_graph_and_variables(
+                    sess,
+                    tags=[tf.compat.v1.saved_model.tag_constants.TRAINING])
+                builder.save()
+                print("Saved model in " + path)
+

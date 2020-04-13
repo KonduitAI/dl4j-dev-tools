@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tfoptests.persistor import TensorFlowPersistor
 
-tf.set_random_seed(1)
+tf.random.set_seed(1)
 
 
 def test_simplecond():
