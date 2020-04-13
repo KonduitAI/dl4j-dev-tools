@@ -78,7 +78,7 @@ public class Nd4jNamespaceGenerator {
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
                                 String basePackage) throws IOException {
         //String basePackage = "org.nd4j.linalg.factory";
-
+        generateDocs(namespace, outputDirectory, basePackage);
         generateEnums(outputDirectory, basePackage);
         generateConfigs(outputDirectory, basePackage);
         try {
@@ -563,6 +563,123 @@ public class Nd4jNamespaceGenerator {
         for (Arg it : Registry.INSTANCE.enums()) {
             generateEnum(outputDirectory, "org.nd4j.enums", it);
         }
+    }
+
+    private static String generateMethodText(Op op, Signature s, boolean isSameDiff, boolean isLoss, boolean withName) {
+        StringBuilder sb = new StringBuilder();
+        MethodSpec.Builder c = MethodSpec.methodBuilder(GenUtil.ensureFirstIsNotCap(op.getOpName()));
+        List<Parameter> params = s.getParameters();
+        List<Output> outs = op.getOutputs();
+        String retType = "void";
+
+        if (outs.size() == 1) {
+            retType = isSameDiff ? "SDVariable" : "INDArray";
+        }
+        else if (outs.size() >= 1) {
+            retType = isSameDiff ? "SDVariable[]" : "INDArray[]";
+        }
+        sb.append(retType + " " + op.getOpName() + "(");
+        boolean first = true;
+        for (Parameter param : params) {
+            if (param instanceof Arg) {
+                Arg arg = (Arg) param;
+                if (!first)
+                    sb.append(",");
+                else if (withName)
+                    sb.append("String name,");
+                TypeName tu = getArgType(arg);
+                sb.append(tu.toString() + " " + arg.name());
+                first = false;
+            }
+            else if (param instanceof Input) {
+                Input arg = (Input) param;
+                if (!first)
+                    sb.append(",");
+                else if (withName)
+                    sb.append("String name,");
+                sb.append((isSameDiff ? "SDVariable " : "INDArray ") + arg.name());
+                first = false;
+            }
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private static void generateDocs(NamespaceOps namespace, File outputDirectory, String basePackage) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
+        List<Op> ops = namespace.getOps();
+        for (Op op : ops) {
+            sb.append("## " + op.name()  + System.lineSeparator());
+            List<DocSection> doc = op.getDoc();
+            if(!doc.isEmpty()) {
+                boolean first = true;
+                for(Signature s : op.getSignatures()) {
+                    if (first) {
+                        sb.append("````" + doc.get(0).getLanguage() + System.lineSeparator());
+                        first = false;
+                    }
+                    String ndCode = generateMethodText(op, s, false, false, false);
+                    sb.append(ndCode + System.lineSeparator());
+                    String sdCode = generateMethodText(op, s, true, false, false);
+                    sb.append(sdCode + System.lineSeparator());
+                    String withNameCode = generateMethodText(op, s, true, false, true);
+                    sb.append(withNameCode + System.lineSeparator());
+                }
+                sb.append("````" + System.lineSeparator());
+                for (DocSection ds : doc) {
+                    //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
+                        String text = ds.getText();
+                        String[] lines = text.split("\n");
+                        for( int i=0; i<lines.length; i++ ){
+                            if(!lines[i].endsWith("<br>")){
+                                lines[i] = lines[i] + System.lineSeparator();
+                            }
+                        }
+                        text = String.join("\n", lines);
+                        sb.append(text + System.lineSeparator());
+                    //}
+                }
+
+                List<Signature> l = op.getSignatures();
+                for(Signature s : l) {
+                    List<Parameter> params = s.getParameters();
+                    for (Parameter p : params) {
+                        if(p instanceof Input){
+                            Input i = (Input)p;
+                            sb.append("* " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
+                                    op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)" + System.lineSeparator());
+                        } else if(p instanceof Arg) {
+                            Arg arg = (Arg) p;
+                            final Count count = arg.getCount();
+                            if (count == null || count.equals(exactlyOne)) {
+                                sb.append("* " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
+                                        op, DocTokens.GenerationType.ND4J)) +  System.lineSeparator());
+                            } else {
+                                sb.append("* " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
+                                        op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() +  System.lineSeparator());
+                            }
+                        }
+                    }
+                }
+                sb.append(System.lineSeparator());
+                for (DocSection ds : doc) {
+                    //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
+                    String text = ds.getText();
+                    String[] lines = text.split("\n");
+                    for( int i=0; i<lines.length; i++ ){
+                        if(!lines[i].endsWith("<br>")){
+                            lines[i] = lines[i] + System.lineSeparator();
+                        }
+                    }
+                    text = String.join("\n", lines);
+                    sb.append(text + System.lineSeparator());
+                    //}
+                }
+            }
+        }
+        File outFile = new File(outputDirectory + "/ops", "/namespace-" + namespace.getName() + ".md");
+        FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
     private static void generateEnum(File outputDirectory, String targetPackage, Arg arg) throws IOException {
