@@ -78,7 +78,7 @@ public class Nd4jNamespaceGenerator {
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
                                 String basePackage) throws IOException {
         //String basePackage = "org.nd4j.linalg.factory";
-        generateDocs(namespace, outputDirectory, basePackage);
+
         generateEnums(outputDirectory, basePackage);
         generateConfigs(outputDirectory, basePackage);
         try {
@@ -87,6 +87,7 @@ public class Nd4jNamespaceGenerator {
         catch (Exception e) {
             log.error(e.toString());
         }
+        generateDocs(namespace, outputDirectory, basePackage);
     }
 
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
@@ -101,6 +102,7 @@ public class Nd4jNamespaceGenerator {
         catch (Exception e) {
             log.error(e.toString());
         }
+        generateDocs(namespace, outputDirectory, basePackage);
     }
 
     private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
@@ -605,6 +607,24 @@ public class Nd4jNamespaceGenerator {
         return sb.toString();
     }
 
+    private static StringBuilder buildDocSectionText(List<DocSection> docSections) {
+        StringBuilder sb = new StringBuilder();
+        for (DocSection ds : docSections) {
+            //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
+            String text = ds.getText();
+            String[] lines = text.split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                if (!lines[i].endsWith("<br>")) {
+                    lines[i] = lines[i] + System.lineSeparator();
+                }
+            }
+            text = String.join("\n", lines);
+            sb.append(text + System.lineSeparator());
+            //}
+        }
+        return sb;
+    }
+
     private static void generateDocs(NamespaceOps namespace, File outputDirectory, String basePackage) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
@@ -627,20 +647,8 @@ public class Nd4jNamespaceGenerator {
                     sb.append(withNameCode + System.lineSeparator());
                 }
                 sb.append("````" + System.lineSeparator());
-                for (DocSection ds : doc) {
-                    //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
-                        String text = ds.getText();
-                        String[] lines = text.split("\n");
-                        for( int i=0; i<lines.length; i++ ){
-                            if(!lines[i].endsWith("<br>")){
-                                lines[i] = lines[i] + System.lineSeparator();
-                            }
-                        }
-                        text = String.join("\n", lines);
-                        sb.append(text + System.lineSeparator());
-                    //}
-                }
-
+                StringBuilder tsb = buildDocSectionText(doc);
+                sb.append(tsb.toString());
                 List<Signature> l = op.getSignatures();
                 for(Signature s : l) {
                     List<Parameter> params = s.getParameters();
@@ -663,20 +671,31 @@ public class Nd4jNamespaceGenerator {
                     }
                 }
                 sb.append(System.lineSeparator());
-                for (DocSection ds : doc) {
-                    //if(ds.applies(Language.JAVA, CodeComponent.OP_CREATOR)){
-                    String text = ds.getText();
-                    String[] lines = text.split("\n");
-                    for( int i=0; i<lines.length; i++ ){
-                        if(!lines[i].endsWith("<br>")){
-                            lines[i] = lines[i] + System.lineSeparator();
-                        }
-                    }
-                    text = String.join("\n", lines);
-                    sb.append(text + System.lineSeparator());
-                    //}
-                }
+                tsb = buildDocSectionText(doc);
+                sb.append(tsb.toString());
             }
+        }
+
+        for (Config config : Registry.INSTANCE.configs()) {
+            sb.append("## " + config.getName()  + System.lineSeparator());
+            boolean first = true;
+            for (Input i : config.getInputs()) {
+                if (first) {
+                    sb.append("````" + System.lineSeparator());
+                    first = false;
+                }
+                sb.append("* " + i.getName() + " " + i.getDescription() + " (" + i.getType() + " type)" + System.lineSeparator());
+            }
+            for (Arg arg : config.getArgs()) {
+                if (first) {
+                    sb.append("````" + System.lineSeparator());
+                    first = false;
+                }
+                sb.append("* " + arg.getName() + " " + " (" + arg.getType() + " type)" + System.lineSeparator());
+            }
+            StringBuilder tsb = buildDocSectionText(config.getDoc());
+            sb.append(tsb.toString());
+            sb.append("````" + System.lineSeparator());
         }
         File outFile = new File(outputDirectory + "/ops", "/namespace-" + namespace.getName() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
