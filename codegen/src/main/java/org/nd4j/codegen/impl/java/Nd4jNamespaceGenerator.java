@@ -25,6 +25,7 @@ import javax.lang.model.element.Modifier;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -696,6 +697,8 @@ public class Nd4jNamespaceGenerator {
             StringBuilder tsb = buildDocSectionText(config.getDoc());
             sb.append(tsb.toString());
             sb.append("````" + System.lineSeparator());
+            ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
+                    sb.append("* " + op.getOpName() + System.lineSeparator()));
         }
         File outFile = new File(outputDirectory + "/ops", "/namespace-" + namespace.getName() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
