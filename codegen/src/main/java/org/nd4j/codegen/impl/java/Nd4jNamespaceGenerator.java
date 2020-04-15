@@ -77,7 +77,7 @@ public class Nd4jNamespaceGenerator {
     private Nd4jNamespaceGenerator() { }
 
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
-                                String basePackage) throws IOException {
+                                String basePackage, String docsDirectory) throws IOException {
         //String basePackage = "org.nd4j.linalg.factory";
 
         generateEnums(outputDirectory, basePackage);
@@ -88,11 +88,12 @@ public class Nd4jNamespaceGenerator {
         catch (Exception e) {
             log.error(e.toString());
         }
-        generateDocs(namespace, outputDirectory, basePackage);
+        if (StringUtils.isNoneEmpty(docsDirectory))
+            generateDocs(namespace, new File(docsDirectory), basePackage);
     }
 
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
-                                String basePackage, String parentClass) throws IOException {
+                                String basePackage, String parentClass, String docsDirectory) throws IOException {
         //String basePackage = "org.nd4j.linalg.factory";
 
         generateEnums(outputDirectory, basePackage);
@@ -103,7 +104,8 @@ public class Nd4jNamespaceGenerator {
         catch (Exception e) {
             log.error(e.toString());
         }
-        generateDocs(namespace, outputDirectory, basePackage);
+        if (StringUtils.isNoneEmpty(docsDirectory))
+            generateDocs(namespace, new File(docsDirectory), basePackage);
     }
 
     private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
@@ -698,7 +700,7 @@ public class Nd4jNamespaceGenerator {
             sb.append(tsb.toString());
             sb.append("````" + System.lineSeparator());
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
-                    sb.append("* " + op.getOpName() + System.lineSeparator()));
+                    sb.append("[" + op.getOpName() + "]" + "(#" + op.getOpName() + ")" + System.lineSeparator()));
         }
         File outFile = new File(outputDirectory + "/ops", "/namespace-" + namespace.getName() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);

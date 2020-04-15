@@ -2,6 +2,7 @@ package org.nd4j.codegen.cli;
 
 import com.beust.jcommander.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.nd4j.codegen.Namespace;
 import org.nd4j.codegen.api.NamespaceOps;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
@@ -36,6 +37,9 @@ public class CLI {
 
     @Parameter(names = "-dir", description = "Root directory of deeplearning4j mono repo", required = true)
     private String repoRootDir;
+
+    @Parameter(names = "-docsdir", description = "Root directory for generated docs")
+    private String docsdir;
 
     @Parameter(names = "-namespaces", description = "List of namespaces to generate, or 'ALL' to generate all namespaces", required = true)
     private List<String> namespaces;
@@ -91,10 +95,10 @@ public class CLI {
             log.info("Output path: {}", outputPath.getAbsolutePath());
 
             if (NS_PROJECT.ND4J == project)
-                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage);
+                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage, docsdir);
             else
                 Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage,
-                        "org.nd4j.autodiff.samediff.ops.SDOps");
+                        "org.nd4j.autodiff.samediff.ops.SDOps", docsdir);
             ++cnt;
         }
         log.info("Complete - generated {} namespaces", cnt);
