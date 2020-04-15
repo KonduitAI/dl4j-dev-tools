@@ -216,7 +216,7 @@ fun SDImage() =  Namespace("SDImage"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.image"
         javaOpClass = "ImageResize"
 
-        Input(NUMERIC, "input") { description = "4D image [NCHW]" }
+        Input(NUMERIC, "input") { description = "4D image [NHWC]" }
         Input(INT, "size") { description = "new height and width" }
         Arg(BOOL, "preserveAspectRatio") { description = "Whether to preserve the aspect ratio." +
                 " If this is set, then images will be resized to a size that fits in size while preserving the aspect ratio" +
