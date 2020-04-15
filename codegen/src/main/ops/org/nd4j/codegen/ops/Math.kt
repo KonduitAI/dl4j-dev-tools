@@ -1137,6 +1137,7 @@ fun Math() =  Namespace("Math"){
         javaOpClass = "EmbeddingLookup"
         Input(NUMERIC, "x") {description = "Input tensor"}
         Input(NUMERIC, "indices") {description = "A Tensor containing the ids to be looked up."}
+        Arg(ENUM, "PartitionMode") { possibleValues = listOf( "MOD","DIV"); description ="partition_mode == 0 - i.e. 'mod' , 1 - 'div'"}
         Output(NUMERIC, "output") {description = "Shifted output"}
 
         Doc(Language.ANY, DocScope.ALL){
