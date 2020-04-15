@@ -217,12 +217,12 @@ fun SDImage() =  Namespace("SDImage"){
         javaOpClass = "ImageResize"
 
         Input(NUMERIC, "input") { description = "4D image [NCHW]" }
-        Input(NUMERIC, "size") { description = "new height and width" }
+        Input(INT, "size") { description = "new height and width" }
         Arg(BOOL, "preserveAspectRatio") { description = "Whether to preserve the aspect ratio." +
                 " If this is set, then images will be resized to a size that fits in size while preserving the aspect ratio" +
                 " of the original image. Scales up the image if size is bigger than the current size of the image. Defaults to False."; defaultValue=false; }
         Arg(BOOL, "antialis") { description = "Whether to use an anti-aliasing filter when downsampling an image"; defaultValue=false;  }
-        Arg(ENUM, "ImageResizeMethods") { possibleValues = listOf( "ResizeBilinear", "ResizeBicubic", "ResizeNearest", "ResizeGaussian",
+        Arg(ENUM, "ImageResizeMethod") { possibleValues = listOf( "ResizeBilinear", "ResizeBicubic", "ResizeNearest", "ResizeGaussian",
                 "ResizeLanczos5", "ResizeMitchelcubic", "ResizeArea"); description = "ResizeBilinear: Bilinear interpolation. If 'antialias' is true, becomes a hat/tent filter function with radius 1 when downsampling.\n" +
                 "ResizeLanczos5: Lanczos kernel with radius 5. Very-high-quality filter but may have stronger ringing.\n" +
                 "ResizeBicubic: Cubic interpolant of Keys. Equivalent to Catmull-Rom kernel. Reasonably good quality and faster than Lanczos3Kernel, particularly when upsampling.\n" +
