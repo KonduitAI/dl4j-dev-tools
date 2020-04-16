@@ -633,7 +633,7 @@ public class Nd4jNamespaceGenerator {
         sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
         List<Op> ops = namespace.getOps();
         for (Op op : ops) {
-            sb.append("## " + op.name()  + System.lineSeparator());
+            sb.append("## <a name=" + "\"" + op.name() + "\"></a>" + op.name()  + System.lineSeparator());
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
                 boolean first = true;
