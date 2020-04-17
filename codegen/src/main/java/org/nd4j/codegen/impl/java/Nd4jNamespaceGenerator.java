@@ -35,7 +35,7 @@ public class Nd4jNamespaceGenerator {
     private static Map<DataType, String> validationMapping = new HashMap<>();
     private static Map<Arg, TypeName> enumMapping = new HashMap<>();
     private static Map<Config, TypeName> configMapping = new HashMap<>();
-    private static Count exactlyOne = new Exactly(1);
+    public static Count exactlyOne = new Exactly(1);
     private static String copyright =
             "/*******************************************************************************\n" +
             " * Copyright (c) 2019-2020 Konduit K.K.\n" +
@@ -88,8 +88,6 @@ public class Nd4jNamespaceGenerator {
         catch (Exception e) {
             log.error(e.toString());
         }
-        if (StringUtils.isNoneEmpty(docsDirectory))
-            generateDocs(namespace, new File(docsDirectory), basePackage);
     }
 
     public static void generate(NamespaceOps namespace, GeneratorConfig config, File outputDirectory, String className,
@@ -104,8 +102,6 @@ public class Nd4jNamespaceGenerator {
         catch (Exception e) {
             log.error(e.toString());
         }
-        if (StringUtils.isNoneEmpty(docsDirectory))
-            generateDocs(namespace, new File(docsDirectory), basePackage);
     }
 
     private static void generateOpFactory(NamespaceOps namespace, File outputDirectory, String className, String basePackage,
@@ -374,7 +370,7 @@ public class Nd4jNamespaceGenerator {
         return inNames;
     }
 
-    private static TypeName getArgType(Arg arg) {
+    public static TypeName getArgType(Arg arg) {
         DataType argType = arg.getType();
         Count count = arg.getCount();
         TypeName type;

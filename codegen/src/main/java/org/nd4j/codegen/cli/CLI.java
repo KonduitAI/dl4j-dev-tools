@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.nd4j.codegen.Namespace;
 import org.nd4j.codegen.api.NamespaceOps;
+import org.nd4j.codegen.impl.java.DocsGenerator;
 import org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator;
 
 import java.io.File;
@@ -35,7 +36,7 @@ public class CLI {
         }
     }
 
-    @Parameter(names = "-dir", description = "Root directory of deeplearning4j mono repo", required = true)
+    @Parameter(names = "-dir", description = "Root directory of deeplearning4j mono repo")
     private String repoRootDir;
 
     @Parameter(names = "-docsdir", description = "Root directory for generated docs")
@@ -91,14 +92,20 @@ public class CLI {
             NamespaceOps ops = ns.getNamespace();
 
             String basePackagePath = basePackage.replace(".", "/") + "/ops/";
-            File outputPath = new File(outputDir,  basePackagePath + javaClassName + ".java");
-            log.info("Output path: {}", outputPath.getAbsolutePath());
 
-            if (NS_PROJECT.ND4J == project)
-                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage, docsdir);
-            else
-                Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage,
-                        "org.nd4j.autodiff.samediff.ops.SDOps", docsdir);
+            if (StringUtils.isNotEmpty(docsdir)) {
+                DocsGenerator.generateDocs(ops, docsdir, basePackage);
+            }
+            if (outputDir != null) {
+                File outputPath = new File(outputDir, basePackagePath + javaClassName + ".java");
+                log.info("Output path: {}", outputPath.getAbsolutePath());
+
+                if (NS_PROJECT.ND4J == project)
+                    Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage, docsdir);
+                else
+                    Nd4jNamespaceGenerator.generate(ops, null, outputDir, javaClassName, basePackage,
+                            "org.nd4j.autodiff.samediff.ops.SDOps", docsdir);
+            }
             ++cnt;
         }
         log.info("Complete - generated {} namespaces", cnt);
@@ -115,15 +122,23 @@ public class CLI {
                 .build()
                 .parse(args);
 
-        //First: Check root directory.
-        File dir = new File(repoRootDir);
-        if(!dir.exists() || !dir.isDirectory()){
-            throw new IllegalStateException("Provided root directory does not exist (or not a directory): " + dir.getAbsolutePath());
+        // Either root directory for source code generation or docs directory must be present. If root directory is
+        // absenbt - then it's "generate docs only" mode.
+        if (StringUtils.isEmpty(repoRootDir) && StringUtils.isEmpty(docsdir)) {
+            throw new IllegalStateException("Provide one or both of arguments : -dir, -docsdir");
         }
+        File outputDir = null;
+        if (StringUtils.isNotEmpty(repoRootDir)) {
+            //First: Check root directory.
+            File dir = new File(repoRootDir);
+            if (!dir.exists() || !dir.isDirectory()) {
+                throw new IllegalStateException("Provided root directory does not exist (or not a directory): " + dir.getAbsolutePath());
+            }
 
-        File outputDir =  new File(dir, relativePath);
-        if(!outputDir.exists() || !dir.isDirectory()){
-            throw new IllegalStateException("Expected output directory does not exist: " + outputDir.getAbsolutePath());
+            outputDir = new File(dir, relativePath);
+            if (!outputDir.exists() || !dir.isDirectory()) {
+                throw new IllegalStateException("Expected output directory does not exist: " + outputDir.getAbsolutePath());
+            }
         }
 
         if(namespaces == null || namespaces.isEmpty()){
