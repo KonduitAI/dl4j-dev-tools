@@ -3,6 +3,7 @@ package org.nd4j.codegen.impl.java;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nd4j.codegen.api.*;
 import org.nd4j.codegen.api.doc.DocSection;
 import org.nd4j.codegen.api.doc.DocTokens;
@@ -16,6 +17,31 @@ import java.util.List;
 import static org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator.exactlyOne;
 
 public class DocsGenerator {
+
+    // Markdown marker for start-end of code section
+    private static final String MD_CODE = "```";
+    // Javadoc constants which should be dropped or replaced for markdown generation
+    private static final String JD_CODE = "@code";
+    private static final String JD_INPUT_TYPE = "%INPUT_TYPE%";
+
+    public static class JavaDocToMDAdapter {
+        private String current;
+
+        public JavaDocToMDAdapter(String original) {
+            this.current = original;
+        }
+
+        public JavaDocToMDAdapter filter(String pattern, String replaceWith) {
+            String result =  StringUtils.replace(current, pattern, replaceWith);
+            this.current = result;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return current;
+        }
+    }
 
     private static String generateMethodText(Op op, Signature s, boolean isSameDiff, boolean isLoss, boolean withName) {
         StringBuilder sb = new StringBuilder();
@@ -65,7 +91,11 @@ public class DocsGenerator {
             String[] lines = text.split("\n");
             for (int i = 0; i < lines.length; i++) {
                 if (!lines[i].endsWith("<br>")) {
-                    lines[i] = lines[i] + System.lineSeparator();
+                    String filteredLine = new JavaDocToMDAdapter(lines[i]).
+                            filter(JD_CODE, StringUtils.EMPTY).
+                            filter(JD_INPUT_TYPE, "INDArray").toString();
+
+                    lines[i] = filteredLine + System.lineSeparator();
                 }
             }
             text = String.join("\n", lines);
@@ -80,6 +110,8 @@ public class DocsGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
         List<Op> ops = namespace.getOps();
+        if (ops.size() > 0)
+            sb.append("# Operation classes <ops>" + System.lineSeparator());
         for (Op op : ops) {
             sb.append("## <a name=" + "\"" + op.name() + "\"></a>" + op.name()  + System.lineSeparator());
             List<DocSection> doc = op.getDoc();
@@ -88,7 +120,7 @@ public class DocsGenerator {
                 for(Signature s : op.getSignatures()) {
                     if (first) {
                         Language lang = doc.get(0).getLanguage();
-                        sb.append("````" + (lang.equals(Language.ANY) ? Language.JAVA : lang ) + System.lineSeparator());
+                        sb.append(MD_CODE + (lang.equals(Language.ANY) ? Language.JAVA : lang ) + System.lineSeparator());
                         first = false;
                     }
                     String ndCode = generateMethodText(op, s, false, false, false);
@@ -98,7 +130,7 @@ public class DocsGenerator {
                     String withNameCode = generateMethodText(op, s, true, false, true);
                     sb.append(withNameCode + System.lineSeparator());
                 }
-                sb.append("````" + System.lineSeparator());
+                sb.append(MD_CODE + System.lineSeparator());
                 StringBuilder tsb = buildDocSectionText(doc);
                 sb.append(tsb.toString());
                 List<Signature> l = op.getSignatures();
@@ -123,11 +155,10 @@ public class DocsGenerator {
                     }
                 }
                 sb.append(System.lineSeparator());
-                tsb = buildDocSectionText(doc);
-                sb.append(tsb.toString());
             }
         }
-
+        if (Registry.INSTANCE.configs().size() > 0)
+            sb.append("# Configuration Classes <configs>" + System.lineSeparator());
         for (Config config : Registry.INSTANCE.configs()) {
             sb.append("## " + config.getName()  + System.lineSeparator());
             boolean first = true;
