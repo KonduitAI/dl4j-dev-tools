@@ -26,7 +26,7 @@ val Foo = Enum("Foo"){
 }
 
 // Within some op:
-Arg(ENUM, "foobar"){ enum = Foo; defaultValue = Foo.option("EGGS")}
+Arg(Foo, "foobar"){ defaultValue = Foo.option("EGGS")}
 ```
   
 ## Consequences
