@@ -191,6 +191,21 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+
+    Op("ClipByAvgNorm") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.clip"
+        javaOpClass = "ClipByAvgNorm"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Arg(NUMERIC, "clipValue") { description = "Value for clipping" }
+        Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over"}
+        Output(NUMERIC, "output"){ description = "Output variable" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+        Clips tensor values to a maximum average L2-norm.
+            """.trimIndent()
+        }
+    }
+
     //TODO consolidate these confusionMatrix ops into one?
     Op("confusionMatrix") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
@@ -1113,6 +1128,22 @@ fun Math() =  Namespace("Math"){
         Doc(Language.ANY, DocScope.ALL){
             """
                 Cyclic right shift operation
+            """.trimIndent()
+        }
+    }
+
+    Op("EmbeddingLookup") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape.tensorops"
+        javaOpClass = "EmbeddingLookup"
+        Input(NUMERIC, "x") {description = "Input tensor"}
+        Input(NUMERIC, "indices") {description = "A Tensor containing the ids to be looked up."}
+        Arg(ENUM, "PartitionMode") { possibleValues = listOf( "MOD","DIV"); description ="partition_mode == 0 - i.e. 'mod' , 1 - 'div'"}
+        Output(NUMERIC, "output") {description = "Shifted output"}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+            Looks up ids in a list of embedding tensors.
+
             """.trimIndent()
         }
     }
