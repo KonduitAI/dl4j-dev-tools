@@ -39,6 +39,17 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("add", transformArithmetic){
+        javaOpClass = "AddOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise addition operation, out = x + y
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
+
     // TODO should we call these "reduceAMax", "reduceAMean", "reduceMin" etc?
     // TODO: There are 2 implementations of amax in org.nd4j.linalg.api.ops.impl
     Op("amax", reduceSame) {
@@ -390,6 +401,16 @@ fun Math() =  Namespace("Math"){
                 Supports higher dimensions: in general, out[i,...,k] = in[i,...,k,i,...,k]
                 """.trimIndent()
         }
+    }
+
+    Op("div", transformArithmetic){
+        javaOpClass = "DivOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise division operation, out = x / y
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
     }
 
     Op("entropy", reduceFloating) {
@@ -991,6 +1012,16 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("sub", transformArithmetic){
+        javaOpClass = "SubOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise subtraction operation, out = x - y
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
     Op("tan", transformStrict) {
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -1074,6 +1105,16 @@ fun Math() =  Namespace("Math"){
                 Broadcasts parameters for evaluation on an N-D grid.
             """.trimIndent()
         }
+    }
+
+    Op("mul", transformArithmetic){
+        javaOpClass = "MulOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise multiplication operation, out = x * y
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
     }
 
     Op("bitShift") {

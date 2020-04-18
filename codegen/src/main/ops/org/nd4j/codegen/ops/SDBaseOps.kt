@@ -8,6 +8,7 @@ import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
+import org.nd4j.codegen.mixins.*
 import org.nd4j.linalg.api.buffer.DataType
 import java.lang.Boolean.FALSE
 
@@ -22,15 +23,6 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
                 keepDims = true: [a,1,c]
                 keepDims = false: [a,c]
-            """.trimIndent()
-        }
-    }
-
-    val broadcastingDoc = Mixin("broadcastingDoc"){
-        Doc(Language.ANY, DocScope.ALL){
-            //TODO: finalize content for this broadcasting mixin doc.
-            """
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
             """.trimIndent()
         }
     }
