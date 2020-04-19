@@ -2,6 +2,7 @@ package org.nd4j.codegen.mixins
 
 import org.nd4j.codegen.api.AtLeast
 import org.nd4j.codegen.api.DataType
+import org.nd4j.codegen.api.Exactly
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
@@ -28,6 +29,13 @@ val transformArithmetic = Mixin("transformArithmetic"){
     legacy = false
     Input(DataType.NUMERIC, "y") { description = "Input variable" }
     javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
+}
+
+val transformCustom2 = Mixin("transformCustom2"){
+    Input(DataType.NUMERIC, "x") { description = "First input variable, x" }
+    Input(DataType.NUMERIC, "y") { description = "Second input variable, y" }
+    Output(DataType.NUMERIC, "out"){ description = "Output"}
+    javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
 }
 
 val transformStrict = Mixin("transformStrict"){

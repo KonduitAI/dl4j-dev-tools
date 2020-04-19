@@ -274,6 +274,18 @@ fun NN() = Namespace("SDNN") {
         }
     }
 
+    Op("preciseGelu", transformStrict) {
+        javaOpClass = "PreciseGELU"
+
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+             GELU activation function - Gaussian Error Linear Units
+             For more details, see <i>Gaussian Error Linear Units (GELUs)</i> - <a href="https://arxiv.org/abs/1606.08415">https://arxiv.org/abs/1606.08415</a>
+             This method uses the precise method
+            """.trimIndent()
+        }
+    }
+
     Op("prelu") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.scalar"
         javaOpClass = "PRelu"
@@ -501,6 +513,7 @@ fun NN() = Namespace("SDNN") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms"
         Input(NUMERIC, "input") { description = "Input tensor"}
         Input(NUMERIC, "padding") { description = "Padding value" }
+        Arg(ENUM, "PadMode") { possibleValues = listOf("CONSTANT", "REFLECT", "SYMMETRIC"); description = "Padding format"; defaultValue="CONSTANT" }
         Arg(NUMERIC, "constant") { description = "Padding constant" }
 
         Output(NUMERIC, "output"){ description = "Padded input" }

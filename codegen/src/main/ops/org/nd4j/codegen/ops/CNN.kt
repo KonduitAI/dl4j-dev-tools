@@ -12,7 +12,6 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     val dataFormat = Mixin("dataFormat"){
         Arg(ENUM, "dataFormat") { possibleValues = listOf("NCHW", "NHWC"); description = "Data format: \"NCHW\" or \"NHWC\"" }
-
     }
 
 

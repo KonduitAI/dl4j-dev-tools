@@ -49,6 +49,15 @@ fun Math() =  Namespace("Math"){
         useMixin(broadcastingDoc)
     }
 
+    Op("add", scalar){
+        javaOpClass = "ScalarAdd"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar add operation, out = in + scalar
+            """.trimIndent()
+        }
+    }
+
 
     // TODO should we call these "reduceAMax", "reduceAMean", "reduceMin" etc?
     // TODO: There are 2 implementations of amax in org.nd4j.linalg.api.ops.impl
@@ -413,6 +422,15 @@ fun Math() =  Namespace("Math"){
         useMixin(broadcastingDoc)
     }
 
+    Op("div", scalar){
+        javaOpClass = "ScalarDivision"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar division operation, out = in / scalar
+            """.trimIndent()
+        }
+    }
+
     Op("entropy", reduceFloating) {
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -557,6 +575,35 @@ fun Math() =  Namespace("Math"){
             """
                 Element-wise floor function: out = floor(x).
                 Rounds each value down to the nearest integer value (if not already an integer)
+            """.trimIndent()
+        }
+    }
+
+    Op("floorDiv", transformArithmetic){
+        javaOpClass = "FloorDivOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise floor division operation, out = floor(x / y)
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
+    Op("floorMod", transformArithmetic){
+        javaOpClass = "FloorModOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise Modulus division operation
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
+    Op("floorMod", scalar){
+        javaOpClass = "ScalarFMod"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar floor modulus operation
             """.trimIndent()
         }
     }
@@ -808,6 +855,16 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("mod", transformArithmetic){
+        javaOpClass = "ModOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise modulus (remainder) operation, out = x % y
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
     Op("moments") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "input") { description = "Input to calculate moments for" }
@@ -881,10 +938,47 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("rationalTanh", transformStrict) {
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Rational Tanh Approximation elementwise function, as described in the paper:
+                Compact Convolutional Neural Network Cascade for Face Detection
+                This is a faster Tanh approximation
+            """.trimIndent()
+        }
+    }
+
+    Op("rectifiedTanh", transformStrict) {
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Rectified tanh operation: max(0, tanh(in))
+            """.trimIndent()
+        }
+    }
+
     Op("reciprocal", transformSame) {
         Doc(Language.ANY, DocScope.ALL){
             """
                 Element-wise reciprocal (inverse) function: out[i] = 1 / in[i]
+            """.trimIndent()
+        }
+    }
+
+    Op("rdiv", transformArithmetic){
+        javaOpClass = "RDivOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise reverse division operation, out = y / x
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
+    Op("rdiv", scalar){
+        javaOpClass = "ScalarReverseDivision"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar reverse division operation, out = scalar / in
             """.trimIndent()
         }
     }
@@ -906,6 +1000,26 @@ fun Math() =  Namespace("Math"){
             """.trimIndent()
         }
     }
+
+    Op("rsub", transformArithmetic){
+        javaOpClass = "RSubOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise reverse subtraction operation, out = y - x
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
+    Op("rsub", scalar){
+        javaOpClass = "ScalarReverseSubtraction"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar reverse subtraction operation, out = scalar - in
+            """.trimIndent()
+        }
+    }
+
 
     Op("setDiag") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
@@ -979,6 +1093,16 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("squaredDifference", transformArithmetic) {
+        javaOpClass = "SquaredDifferenceOp"
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Pairwise squared difference operation.
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
     Op("step", scalar) {
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -1020,6 +1144,15 @@ fun Math() =  Namespace("Math"){
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+    }
+
+    Op("sub", scalar){
+        javaOpClass = "ScalarSubtraction"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar subtraction operation, out = in - scalar
+            """.trimIndent()
+        }
     }
 
     Op("tan", transformStrict) {
@@ -1091,6 +1224,16 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("max", transformCustom2){
+        javaOpClass = "Max"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise max operation, out = max(x, y)
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
     Op("meshgrid") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         javaOpClass = "MeshGrid"
@@ -1107,6 +1250,16 @@ fun Math() =  Namespace("Math"){
         }
     }
 
+    Op("min", transformCustom2){
+        javaOpClass = "Min"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Pairwise max operation, out = min(x, y)
+            """.trimIndent()
+        }
+        useMixin(broadcastingDoc)
+    }
+
     Op("mul", transformArithmetic){
         javaOpClass = "MulOp"
         Doc(Language.ANY, DocScope.ALL){
@@ -1115,6 +1268,15 @@ fun Math() =  Namespace("Math"){
             """.trimIndent()
         }
         useMixin(broadcastingDoc)
+    }
+
+    Op("mul", scalar){
+        javaOpClass = "ScalarMultiplication"
+        Doc(Language.ANY, DocScope.ALL){
+            """ 
+                Scalar multiplication operation, out = in * scalar
+            """.trimIndent()
+        }
     }
 
     Op("bitShift") {

@@ -432,7 +432,7 @@ public class Nd4jNamespaceGenerator {
                 return it.name();
             }else{
                 if(!it.hasDefaultValue()) throw new IllegalStateException("The parameter "+it.name()+" has no default value, but is also not part of "+inNames.toString());
-                return anyToCode(it.defaultValue());
+                return anyToCode(it, it.defaultValue());
             }
         }).collect(Collectors.toList());
 
@@ -639,7 +639,7 @@ public class Nd4jNamespaceGenerator {
             parts.add("$L");
             parameters.add(
                     input.hasDefaultValue() ?
-                            input.name() + " == null ? " + anyToCode(input.defaultValue()) +" : "+input.name()
+                            input.name() + " == null ? " + anyToCode(input, input.defaultValue()) +" : "+input.name()
                             : input.name()
             );
         }
@@ -810,7 +810,7 @@ public class Nd4jNamespaceGenerator {
         return getter.build();
     }
 
-    private static String anyToCode(Object v){
+    private static String anyToCode(Parameter parameter, Object v){
         if(v == null){ return "null"; }
         else if(v instanceof int[]){ return "new int[]"+Arrays.toString((int[]) v).replace("[", "{").replace("]", "}"); }
         else if(v instanceof long[]){ return "new long[]"+Arrays.toString((long[]) v).replace("[", "{").replace("]", "}"); }
@@ -820,6 +820,8 @@ public class Nd4jNamespaceGenerator {
         else if(v instanceof Input){ return ((Input)v).getName(); }
         else if(v instanceof org.nd4j.linalg.api.buffer.DataType){ return "DataType." + v; }
         else if(v instanceof LossReduce || v instanceof org.nd4j.autodiff.loss.LossReduce){ return "org.nd4j.autodiff.loss.LossReduce." + v; }
-        else return v.toString();
+        else if(parameter instanceof Arg && ((Arg)parameter).getType() == DataType.ENUM){
+            return GenUtil.ensureFirstIsCap(parameter.name()) + "." + v.toString();
+        } else return v.toString();
     }
 }
