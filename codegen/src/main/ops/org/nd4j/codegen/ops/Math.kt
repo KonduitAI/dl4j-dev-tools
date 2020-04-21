@@ -11,6 +11,7 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.mixins.*
 
+
 fun Math() =  Namespace("Math"){
     Op("abs", transformSame) {
         javaOpClass = "Abs"
@@ -1136,7 +1137,7 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape.tensorops"
         javaOpClass = "EmbeddingLookup"
         Input(NUMERIC, "x") {description = "Input tensor"}
-        Input(NUMERIC, "indices") {description = "A Tensor containing the ids to be looked up."}
+        Input(INT, "indices") {description = "A Tensor containing the ids to be looked up."}
         Arg(ENUM, "PartitionMode") { possibleValues = listOf( "MOD","DIV"); description ="partition_mode == 0 - i.e. 'mod' , 1 - 'div'"}
         Output(NUMERIC, "output") {description = "Shifted output"}
 
@@ -1144,6 +1145,19 @@ fun Math() =  Namespace("Math"){
             """
             Looks up ids in a list of embedding tensors.
 
+            """.trimIndent()
+        }
+    }
+
+    Op("MergeMaxIndex") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
+        javaOpClass = "MergeMaxIndex"
+        Input(NUMERIC, "x") {count = AtLeast(1); description = "Input tensor"}
+        Output(NUMERIC, "output") {description = "Array max elements indices with along dimensions."}
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+            Return array of max elements indices with along tensor dimensions 
             """.trimIndent()
         }
     }

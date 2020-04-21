@@ -4,6 +4,8 @@ import org.nd4j.codegen.api.DataType
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
+import org.nd4j.codegen.api.AtLeast
+
 
 fun Linalg() =  Namespace("Linalg") {
     //val namespaceJavaPackage = "org.nd4j.linalg"
@@ -203,6 +205,34 @@ fun Linalg() =  Namespace("Linalg") {
         Doc(Language.ANY, DocScope.ALL){
             """
              Calculates singular value decomposition.
+            """.trimIndent()
+        }
+    }
+
+    Op("tri") {
+        javaPackage = "org.nd4j.linalg.api.ops.custom"
+        javaOpClass = "Tri"
+
+        Arg(DataType.INT, "params") {count = AtLeast(3);"shapes of tensor and sub-diagonal number at and below which the array is filled"; }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             An array with ones at and below the given diagonal and zeros elsewhere.
+            """.trimIndent()
+        }
+    }
+
+    Op("triu") {
+        javaPackage = "org.nd4j.linalg.api.ops.custom"
+        javaOpClass = "Triu"
+
+        Input(DataType.NUMERIC, "input") {"Input tensor"}
+        Arg(DataType.INT, "diag") {"diagonal"; defaultValue = 0}
+        Output(DataType.FLOATING_POINT, "output")
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             Upper triangle of an array. Return a copy of a input tensor with the elements below the k-th diagonal zeroed.
             """.trimIndent()
         }
     }
