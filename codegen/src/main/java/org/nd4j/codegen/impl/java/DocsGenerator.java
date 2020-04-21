@@ -167,20 +167,29 @@ public class DocsGenerator {
                     sb.append("````" + System.lineSeparator());
                     first = false;
                 }
-                sb.append("* " + i.getName() + " " + i.getDescription() + " (" + i.getType() + " type)" + System.lineSeparator());
+                sb.append("* " + i.getName() + " " + i.getDescription() + " (" + i.getType() + " type)");
+                if (i.hasDefaultValue() && (i.defaultValue() != null))
+                    sb.append(" Default value:" + i.defaultValue() + System.lineSeparator());
+                else
+                    sb.append(System.lineSeparator());
             }
             for (Arg arg : config.getArgs()) {
                 if (first) {
                     sb.append("````" + System.lineSeparator());
                     first = false;
                 }
-                sb.append("* " + arg.getName() + " " + " (" + arg.getType() + " type)" + System.lineSeparator());
+                sb.append("* " + arg.getName() + " " + " (" + arg.getType() + " type)");
+                if (arg.hasDefaultValue() && (arg.defaultValue() != null))
+                    sb.append(" Default value:" + arg.defaultValue() + System.lineSeparator());
+                else
+                    sb.append(System.lineSeparator());
             }
             StringBuilder tsb = buildDocSectionText(config.getDoc());
             sb.append(tsb.toString());
             sb.append("````" + System.lineSeparator());
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
                     sb.append("[" + op.getOpName() + "]" + "(#" + op.getOpName() + ")" + System.lineSeparator()));
+
         }
         File outFile = new File(outputDirectory + "/ops", "/" + namespace.getName() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
