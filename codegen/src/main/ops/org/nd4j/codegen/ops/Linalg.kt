@@ -1,10 +1,11 @@
 package org.nd4j.codegen.ops
 
 import org.nd4j.codegen.api.DataType
+import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
-import org.nd4j.codegen.api.AtLeast
+import org.nd4j.codegen.api.Range
 
 
 fun Linalg() =  Namespace("Linalg") {
@@ -47,7 +48,7 @@ fun Linalg() =  Namespace("Linalg") {
         Input(DataType.NUMERIC, "matrix") {description = "input tensor"}
         Input(DataType.NUMERIC, "rhs") {description = "input tensor"}
         Arg(DataType.BOOL, "adjoint") {description = "adjoint mode, defaults to False"; defaultValue = false}
-        Output(DataType.FLOATING_POINT, "output"){ description = "Output tensor" }
+        Output(FLOATING_POINT, "output"){ description = "Output tensor" }
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -78,7 +79,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Lu"
 
         Input(DataType.NUMERIC, "input") {description = "input tensor"}
-        Output(DataType.FLOATING_POINT, "output")
+        Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -108,8 +109,8 @@ fun Linalg() =  Namespace("Linalg") {
 
         Input(DataType.NUMERIC, "input") {description = "input tensor"}
         Arg(DataType.BOOL, "full") {description = "full matrices mode"; defaultValue = false}
-        Output(DataType.FLOATING_POINT, "outputQ")
-        Output(DataType.FLOATING_POINT, "outputR")
+        Output(FLOATING_POINT, "outputQ")
+        Output(FLOATING_POINT, "outputR")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -141,7 +142,7 @@ fun Linalg() =  Namespace("Linalg") {
 
         Input(DataType.NUMERIC, "a") {"Input tensor a"}
         Input(DataType.NUMERIC, "b") {"Input tensor b"}
-        Output(DataType.FLOATING_POINT, "output")
+        Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -183,7 +184,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Logdet"
 
         Input(DataType.NUMERIC, "input") {"Input tensor"}
-        Output(DataType.FLOATING_POINT, "output")
+        Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -200,7 +201,7 @@ fun Linalg() =  Namespace("Linalg") {
         Arg(DataType.BOOL, "fullUV") {"Full matrices mode"}
         Arg(DataType.BOOL, "computeUV") {"Compute U and V"}
         Arg(DataType.INT, "switchNum") {"Switch number"; defaultValue = 16}
-        Output(DataType.FLOATING_POINT, "output")
+        Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -213,7 +214,8 @@ fun Linalg() =  Namespace("Linalg") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "Tri"
 
-        Arg(DataType.INT, "params") {count = AtLeast(3);"shapes of tensor and sub-diagonal number at and below which the array is filled"; }
+        Arg(DataType.INT, "params") {count = Range(1,3);"shapes of tensor and sub-diagonal number at and below which the array is filled"; }
+        Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -225,10 +227,11 @@ fun Linalg() =  Namespace("Linalg") {
     Op("triu") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "Triu"
-
         Input(DataType.NUMERIC, "input") {"Input tensor"}
         Arg(DataType.INT, "diag") {"diagonal"; defaultValue = 0}
-        Output(DataType.FLOATING_POINT, "output")
+        Arg(DATA_TYPE, "dataType") { description = "Data type"}
+
+        Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
             """
