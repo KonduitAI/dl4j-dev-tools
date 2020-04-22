@@ -229,7 +229,7 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Triu"
         Input(DataType.NUMERIC, "input") {"Input tensor"}
         Arg(DataType.INT, "diag") {"diagonal"; defaultValue = 0}
-        Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = FLOATING_POINT }
+        Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = org.nd4j.linalg.api.buffer.DataType.FLOAT }
 
         Output(FLOATING_POINT, "output")
 

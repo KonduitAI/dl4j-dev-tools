@@ -1153,8 +1153,8 @@ fun Math() =  Namespace("Math"){
         javaPackage = "org.nd4j.linalg.api.ops.impl.shape"
         javaOpClass = "MergeMaxIndex"
         Input(NUMERIC, "x") {count = AtLeast(1); description = "Input tensor"}
-        Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = INT }
-        Output(NUMERIC, "output") {description = "Array max elements indices with along dimensions."}
+        Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = org.nd4j.linalg.api.buffer.DataType.INT }
+        Output(INT, "output") {description = "Array max elements indices with along dimensions."}
 
         Doc(Language.ANY, DocScope.ALL){
             """
