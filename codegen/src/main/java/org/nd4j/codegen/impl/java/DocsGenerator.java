@@ -168,7 +168,12 @@ public class DocsGenerator {
                             Input i = (Input)p;
                             sb.append("* **").append(i.getName()).append("** - ").append(i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
                                     op, DocTokens.GenerationType.ND4J)).append(" (").append(i.getType()).append(" type)").append(System.lineSeparator());
-                        } else if(p instanceof Arg) {
+                        }
+                        else if (p instanceof Config) {
+                            Config c = (Config)p;
+                            sb.append("* **").append(c.getName()).append("** - ").append("").append("[").append(c.getName()).append("]").append(System.lineSeparator());
+                        }
+                        else if(p instanceof Arg) {
                             Arg arg = (Arg) p;
                             final Count count = arg.getCount();
                             if (count == null || count.equals(exactlyOne)) {
@@ -196,7 +201,7 @@ public class DocsGenerator {
         if (namespace.getConfigs().size() > 0)
             sb.append("# Configuration Classes <configs>").append(System.lineSeparator());
         for (Config config : namespace.getConfigs()) {
-            sb.append("## ").append(config.getName()).append(System.lineSeparator());
+            sb.append("## ").append("<a name=" + "\"").append(config.getName()).append("\"></a>").append(System.lineSeparator());
             for (Input i : config.getInputs()) {
                 sb.append("* **").append(i.getName()).append("**- ").append(i.getDescription()).append(" (").append(i.getType()).append(" type)");
                 if (i.hasDefaultValue() && (i.defaultValue() != null))
