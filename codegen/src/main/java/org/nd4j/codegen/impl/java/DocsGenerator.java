@@ -151,6 +151,7 @@ public class DocsGenerator {
                     }
                     String ndCode = generateMethodText(op, s, false, false, false);
                     sb.append(ndCode).append(System.lineSeparator());
+                    sb.append(System.lineSeparator()); // New line between INDArray and SDVariable signatures
                     String sdCode = generateMethodText(op, s, true, false, false);
                     sb.append(sdCode).append(System.lineSeparator());
                     String withNameCode = generateMethodText(op, s, true, false, true);
@@ -213,8 +214,15 @@ public class DocsGenerator {
             StringBuilder tsb = buildDocSectionText(config.getDoc());
             sb.append(tsb.toString());
             sb.append(System.lineSeparator());
+            for (Op op : ops) {
+                if (op.getConfigs().contains(config)) {
+                    sb.append("Used in these ops: " + System.lineSeparator());
+                    break;
+                }
+            }
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
-                    sb.append("[").append(op.getOpName()).append("]").append("(#").append(op.getOpName()).append(")").append(System.lineSeparator()));
+                       sb.append("[").append(op.getOpName()).append("]").append("(#").append(op.getOpName()).append(")").
+                       append(System.lineSeparator()));
 
         }
         File outFile = new File(outputDirectory + "/ops", "/" + namespace.getName() + ".md");
