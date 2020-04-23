@@ -105,7 +105,7 @@ public class SameDiffTestRun {
                     for(int i=0; i<next.length; i++ ){
                         phMap.put(inputs.get(i), next[i]);
                     }
-                    model.exec(phMap, outputs);
+                    model.output(phMap, outputs);
                     if(++iterCount % 1000 == 0 && System.currentTimeMillis() > lastReport + 60000L ){
                         log.info("Num iters: {}", iterCount);
                         lastReport = System.currentTimeMillis();

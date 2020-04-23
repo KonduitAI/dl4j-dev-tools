@@ -5,6 +5,7 @@ import org.nd4j.autodiff.samediff.SDIndex;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.TrainingConfig;
+import org.nd4j.enums.DataFormat;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ops.impl.layers.convolution.config.Conv2DConfig;
 import org.nd4j.linalg.api.ops.impl.layers.convolution.config.DeConv2DConfig;
@@ -49,10 +50,10 @@ public class CNN2DModel implements SameDiffModel {
 //        SDVariable g8 = sd.var(Nd4j.rand(DataType.FLOAT, 16));
 //        SDVariable b8 = sd.var(Nd4j.rand(DataType.FLOAT, 16));
 //        SDVariable l8 = sd.nn().batchNorm("bn", l7, m8, v8, g8, b8, true, true, 1e-5, 1);
-        SDVariable l9 = sd.nn().pad(l7, new int[][]{{0,0}, {0,0}, {1,1}, {1,1}}, 0.0);
+        SDVariable l9 = sd.nn().pad(l7, sd.constant(Nd4j.createFromArray(new int[][]{{0,0}, {0,0}, {1,1}, {1,1}})), 0.0);
         SDVariable l10 = sd.slice(l9, new int[]{0,0,1,1}, new int[]{4, 8, 64, 64});
         //TODO no locally connected...
-        SDVariable l11 = sd.cnn().spaceToDepth(l10, 2, "nchw");
+        SDVariable l11 = sd.cnn().spaceToDepth(l10, 2, DataFormat.NCHW);
         SDVariable w12 = sd.var(Nd4j.rand(DataType.FLOAT, 2, 2, 32, 8));
         SDVariable l12 = sd.cnn().conv2d(l11, w12, Conv2DConfig.builder().kH(2).kW(2).sH(1).sW(1).dataFormat("nchw").isSameMode(true).build());
 
