@@ -164,7 +164,7 @@ fun SDRNN() = Namespace("SDRNN") {
 
 
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
-    Op("gru") {
+    Op("gruCell") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "GRUCell"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
