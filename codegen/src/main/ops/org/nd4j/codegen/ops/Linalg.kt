@@ -215,7 +215,9 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Tri"
 
         Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = org.nd4j.linalg.api.buffer.DataType.FLOAT }
-        Arg(DataType.INT, "params") {count = Range(1,3);"shapes of tensor and sub-diagonal number at and below which the array is filled"; }
+        Arg(INT, "row") {"Number of rows in the array"; }
+        Arg(INT, "column") {"Number of columns in the array";  }
+        Arg(INT, "diagonal") {"The sub-diagonal at and below which the array is filled. k = 0 is the main diagonal, while k < 0 is below it, and k > 0 is above. The default is 0."; defaultValue =  0}
 
 
         Output(FLOATING_POINT, "output")
