@@ -214,7 +214,10 @@ fun Linalg() =  Namespace("Linalg") {
         javaPackage = "org.nd4j.linalg.api.ops.custom"
         javaOpClass = "Tri"
 
+        Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = org.nd4j.linalg.api.buffer.DataType.FLOAT }
         Arg(DataType.INT, "params") {count = Range(1,3);"shapes of tensor and sub-diagonal number at and below which the array is filled"; }
+
+
         Output(FLOATING_POINT, "output")
 
         Doc(Language.ANY, DocScope.ALL){
@@ -229,7 +232,6 @@ fun Linalg() =  Namespace("Linalg") {
         javaOpClass = "Triu"
         Input(DataType.NUMERIC, "input") {"Input tensor"}
         Arg(DataType.INT, "diag") {"diagonal"; defaultValue = 0}
-        Arg(DATA_TYPE, "dataType") { description = "Data type"; defaultValue = org.nd4j.linalg.api.buffer.DataType.FLOAT }
 
         Output(FLOATING_POINT, "output")
 
