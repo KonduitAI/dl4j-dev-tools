@@ -31,10 +31,10 @@ fun SDRNN() = Namespace("SDRNN") {
 
         Arg(ENUM, "LSTMDataFormat") {
             possibleValues = listOf("TNS", "NST", "NTS", "T2NS");
-            description = "for unidirectional:\n" +
+            description = "for unidirectional:" +
                     "  TNS: shape [timeLength, numExamples, inOutSize] - sometimes referred to as \"time major\"<br>\n" +
                     "  NST: shape [numExamples, inOutSize, timeLength]<br>\n" +
-                    "  NTS: shape [numExamples, timeLength, inOutSize] - TF \"time_major=false\" layout<br>\n" +
+                    "  NTS: shape [numExamples, timeLength, inOutSize] - TF \"time_major=false\" layout<br>" +
                     " for bidirectional:\n" +
                     "   T2NS: 3 = [timeLength, 2, numExamples, inOutSize] (for ONNX)"
         }
@@ -114,8 +114,6 @@ fun SDRNN() = Namespace("SDRNN") {
 
 
        javaClassOverride =  "org.nd4j.linalg.api.ops.impl.layers.recurrent.config.LSTMLayerConfig"
-
-
     }
 
 
@@ -249,22 +247,22 @@ fun SDRNN() = Namespace("SDRNN") {
         Doc(Language.ANY, DocScope.ALL) {
             """
              Long Short-Term Memory layer - Hochreiter 1997.
-             SUPPORTS following data formats:\n
-             for unidirectional: \n" +
-             TNS: shapes [timeLength, numExamples, inOutSize]\n
-             NST: shapes [numExamples, inOutSize, timeLength]\n
+             SUPPORTS following data formats:
+             for unidirectional:
+             TNS: shapes [timeLength, numExamples, inOutSize]
+             NST: shapes [numExamples, inOutSize, timeLength]
              NTS: shapes [numExamples, timeLength, inOutSize]
-             for bidirectional:\n
-             T2NS: shapes [timeLength, 2, numExamples, inOutSize] (for ONNX)\n
-             SUPPORTS following direction modes:\n
+             for bidirectional:
+             T2NS: shapes [timeLength, 2, numExamples, inOutSize] (for ONNX)
+             SUPPORTS following direction modes:
              FWD: forward
              BWD: backward
-             BIDIR_SUM: bidirectional sum\n
-             BIDIR_CONCAT: bidirectional concat\n" +
-             BIDIR_EXTRA_DIM: bidirectional extra output dim (in conjunction with format dataFormat - T2NS)"
+             BIDIR_SUM: bidirectional sum
+             BIDIR_CONCAT: bidirectional concat
+             BIDIR_EXTRA_DIM: bidirectional extra output dim (in conjunction with format dataFormat - T2NS)
              You may use different gate configurations:
-             specify gate/cell/out aplha/beta and numbers of activations for gate/cell/out described in activations enum\n
-             ("RELU","SIGMOID","AFFINE","LEAKY_RELU","THRESHHOLD_RELU","SCALED_TAHN","HARD_SIGMOID","ELU","SOFTSIGN","SOFTPLUS")\n
+             specify gate/cell/out aplha/beta and numbers of activations for gate/cell/out described in activations enum
+             ("RELU","SIGMOID","AFFINE","LEAKY_RELU","THRESHHOLD_RELU","SCALED_TAHN","HARD_SIGMOID","ELU","SOFTSIGN","SOFTPLUS")
              Also this layer supports MKLDNN (DNNL) and cuDNN acceleration
             """.trimIndent()
         }

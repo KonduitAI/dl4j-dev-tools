@@ -69,8 +69,13 @@ public class DocsGenerator {
                     sb.append(", ");
                 else if (withName)
                     sb.append("String name, ");
-                TypeName tu = Nd4jNamespaceGenerator.getArgType(arg);
-                String className = tu.toString();
+                String className;
+                if(arg.getType() == DataType.ENUM) {
+                    className = GenUtil.ensureFirstIsCap(arg.name());
+                } else {
+                    TypeName tu = Nd4jNamespaceGenerator.getArgType(arg);
+                    className = tu.toString();
+                }
                 if(className.contains(".")){
                     className = className.substring(className.lastIndexOf('.')+1);
                 }
@@ -176,36 +181,29 @@ public class DocsGenerator {
                 sb.append(System.lineSeparator());
             }
         }
-        if (Registry.INSTANCE.configs().size() > 0)
+
+
+        if (namespace.getConfigs().size() > 0)
             sb.append("# Configuration Classes <configs>").append(System.lineSeparator());
-        for (Config config : Registry.INSTANCE.configs()) {
+        for (Config config : namespace.getConfigs()) {
             sb.append("## ").append(config.getName()).append(System.lineSeparator());
-            boolean first = true;
             for (Input i : config.getInputs()) {
-                if (first) {
-                    sb.append("```").append(System.lineSeparator());
-                    first = false;
-                }
-                sb.append("* ").append(i.getName()).append(" ").append(i.getDescription()).append(" (").append(i.getType()).append(" type)");
+                sb.append("* **").append(i.getName()).append("**- ").append(i.getDescription()).append(" (").append(i.getType()).append(" type)");
                 if (i.hasDefaultValue() && (i.defaultValue() != null))
                     sb.append(" Default value:").append(formatDefaultValue(i.defaultValue())).append(System.lineSeparator());
                 else
                     sb.append(System.lineSeparator());
             }
             for (Arg arg : config.getArgs()) {
-                if (first) {
-                    sb.append("```").append(System.lineSeparator());
-                    first = false;
-                }
-                sb.append("* ").append(arg.getName()).append(" ").append(" (").append(arg.getType()).append(" type)");
+                sb.append("* **").append(arg.getName()).append("** - ").append(arg.getDescription()).append(" (").append(arg.getType()).append(" type)");
                 if (arg.hasDefaultValue() && (arg.defaultValue() != null))
-                    sb.append(" Default value:").append(formatDefaultValue(arg.defaultValue())).append(System.lineSeparator());
+                    sb.append(" - default = ").append(formatDefaultValue(arg.defaultValue())).append(System.lineSeparator());
                 else
                     sb.append(System.lineSeparator());
             }
             StringBuilder tsb = buildDocSectionText(config.getDoc());
             sb.append(tsb.toString());
-            sb.append("```").append(System.lineSeparator());
+            sb.append(System.lineSeparator());
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
                     sb.append("[").append(op.getOpName()).append("]").append("(#").append(op.getOpName()).append(")").append(System.lineSeparator()));
 

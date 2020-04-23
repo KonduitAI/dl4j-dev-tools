@@ -629,7 +629,7 @@ public class Nd4jNamespaceGenerator {
         sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
         List<Op> ops = namespace.getOps();
         for (Op op : ops) {
-            sb.append("## <a name=" + "\"" + op.name() + "\"></a>" + op.name()  + System.lineSeparator());
+            sb.append("## <a name=" + "\"").append(op.name()).append("\">").append(op.name()).append("</a>").append(System.lineSeparator());
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
                 boolean first = true;
@@ -639,13 +639,13 @@ public class Nd4jNamespaceGenerator {
                         first = false;
                     }
                     String ndCode = generateMethodText(op, s, false, false, false);
-                    sb.append(ndCode + System.lineSeparator());
+                    sb.append(ndCode).append(System.lineSeparator());
                     String sdCode = generateMethodText(op, s, true, false, false);
-                    sb.append(sdCode + System.lineSeparator());
+                    sb.append(sdCode).append(System.lineSeparator());
                     String withNameCode = generateMethodText(op, s, true, false, true);
-                    sb.append(withNameCode + System.lineSeparator());
+                    sb.append(withNameCode).append(System.lineSeparator());
                 }
-                sb.append("````" + System.lineSeparator());
+                sb.append("````").append(System.lineSeparator());
                 StringBuilder tsb = buildDocSectionText(doc);
                 sb.append(tsb.toString());
                 List<Signature> l = op.getSignatures();
