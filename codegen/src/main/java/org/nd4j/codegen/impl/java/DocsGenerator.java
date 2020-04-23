@@ -12,6 +12,7 @@ import org.nd4j.codegen.util.GenUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -59,7 +60,7 @@ public class DocsGenerator {
         else if (outs.size() >= 1) {
             retType = isSameDiff ? "SDVariable[]" : "INDArray[]";
         }
-        sb.append(retType + " " + op.getOpName() + "(");
+        sb.append(retType).append(" ").append(op.getOpName()).append("(");
         boolean first = true;
         for (Parameter param : params) {
             if (param instanceof Arg) {
@@ -73,7 +74,7 @@ public class DocsGenerator {
                 if(className.contains(".")){
                     className = className.substring(className.lastIndexOf('.')+1);
                 }
-                sb.append(className + " " + arg.name());
+                sb.append(className).append(" ").append(arg.name());
                 first = false;
             }
             else if (param instanceof Input) {
@@ -82,7 +83,7 @@ public class DocsGenerator {
                     sb.append(", ");
                 else if (withName)
                     sb.append("String name, ");
-                sb.append((isSameDiff ? "SDVariable " : "INDArray ") + arg.name());
+                sb.append(isSameDiff ? "SDVariable " : "INDArray ").append(arg.name());
                 first = false;
             }
         }
@@ -107,7 +108,7 @@ public class DocsGenerator {
                 }
             }
             text = String.join("\n", lines);
-            sb.append(text + System.lineSeparator());
+            sb.append(text).append(System.lineSeparator());
             //}
         }
         return sb;
@@ -116,32 +117,32 @@ public class DocsGenerator {
     public static void generateDocs(NamespaceOps namespace, String docsDirectory, String basePackage) throws IOException {
         File outputDirectory = new File(docsDirectory);
         StringBuilder sb = new StringBuilder();
-        sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
+        sb.append("#  Namespace ").append(namespace.getName()).append(System.lineSeparator());
         List<Op> ops = namespace.getOps();
 
         ops.sort(Comparator.comparing(Op::getOpName));
 
         if (ops.size() > 0)
-            sb.append("# Operation classes <ops>" + System.lineSeparator());
+            sb.append("# Operation classes <ops>").append(System.lineSeparator());
         for (Op op : ops) {
-            sb.append("## <a name=" + "\"" + op.name() + "\"></a>" + op.name()  + System.lineSeparator());
+            sb.append("## <a name=" + "\"").append(op.name()).append("\"></a>").append(op.name()).append(System.lineSeparator());
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
                 boolean first = true;
                 for(Signature s : op.getSignatures()) {
                     if (first) {
                         Language lang = doc.get(0).getLanguage();
-                        sb.append(MD_CODE + (lang.equals(Language.ANY) ? Language.JAVA : lang ) + System.lineSeparator());
+                        sb.append(MD_CODE).append(lang.equals(Language.ANY) ? Language.JAVA : lang).append(System.lineSeparator());
                         first = false;
                     }
                     String ndCode = generateMethodText(op, s, false, false, false);
-                    sb.append(ndCode + System.lineSeparator());
+                    sb.append(ndCode).append(System.lineSeparator());
                     String sdCode = generateMethodText(op, s, true, false, false);
-                    sb.append(sdCode + System.lineSeparator());
+                    sb.append(sdCode).append(System.lineSeparator());
                     String withNameCode = generateMethodText(op, s, true, false, true);
-                    sb.append(withNameCode + System.lineSeparator());
+                    sb.append(withNameCode).append(System.lineSeparator());
                 }
-                sb.append(MD_CODE + System.lineSeparator());
+                sb.append(MD_CODE).append(System.lineSeparator());
                 StringBuilder tsb = buildDocSectionText(doc);
                 sb.append(tsb.toString());
                 List<Signature> l = op.getSignatures();
@@ -150,18 +151,25 @@ public class DocsGenerator {
                     for (Parameter p : params) {
                         if(p instanceof Input){
                             Input i = (Input)p;
-                            sb.append("* " + i.getName() + " " + (i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
-                                    op, DocTokens.GenerationType.ND4J)) + " (" + i.getType() + " type)" + System.lineSeparator());
+                            sb.append("* **").append(i.getName()).append("** - ").append(i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
+                                    op, DocTokens.GenerationType.ND4J)).append(" (").append(i.getType()).append(" type)").append(System.lineSeparator());
                         } else if(p instanceof Arg) {
                             Arg arg = (Arg) p;
                             final Count count = arg.getCount();
                             if (count == null || count.equals(exactlyOne)) {
-                                sb.append("* " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
-                                        op, DocTokens.GenerationType.ND4J)) +  System.lineSeparator());
+                                sb.append("* **").append(arg.getName()).append("** - ").append(arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
+                                        op, DocTokens.GenerationType.ND4J));    //.append(System.lineSeparator());
                             } else {
-                                sb.append("* " + arg.getName() + " " + (arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
-                                        op, DocTokens.GenerationType.ND4J)) + " (Size: " + count.toString() +  System.lineSeparator());
+                                sb.append("* **").append(arg.getName()).append("** - ").append(arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
+                                        op, DocTokens.GenerationType.ND4J)).append(" (Size: ").append(count.toString());    //.append(System.lineSeparator());
                             }
+
+                            Object defaultValue = arg.defaultValue();
+                            if(defaultValue != null){
+                                sb.append(" - default = ").append(formatDefaultValue(defaultValue));
+                            }
+
+                            sb.append(System.lineSeparator());
                         }
                     }
                 }
@@ -169,40 +177,53 @@ public class DocsGenerator {
             }
         }
         if (Registry.INSTANCE.configs().size() > 0)
-            sb.append("# Configuration Classes <configs>" + System.lineSeparator());
+            sb.append("# Configuration Classes <configs>").append(System.lineSeparator());
         for (Config config : Registry.INSTANCE.configs()) {
-            sb.append("## " + config.getName()  + System.lineSeparator());
+            sb.append("## ").append(config.getName()).append(System.lineSeparator());
             boolean first = true;
             for (Input i : config.getInputs()) {
                 if (first) {
-                    sb.append("```" + System.lineSeparator());
+                    sb.append("```").append(System.lineSeparator());
                     first = false;
                 }
-                sb.append("* " + i.getName() + " " + i.getDescription() + " (" + i.getType() + " type)");
+                sb.append("* ").append(i.getName()).append(" ").append(i.getDescription()).append(" (").append(i.getType()).append(" type)");
                 if (i.hasDefaultValue() && (i.defaultValue() != null))
-                    sb.append(" Default value:" + i.defaultValue() + System.lineSeparator());
+                    sb.append(" Default value:").append(formatDefaultValue(i.defaultValue())).append(System.lineSeparator());
                 else
                     sb.append(System.lineSeparator());
             }
             for (Arg arg : config.getArgs()) {
                 if (first) {
-                    sb.append("```" + System.lineSeparator());
+                    sb.append("```").append(System.lineSeparator());
                     first = false;
                 }
-                sb.append("* " + arg.getName() + " " + " (" + arg.getType() + " type)");
+                sb.append("* ").append(arg.getName()).append(" ").append(" (").append(arg.getType()).append(" type)");
                 if (arg.hasDefaultValue() && (arg.defaultValue() != null))
-                    sb.append(" Default value:" + arg.defaultValue() + System.lineSeparator());
+                    sb.append(" Default value:").append(formatDefaultValue(arg.defaultValue())).append(System.lineSeparator());
                 else
                     sb.append(System.lineSeparator());
             }
             StringBuilder tsb = buildDocSectionText(config.getDoc());
             sb.append(tsb.toString());
-            sb.append("```" + System.lineSeparator());
+            sb.append("```").append(System.lineSeparator());
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
-                    sb.append("[" + op.getOpName() + "]" + "(#" + op.getOpName() + ")" + System.lineSeparator()));
+                    sb.append("[").append(op.getOpName()).append("]").append("(#").append(op.getOpName()).append(")").append(System.lineSeparator()));
 
         }
         File outFile = new File(outputDirectory + "/ops", "/" + namespace.getName() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
+    }
+
+    private static String formatDefaultValue(Object v){
+        if(v == null){ return "null"; }
+        else if(v instanceof int[]){ return Arrays.toString((int[]) v); }
+        else if(v instanceof long[]){ return Arrays.toString((long[]) v); }
+        else if(v instanceof float[]){ return Arrays.toString((float[]) v); }
+        else if(v instanceof double[]){ return Arrays.toString((double[]) v); }
+        else if(v instanceof boolean[]){ return Arrays.toString((boolean[]) v); }
+        else if(v instanceof Input){ return ((Input)v).getName(); }
+        else if(v instanceof org.nd4j.linalg.api.buffer.DataType){ return "DataType." + v; }
+        else if(v instanceof LossReduce || v instanceof org.nd4j.autodiff.loss.LossReduce){ return "LossReduce." + v; }
+        else return v.toString();
     }
 }
