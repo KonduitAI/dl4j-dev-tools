@@ -90,6 +90,12 @@ public class DocsGenerator {
                     sb.append("String name, ");
                 sb.append(isSameDiff ? "SDVariable " : "INDArray ").append(arg.name());
                 first = false;
+            } else if(param instanceof Config){
+                if(!first)
+                    sb.append(", ");
+                Config conf = (Config)param;
+                String name = conf.getName();
+                sb.append(name).append(" ").append(GenUtil.ensureFirstIsNotCap(name));
             }
         }
         sb.append(")");
@@ -122,7 +128,10 @@ public class DocsGenerator {
     public static void generateDocs(NamespaceOps namespace, String docsDirectory, String basePackage) throws IOException {
         File outputDirectory = new File(docsDirectory);
         StringBuilder sb = new StringBuilder();
-        sb.append("#  Namespace ").append(namespace.getName()).append(System.lineSeparator());
+        String headerName = namespace.getName();
+        if(headerName.startsWith("SD"))
+            headerName = headerName.substring(2);
+        sb.append("#  Namespace ").append(headerName).append(System.lineSeparator());
         List<Op> ops = namespace.getOps();
 
         ops.sort(Comparator.comparing(Op::getOpName));
@@ -130,7 +139,7 @@ public class DocsGenerator {
         if (ops.size() > 0)
             sb.append("# Operation classes <ops>").append(System.lineSeparator());
         for (Op op : ops) {
-            sb.append("## <a name=" + "\"").append(op.name()).append("\"></a>").append(op.name()).append(System.lineSeparator());
+            sb.append("## <a name=" + "\"").append(op.name()).append("\">").append(op.getOpName()).append("</a>").append(System.lineSeparator());
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
                 boolean first = true;
