@@ -8,6 +8,7 @@ import org.nd4j.codegen.api.Language
 import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
+import org.nd4j.codegen.mixins.*
 import org.nd4j.linalg.api.buffer.DataType
 import java.lang.Boolean.FALSE
 
@@ -22,15 +23,6 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
                 Example: if input has shape [a,b,c] and dimensions=[1] then output has shape:
                 keepDims = true: [a,1,c]
                 keepDims = false: [a,c]
-            """.trimIndent()
-        }
-    }
-
-    val broadcastingDoc = Mixin("broadcastingDoc"){
-        Doc(Language.ANY, DocScope.ALL){
-            //TODO: finalize content for this broadcasting mixin doc.
-            """
-                Note: supports broadcasting if x and y have different shapes and are broadcastable.
             """.trimIndent()
         }
     }
@@ -622,6 +614,21 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         }
         useMixin(keepDimsDoc)
     }
+
+    Op("merge") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.controlflow.compat"
+        Input(NUMERIC, "x") { description = "Input variable" }
+        Input(NUMERIC, "y") { description = "Input variable" }
+        Output(NUMERIC, "output"){ description = "Output" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                The merge operation is a control operation that forwards the either of the inputs to the output, when
+                the first of them becomes available. If both are available, the output is undefined (either input could
+                be forwarded to the output)
+            """.trimIndent()
+        }
+    }
+
 
     Op("min") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.same"
@@ -1398,6 +1405,22 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
         useMixin(keepDimsDoc)
     }
 
+    Op("switchOp") {
+        javaPackage = "org.nd4j.linalg.api.ops.impl.controlflow.compat"
+        javaOpClass = "Switch"
+        legacy = false
+        Input(NDARRAY, "x") { description = "Input variable" }
+        Input(BOOL, "predicate"){ description = "Predictate - if false, values are output to left (first) branch/output; if true, to right (second) branch/output"}
+        Output(NUMERIC, "outputLeft"){ description = "Output when predicate is false" }
+        Output(NUMERIC, "outputRight"){ description = "Output when predicate is false" }
+        Doc(Language.ANY, DocScope.ALL){
+            """
+                Switch operation
+                Predictate - if false, values are output to left (first) branch/output; if true, to right (second) branch/output
+            """.trimIndent()
+        }
+    }
+
     Op("tensorMmul") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce"
         Input(NUMERIC, "x") { description = "Input variable x" }
@@ -1568,7 +1591,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("any") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
         legacy = true
-        Input(BOOL, "x") { description = " Input variable" }
+        Input(NDARRAY, "x") { description = " Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(BOOL, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){
@@ -1581,7 +1604,7 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     Op("all") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.reduce.bool"
         legacy = true
-        Input(BOOL, "x") { description = "Input variable" }
+        Input(NDARRAY, "x") { description = "Input variable" }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
         Output(BOOL, "output"){ description = "reduced array of rank (input rank - num dimensions)" }
         Doc(Language.ANY, DocScope.ALL){

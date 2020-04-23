@@ -6,7 +6,7 @@ from tensorflow.python.ops import linalg_ops
 from tfoptests.persistor import TensorFlowPersistor, BASE_DIR
 
 np.random.seed(seed=713)
-tf.set_random_seed(1)
+tf.random.set_seed(1)
 
 
 def _GetNormOpTest(dtype_, shape_, ord_, axis_, keep_dims_, use_static_shape_, save_dir_):

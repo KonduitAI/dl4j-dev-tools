@@ -48,34 +48,34 @@ class OpCreator:
         return [tf.image.adjust_saturation(self.vars[0], self.op["factor"])]
 
     def execute_reduce_sum(self):
-        return [tf.reduce_sum(self.vars[0], axis=self.op["axis"], keepdims=self.op["keepdims"])]
+        return [tf.reduce_sum(input_tensor=self.vars[0], axis=self.op["axis"], keepdims=self.op["keepdims"])]
 
     def execute_segment_max(self):
-        return [tf.segment_max(data=self.vars[0], segment_ids=self.vars[1])]
+        return [tf.math.segment_max(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_segment_min(self):
-        return [tf.segment_min(data=self.vars[0], segment_ids=self.vars[1])]
+        return [tf.math.segment_min(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_segment_mean(self):
-        return [tf.segment_mean(data=self.vars[0], segment_ids=self.vars[1])]
+        return [tf.math.segment_mean(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_segment_prod(self):
-        return [tf.segment_prod(data=self.vars[0], segment_ids=self.vars[1])]
+        return [tf.math.segment_prod(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_segment_sum(self):
-        return [tf.segment_sum(data=self.vars[0], segment_ids=self.vars[1])]
+        return [tf.math.segment_sum(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_space_to_batch(self):
-        return [tf.space_to_batch(input=self.vars[0], paddings=self.vars[1], block_size=2)]
+        return [tf.space_to_batch(input=self.vars[0], paddings=self.vars[1], block_shape=2)]
 
     def execute_space_to_depth(self):
-        return [tf.space_to_depth(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
+        return [tf.compat.v1.space_to_depth(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
 
     def execute_batch_to_space(self):
-        return [tf.batch_to_space(input=self.vars[0], crops=self.vars[1], block_size=2)]
+        return [tf.batch_to_space(input=self.vars[0], crops=self.vars[1], block_shape=2)]
 
     def execute_depth_to_space(self):
-        return [tf.depth_to_space(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
+        return [tf.compat.v1.depth_to_space(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
 
     def execute_size(self):
         temp = tf.add(self.vars[0], 1.0)
@@ -91,7 +91,7 @@ class OpCreator:
         return [tf.concat(out, axis=0)]
 
     def execute_matrix_inverse(self):
-        return [tf.matrix_inverse(input=self.vars[0])]
+        return [tf.linalg.inv(input=self.vars[0])]
 
     def execute_pad(self):
         if(len(self.vars) > 2):
@@ -127,10 +127,10 @@ class OpCreator:
         return [tf.nn.in_top_k(predictions=self.vars[0], targets=self.vars[1], k=self.op["k"])]
 
     def execute_matrix_determinant(self):
-        return [tf.matrix_determinant(input=self.vars[0])]
+        return [tf.linalg.det(input=self.vars[0])]
 
     def execute_matrix_set_diag(self):
-        return [tf.matrix_set_diag(input=self.vars[0], diagonal=self.vars[1])]
+        return [tf.linalg.set_diag(input=self.vars[0], diagonal=self.vars[1])]
 
     def execute_identity(self):
         return [tf.identity(self.vars[0])]
@@ -140,13 +140,13 @@ class OpCreator:
 
     def execute_zeta(self):
         x = tf.add(self.vars[0], 1.0)    #x values must be > 1
-        return [tf.zeta(x=x, q=self.vars[1])]
+        return [tf.math.zeta(x=x, q=self.vars[1])]
 
     def execute_confusion_matrix(self):
         weights = None
         if(len(self.vars) > 2):
             weights = self.vars[2]
-        return [tf.confusion_matrix(labels=self.vars[0], predictions=self.vars[1], num_classes=self.op["num_classes"], weights=weights)]
+        return [tf.math.confusion_matrix(labels=self.vars[0], predictions=self.vars[1], num_classes=self.op["num_classes"], weights=weights)]
 
     def execute_stack(self):
         return [tf.stack(values=self.vars, axis=self.op["axis"])]
@@ -155,10 +155,10 @@ class OpCreator:
         return [tf.parallel_stack(values=self.vars)]
 
     def execute_accumulate_n(self):
-        return [tf.accumulate_n(self.vars)]
+        return [tf.math.accumulate_n(self.vars)]
 
     def execute_angle(self):
-        return [tf.add(tf.angle(self.vars[0]), 1.0)]
+        return [tf.add(tf.math.angle(self.vars[0]), 1.0)]
 
     def execute_approximate_equal(self):
         return [tf.approximate_equal(self.vars[0], self.vars[1])]
@@ -172,7 +172,7 @@ class OpCreator:
         return [tf.matmul(self.vars[0], self.vars[1], transpose_a=ta, transpose_b=tb, name = "matmul-" + str(self.node_num))]
 
     def execute_matrix_diag_part(self):
-        return [tf.matrix_diag_part(self.vars[0])]
+        return [tf.linalg.diag_part(self.vars[0])]
 
     def execute_svd(self):
         shapes = self.op["varShapes"]
@@ -193,7 +193,7 @@ class OpCreator:
         if(rank == 4):
             input = tf.add(input, tf.linalg.eye(num_rows=shape[2], num_columns=shape[3], batch_shape=[shape[0], shape[1]]))
 
-        svd = tf.svd(tensor=input, full_matrices=self.op["full_matrices"], compute_uv=self.op["compute_uv"])
+        svd = tf.linalg.svd(tensor=input, full_matrices=self.op["full_matrices"], compute_uv=self.op["compute_uv"])
 
         # Note that SVD has multiple solutions, that differ only by sign
         if(isinstance(svd, list) or isinstance(svd, tuple)):
@@ -207,80 +207,80 @@ class OpCreator:
         if(len(self.vars) > 2):
             weights = self.vars[2]
 
-        return [tf.losses.mean_squared_error(labels=self.vars[0], predictions=self.vars[1], weights=weights)]
+        return [tf.compat.v1.losses.mean_squared_error(labels=self.vars[0], predictions=self.vars[1], weights=weights)]
 
     def execute_absolute_difference(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
 
-        return [tf.losses.absolute_difference(labels=self.vars[0], predictions=self.vars[1], weights=weights)]
+        return [tf.compat.v1.losses.absolute_difference(labels=self.vars[0], predictions=self.vars[1], weights=weights)]
 
     def execute_cosine_distance(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.losses.cosine_distance(labels=self.vars[0], predictions=self.vars[1], weights=weights, axis=self.op["axis"], reduction=r)]
+        return [tf.compat.v1.losses.cosine_distance(labels=self.vars[0], predictions=self.vars[1], weights=weights, axis=self.op["axis"], reduction=r)]
 
     def execute_hinge_loss(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.losses.hinge_loss(labels=self.vars[0], logits=self.vars[1], weights=weights, reduction=r)]
+        return [tf.compat.v1.losses.hinge_loss(labels=self.vars[0], logits=self.vars[1], weights=weights, reduction=r)]
 
     def execute_huber_loss(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
         delta = self.op.get("delta", 1.0)
 
-        return [tf.losses.huber_loss(labels=self.vars[0], predictions=self.vars[1], weights=weights, reduction=r, delta=delta)]
+        return [tf.compat.v1.losses.huber_loss(labels=self.vars[0], predictions=self.vars[1], weights=weights, reduction=r, delta=delta)]
 
     def execute_log_loss(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
         eps = self.op.get("epsilon", 1e-7)
 
-        return [tf.losses.log_loss(labels=self.vars[0], predictions=self.vars[1], weights=weights, reduction=r, epsilon=eps)]
+        return [tf.compat.v1.losses.log_loss(labels=self.vars[0], predictions=self.vars[1], weights=weights, reduction=r, epsilon=eps)]
 
     def execute_sigmoid_cross_entropy(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
         ls = self.op.get("label_smoothing",0)
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.losses.sigmoid_cross_entropy(multi_class_labels=self.vars[0], logits=self.vars[1], weights=weights, label_smoothing=ls, reduction=r)]
+        return [tf.compat.v1.losses.sigmoid_cross_entropy(multi_class_labels=self.vars[0], logits=self.vars[1], weights=weights, label_smoothing=ls, reduction=r)]
 
     def execute_softmax_cross_entropy(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
         ls = self.op.get("label_smoothing",0)
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.losses.softmax_cross_entropy(onehot_labels=self.vars[0], logits=self.vars[1], weights=weights, label_smoothing=ls, reduction=r)]
+        return [tf.compat.v1.losses.softmax_cross_entropy(onehot_labels=self.vars[0], logits=self.vars[1], weights=weights, label_smoothing=ls, reduction=r)]
 
     def execute_sparse_softmax_cross_entropy(self):
         weights = 1.0
         if(len(self.vars) > 2):
             weights = self.vars[2]
-        r = self.op.get("reduction", tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
+        r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.losses.sparse_softmax_cross_entropy(labels=self.vars[0], logits=self.vars[1], weights=weights, reduction=r)]
+        return [tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=self.vars[0], logits=self.vars[1], weights=weights, reduction=r)]
 
     def execute_l2_loss(self):
         return [tf.nn.l2_loss(self.vars[0])]
 
     def execute_nn_cnn1d(self):
-        return [tf.nn.conv1d(value=self.vars[0], filters=self.vars[1], stride=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
+        return [tf.nn.conv1d(input=self.vars[0], filters=self.vars[1], stride=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_layers_cnn1d(self):
         kr = self.op.get("kernel_regularizer",None)
@@ -290,15 +290,15 @@ class OpCreator:
         bc = self.op.get("bias_constraint",None)
         print("kernel constraint: ", kc)
         print("bias constraint: ", bc)
-        return [tf.layers.conv1d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.conv1d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                  padding=self.op["padding"], data_format=self.op["data_format"], dilation_rate=self.op["dilation_rate"],
                                  kernel_regularizer=kr, bias_regularizer=br, activity_regularizer=ar, kernel_constraint=kc, bias_constraint=bc)]
 
     def execute_max_pooling1d(self):
-        return [tf.layers.max_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
+        return [tf.compat.v1.layers.max_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_avg_pooling1d(self):
-        return [tf.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
+        return [tf.compat.v1.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_max_pool_with_argmax(self):
         return [tf.nn.max_pool_with_argmax(input = self.vars[0], ksize = self.op["ksizes"], strides = self.op["strides"],\
@@ -307,24 +307,24 @@ class OpCreator:
     def execute_dense(self):
         kr = self.op.get("kernel_regularizer",None)
         br = self.op.get("bias_regularizer",None)
-        return [tf.layers.dense(inputs=self.vars[0], units=self.op["units"], activation=self.op["activation"], use_bias=self.op["use_bias"], kernel_regularizer=kr, bias_regularizer=br)]
+        return [tf.compat.v1.layers.dense(inputs=self.vars[0], units=self.op["units"], activation=self.op["activation"], use_bias=self.op["use_bias"], kernel_regularizer=kr, bias_regularizer=br)]
 
     def execute_flatten(self):
-        return [tf.layers.flatten(inputs=self.vars[0])]
+        return [tf.compat.v1.layers.flatten(inputs=self.vars[0])]
 
     def execute_nn_conv2d(self):
-        return [tf.nn.conv2d(input=self.vars[0], filter=self.vars[1], strides=self.op["strides"], padding=self.op["padding"],
+        return [tf.nn.conv2d(input=self.vars[0], filters=self.vars[1], strides=self.op["strides"], padding=self.op["padding"],
                              data_format=self.op["data_format"], dilations=self.op.get("dilations", [1,1,1,1]))]
 
     def execute_layers_conv2d(self):
-        return [tf.layers.conv2d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.conv2d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                  padding=self.op["padding"], data_format=self.op["data_format"], dilation_rate=self.op["dilation_rate"],
                                  activation=self.op.get("activation",None), kernel_regularizer=self.op.get("kernel_regularizer",None),
                                  bias_regularizer=self.op.get("bias_regularizer",None), activity_regularizer=self.op.get("activity_regularizer",None),
                                  kernel_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
 
     def execute_layers_sepconv1d(self):
-        return [tf.layers.separable_conv1d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.separable_conv1d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                            padding=self.op["padding"], data_format=self.op["data_format"], dilation_rate=self.op["dilation_rate"],
                                            depth_multiplier=self.op["depth_multiplier"],
                                            activation=self.op.get("activation",None), depthwise_regularizer=self.op.get("kernel_regularizer",None),
@@ -332,7 +332,7 @@ class OpCreator:
                                            depthwise_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
 
     def execute_layers_sepconv2d(self):
-        return [tf.layers.separable_conv1d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.separable_conv1d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                            padding=self.op["padding"], data_format=self.op["data_format"], dilation_rate=self.op["dilation_rate"],
                                            depth_multiplier=self.op["depth_multiplier"],
                                            activation=self.op.get("activation",None), depthwise_regularizer=self.op.get("kernel_regularizer",None),
@@ -340,7 +340,7 @@ class OpCreator:
                                            depthwise_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
 
     def execute_layers_conv2d_transpose(self):
-        return [tf.layers.conv2d_transpose(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.conv2d_transpose(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                  padding=self.op["padding"], data_format=self.op["data_format"],
                                  activation=self.op.get("activation",None), kernel_regularizer=self.op.get("kernel_regularizer",None),
                                  bias_regularizer=self.op.get("bias_regularizer",None), activity_regularizer=self.op.get("activity_regularizer",None),
@@ -348,20 +348,20 @@ class OpCreator:
 
 
     def execute_layers_conv3d(self):
-        return [tf.layers.conv3d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.conv3d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                  padding=self.op["padding"], data_format=self.op["data_format"], dilation_rate=self.op["dilation_rate"],
                                  activation=self.op.get("activation",None), kernel_regularizer=self.op.get("kernel_regularizer",None),
                                  bias_regularizer=self.op.get("bias_regularizer",None), activity_regularizer=self.op.get("activity_regularizer",None),
                                  kernel_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
 
     def execute_max_pooling3d(self):
-        return [tf.layers.max_pooling3d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
+        return [tf.compat.v1.layers.max_pooling3d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_avg_pooling3d(self):
-        return [tf.layers.average_pooling3d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
+        return [tf.compat.v1.layers.average_pooling3d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_conv3d_transpose_layers(self):
-        return [tf.layers.conv3d_transpose(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
+        return [tf.compat.v1.layers.conv3d_transpose(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
                                            padding=self.op["padding"], data_format=self.op["data_format"],
                                            activation=self.op.get("activation",None), kernel_regularizer=self.op.get("kernel_regularizer",None),
                                            bias_regularizer=self.op.get("bias_regularizer",None), activity_regularizer=self.op.get("activity_regularizer",None),
@@ -370,10 +370,10 @@ class OpCreator:
     def execute_conv3d_transpose_nn(self):
         # "TypeError: conv3d_transpose() got an unexpected keyword argument 'dilations'" :/
         # return [tf.nn.conv3d_transpose(value=self.vars[0], filter=self.vars[1], strides=self.op["strides"],padding=self.op["padding"], data_format=self.op["data_format"], dilations=self.op["dilations"])]
-        return [tf.nn.conv3d_transpose(value=self.vars[0], filter=self.vars[1], output_shape=self.op["output_shape"], strides=self.op["strides"],padding=self.op["padding"], data_format=self.op["data_format"])]
+        return [tf.nn.conv3d_transpose(input=self.vars[0], filters=self.vars[1], output_shape=self.op["output_shape"], strides=self.op["strides"],padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_batchnorm(self):
-        return [tf.layers.batch_normalization(inputs=self.vars[0], axis=self.op["axis"], momentum=self.op.get("momentum",0.99), epsilon=self.op.get("epsilon",0.001),
+        return [tf.compat.v1.layers.batch_normalization(inputs=self.vars[0], axis=self.op["axis"], momentum=self.op.get("momentum",0.99), epsilon=self.op.get("epsilon",0.001),
                                               center=self.op.get("center",True), scale=self.op.get("scale",True), fused=self.op["fused"])]
 
     def execute_embedding_lookup(self):
@@ -392,7 +392,7 @@ class OpCreator:
         return [tf.nn.lrn(input=self.vars[0], depth_radius=self.op["depth_radius"], bias=self.op["bias"], alpha=self.op["alpha"], beta=self.op["beta"])]
 
     def execute_layers_dropout(self):
-        return [tf.layers.dropout(inputs=self.vars[0], rate=self.op["rate"], noise_shape=self.op.get("noise_shape",None), training=self.op["training"])]
+        return [tf.compat.v1.layers.dropout(inputs=self.vars[0], rate=self.op["rate"], noise_shape=self.op.get("noise_shape",None), training=self.op["training"])]
 
     def execute_contrib_nn_alpha_dropout(self):
         return [tf.contrib.nn.alpha_dropout(x=self.vars[0], keep_prob=self.op["keep_prob"], noise_shape=self.op.get("noise_shape",None))]
@@ -443,7 +443,7 @@ class OpCreator:
         return [tf.sequence_mask(lengths=self.vars[0], maxlen=maxLen)]
 
     def execute_rint(self):
-        return [tf.rint(self.vars[0])]
+        return [tf.math.rint(self.vars[0])]
 
     def execute_histogram_fixed_width(self):
         return [tf.histogram_fixed_width(values=self.vars[0], value_range=self.vars[1], nbins=self.op["nbins"])]
@@ -452,7 +452,7 @@ class OpCreator:
         w = None
         if(len(self.vars) > 1):
             w = self.vars[1]
-        return [tf.bincount(arr=self.vars[0], weights=w, minlength=self.op["minlength"], maxlength=self.op["maxlength"])]
+        return [tf.math.bincount(arr=self.vars[0], weights=w, minlength=self.op["minlength"], maxlength=self.op["maxlength"])]
 
     def execute_scatter_nd(self):
         return [tf.scatter_nd(indices=self.vars[0], updates=self.vars[1], shape=self.op["shape"])]
@@ -461,43 +461,43 @@ class OpCreator:
         # Create an intermediate variable - otherwise the scatter op will modify the variable content in-place
         # and hence we'll save the input post-modification, rather than pre-modification
         intermediate = tf.Variable(tf.zeros(self.op["varShapes"][0]), dtype=tf.float32)
-        intermediate = tf.assign(intermediate, self.vars[0])
-        return [tf.scatter_nd_add(ref=intermediate, indices=self.vars[1], updates=self.vars[2], use_locking=self.op["use_locking"])]
+        intermediate = tf.compat.v1.assign(intermediate, self.vars[0])
+        return [tf.compat.v1.scatter_nd_add(ref=intermediate, indices=self.vars[1], updates=self.vars[2], use_locking=self.op["use_locking"])]
 
     def execute_scatter_nd_sub(self):
         intermediate = tf.Variable(tf.zeros(self.op["varShapes"][0]), dtype=tf.float32)
-        intermediate = tf.assign(intermediate, self.vars[0])
-        return [tf.scatter_nd_sub(ref=intermediate, indices=self.vars[1], updates=self.vars[2], use_locking=self.op["use_locking"])]
+        intermediate = tf.compat.v1.assign(intermediate, self.vars[0])
+        return [tf.compat.v1.scatter_nd_sub(ref=intermediate, indices=self.vars[1], updates=self.vars[2], use_locking=self.op["use_locking"])]
 
     def execute_scatter_nd_update(self):
         intermediate = tf.Variable(tf.zeros(self.op["varShapes"][0]), dtype=tf.float32)
-        intermediate = tf.assign(intermediate, self.vars[0])
-        return [tf.scatter_nd_update(ref=intermediate, indices=self.vars[1], updates=self.vars[2], use_locking=self.op["use_locking"])]
+        intermediate = tf.compat.v1.assign(intermediate, self.vars[0])
+        return [tf.compat.v1.scatter_nd_update(ref=intermediate, indices=self.vars[1], updates=self.vars[2], use_locking=self.op["use_locking"])]
 
     def execute_scatter_add(self):
-        return [tf.scatter_add(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_add(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_scatter_div(self):
-        return [tf.scatter_div(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_div(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_scatter_max(self):
-        return [tf.scatter_max(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_max(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_scatter_min(self):
-        return [tf.scatter_min(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_min(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_scatter_mul(self):
-        return [tf.scatter_mul(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_mul(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_scatter_sub(self):
-        return [tf.scatter_sub(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_sub(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_scatter_update(self):
-        return [tf.scatter_update(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
+        return [tf.compat.v1.scatter_update(ref=self.vars[0], indices=self.vars[1], updates=self.vars[2])]
 
     def execute_sufficient_statistics(self):
         temp = tf.add(self.vars[0], 1.0)
-        return tf.nn.sufficient_statistics(x=self.vars[0], axes=self.op["axes"], shift=self.op["shift"], keep_dims=self.op["keep_dims"])
+        return tf.nn.sufficient_statistics(x=self.vars[0], axes=self.op["axes"], shift=self.op["shift"], keepdims=self.op["keep_dims"])
 
     def execute_split(self):
         num_or_size_splits=self.op.get("num_or_size_split", None)
@@ -542,7 +542,7 @@ class OpCreator:
         # print("x: ",x)
         # print("y: ",y)
         # print("cond: ",c)
-        return [tf.where(condition=c, x=x, y=y)]
+        return [tf.compat.v1.where(condition=c, x=x, y=y)]
 
     def execute_broadcast_dynamic_shape(self):
         return [tf.broadcast_dynamic_shape(self.vars[0], self.vars[1])]
@@ -551,22 +551,22 @@ class OpCreator:
         return [tf.broadcast_to(input=self.vars[0], shape=self.vars[1])]
 
     def execute_unsorted_segment_max(self):
-        return [tf.unsorted_segment_max(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
+        return [tf.math.unsorted_segment_max(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
 
     def execute_unsorted_segment_min(self):
-        return [tf.unsorted_segment_min(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
+        return [tf.math.unsorted_segment_min(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
 
     def execute_unsorted_segment_mean(self):
-        return [tf.unsorted_segment_mean(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
+        return [tf.math.unsorted_segment_mean(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
 
     def execute_unsorted_segment_prod(self):
-        return [tf.unsorted_segment_prod(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
+        return [tf.math.unsorted_segment_prod(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
 
     def execute_unsorted_segment_sqrt_n(self):
-        return [tf.unsorted_segment_sqrt_n(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
+        return [tf.math.unsorted_segment_sqrt_n(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
 
     def execute_unsorted_segment_sum(self):
-        return [tf.unsorted_segment_sum(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
+        return [tf.math.unsorted_segment_sum(data=self.vars[0], segment_ids=self.vars[1], num_segments=self.op["num_segments"])]
 
     def execute_truncatemod(self):
         return [tf.truncatemod(x=self.vars[0], y=self.vars[1])]
@@ -575,71 +575,71 @@ class OpCreator:
         return [tf.tensordot(a=self.vars[0], b=self.vars[1], axes=self.op["axes"])]
 
     def execute_assert_equal(self):
-        with tf.control_dependencies([tf.assert_equal(x=self.vars[0], y=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_equal(x=self.vars[0], y=self.vars[1])]):
             out = tf.add(self.vars[0], self.vars[1])
         return [out]
 
     def execute_assert_greater(self):
-        with tf.control_dependencies([tf.assert_greater(x=self.vars[0], y=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_greater(x=self.vars[0], y=self.vars[1])]):
             out = tf.add(self.vars[0], self.vars[1])
         return [out]
 
     def execute_assert_greater_equal(self):
-        with tf.control_dependencies([tf.assert_greater_equal(x=self.vars[0], y=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_greater_equal(x=self.vars[0], y=self.vars[1])]):
             out = tf.add(self.vars[0], self.vars[1])
         return [out]
 
     def execute_assert_less(self):
-        with tf.control_dependencies([tf.assert_less(x=self.vars[0], y=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_less(x=self.vars[0], y=self.vars[1])]):
             out = tf.add(self.vars[0], self.vars[1])
         return [out]
 
     def execute_assert_less_equal(self):
-        with tf.control_dependencies([tf.assert_less_equal(x=self.vars[0], y=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_less_equal(x=self.vars[0], y=self.vars[1])]):
             out = tf.add(self.vars[0], self.vars[1])
         return [out]
 
     def execute_assert_none_equal(self):
-        with tf.control_dependencies([tf.assert_none_equal(x=self.vars[0], y=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_none_equal(x=self.vars[0], y=self.vars[1])]):
             out = tf.add(self.vars[0], self.vars[1])
         return [out]
 
     def execute_assert_integer(self):
-        with tf.control_dependencies([tf.assert_integer(x=self.vars[0])]):
+        with tf.control_dependencies([tf.compat.v1.assert_integer(x=self.vars[0])]):
             out = tf.add(self.vars[0], 1)
         return [out]
 
     def execute_assert_negative(self):
-        with tf.control_dependencies([tf.assert_negative(x=self.vars[0])]):
+        with tf.control_dependencies([tf.compat.v1.assert_negative(x=self.vars[0])]):
             out = tf.add(self.vars[0], 1)
         return [out]
 
     def execute_assert_positive(self):
-        with tf.control_dependencies([tf.assert_positive(x=self.vars[0])]):
+        with tf.control_dependencies([tf.compat.v1.assert_positive(x=self.vars[0])]):
             out = tf.add(self.vars[0], 1)
         return [out]
 
     def execute_assert_rank(self):
-        with tf.control_dependencies([tf.assert_rank(x=self.vars[0], rank=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_rank(x=self.vars[0], rank=self.vars[1])]):
             out = tf.add(self.vars[0], tf.cast(self.vars[1], self.vars[0].dtype))
         return [out]
 
     def execute_assert_rank_at_least(self):
-        with tf.control_dependencies([tf.assert_rank_at_least(x=self.vars[0], rank=self.vars[1])]):
+        with tf.control_dependencies([tf.compat.v1.assert_rank_at_least(x=self.vars[0], rank=self.vars[1])]):
             out = tf.add(self.vars[0], tf.cast(self.vars[1], self.vars[0].dtype))
         return [out]
 
     def execute_assert_type(self):
-        with tf.control_dependencies([tf.assert_type(tensor=self.vars[0], tf_type=self.op["tf_type"])]):
+        with tf.control_dependencies([tf.compat.v1.assert_type(tensor=self.vars[0], tf_type=self.op["tf_type"])]):
             out = tf.add(self.vars[0], 1)
         return [out]
 
     def execute_cond(self):
         def ifTrue():
-            return tf.lin_space(start=1.0, stop=5.0, num=5)
+            return tf.linspace(start=1.0, stop=5.0, num=5)
         def ifFalse():
             return tf.ones(shape=[5], dtype=tf.float32)
-        return [tf.cond(self.vars[0], ifTrue, ifFalse)]
+        return [tf.cond(pred=self.vars[0], true_fn=ifTrue, false_fn=ifFalse)]
 
     def execute_case(self):
         input = self.vars[0]
@@ -656,24 +656,24 @@ class OpCreator:
             return i < j
         def body(i, j):
             return i+1, j
-        loop = tf.while_loop(condition, body, (0.0, self.vars[0]))
+        loop = tf.while_loop(cond=condition, body=body, loop_vars=(0.0, self.vars[0]))
         return loop
 
     def execute_while2(self):
         # Loop: keep dividing self.vars[1] by 2 until sum(self.vars[1]) < sum(self.vars[0])
         def condition(x, y):
-            return tf.reduce_sum(y) < tf.reduce_sum(x)
+            return tf.reduce_sum(input_tensor=y) < tf.reduce_sum(input_tensor=x)
         def body(x, y):
             return x, y/2
-        loop = tf.while_loop(condition, body, (self.vars[0], self.vars[1]))
+        loop = tf.while_loop(cond=condition, body=body, loop_vars=(self.vars[0], self.vars[1]))
         return loop
 
     def execute_sum_dynamic_axis(self):
         if(self.op["axistype"] == "argmin"):
-            axis = tf.math.argmin(tf.shape(self.vars[0]))
+            axis = tf.math.argmin(input=tf.shape(input=self.vars[0]))
         else:
-            axis = tf.math.argmax(tf.shape(self.vars[0]))
-        return [tf.reduce_sum(self.vars[0], axis=axis, keepdims=self.op["keepdims"])]
+            axis = tf.math.argmax(input=tf.shape(input=self.vars[0]))
+        return [tf.reduce_sum(input_tensor=self.vars[0], axis=axis, keepdims=self.op["keepdims"])]
 
     def execute_tensorarray_getset(self):
         infershape = True
@@ -798,7 +798,7 @@ class OpCreator:
         return out
 
     def execute_extractImagePatches(self):
-        out = [tf.image.extract_image_patches(images=self.vars[0], ksizes=self.op["ksizes"], strides=self.op["strides"], rates=self.op["rates"], padding=self.op["padding"])]
+        out = [tf.image.extract_patches(images=self.vars[0], sizes=self.op["ksizes"], strides=self.op["strides"], rates=self.op["rates"], padding=self.op["padding"])]
         return out
 
     def execute_stopGradient(self):
@@ -807,27 +807,27 @@ class OpCreator:
         return out
 
     def execute_lstmcell(self):
-        lstm = tf.nn.rnn_cell.LSTMCell(num_units=self.op["num_units"], use_peepholes=self.op["use_peepholes"], cell_clip=self.op["cell_clip"],
+        lstm = tf.compat.v1.nn.rnn_cell.LSTMCell(num_units=self.op["num_units"], use_peepholes=self.op["use_peepholes"], cell_clip=self.op["cell_clip"],
                                        proj_clip=self.op["proj_clip"], forget_bias=self.op["forget_bias"], activation=self.op["activation"])
 
         initState = None
         if(len(self.vars) > 1):
             initState = [self.vars[1], self.vars[2]]
             if(self.op["static"] == False):
-                initState = tf.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
+                initState = tf.compat.v1.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(lstm, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(lstm, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(lstm, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(lstm, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
         return [concatOutputs, concatStates]
 
     def execute_basicrnncell(self):
-        rnn = tf.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
+        rnn = tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
 
         initState = None
         if(len(self.vars) > 1):
@@ -835,35 +835,35 @@ class OpCreator:
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
         return [concatOutputs, concatStates]
 
     def execute_basiclstmcell(self):
-        rnn = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.op["num_units"], activation=self.op["activation"], forget_bias=self.op["forget_bias"])
+        rnn = tf.compat.v1.nn.rnn_cell.BasicLSTMCell(num_units=self.op["num_units"], activation=self.op["activation"], forget_bias=self.op["forget_bias"])
 
         initState = None
         if(len(self.vars) > 1):
             initState = [self.vars[1], self.vars[2]]
             if(self.op["static"] == False):
-                initState = tf.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
+                initState = tf.compat.v1.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
         return [concatOutputs, concatStates]
 
     def execute_grucell(self):
-        rnn = tf.nn.rnn_cell.GRUCell(num_units=self.op["num_units"], activation=self.op["activation"])
+        rnn = tf.compat.v1.nn.rnn_cell.GRUCell(num_units=self.op["num_units"], activation=self.op["activation"])
 
         initState = None
         if(len(self.vars) > 1):
@@ -871,9 +871,9 @@ class OpCreator:
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
@@ -888,9 +888,9 @@ class OpCreator:
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
@@ -903,13 +903,13 @@ class OpCreator:
         if(len(self.vars) > 1):
             initState = [self.vars[1], self.vars[2]]
             if(self.op["static"] == False):
-                initState = tf.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
+                initState = tf.compat.v1.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
@@ -924,9 +924,9 @@ class OpCreator:
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, states = tf.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
+            outputs, states = tf.compat.v1.nn.static_rnn(rnn, inputs=x, initial_state=initState, dtype=self.op["dtype"])
         else:
-            outputs, states = tf.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.dynamic_rnn(rnn, inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"], time_major=self.op["time_major"])
 
         concatOutputs = tf.concat(outputs, axis=0)
         concatStates = tf.concat(states, axis=0)
@@ -937,7 +937,7 @@ class OpCreator:
         if(len(self.vars) > 1):
             initState = [self.vars[1], self.vars[2]]
             if(self.op["static"] == False):
-                initState = tf.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
+                initState = tf.compat.v1.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
 
         rnn = tf.contrib.rnn.LSTMBlockFusedCell(num_units=self.op["num_units"], forget_bias=self.op["forget_bias"], cell_clip=self.op["cell_clip"], use_peephole=self.op["use_peephole"])
         outputs, states = rnn(inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"])
@@ -947,8 +947,8 @@ class OpCreator:
         return [outputs, concatStates]
 
     def execute_bidirectional_basicrnncell(self):
-        rnn1 = tf.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
-        rnn2 = tf.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
+        rnn1 = tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
+        rnn2 = tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
 
         initState1 = None
         initState2 = None
@@ -958,13 +958,13 @@ class OpCreator:
 
         if(self.op["static"] == True):
             x = tf.unstack(self.vars[0], num=self.op["timeSteps"], axis=1)
-            outputs, statesFwd, statesBwd = tf.nn.static_bidirectional_rnn(cell_fw=rnn1, cell_bw=rnn2, inputs=x, initial_state_fw=initState1, initial_state_bw=initState2, dtype=self.op["dtype"])
+            outputs, statesFwd, statesBwd = tf.compat.v1.nn.static_bidirectional_rnn(cell_fw=rnn1, cell_bw=rnn2, inputs=x, initial_state_fw=initState1, initial_state_bw=initState2, dtype=self.op["dtype"])
             concatOutputs = tf.concat(outputs, axis=0)
             concatStatesFwd = tf.concat(statesFwd, axis=0)
             concatStatesBwd = tf.concat(statesBwd, axis=0)
             return [concatOutputs, concatStatesFwd, concatStatesBwd]
         else:
-            outputs, states = tf.nn.bidirectional_dynamic_rnn(cell_fw=rnn1, cell_bw=rnn2, inputs=self.vars[0], initial_state_fw=initState1, initial_state_bw=initState2, dtype=self.op["dtype"], time_major=self.op["time_major"])
+            outputs, states = tf.compat.v1.nn.bidirectional_dynamic_rnn(cell_fw=rnn1, cell_bw=rnn2, inputs=self.vars[0], initial_state_fw=initState1, initial_state_bw=initState2, dtype=self.op["dtype"], time_major=self.op["time_major"])
             concatOutputs = tf.concat(outputs, axis=0)
             concatStates = tf.concat(states, axis=0)
             return [concatOutputs, concatStates]
@@ -974,7 +974,7 @@ class OpCreator:
         if(len(self.vars) > 1):
             initState = [self.vars[1], self.vars[2]]
             if(self.op["static"] == False):
-                initState = tf.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
+                initState = tf.compat.v1.nn.rnn_cell.LSTMStateTuple(initState[0], initState[1])
 
         rnn = tf.contrib.rnn.LSTMBlockFusedCell(num_units=self.op["num_units"], forget_bias=self.op["forget_bias"], cell_clip=self.op["cell_clip"], use_peephole=self.op["use_peephole"])
         rnn = tf.contrib.rnn.TimeReversedFusedRNN(rnn)
@@ -989,7 +989,7 @@ class OpCreator:
         if(len(self.vars) > 1):
             initState = self.vars[1]
 
-        rnn = tf.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
+        rnn = tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"])
         rnn = tf.contrib.rnn.FusedRNNCellAdaptor(cell=rnn, use_dynamic_rnn=self.op["use_dynamic_rnn"])
         outputs, states = rnn(inputs=self.vars[0], initial_state=initState, dtype=self.op["dtype"])
 
@@ -1000,8 +1000,8 @@ class OpCreator:
         rnn1 = []
         rnn2 = []
         for i in range(self.op["size"]):
-            rnn1.append(tf.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"]))
-            rnn2.append(tf.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"]))
+            rnn1.append(tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"]))
+            rnn2.append(tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units=self.op["num_units"], activation=self.op["activation"]))
 
         initState1 = None
         initState2 = None
@@ -1031,13 +1031,13 @@ class OpCreator:
         return [tf.reshape(self.vars[0], shape=self.op["shape"])]
 
     def execute_arg_max(self):
-        return [tf.arg_max(input=self.vars[0], dimension=self.op["dimension"])]
+        return [tf.argmax(input=self.vars[0], axis=self.op["dimension"])]
 
     def execute_arg_min(self):
-        return [tf.arg_min(input=self.vars[0], dimension=self.op["dimension"])]
+        return [tf.argmin(input=self.vars[0], axis=self.op["dimension"])]
 
     def execute_assign(self):
-        return [tf.assign(ref=self.vars[0], value=self.vars[1])]
+        return [tf.compat.v1.assign(ref=self.vars[0], value=self.vars[1])]
 
     def execute_concat(self):
         return [tf.concat(values=self.vars, axis=self.op["axis"])]
@@ -1055,13 +1055,13 @@ class OpCreator:
         return [tf.ones(shape=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_ones_like(self):
-        return [tf.ones_like(tensor=self.vars[0])]
+        return [tf.ones_like(input=self.vars[0])]
 
     def execute_zeros(self):
         return [tf.zeros(shape=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_zeros_like(self):
-        return [tf.zeros_like(tensor=self.vars[0], dtype=self.op["dtype"])]
+        return [tf.zeros_like(input=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_range(self):
         return [tf.range(start=self.vars[0], limit=self.vars[1], delta=self.vars[2])]
@@ -1086,7 +1086,7 @@ class OpCreator:
         return [tf.strided_slice(self.vars[0], begin=self.op["begin"], end=self.op["end"], strides=self.op["strides"], begin_mask=self.op["begin_mask"], end_mask=self.op["end_mask"])]
 
     def execute_transpose(self):
-        return [tf.transpose(self.vars[0], perm=self.op["perm"])]
+        return [tf.transpose(a=self.vars[0], perm=self.op["perm"])]
 
     def execute_unstack(self):
         self.vars[0] = tf.reshape(self.vars[0], self.op["varShapes"][0])
@@ -1249,7 +1249,7 @@ class OpCreator:
         return [tf.math.logical_not(self.vars[0])]
 
     def execute_diag_part(self):
-        return [tf.diag_part(self.vars[0])]
+        return [tf.linalg.tensor_diag_part(self.vars[0])]
 
     def execute_fake_quant_with_min_max_vars(self):
         return [tf.quantization.fake_quant_with_min_max_vars(inputs=self.vars[0], min=self.vars[1], max=self.vars[2], num_bits=self.op["num_bits"], narrow_range=self.op["narrow_range"])]
@@ -1274,7 +1274,7 @@ class OpCreator:
 
     def execute_strings_split(self):
         print("strings.split input: ", self.vars[0])
-        out = tf.strings.split(self.vars[0], sep=self.op["split"])
+        out = tf.strings.split(self.vars[0], sep=self.op["split"]).to_sparse()
         print("strings.split output: ", out)
         return [out]
 
@@ -1301,7 +1301,7 @@ class OpCreator:
         return [tf.bitwise.right_shift(self.vars[0], self.vars[1])]
 
     def execute_crop_and_resize(self):
-        return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_ind = self.vars[3],\
+        return [tf.image.crop_and_resize(image = self.vars[0], boxes = self.vars[1], crop_size = self.vars[2], box_indices = self.vars[3],\
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
 
     def execute_random_crop(self):
@@ -1311,20 +1311,20 @@ class OpCreator:
         return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
 
     def execute_resize_bilinear(self):
-        return [tf.image.resize_bilinear(images = self.vars[0], size = self.vars[1], \
-                align_corners = self.op["align_corners"], half_pixel_centers = self.op["half_pixel_centers"])]
+        return [tf.image.resize(images = self.vars[0], size = self.vars[1], \
+                method=tf.image.ResizeMethod.BILINEAR, half_pixel_centers = self.op["half_pixel_centers"])]
 
     def execute_resize_nearest_neighbor(self):
-        return [tf.image.resize_nearest_neighbor(images = self.vars[0], size = self.vars[1])]
+        return [tf.image.resize(images = self.vars[0], size = self.vars[1], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)]
 
     def execute_resize_bicubic(self):
-        return [tf.image.resize_bicubic(images=self.vars[0], size=self.vars[1], \
-                                        align_corners=self.op["align_corners"], \
+        return [tf.image.resize(images=self.vars[0], size=self.vars[1], \
+                                        method=tf.image.ResizeMethod.BICUBIC, \
                                         half_pixel_centers=self.op["half_pixel_centers"])]
 
     def execute_resize_area(self):
-        return [tf.image.resize_area(images=self.vars[0], size=self.vars[1], \
-                                        align_corners=self.op["align_corners"])]
+        return [tf.image.resize(images=self.vars[0], size=self.vars[1], \
+                                        method=tf.image.ResizeMethod.AREA)]
 
     def execute_non_max_suppression(self):
         iou_threshold = 0.5
@@ -1372,7 +1372,7 @@ class OpCreator:
         return [tf.math.betainc(self.vars[0], self.vars[1], self.vars[2])]
 
     def execute_fused_batch_norm(self):
-        return tf.nn.fused_batch_norm(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
+        return tf.compat.v1.nn.fused_batch_norm(x= self.vars[0], scale = self.vars[1], offset = self.vars[2], mean = None, variance = None, epsilon = self.op["epsilon"],\
                                 data_format = self.op["data_format"], is_training = True)
 
     def execute_matrix_band_part(self):

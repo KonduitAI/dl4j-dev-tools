@@ -2,12 +2,40 @@ package org.nd4j.codegen.mixins
 
 import org.nd4j.codegen.api.AtLeast
 import org.nd4j.codegen.api.DataType
+import org.nd4j.codegen.api.Exactly
+import org.nd4j.codegen.api.Language
+import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
+
+val broadcastingDoc = Mixin("broadcastingDoc"){
+    Doc(Language.ANY, DocScope.ALL){
+        //TODO: finalize content for this broadcasting mixin doc.
+        """
+                Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                For example, if X has shape [1,10] and Y has shape [5,10] then op(X,Y) has output shape [5,10]
+                Broadcast rules are the same as NumPy: https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
+            """.trimIndent()
+    }
+}
 
 val transform = Mixin("transform"){
     legacy = true
     Input(DataType.NUMERIC, "x") { description = "Input variable" }
     Output(DataType.NUMERIC, "output"){ description = "Output variable" }
+}
+
+val transformArithmetic = Mixin("transformArithmetic"){
+    useMixin(transform)
+    legacy = false
+    Input(DataType.NUMERIC, "y") { description = "Input variable" }
+    javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic"
+}
+
+val transformCustom2 = Mixin("transformCustom2"){
+    Input(DataType.NUMERIC, "x") { description = "First input variable, x" }
+    Input(DataType.NUMERIC, "y") { description = "Second input variable, y" }
+    Output(DataType.NUMERIC, "out"){ description = "Output"}
+    javaPackage = "org.nd4j.linalg.api.ops.impl.transforms.custom"
 }
 
 val transformStrict = Mixin("transformStrict"){

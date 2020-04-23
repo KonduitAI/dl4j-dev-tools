@@ -56,46 +56,46 @@ class VarInitializer:
         return tf.Variable(tf.reshape(tf.range(start=0, limit=np.prod(shape), delta=1, dtype=dtype), shape), name=n)
 
     def var_stdnormal(self, shape, dtype, n):
-        return tf.Variable(tf.random_normal(shape=shape, mean=0.0, stddev=1.0, dtype=dtype), dtype=dtype, name=n)
+        return tf.Variable(tf.random.normal(shape=shape, mean=0.0, stddev=1.0, dtype=dtype), dtype=dtype, name=n)
 
     def var_uniform(self, shape, dtype, n):
-        return tf.Variable(tf.random_uniform(shape,dtype=dtype), dtype, name=n)
+        return tf.Variable(tf.random.uniform(shape,dtype=dtype), dtype, name=n)
 
     def var_uniform_m1_1(self, shape, dtype, n):
-        return tf.Variable(tf.random_uniform(shape, minval=-1, maxval=1), dtype, name=n)
+        return tf.Variable(tf.random.uniform(shape, minval=-1, maxval=1), dtype, name=n)
 
     def var_uniform_m1_0(self, shape, dtype, n):
-        return tf.Variable(tf.random_uniform(shape, minval=-1, maxval=0), dtype, name=n)
+        return tf.Variable(tf.random.uniform(shape, minval=-1, maxval=0), dtype, name=n)
 
     def var_uniform10(self, shape, dtype, n):
-        return tf.Variable(tf.random_uniform(shape, minval=0, maxval=10, dtype=dtype), dtype, name=n)
+        return tf.Variable(tf.random.uniform(shape, minval=0, maxval=10, dtype=dtype), dtype, name=n)
 
     def var_uniform_int2(self, shape, dtype, n):
         if(dtype == tf.int32 or dtype == tf.int64):
-            return tf.Variable(tf.random_uniform(shape, minval=0, maxval=2, dtype=dtype), dtype, name=n)
+            return tf.Variable(tf.random.uniform(shape, minval=0, maxval=2, dtype=dtype), dtype, name=n)
         else:
-            return tf.Variable(tf.floor(tf.random_uniform(shape, minval=0, maxval=2, dtype=dtype)), dtype, name=n)
+            return tf.Variable(tf.floor(tf.random.uniform(shape, minval=0, maxval=2, dtype=dtype)), dtype, name=n)
 
     def var_uniform_int3(self, shape, dtype, n):
         if(dtype == tf.int32 or dtype == tf.int64):
-            return tf.Variable(tf.random_uniform(shape, minval=0, maxval=3, dtype=dtype), dtype, name=n)
+            return tf.Variable(tf.random.uniform(shape, minval=0, maxval=3, dtype=dtype), dtype, name=n)
         else:
-            return tf.Variable(tf.floor(tf.random_uniform(shape, minval=0, maxval=3, dtype=dtype)), dtype, name=n)
+            return tf.Variable(tf.floor(tf.random.uniform(shape, minval=0, maxval=3, dtype=dtype)), dtype, name=n)
 
     def var_uniform_int5(self, shape, dtype, n):
         if(dtype == tf.int32 or dtype == tf.int64):
-            return tf.Variable(tf.random_uniform(shape, minval=0, maxval=5, dtype=dtype), dtype, name=n)
+            return tf.Variable(tf.random.uniform(shape, minval=0, maxval=5, dtype=dtype), dtype, name=n)
         else:
-            return tf.Variable(tf.floor(tf.random_uniform(shape, minval=0, maxval=5, dtype=dtype)), dtype, name=n)
+            return tf.Variable(tf.floor(tf.random.uniform(shape, minval=0, maxval=5, dtype=dtype)), dtype, name=n)
 
     def var_uniform_int10(self, shape, dtype, n):
         if(dtype == tf.int32 or dtype == tf.int64):
-            return tf.Variable(tf.random_uniform(shape, minval=0, maxval=10, dtype=dtype), dtype, name=n)
+            return tf.Variable(tf.random.uniform(shape, minval=0, maxval=10, dtype=dtype), dtype, name=n)
         else:
-            return tf.Variable(tf.floor(tf.random_uniform(shape, minval=0, maxval=10, dtype=dtype)), dtype, name=n)
+            return tf.Variable(tf.floor(tf.random.uniform(shape, minval=0, maxval=10, dtype=dtype)), dtype, name=n)
 
     def var_uniform_sparse(self, shape, dtype, n):
-        values = tf.random_uniform(shape) * tf.cast((tf.random_uniform(shape) < 0.5), dtype=tf.float32)
+        values = tf.random.uniform(shape) * tf.cast((tf.random.uniform(shape) < 0.5), dtype=tf.float32)
         return tf.Variable(values, dtype, name=n)
 
     def var_fixed_5(self,shape,dtype,n):
@@ -182,7 +182,7 @@ class VarInitializer:
 
     def var_bernoulli(self, shape, dtype, n):
         #Random 0 or 1
-        return tf.cast((tf.random_uniform(shape) < 0.5), dtype=dtype)
+        return tf.cast((tf.random.uniform(shape) < 0.5), dtype=dtype)
 
     def var_onehot(self, shape, dtype, n):
         if(len(shape) is not 2):
@@ -218,7 +218,7 @@ class VarInitializer:
     def var_boolean(self, shape, dtype, n):
         print(dtype)
         # if(dtype is not tf.bool):
-        return tf.Variable(tf.random_uniform(shape) >= 0.5, dtype=dtype)
+        return tf.Variable(tf.random.uniform(shape) >= 0.5, dtype=dtype)
 
     def var_booleanFalse(self, shape, dtype, n):
         return tf.Variable(tf.cast(tf.fill(dims=shape, value=False), dtype=dtype), name=n)
@@ -250,11 +250,11 @@ class VarInitializer:
             return method(shape, dtype, name)
 
     def placeholder_zero(self, shape, dtype, n):
-        return [tf.placeholder(dtype=dtype, shape=shape, name=n),
+        return [tf.compat.v1.placeholder(dtype=dtype, shape=shape, name=n),
                 np.zeros(shape, dtype.as_numpy_dtype())]
 
     def placeholder_one(self, shape, dtype, n):
-        return [tf.placeholder(dtype=dtype, shape=shape, name=n),
+        return [tf.compat.v1.placeholder(dtype=dtype, shape=shape, name=n),
                 np.ones(shape, dtype.as_numpy_dtype())]
 
     def var_ragged2d(self, shape, dtype, n):
