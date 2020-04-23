@@ -12,6 +12,8 @@ import org.nd4j.codegen.util.GenUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator.exactlyOne;
@@ -21,7 +23,8 @@ public class DocsGenerator {
     // Markdown marker for start-end of code section
     private static final String MD_CODE = "```";
     // Javadoc constants which should be dropped or replaced for markdown generation
-    private static final String JD_CODE = "@code";
+    private static final String JD_CODE = "{@code ";
+    private static final String JD_CODE_END = "}";
     private static final String JD_INPUT_TYPE = "%INPUT_TYPE%";
 
     public static class JavaDocToMDAdapter {
@@ -62,19 +65,23 @@ public class DocsGenerator {
             if (param instanceof Arg) {
                 Arg arg = (Arg) param;
                 if (!first)
-                    sb.append(",");
+                    sb.append(", ");
                 else if (withName)
-                    sb.append("String name,");
+                    sb.append("String name, ");
                 TypeName tu = Nd4jNamespaceGenerator.getArgType(arg);
-                sb.append(tu.toString() + " " + arg.name());
+                String className = tu.toString();
+                if(className.contains(".")){
+                    className = className.substring(className.lastIndexOf('.')+1);
+                }
+                sb.append(className + " " + arg.name());
                 first = false;
             }
             else if (param instanceof Input) {
                 Input arg = (Input) param;
                 if (!first)
-                    sb.append(",");
+                    sb.append(", ");
                 else if (withName)
-                    sb.append("String name,");
+                    sb.append("String name, ");
                 sb.append((isSameDiff ? "SDVariable " : "INDArray ") + arg.name());
                 first = false;
             }
@@ -91,9 +98,10 @@ public class DocsGenerator {
             String[] lines = text.split("\n");
             for (int i = 0; i < lines.length; i++) {
                 if (!lines[i].endsWith("<br>")) {
-                    String filteredLine = new JavaDocToMDAdapter(lines[i]).
-                            filter(JD_CODE, StringUtils.EMPTY).
-                            filter(JD_INPUT_TYPE, "INDArray").toString();
+                    String filteredLine = new JavaDocToMDAdapter(lines[i])
+                            .filter(JD_CODE, "`")
+                            .filter(JD_CODE_END, "`")
+                            .filter(JD_INPUT_TYPE, "INDArray").toString();
 
                     lines[i] = filteredLine + System.lineSeparator();
                 }
@@ -110,6 +118,9 @@ public class DocsGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append("#  Namespace " + namespace.getName() + System.lineSeparator());
         List<Op> ops = namespace.getOps();
+
+        ops.sort(Comparator.comparing(Op::getOpName));
+
         if (ops.size() > 0)
             sb.append("# Operation classes <ops>" + System.lineSeparator());
         for (Op op : ops) {
@@ -164,7 +175,7 @@ public class DocsGenerator {
             boolean first = true;
             for (Input i : config.getInputs()) {
                 if (first) {
-                    sb.append("````" + System.lineSeparator());
+                    sb.append("```" + System.lineSeparator());
                     first = false;
                 }
                 sb.append("* " + i.getName() + " " + i.getDescription() + " (" + i.getType() + " type)");
@@ -175,7 +186,7 @@ public class DocsGenerator {
             }
             for (Arg arg : config.getArgs()) {
                 if (first) {
-                    sb.append("````" + System.lineSeparator());
+                    sb.append("```" + System.lineSeparator());
                     first = false;
                 }
                 sb.append("* " + arg.getName() + " " + " (" + arg.getType() + " type)");
@@ -186,7 +197,7 @@ public class DocsGenerator {
             }
             StringBuilder tsb = buildDocSectionText(config.getDoc());
             sb.append(tsb.toString());
-            sb.append("````" + System.lineSeparator());
+            sb.append("```" + System.lineSeparator());
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
                     sb.append("[" + op.getOpName() + "]" + "(#" + op.getOpName() + ")" + System.lineSeparator()));
 

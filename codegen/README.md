@@ -89,7 +89,7 @@ Classes are written to `deeplearning4j/nd4j/nd4j-backends/nd4j-api-parent/nd4j-a
 It is possible to use generate.sh for generation of code only, docs in markdown format only, or both docs and code.
 To generate docs only and store them to new folder "docs" for all namespaces:
 ```
-./generate.sh -docsdir ../../docs all
+./generate.sh all -docsdir ../../docs
 ```
 Generation for selected namespaces works in the same way as for code:
 ```
