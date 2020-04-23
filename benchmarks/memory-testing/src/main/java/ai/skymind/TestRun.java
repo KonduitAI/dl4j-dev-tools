@@ -222,7 +222,7 @@ public class TestRun {
                             for(int j=0; j<next.length; j++ ){
                                 phMap.put(inputs.get(j), next[j]);
                             }
-                            model.exec(phMap, outputs);
+                            model.output(phMap, outputs);
                             if(++iterCount % 1000 == 0 && System.currentTimeMillis() > lastReport + 60000L ){
                                 log.info("Num iters: {}", iterCount);
                                 lastReport = System.currentTimeMillis();

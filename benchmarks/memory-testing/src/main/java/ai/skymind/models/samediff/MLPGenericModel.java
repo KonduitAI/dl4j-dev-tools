@@ -34,7 +34,7 @@ public class MLPGenericModel implements SameDiffModel {
         SDVariable l3 = sd.concat(1, l2, l2);                       //[4,64]
         SDVariable l4 = sd.nn().relu(l3.mmul(w).add(b), 0.0);
 
-        SDVariable l5 = sd.nn().pad(l4, new int[][]{{0, 0}, {1, 2}}, 1.0);
+        SDVariable l5 = sd.nn().pad(l4, sd.constant(Nd4j.createFromArray(new int[][]{{0, 0}, {1, 2}})), 1.0);
         SDVariable l6 = l5.get(SDIndex.all(), SDIndex.interval(0, 64));
         SDVariable l7 = sd.nn().softmax(l6);
         SDVariable l7a = sd.zerosLike(l7);
@@ -46,11 +46,11 @@ public class MLPGenericModel implements SameDiffModel {
         SDVariable l12 = sd.math().log(l11);
         SDVariable l13 = sd.nn().sigmoid(sd.math().mergeAdd(l12, l11));
         SDVariable l14 = sd.nn().swish(l13);
-        SDVariable l15 = sd.random().bernoulli("bernoulli", 0.5, l14.shape()).castTo(DataType.FLOAT).add(l14);
-        SDVariable l16 = sd.random().normalTruncated(1, 0.5, 4, 64).castTo(DataType.FLOAT).add(l15);
+        SDVariable l15 = sd.random().bernoulli("bernoulli", 0.5, DataType.FLOAT, new long[]{4,64}).add(l14);
+        SDVariable l16 = sd.random().normalTruncated(1, 0.5, DataType.FLOAT, 4, 64).add(l15);
 
         SDVariable l2Loss = sd.loss().l2Loss(l16);
-        SDVariable loss = sd.loss().meanSquaredError("loss", label, l16);
+        SDVariable loss = sd.loss().meanSquaredError("loss", label, l16, null);
 
         sd.setTrainingConfig(TrainingConfig.builder()
                 .dataSetFeatureMapping("input")
