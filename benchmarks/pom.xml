@@ -169,7 +169,7 @@
                 <nd4j.version>1.0.0-beta5</nd4j.version>
                 <datavec.version>1.0.0-beta5</datavec.version>
                 <version.specific.code.dir>v100beta4</version.specific.code.dir>
-                <artifact.version.name>v100beta4</artifact.version.name>
+                <artifact.version.name>v100beta5</artifact.version.name>
                 <dl4j.parallelwrapper.artifact>deeplearning4j-parallel-wrapper</dl4j.parallelwrapper.artifact>
                 <dl4j.ui.artifact>deeplearning4j-ui_${scala.binary.version}</dl4j.ui.artifact>
             </properties>
@@ -211,7 +211,7 @@
                 <nd4j.version>1.0.0-beta6</nd4j.version>
                 <datavec.version>1.0.0-beta6</datavec.version>
                 <version.specific.code.dir>v100beta4</version.specific.code.dir>
-                <artifact.version.name>v100beta4</artifact.version.name>
+                <artifact.version.name>v100beta6</artifact.version.name>
                 <dl4j.parallelwrapper.artifact>deeplearning4j-parallel-wrapper</dl4j.parallelwrapper.artifact>
                 <dl4j.ui.artifact>deeplearning4j-ui</dl4j.ui.artifact>
             </properties>
@@ -509,6 +509,12 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
         <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-core</artifactId>

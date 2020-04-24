@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 cd ..
-#mvn package -DskipTests -Pv091,cudnn8
-#mvn package -DskipTests -Pv100alpha,cudnn8
-#mvn package -DskipTests -Pv100beta,cudnn8
-#mvn package -DskipTests -Pv100beta,cudnn91
-mvn package -DskipTests -Pv100beta5,native
-mvn package -DskipTests -Pv100beta6,native
-mvn package -DskipTests -Pv100snapshot,native
+#mvn clean package -DskipTests -Pv091,cudnn8
+#mvn clean package -DskipTests -Pv100alpha,cudnn8
+#mvn clean package -DskipTests -Pv100beta,cudnn8
+#mvn clean package -DskipTests -Pv100beta,cudnn91
+mvn clean package -DskipTests -Pv100beta5,native
+mvn clean package -DskipTests -Pv100beta6,native
+#mvn clean package -DskipTests -Pv100snapshot,native
 cd dl4j-core-benchmark
 #declare -a versionBackend=("v091_cuda8-cudnn" "v100alpha_cuda8-cudnn" "v100beta_cuda8-cudnn")
-declare -a versionBackend=("v100beta5_native", "v100beta6_native", "v100snapshot_native")
+#declare -a versionBackend=("v100beta5_native" "v100beta6_native" "v100snapshot_native")
+declare -a versionBackend=("v100beta6_native" "v100snapshot_native")
+#declare -a versionBackend=("v100snapshot_native")
 declare -a batchSize=("32")
 modelType=ALEXNET
 xmx=12G
