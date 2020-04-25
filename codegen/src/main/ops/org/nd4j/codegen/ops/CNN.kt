@@ -557,4 +557,23 @@ fun SDCNN() =  Namespace("SDCNN"){
             """.trimIndent()
         }
     }
+
+    Op("upsampling3d") {
+        javaPackage = namespaceJavaPackage
+        javaOpClass = "Upsampling3d"
+        Input(NUMERIC, "input") { description = "Input in NCHW format" }
+        Arg(BOOL ,"ncdhw") { description = "If true: input is in NCDHW (minibatch, channels, depth, height, width) format. False: NDHWC format" }
+        Arg(INT, "scaleD") { description = "Scale to upsample in depth dimension" }
+        Arg(INT, "scaleH") { description = "Scale to upsample in height dimension" }
+        Arg(INT, "scaleW") { description = "Scale to upsample in width dimension" }
+
+
+        Output(NUMERIC, "output"){ description = "Upsampled input" }
+
+        Doc(Language.ANY, DocScope.ALL){
+            """
+             3D Convolution layer operation - Upsampling 3d 
+            """.trimIndent()
+        }
+    }
 }
