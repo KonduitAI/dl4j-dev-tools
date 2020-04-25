@@ -164,7 +164,7 @@ fun SDRNN() = Namespace("SDRNN") {
 
 
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.recurrent"
-    Op("gru") {
+    Op("gruCell") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "GRUCell"
         Input(NUMERIC, "x") { description = "Input, with shape [batchSize, inSize]" }
@@ -181,6 +181,31 @@ fun SDRNN() = Namespace("SDRNN") {
             """.trimIndent()
         }
     }
+
+    Op("gru") {
+        javaPackage = namespaceJavaPackage
+        javaOpClass = "GRU"
+        Input(NUMERIC, "x") { description = "input [time, bS, nIn]" }
+        Input(NUMERIC, "hLast") { description = "initial cell output (at time step = 0) [bS, nOut]" }
+        Input(NUMERIC, "Wx") { description = "input-to-hidden  weights, [nIn, 3*nOut]" }
+        Input(NUMERIC, "Wh") { description = "hidden-to-hidden weights, [nOut, 3*nOut]" }
+        Input(NUMERIC, "biases") { description = "biases, [3*nOut]" }
+
+        Output(NUMERIC, "h") { description = "cell outputs [time, bS, nOut], that is per each time step" }
+
+
+
+        Doc(Language.ANY, DocScope.ALL) {
+            """
+            The GRU operation. Gated Recurrent Unit - Cho et al. 2014.
+
+
+            """.trimIndent()
+        }
+    }
+
+
+
 
 
 
