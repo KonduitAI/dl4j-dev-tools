@@ -9,7 +9,7 @@ max_num_layers = 5
 layer_output_sizes = list(np.random.randint(3, 7, (max_num_layers,)))
 
 # grid
-input_shape = [(3,), (4,), (2, 3), (4, 5)]
+input_shape = [(3,), (4,)]#, (2, 3), (4, 5)]
 num_layers = [i + 1 for i in range(max_num_layers)]
 activation_type = ['layer', 'arg']
 activation = ['sigmoid', 'relu', 'tanh']
