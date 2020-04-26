@@ -87,15 +87,31 @@ def put_rand_data(model, h5file):
         output_arrays = [output_arrays]
     return put_data(model, input_arrays, output_arrays, h5file)
 
-def save_model(model, file_name, data='rand'):
+def _to_sequential(model):
+    seq = tf.keras.models.Sequential()
+    for layer in model.layers[1:]:
+        seq.add(layer)
+    return seq
+
+
+def save_model(model, file_name, data='rand', as_sequential=False):
     try:
+        if as_sequential:
+            model = _to_sequential(model)
+            print(model.layers[0].input_shape)
+            model.predict(rand(model.layers[0].input_shape))
         path = os.path.join(tfkeras_dir, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        model.save(path)
-        put_rand_data(model, path)
-        _update_used_layers(model)
+        try:
+            model.predict(rand(model.input_shape))
+            model.save(path)
+            put_rand_data(model, path)
+            _update_used_layers(model)
+        except:
+            pass
+
     except Exception as e:
-        pass
+        print(e)
 
 def grid(*args, **kwargs):
     if args and callable(args[0]):

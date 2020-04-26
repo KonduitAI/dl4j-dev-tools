@@ -7,6 +7,7 @@ import activations
 import advanced_activations
 import misc
 import convlstm
+import tfop
 import utils
 import os
 import gc
@@ -16,7 +17,7 @@ from utils import tqdm
 import sys
 import subprocess
 
-jobs = [mlp, rnn, cnn, merge, activations, advanced_activations, misc, convlstm]
+jobs = [mlp, rnn, cnn, merge, activations, advanced_activations, misc, convlstm, tfop]
 
 def run_sequential():
     for job in jobs:

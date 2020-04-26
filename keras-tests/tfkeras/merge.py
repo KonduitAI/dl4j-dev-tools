@@ -44,5 +44,6 @@ def run():
         if model:
             save_model(model, 'merge_' + str(i) + '.h5')
 
+
 if __name__ == '__main__':
     run()

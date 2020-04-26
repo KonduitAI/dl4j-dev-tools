@@ -19,7 +19,7 @@ kernel_sizes = list(np.random.randint(2, 4, (max_num_layers,)))
 input_shape = [(20, 32)]#, (None, 16), (3, None), (1, None)]
 data_format = ['channels_first', 'channels_last']
 layer_type = [tf.keras.layers.Conv1D]#, tf.keras.layers.LocallyConnected1D]#, tf.keras.layers.SeparableConv1D]
-num_layers = [2]#[i + 1 for i in range(max_num_layers)]
+num_layers = [1]#[2]#[i + 1 for i in range(max_num_layers)]
 filters = [4]
 strides = [1, 2, 3]
 dilation_rate = [1, 2]
@@ -83,7 +83,7 @@ def generate_cnn1ds(input_shape,
             if cropping:
                 x = tf.keras.layers.Cropping1D(cropping)(x)
         except ValueError as e:
-            warnings.warn(str(e))
+            print(e)
             return None # not all stride / input shape comnbinations are valid
         if pooling:
             try:
@@ -191,7 +191,7 @@ def generate_cnn2ds(input_shape,
 kernel_sizes = list(np.random.randint(2, 4, (max_num_layers,)))
 input_shape = [(3, 10, 10, 10)]#, (None, 16), (3, None), (1, None)]
 data_format = ['channels_first', 'channels_last']
-layer_type = [tf.keras.layers.Conv3D, tf.keras.layers.Conv3DTranspose]
+layer_type = [tf.keras.layers.Conv3D]#, tf.keras.layers.Conv3DTranspose]
 num_layers = [2]#[i + 1 for i in range(max_num_layers)]
 filters = [4]
 strides = [1]#, 2]
@@ -199,12 +199,12 @@ dilation_rate = [1]#, 2]
 activation = ['tanh']
 use_bias = [True]#, False]
 pooling = [tf.keras.layers.MaxPooling3D, tf.keras.layers.AveragePooling3D]
-global_pooling = [tf.keras.layers.GlobalMaxPool3D, tf.keras.layers.GlobalAvgPool3D]
+global_pooling = [None]#tf.keras.layers.GlobalMaxPool3D, tf.keras.layers.GlobalAvgPool3D]
 padding = ['causal', 'same', 'valid']
-zero_padding = [3]#, None]
-upsampling = [2]#, None]
+zero_padding = [None]#, 3]
+upsampling = [None]#, 2]
 spatial_dropout = [True]#, False]
-cropping = [(1, 1, 1)]#, None]
+cropping = [(1, 1, 1), None]
 compile_args = [{'optimizer': 'rmsprop', 'loss': 'categorical_crossentropy', 'metrics': ['accuracy']}]
 @grid(**globals())
 def generate_cnn3ds(input_shape,
@@ -262,6 +262,7 @@ def generate_cnn3ds(input_shape,
                 pass
     if global_pooling:
         x = global_pooling()(x)
+        x = tf.keras.layers.Flatten()(x)
     model = tf.keras.models.Model(inp, x)
     if compile_args:
         model.compile(**compile_args)

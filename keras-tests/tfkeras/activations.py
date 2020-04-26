@@ -10,11 +10,13 @@ np.random.seed(1337)
 activation = [act for act in dir(tf.keras.activations)
                if not act.startswith('_') and act not in ('serialize', 'deserialize', 'get')]
 
+activation.remove('exponential') #not supported
+
 use_dense = [True, False]
 
 @grid(**globals())
 def generate_models(activation, use_dense):
-    inp = tf.keras.layers.Input((2, 3))
+    inp = tf.keras.layers.Input((2,))
     if use_dense:
         out = tf.keras.layers.Dense(4, activation=activation)(inp)
     else:
