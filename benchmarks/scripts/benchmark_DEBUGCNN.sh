@@ -12,8 +12,9 @@ mvn clean package -DskipTests -Pv100snapshot,native
 #mvn clean package -DskipTests -Pv100snapshot,cuda101
 cd dl4j-core-benchmark
 #declare -a versionBackend=("v091_cuda8-cudnn" "v100alpha_cuda8-cudnn" "v100beta_cuda8-cudnn")
-declare -a versionBackend=("v100beta5_native" "v100beta6_native" "v100snapshot_native")
+#declare -a versionBackend=("v100beta5_native" "v100beta6_native" "v100snapshot_native")
 #declare -a versionBackend=("v100beta5_native")
+declare -a versionBackend=("v100beta6_native" "v100snapshot_native")
 declare -a batchSize=("32")
 modelType=DEBUGCNN
 xmx=6G
