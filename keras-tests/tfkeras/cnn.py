@@ -19,7 +19,7 @@ kernel_sizes = list(np.random.randint(2, 4, (max_num_layers,)))
 input_shape = [(20, 32)]#, (None, 16), (3, None), (1, None)]
 data_format = ['channels_first', 'channels_last']
 layer_type = [tf.keras.layers.Conv1D]#, tf.keras.layers.LocallyConnected1D]#, tf.keras.layers.SeparableConv1D]
-num_layers = [1]#[2]#[i + 1 for i in range(max_num_layers)]
+num_layers = [1, 2]#[2]#[i + 1 for i in range(max_num_layers)]
 filters = [4]
 strides = [1, 2, 3]
 dilation_rate = [1, 2]
@@ -104,8 +104,8 @@ input_shape = [(3, 10, 10)]#, (None, 16), (3, None), (1, None)]
 data_format = ['channels_first', 'channels_last']
 layer_type = [tf.keras.layers.Conv2D,
               tf.keras.layers.SeparableConv2D,
-              tf.keras.layers.LocallyConnected2D,
-              tf.keras.layers.DepthwiseConv2D,
+              #tf.keras.layers.LocallyConnected2D,
+              #tf.keras.layers.DepthwiseConv2D,
               tf.keras.layers.Conv2DTranspose]
 num_layers = [2]#[i + 1 for i in range(max_num_layers)]
 filters = [4]
@@ -113,13 +113,13 @@ strides = [1]#, 2]
 dilation_rate = [1]#, 2]
 activation = ['tanh']
 use_bias = [True]#, False]
-pooling = [tf.keras.layers.MaxPooling2D, tf.keras.layers.AveragePooling2D]
-global_pooling = [tf.keras.layers.GlobalMaxPool2D, tf.keras.layers.GlobalAvgPool2D]
+pooling = [None]#tf.keras.layers.MaxPooling2D, tf.keras.layers.AveragePooling2D]
+global_pooling = [None]#tf.keras.layers.GlobalMaxPool2D, tf.keras.layers.GlobalAvgPool2D]
 padding = ['causal', 'same', 'valid']
-zero_padding = [3]#, None]
-upsampling = [2]#, None]
-spatial_dropout = [True]#, False]
-cropping = [(1, 1)]#, None]
+zero_padding = [None]#, 3]
+upsampling = [None]#, 2]
+spatial_dropout = [False]#, True]
+cropping = [None]#, (1, 1)]
 compile_args = [{'optimizer': 'rmsprop', 'loss': 'categorical_crossentropy', 'metrics': ['accuracy']}]
 @grid(**globals())
 def generate_cnn2ds(input_shape,

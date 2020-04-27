@@ -55,14 +55,20 @@ else:
     _used_layers = set()
 
 def _update_used_layers(model):
-    n = len(_used_layers)
-    layers = _get_layers(model)
-    _used_layers.update(layers)
-    if len(_used_layers) > n:
-        with open(used_layers_file, 'w') as f:
-            json.dump(list(_used_layers), f)
+    try:
+        n = len(_used_layers)
+        layers = _get_layers(model)
+        _used_layers.update(layers)
+        if len(_used_layers) > n:
+            with open(used_layers_file, 'w') as f:
+                json.dump(list(_used_layers), f)
+    except Exception as e:
+        print('Error recording used layers: ' + str(e))
+
 
 def rand(shape):
+    if isinstance(shape, list):
+        return list(map(rand, shape))
     shape = [d if d is not None else 1 for d in shape]
     return np.random.random(shape)
 
@@ -95,23 +101,17 @@ def _to_sequential(model):
 
 
 def save_model(model, file_name, data='rand', as_sequential=False):
-    try:
-        if as_sequential:
-            model = _to_sequential(model)
-            print(model.layers[0].input_shape)
-            model.predict(rand(model.layers[0].input_shape))
-        path = os.path.join(tfkeras_dir, file_name)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        try:
-            model.predict(rand(model.input_shape))
-            model.save(path)
-            put_rand_data(model, path)
-            _update_used_layers(model)
-        except:
-            pass
+    if as_sequential:
+        model = _to_sequential(model)
+        print(model.layers[0].input_shape)
+        model.predict(rand(model.layers[0].input_shape))
+    path = os.path.join(tfkeras_dir, file_name)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    model.predict(rand(model.input_shape))
+    model.save(path)
+    put_rand_data(model, path)
+    _update_used_layers(model)
 
-    except Exception as e:
-        print(e)
 
 def grid(*args, **kwargs):
     if args and callable(args[0]):
