@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd ..
+##cd ..
 #mvn clean package -DskipTests -Pv091,cudnn8
 #mvn clean package -DskipTests -Pv100alpha,cudnn8
 #mvn clean package -DskipTests -Pv100beta,cudnn8
@@ -14,7 +14,8 @@ cd ..
 cd dl4j-core-benchmark
 #declare -a versionBackend=("v100beta3_native" "v100snapshot_native" "v100beta3_cuda10" "v100snapshot_cuda10" "v100beta3_cuda10-cudnn" "v100snapshot_cuda10-cudnn")
 #declare -a versionBackend=("v100snapshot_native")
-declare -a versionBackend=("v100beta6_native" "v100snapshot_native")
+#declare -a versionBackend=("v100beta6_native" "v100snapshot_native")
+declare -a versionBackend=("v100beta6_cuda102" "v100snapshot_cuda102" "v100beta6_cuda102-cudnn" "v100snapshot_cuda102-cudnn")
 declare -a batchSize=("32")
 declare -a dataTypes=("FLOAT")
 modelType=RESNET50
