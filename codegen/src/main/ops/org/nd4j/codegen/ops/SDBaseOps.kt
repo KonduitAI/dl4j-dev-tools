@@ -31,6 +31,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
             //TODO: finalize content for this broadcasting mixin doc.
             """
                 Note: supports broadcasting if x and y have different shapes and are broadcastable.
+                For example, if X has shape [1,10] and Y has shape [5,10] then op(X,Y) has output shape [5,10]<br>
+                Broadcast rules are the same as NumPy: https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html<br>
             """.trimIndent()
         }
     }
@@ -91,9 +93,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("argmax") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        legacy = true
-        javaOpClass = "IMax"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum.custom"
+        javaOpClass = "ArgMax"
         Input(NUMERIC, "in") { description = "Input variable" }
         Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue = false }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
@@ -110,9 +111,8 @@ fun SDBaseOps() =  Namespace("SDBaseOps"){
     }
 
     Op("argmin") {
-        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum"
-        legacy = true
-        javaOpClass = "IMin"
+        javaPackage = "org.nd4j.linalg.api.ops.impl.indexaccum.custom"
+        javaOpClass = "ArgMin"
         Input(NUMERIC, "in") { description = "Input variable" }
         Arg(BOOL, "keepDims") { description = "If true: keep the dimensions that are reduced on (as size 1). False: remove the reduction dimensions"; defaultValue = false }
         Arg(INT, "dimensions"){ count = AtLeast(0); description = "Dimensions to reduce over. If dimensions are not specified, full array reduction is performed" }
