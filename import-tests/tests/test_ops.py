@@ -2260,6 +2260,33 @@ def test_mathtransform():
         #{"opName": "linear_solve", "outName": "linear_solve/float64_rank3", "varShapes": [[2, 2, 2], [2, 2, 2]],  "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"],  "adjoint": False},
         #{"opName": "linear_solve", "outName": "linear_solve/emptyArrayTest/float32",  "varShapes": [[0, 2, 2], [0, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["empty", "empty"], "adjoint": True},
         #{"opName": "linear_solve", "outName": "linear_solve/float32_rank3_returns_int64", "varShapes": [[2, 2, 2], [2, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": True}
+
+        # NEWLY ADDED OPS
+
+        # OPS works and testcase generated to dl4j-resources
+
+        # {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3", "varShapes": [[16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2},
+        # {"opName":"dropout", "outName":"dropout/someoutput", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"], "rate":0.2},
+        # {"opName":"div", "outName":"div/someoutput", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
+        # {"opName":"is_non_decreasing", "outName":"is_non_decreasing/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
+        # {"opName":"leaky_relu", "outName":"leaky_relu/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"], "alpha":0.2},
+        # {"opName":"lgamma", "outName":"lgamma/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
+        # {"opName":"mod", "outName":"mod/someoutput", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32", "float32"], "varInit": ["uniform", "uniform"]},
+
+        # OPS arent work for some reason
+
+        #  {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/someoutput", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+        #             "strides": [1,1,1,1],   "padding":"SAME", "data_format":'NHWC' ,"include_batch_in_index": True, "output_dtype": tf.int32},
+        # https://gist.github.com/atuzhykov/b9ba46de91c54eda65c24546db11b9d3 looks like problem with CPU compatible
+
+        # {"opName":"empty", "outName":"empty/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
+        # {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/float32", "varShapes": [[1,2,3,4,5,6,7,8]], "varTypes": ["float32"], "varInit": ["uniform"], "threshold":0.,},
+        # {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInput/someoutput", "varShapes":[[1, 3, 3, 3, 2], [1, 1, 1, 2, 1], [1, 3, 3, 3, 1]], "varTypes":["float32","float32", "float32"], "varInit": ["uniform","uniform","uniform"], "strides":[1,1,1,1,1], "padding":"SAME", "dilations":1},
+        # {"opName":"copy", "outName":"DeepCopy/someoutput", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
+        #  for all above: ValueError: Ouput tensor list not set; stacktrace https://gist.github.com/atuzhykov/ce1aaa90e73658e9594f0ed2b959b97c
+
+
+
      ]
 
     '''
