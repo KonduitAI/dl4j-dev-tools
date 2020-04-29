@@ -1404,3 +1404,58 @@ class OpCreator:
 
     def execute_lstsq(self):
         return [tf.linalg.lstsq(self.vars[0], self.vars[1], l2_regularizer = self.op["l2_regularizer"], fast = self.op["fast"])]
+
+    def execute_compare_and_bitpack(self):
+        return [tf.raw_ops.CompareAndBitpack(input=self.vars[0], threshold = self.op["threshold"])]
+
+    def execute_Conv3DBackpropInputV2(self):
+        return [tf.raw_ops.Conv3DBackpropInputV2(input_sizes=self.vars[0],filter=self.vars[1], out_backprop=self.vars[2], strides=self.op["strides"], padding=self.op["padding"], dilations=self.op["dilations"])]
+
+    def execute_empty(self):
+        return [tf.raw_ops.Empty(shape = self.vars[0], dtype = self.op["dtype"])]
+
+    def execute_deep_copy(self):
+        return [tf.raw_ops.DeepCopy(x = self.vars[0])]
+
+    def execute_ones_like(self):
+        return [tf.ones_like(tensor = self.vars[0])]
+
+    def execute_random_gamma(self):
+         return [tf.random.gamma(
+                     shape = self.vars[0] ,
+                     alpha = self.op["alpha"],
+                     dtype = self.op["dtype"],
+                     seed = self.op["seed"],
+                 )]
+
+
+    def execute_random_poisson(self):
+         return [tf.random.poisson(shape = self.vars[0], lam = self.op["lam"], dtype=self.op["dtype"])]
+
+    def execute_random_poisson_v2(self):
+         return [tf.raw_ops.RandomPoissonV2(shape = self.vars[0], rate = self.op["rate"], dtype=self.op["dtype"])]
+
+    def execute_random_shuffle(self):
+         return [tf.random.shuffle(
+                     value = self.vars[0],
+                     seed=None,
+                 )]
+
+    def execute_random_normal(self):
+         return [tf.random.normal(
+                     shape = self.vars[0],
+                     mean=self.op["mean"],
+                     stddev=self.op["stddev"],
+                     dtype=self.op["dtype"],
+                     seed=self.op["seed"],
+                 )]
+
+    def execute_random_uniform(self):
+         return [tf.random.uniform(
+                     shape = self.vars[0],
+                     minval=self.op["minval"],
+                     maxval=self.op["maxval"],
+                     dtype=self.op["dtype"],
+                     seed=self.op["seed"],
+                 )]
+
