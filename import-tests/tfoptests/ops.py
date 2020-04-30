@@ -1459,3 +1459,15 @@ class OpCreator:
                      seed=self.op["seed"],
                  )]
 
+    def execute_unsorted_segment_mean(self):
+         return [tf.math.unsorted_segment_mean(
+                     data = self.vars[0],
+                     segment_ids = self.op["segment_ids"],
+                     num_segments = self.op["num_segments"],
+                )]
+    def execute_unsorted_segment_sqrt_n(self):
+         return [tf.math.unsorted_segment_sqrt_n(
+                     data = self.vars[0],
+                     segment_ids = self.op["segment_ids"],
+                     num_segments = self.op["num_segments"],
+                )]
