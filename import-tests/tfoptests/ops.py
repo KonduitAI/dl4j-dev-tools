@@ -1342,7 +1342,7 @@ class OpCreator:
         return [tf.image.non_max_suppression(self.vars[0], self.vars[1], self.vars[2])]
 
     def execute_dropout(self):
-        return [tf.nn.dropout(x = self.vars[0], rate = 0.25)]
+        return [tf.nn.dropout(x = self.vars[0], rate = self.op["rate"], seed = self.op.get("seed", None), noise_shape = self.op.get("noise_shape", None))]
 
     def execute_is_non_decreasing(self):
         return [tf.math.is_non_decreasing(x = self.vars[0])]
@@ -1471,3 +1471,9 @@ class OpCreator:
                      segment_ids = self.op["segment_ids"],
                      num_segments = self.op["num_segments"],
                 )]
+
+    def execute_div(self):
+         return [tf.raw_ops.Div(
+                     x = self.vars[0],
+                     y = self.vars[1]
+                 )]

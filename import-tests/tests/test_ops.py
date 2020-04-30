@@ -2265,13 +2265,47 @@ def test_mathtransform():
 
         # OPS works and testcase generated to dl4j-resources
 
-        # {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3", "varShapes": [[16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2},
-        # {"opName":"dropout", "outName":"dropout/someoutput", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"], "rate":0.2},
-        # {"opName":"div", "outName":"div/someoutput", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
-        # {"opName":"is_non_decreasing", "outName":"is_non_decreasing/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
-        # {"opName":"leaky_relu", "outName":"leaky_relu/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"], "alpha":0.2},
-        # {"opName":"lgamma", "outName":"lgamma/someoutput", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
-        # {"opName":"mod", "outName":"mod/someoutput", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32", "float32"], "varInit": ["uniform", "uniform"]},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_3channels", "varShapes": [[16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":0},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_2_channels", "varShapes": [[16,16,2]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":1},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_1_channel", "varShapes": [[16,16,1]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2.5},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float64_rank3_3_channels", "varShapes": [[16,16,3]], "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float64_rank3_2_channels", "varShapes": [[16,16,2]], "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_1_channel", "varShapes": [[16,16,1]], "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank4_1_batch", "varShapes": [[1,16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank4_2_batch", "varShapes": [[2,16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2},
+
+#          {"opName":"dropout", "outName":"dropout/float32_rate_02_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"], "rate":0.2, "seed": 123 },
+#          {"opName":"dropout", "outName":"dropout/float64_rate_02_seed_123_noise_shape_None", "varShapes":[[1, 3, 4, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.2, "seed": 123},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_02_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.2, "seed": 123},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_01_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.1},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_06_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.6},
+#           {"opName":"dropout", "outName":"dropout/float64_rate_03_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.3, "noise_shape": [1, 1, 1, 1, 2] },
+#           {"opName":"dropout", "outName":"dropout/float32_rate_02_seed_123_noise_shape_None", "varShapes":[[ 2, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"], "rate":0.2, "noise_shape": [2, 1, 1, 2] },
+
+
+#          {"opName":"div", "outName":"div/float32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
+#          {"opName":"div", "outName":"div/float64", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float64","float64"], "varInit": ["uniform","uniform"]},
+#          {"opName":"div", "outName":"div/int8", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int8","int8"], "varInit": ["one","one"]},
+#          {"opName":"div", "outName":"div/int16", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int16","int16"], "varInit": ["one","one"]},
+#          {"opName":"div", "outName":"div/int32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int32","int32"], "varInit": ["one","one"]},
+
+
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/float32", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/float64", "varShapes":[[1, 2]], "varTypes":["float64"], "varInit": ["uniform"]},
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/int16", "varShapes":[[1, 3]], "varTypes":["int16"], "varInit": ["one"]},
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/int32", "varShapes":[[2, 3]], "varTypes":["int16"], "varInit": ["zero"]},
+
+
+         #Leaky RELU
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank2_a0", "varShapes":[[4, 5]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.0},
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank4_a05", "varShapes":[[4, 5]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.5},
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank4_a0", "varShapes":[[4, 5, 5, 1]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.0},
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank4_a02", "varShapes":[[4, 5, 5, 1]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.2},
+
+
+ {"opName": "lgamma", "outName": "lgamma/float32", "varShapes": [[3, 4]], "varTypes": ["float32"], "varInit": ["uniform"]},
+       {"opName": "lgamma", "outName": "lgamma/float64", "varShapes": [[3, 4]], "varTypes": ["float64"], "varInit": ["uniform"]},
+        {"opName": "lgamma", "outName": "lgamma/emptyArrayTest/float32", "varShapes": [[0, 0]], "varTypes": ["float32"], "varInit": ["empty"]},        # {"opName":"mod", "outName":"mod/someoutput", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32", "float32"], "varInit": ["uniform", "uniform"]},
         # {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/float32", "varShapes": [[8]], "varTypes": ["float32"], "varInit": ["uniform"], "threshold":0.,},
         # {"opName":"empty", "outName":"empty/someoutput", "varShapes":[[5]], "varTypes":["int32"], "varInit": ["uniform_int10"], "dtype":tf.float32},
         # {"opName":"deep_copy", "outName":"DeepCopy/someoutput", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
@@ -2282,7 +2316,7 @@ def test_mathtransform():
        # {"opName": "random_poisson_v2", "outName": "random_poisson/rank1_float32", "varShapes": [[4], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "rate":[0.5, 1.5],"dtype":tf.float32},
         #  {"opName": "random_shuffle", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["float32"], "varInit": ["uniform"], "seed":12345},
 #           {"opName": "random_normal", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "mean": 0., "stddev":1.0, "seed":12345, "dtype":tf.float32},
-           {"opName": "random_uniform", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345, "dtype":tf.float32},
+#            {"opName": "random_uniform", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345, "dtype":tf.float32},
 
 
 
@@ -2327,7 +2361,7 @@ def test_mathtransform():
     *split (doesn't support num_or_size_splits=0?)
     tile
     unique
-    
+
     tf.linalg:
     det
     diag
@@ -2337,7 +2371,7 @@ def test_mathtransform():
     tensor_diag
     tensor_diag_part
     trace
-    
+
     tf.math:
     angle
     atan2
