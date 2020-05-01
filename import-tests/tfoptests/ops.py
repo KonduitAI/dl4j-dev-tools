@@ -1417,28 +1417,33 @@ class OpCreator:
     def execute_deep_copy(self):
         return [tf.raw_ops.DeepCopy(x = self.vars[0])]
 
-    def execute_ones_like(self):
+    def execute_ones_like_tf1(self):
         return [tf.ones_like(tensor = self.vars[0])]
 
     def execute_random_gamma(self):
          return [tf.random.gamma(
                      shape = self.vars[0] ,
                      alpha = self.op["alpha"],
+                     beta = self.op.get("beta",None),
                      dtype = self.op["dtype"],
-                     seed = self.op["seed"],
+                     seed = self.op.get("seed", None)
                  )]
 
 
     def execute_random_poisson(self):
-         return [tf.random.poisson(shape = self.vars[0], lam = self.op["lam"], dtype=self.op["dtype"])]
+         return [tf.random.poisson(shape = self.vars[0],
+                                   lam = self.op["lam"],
+                                   seed = self.op.get("seed", None),
+                                   dtype=self.op["dtype"])]
 
     def execute_random_poisson_v2(self):
-         return [tf.raw_ops.RandomPoissonV2(shape = self.vars[0], rate = self.op["rate"], dtype=self.op["dtype"])]
+         return [tf.raw_ops.RandomPoissonV2(shape = self.vars[0], rate = self.vars[1], seed = self.op.get("seed", None),
+                                            seed2 = self.op.get("seed2", None), dtype=self.op["dtype"])]
 
     def execute_random_shuffle(self):
          return [tf.random.shuffle(
                      value = self.vars[0],
-                     seed=None,
+                     seed = self.op.get("seed", None),
                  )]
 
     def execute_random_normal(self):
@@ -1447,7 +1452,7 @@ class OpCreator:
                      mean=self.op["mean"],
                      stddev=self.op["stddev"],
                      dtype=self.op["dtype"],
-                     seed=self.op["seed"],
+                     seed = self.op.get("seed", None),
                  )]
 
     def execute_random_uniform(self):
@@ -1456,24 +1461,22 @@ class OpCreator:
                      minval=self.op["minval"],
                      maxval=self.op["maxval"],
                      dtype=self.op["dtype"],
-                     seed=self.op["seed"],
+                     seed = self.op.get("seed", None),
                  )]
 
-    def execute_unsorted_segment_mean(self):
-         return [tf.math.unsorted_segment_mean(
-                     data = self.vars[0],
-                     segment_ids = self.op["segment_ids"],
-                     num_segments = self.op["num_segments"],
-                )]
-    def execute_unsorted_segment_sqrt_n(self):
-         return [tf.math.unsorted_segment_sqrt_n(
-                     data = self.vars[0],
-                     segment_ids = self.op["segment_ids"],
-                     num_segments = self.op["num_segments"],
-                )]
 
     def execute_div(self):
          return [tf.raw_ops.Div(
                      x = self.vars[0],
                      y = self.vars[1]
+                 )]
+
+    def execute_copy(self):
+         return [tf.raw_ops.Copy(
+                     x = self.vars[0]
+                 )]
+
+    def execute_copy_host(self):
+         return [tf.raw_ops.CopyHost(
+                     x = self.vars[0]
                  )]
