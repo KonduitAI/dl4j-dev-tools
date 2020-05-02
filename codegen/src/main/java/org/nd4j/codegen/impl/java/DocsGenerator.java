@@ -12,10 +12,7 @@ import org.nd4j.codegen.util.GenUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static org.nd4j.codegen.impl.java.Nd4jNamespaceGenerator.exactlyOne;
 
@@ -125,21 +122,30 @@ public class DocsGenerator {
         return sb;
     }
 
-    public static void generateDocs(NamespaceOps namespace, String docsDirectory, String basePackage) throws IOException {
+    public static void generateDocs(int namespaceNum, NamespaceOps namespace, String docsDirectory, String basePackage) throws IOException {
         File outputDirectory = new File(docsDirectory);
         StringBuilder sb = new StringBuilder();
         String headerName = namespace.getName();
         if(headerName.startsWith("SD"))
             headerName = headerName.substring(2);
-        sb.append("#  Namespace ").append(headerName).append(System.lineSeparator());
+
+        // File Header for Gitbook
+        sb.append("---").append(System.lineSeparator());
+        sb.append("title: ").append(headerName).append(System.lineSeparator());
+        sb.append("short_title: ").append(headerName).append(System.lineSeparator());
+        sb.append("description: ").append(System.lineSeparator());
+        sb.append("category: Operations").append(System.lineSeparator());
+        sb.append("weight: ").append(namespaceNum * 10).append(System.lineSeparator());
+        sb.append("---").append(System.lineSeparator());
+
         List<Op> ops = namespace.getOps();
 
         ops.sort(Comparator.comparing(Op::getOpName));
 
         if (ops.size() > 0)
-            sb.append("# Operation classes <ops>").append(System.lineSeparator());
+            sb.append("# Operation classes").append(System.lineSeparator());
         for (Op op : ops) {
-            sb.append("## <a name=" + "\"").append(op.name()).append("\">").append(op.getOpName()).append("</a>").append(System.lineSeparator());
+            sb.append("## ").append(op.getOpName()).append(System.lineSeparator());
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
                 boolean first = true;
@@ -161,17 +167,20 @@ public class DocsGenerator {
                 StringBuilder tsb = buildDocSectionText(doc);
                 sb.append(tsb.toString());
                 List<Signature> l = op.getSignatures();
+                Set<Parameter> alreadySeen = new HashSet<>();
                 for(Signature s : l) {
                     List<Parameter> params = s.getParameters();
                     for (Parameter p : params) {
+                        if(alreadySeen.contains(p)) continue;
+                        alreadySeen.add(p);
                         if(p instanceof Input){
                             Input i = (Input)p;
-                            sb.append("* **").append(i.getName()).append("** - ").append(i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
-                                    op, DocTokens.GenerationType.ND4J)).append(" (").append(i.getType()).append(" type)").append(System.lineSeparator());
+                            sb.append("* **").append(i.getName()).append("** ").append(" (").append(i.getType()).append(") - ").append(i.getDescription() == null ? "" : DocTokens.processDocText(i.getDescription(),
+                                    op, DocTokens.GenerationType.ND4J)).append(System.lineSeparator());
                         }
                         else if (p instanceof Config) {
                             Config c = (Config)p;
-                            sb.append("* **").append(c.getName()).append("** - ").append("").append("[").append(c.getName()).append("]").append(System.lineSeparator());
+                            sb.append("* **").append(c.getName()).append("** - see ").append("[").append(c.getName()).append("]").append("(#").append(toAnchor(c.getName())).append(")").append(System.lineSeparator());
                         }
                         else if(p instanceof Arg) {
                             Arg arg = (Arg) p;
@@ -181,7 +190,7 @@ public class DocsGenerator {
                                         op, DocTokens.GenerationType.ND4J));    //.append(System.lineSeparator());
                             } else {
                                 sb.append("* **").append(arg.getName()).append("** - ").append(arg.getDescription() == null ? "" : DocTokens.processDocText(arg.getDescription(),
-                                        op, DocTokens.GenerationType.ND4J)).append(" (Size: ").append(count.toString());    //.append(System.lineSeparator());
+                                        op, DocTokens.GenerationType.ND4J)).append(" (Size: ").append(count.toString()).append(")");    //.append(System.lineSeparator());
                             }
 
                             Object defaultValue = arg.defaultValue();
@@ -199,9 +208,9 @@ public class DocsGenerator {
 
 
         if (namespace.getConfigs().size() > 0)
-            sb.append("# Configuration Classes <configs>").append(System.lineSeparator());
+            sb.append("# Configuration Classes").append(System.lineSeparator());
         for (Config config : namespace.getConfigs()) {
-            sb.append("## ").append("<a name=" + "\"").append(config.getName()).append("\"></a>").append(System.lineSeparator());
+            sb.append("## ").append(config.getName()).append(System.lineSeparator());
             for (Input i : config.getInputs()) {
                 sb.append("* **").append(i.getName()).append("**- ").append(i.getDescription()).append(" (").append(i.getType()).append(" type)");
                 if (i.hasDefaultValue() && (i.defaultValue() != null))
@@ -210,7 +219,7 @@ public class DocsGenerator {
                     sb.append(System.lineSeparator());
             }
             for (Arg arg : config.getArgs()) {
-                sb.append("* **").append(arg.getName()).append("** - ").append(arg.getDescription()).append(" (").append(arg.getType()).append(" type)");
+                sb.append("* **").append(arg.getName()).append("** ").append("(").append(arg.getType()).append(") - ").append(arg.getDescription());
                 if (arg.hasDefaultValue() && (arg.defaultValue() != null))
                     sb.append(" - default = ").append(formatDefaultValue(arg.defaultValue())).append(System.lineSeparator());
                 else
@@ -226,11 +235,11 @@ public class DocsGenerator {
                 }
             }
             ops.stream().filter(op -> op.getConfigs().contains(config)).forEach(op ->
-                       sb.append("[").append(op.getOpName()).append("]").append("(#").append(op.getOpName()).append(")").
+                       sb.append("[").append(op.getOpName()).append("]").append("(#").append(toAnchor(op.getOpName())).append(")").
                        append(System.lineSeparator()));
 
         }
-        File outFile = new File(outputDirectory + "/ops", "/" + namespace.getName() + ".md");
+        File outFile = new File(outputDirectory + "/operations", "/" + namespace.getName() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
@@ -245,5 +254,20 @@ public class DocsGenerator {
         else if(v instanceof org.nd4j.linalg.api.buffer.DataType){ return "DataType." + v; }
         else if(v instanceof LossReduce || v instanceof org.nd4j.autodiff.loss.LossReduce){ return "LossReduce." + v; }
         else return v.toString();
+    }
+
+    private static String toAnchor(String name){
+        int[] codepoints = name.toLowerCase().codePoints().toArray();
+        int type = Character.getType(codepoints[0]);
+        StringBuilder anchor = new StringBuilder(new String(Character.toChars(codepoints[0])));
+        for (int i = 1; i < codepoints.length; i++) {
+            int curType = Character.getType(codepoints[i]);
+            if(curType != type){
+                anchor.append("-");
+            }
+            type = curType;
+            anchor.append(new String(Character.toChars(codepoints[i])));
+        }
+        return anchor.toString();
     }
 }

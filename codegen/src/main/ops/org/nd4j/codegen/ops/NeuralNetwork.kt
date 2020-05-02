@@ -7,7 +7,7 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.mixins.transformStrict
 
-fun NN() = Namespace("SDNN") {
+fun NN() = Namespace("NN") {
     val convPkg = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
     Op("batchNorm") {

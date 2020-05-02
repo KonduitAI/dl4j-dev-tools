@@ -10,7 +10,7 @@ import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.LossReduce
 
-fun SDLoss() =  Namespace("SDLoss"){
+fun SDLoss() =  Namespace("Loss"){
 
     Op("absoluteDifference") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.loss"

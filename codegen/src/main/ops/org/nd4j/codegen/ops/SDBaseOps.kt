@@ -11,7 +11,7 @@ import org.nd4j.codegen.api.DataType.*
 import org.nd4j.linalg.api.buffer.DataType
 import java.lang.Boolean.FALSE
 
-fun SDBaseOps() =  Namespace("SDBaseOps"){
+fun SDBaseOps() =  Namespace("BaseOps"){
 
     val keepDimsDoc = Mixin("keepDims"){
         Doc(Language.ANY, DocScope.ALL){

@@ -94,7 +94,7 @@ public class CLI {
             String basePackagePath = basePackage.replace(".", "/") + "/ops/";
 
             if (StringUtils.isNotEmpty(docsdir)) {
-                DocsGenerator.generateDocs(ops, docsdir, basePackage);
+                DocsGenerator.generateDocs(i, ops, docsdir, basePackage);
             }
             if (outputDir != null) {
                 File outputPath = new File(outputDir, basePackagePath + javaClassName + ".java");

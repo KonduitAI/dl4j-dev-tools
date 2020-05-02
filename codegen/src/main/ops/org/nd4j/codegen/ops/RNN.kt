@@ -6,7 +6,7 @@ import org.nd4j.codegen.api.doc.DocScope
 import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 
-fun SDRNN() = Namespace("SDRNN") {
+fun SDRNN() = Namespace("RNN") {
 
 
     val LSTMConfiguration = Config("LSTMConfiguration") {
@@ -143,18 +143,18 @@ fun SDRNN() = Namespace("SDRNN") {
 
     val LSTMLayerWeights = Config("LSTMLayerWeights") {
         Input(NUMERIC, "inputWeights") {description="input weights Wx:\n" +
-                " 1) shapes [nIn, 4*nOut] for FWD,BWD " +
-                " 2) shapes [2, nIn, 4*nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
-        Input(NUMERIC, "recurrentWeights") {description="// recurrent weights Wr:\n" +
-                " 1) shapes[nIn, 4*nOut] for FWD, BWD " +
-                " 2) shapes [2, nIn, 4*nOut] BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
+                " 1) shapes `[nIn, 4*nOut]` for FWD,BWD " +
+                " 2) shapes `[2, nIn, 4*nOut]` BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
+        Input(NUMERIC, "recurrentWeights") {description="recurrent weights Wr:\n" +
+                " 1) shapes `[nIn, 4*nOut]` for FWD, BWD " +
+                " 2) shapes `[2, nIn, 4*nOut]` BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"}
         Input(NUMERIC, "biases") {description="biases\n"+
-                " 1) shapes [4*nOut] for FWD, BWD " +
-                " 2) shapes [2, 4*nOut] for BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"
+                " 1) shapes `[4*nOut]` for FWD, BWD " +
+                " 2) shapes `[2, 4*nOut]` for BIDIR_SUM, BIDIR_CONCAT and BIDIR_EXTRA_DIM"
                   defaultValue=null}
         Input(NUMERIC, "peepholeWeights") {description="peephole weights Wp:\n" +
-                "  1) [3*nOut]    when directionMode <  2\n" +
-                "  2) [2, 3*nOut] when directionMode >= 2"; defaultValue=null}
+                "  1) `[3*nOut]`    when directionMode <  2\n" +
+                "  2) `[2, 3*nOut]`  when directionMode >= 2"; defaultValue=null}
 
 
         javaClassOverride = "org.nd4j.linalg.api.ops.impl.layers.recurrent.weights.LSTMLayerWeights"
