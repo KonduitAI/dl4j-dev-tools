@@ -149,6 +149,9 @@ public class DocsGenerator {
             List<DocSection> doc = op.getDoc();
             if(!doc.isEmpty()) {
                 boolean first = true;
+                StringBuilder ndSignatures = new StringBuilder();
+                StringBuilder sdSignatures = new StringBuilder();
+                StringBuilder sdNameSignatures = new StringBuilder();
                 for(Signature s : op.getSignatures()) {
                     if (first) {
                         Language lang = doc.get(0).getLanguage();
@@ -156,13 +159,18 @@ public class DocsGenerator {
                         first = false;
                     }
                     String ndCode = generateMethodText(op, s, false, false, false);
-                    sb.append(ndCode).append(System.lineSeparator());
-                    sb.append(System.lineSeparator()); // New line between INDArray and SDVariable signatures
+                    ndSignatures.append(ndCode).append(System.lineSeparator());
                     String sdCode = generateMethodText(op, s, true, false, false);
-                    sb.append(sdCode).append(System.lineSeparator());
+                    sdSignatures.append(sdCode).append(System.lineSeparator());
                     String withNameCode = generateMethodText(op, s, true, false, true);
-                    sb.append(withNameCode).append(System.lineSeparator());
+                    sdNameSignatures.append(withNameCode).append(System.lineSeparator());
                 }
+                sb.append(ndSignatures.toString());
+                sb.append(System.lineSeparator()); // New line between INDArray and SDVariable signatures
+
+                sb.append(sdSignatures.toString());
+                sb.append(sdNameSignatures.toString());
+
                 sb.append(MD_CODE).append(System.lineSeparator());
                 StringBuilder tsb = buildDocSectionText(doc);
                 sb.append(tsb.toString());
@@ -239,7 +247,7 @@ public class DocsGenerator {
                        append(System.lineSeparator()));
 
         }
-        File outFile = new File(outputDirectory + "/operations", "/" + namespace.getName() + ".md");
+        File outFile = new File(outputDirectory + "/operation-namespaces", "/" + namespace.getName().toLowerCase() + ".md");
         FileUtils.writeStringToFile(outFile, sb.toString(), StandardCharsets.UTF_8);
     }
 
