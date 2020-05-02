@@ -7,7 +7,7 @@ import org.nd4j.codegen.dsl.*
 import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Exactly
 
-fun SDCNN() =  Namespace("SDCNN"){
+fun SDCNN() =  Namespace("CNN"){
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
 
     val dataFormat = Mixin("dataFormat"){
@@ -144,8 +144,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("avgPooling2d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "AvgPooling2D"
-        Input(NUMERIC, "input") { description = "the input to average pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
-                "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "input") { description = "the input to average pooling 2d operation - 4d CNN (image) activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         useConfig(pooling2DConfig)
 
         Output(NUMERIC, "output"){ description = "Result after applying average pooling on the input" }
@@ -160,9 +159,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("avgPooling3d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "AvgPooling3D"
-        Input(NUMERIC, "input") {description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
-                "                        (shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
-                "                        (shape [minibatch, depth, height, width, channels])" }
+        Input(NUMERIC, "input") {description = "the input to average pooling 3d operation - 5d activations in NCDHW format (shape [minibatch, channels, depth, height, width]) or NDHWC format (shape [minibatch, depth, height, width, channels])" }
         useConfig(pooling3DConfig)
 
         Output(NUMERIC, "output"){ description = "after applying average pooling on the input" }
@@ -252,9 +249,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("conv3d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "Conv3D"
-        Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
-                "(shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
-                "(shape [minibatch, depth, height, width, channels])" }
+        Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format (shape [minibatch, channels, depth, height, width]) or NDHWC format (shape [minibatch, depth, height, width, channels])" }
         Input(NUMERIC, "weights") { description = " Weights for conv3d. Rank 5 with shape [kernelDepth, kernelHeight, kernelWidth, inputChannels, outputChannels]." }
         Input(NUMERIC, "bias") { description = " Optional 1D bias array with shape [outputChannels]. May be null."; defaultValue=null }
         useConfig(conv3DConfig)
@@ -273,8 +268,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("deconv2d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "DeConv2D"
-        Input(NUMERIC, "layerInput") { description = "the input to deconvolution 2d operation - 4d CNN (image) activations in NCHW format\n" +
-                "(shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "layerInput") { description = "the input to deconvolution 2d operation - 4d CNN (image) activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "weights") { description = "Weights for the 2d deconvolution operation. 4 dimensions with format [inputChannels, outputChannels, kernelHeight, kernelWidth]" }
         Input(NUMERIC, "bias") { description = "Optional 1D bias array with shape [outputChannels]. May be null."; defaultValue=null }
         useConfig(deconv2DConfig)
@@ -311,8 +305,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("depthToSpace") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "DepthToSpace"
-        Input(NUMERIC, "x") { description = "the input to depth to space pooling 2d operation - 4d activations in NCHW format\n" +
-                "                   (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "x") { description = "the input to depth to space pooling 2d operation - 4d activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Arg(INT, "blockSize") { description = "Block size, in the height/width dimension" }
         useMixin(dataFormat)
         Output(NUMERIC, "output"){ description = "Output variable" }
@@ -420,8 +413,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("maxPooling2d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "MaxPooling2D"
-        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
-                "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         useConfig(pooling2DConfig)
 
         Output(NUMERIC, "output"){ description = "Result after applying max pooling on the input" }
@@ -436,8 +428,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("maxPoolWithArgmax") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "MaxPoolWithArgmax"
-        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
-                "                        (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "input") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         useConfig(pooling2DConfig)
 
         Output(NUMERIC, "output"){ description = "Result after applying max pooling on the input" }
@@ -453,9 +444,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("maxPooling3d") {
         javaPackage = namespaceJavaPackage
         javaOpClass = "MaxPooling3D"
-        Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format\n" +
-                "                        (shape [minibatch, channels, depth, height, width]) or NDHWC format\n" +
-                "                        (shape [minibatch, depth, height, width, channels])" }
+        Input(NUMERIC, "input") { description = "the input to average pooling 3d operation - 5d activations in NCDHW format (shape [minibatch, channels, depth, height, width]) or NDHWC format (shape [minibatch, depth, height, width, channels])" }
         useConfig(pooling3DConfig)
 
         Output(NUMERIC, "output"){ description = "Result after applying max pooling on the input" }
@@ -472,8 +461,7 @@ fun SDCNN() =  Namespace("SDCNN"){
     Op("separableConv2d") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.layers.convolution"
         javaOpClass = "SConv2D"
-        Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format\n" +
-                "                     (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "layerInput") { description = "the input to max pooling 2d operation - 4d CNN (image) activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Input(NUMERIC, "depthWeights") { description = "Separable conv2d depth weights. 4 dimensions with format [kernelHeight, kernelWidth, inputChannels, depthMultiplier]" }
         Input(NUMERIC, "pointWeights") { description = "Point weights, rank 4 with format [1, 1, inputChannels*depthMultiplier, outputChannels]. May be null" }
         Input(NUMERIC, "bias") { description = "Optional bias, rank 1 with shape [outputChannels]. May be null."; defaultValue=null}
@@ -510,8 +498,7 @@ fun SDCNN() =  Namespace("SDCNN"){
 
     Op("spaceToDepth") {
         javaPackage = namespaceJavaPackage
-        Input(NUMERIC, "x") { description = "the input to depth to space pooling 2d operation - 4d activations in NCHW format\n" +
-                "                   (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
+        Input(NUMERIC, "x") { description = "the input to depth to space pooling 2d operation - 4d activations in NCHW format (shape [minibatch, channels, height, width]) or NHWC format (shape [minibatch, height, width, channels])" }
         Arg(INT, "blockSize") { description = " Block size, in the height/width dimension" }
         useMixin(dataFormat)
         Output(NUMERIC, "output"){ description = "Output variable" }

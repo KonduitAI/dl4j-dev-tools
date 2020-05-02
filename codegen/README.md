@@ -85,7 +85,16 @@ The script will first compile the project, before running.
 Internally, the `org.nd4j.codegen.cli.CLI` class is used.
 Classes are written to `deeplearning4j/nd4j/nd4j-backends/nd4j-api-parent/nd4j-api/src/main/java/org/nd4j/linalg/factory/ops/`
 
-
+## Generating documentation.
+It is possible to use generate.sh for generation of code only, docs in markdown format only, or both docs and code.
+To generate docs only and store them to new folder "docs" for all namespaces:
+```
+./generate.sh all -docsdir ../../docs
+```
+Generation for selected namespaces works in the same way as for code:
+```
+./generate.sh -docsdir ../../docs bitwise,linalg
+```
 
 # Code structure
 The project is implemented using a mix of Java and Kotlin. The DSL definition and the accompanying data structures are
@@ -602,3 +611,4 @@ language that they generate.
 
 Code generators can also use an auxiliary generator for constraint generation. Those auxiliary generators, have to
 implement ` org.nd4j.codegen.api.generator.ConstraintCodeGenerator` interface.
+

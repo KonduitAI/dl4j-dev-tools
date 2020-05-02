@@ -8,7 +8,7 @@ import org.nd4j.codegen.api.DataType.*
 import org.nd4j.codegen.api.Exactly
 
 
-fun SDImage() =  Namespace("SDImage"){
+fun SDImage() =  Namespace("Image"){
     val namespaceJavaPackage = "org.nd4j.linalg.api.ops.custom"
     Op("CropAndResize") {
         javaPackage = "org.nd4j.linalg.api.ops.impl.image"

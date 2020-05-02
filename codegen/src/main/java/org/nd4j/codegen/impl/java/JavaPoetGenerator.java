@@ -1,5 +1,6 @@
 package org.nd4j.codegen.impl.java;
 
+import org.apache.commons.lang3.StringUtils;
 import org.nd4j.codegen.api.Language;
 import org.nd4j.codegen.api.Namespace;
 import org.nd4j.codegen.api.NamespaceOps;
@@ -20,12 +21,12 @@ public class JavaPoetGenerator implements Generator {
 
     @Override
     public void generateNamespaceNd4j(NamespaceOps namespace, GeneratorConfig config, File directory, String className) throws IOException {
-        Nd4jNamespaceGenerator.generate(namespace, config, directory, className, "org.nd4j.linalg.factory");
+        Nd4jNamespaceGenerator.generate(namespace, config, directory, className, "org.nd4j.linalg.factory", StringUtils.EMPTY);
     }
 
     @Override
     public void generateNamespaceSameDiff(NamespaceOps namespace, GeneratorConfig config, File directory, String className) throws IOException {
         //throw new UnsupportedOperationException("Not yet implemented");
-        Nd4jNamespaceGenerator.generate(namespace, config, directory, className, "org.nd4j.autodiff.samediff");
+        Nd4jNamespaceGenerator.generate(namespace, config, directory, className, "org.nd4j.autodiff.samediff", StringUtils.EMPTY);
     }
 }

@@ -619,8 +619,8 @@ fun Math() =  Namespace("Math"){
         }
     }
 
-    Op("iamax", indexAccum) {
-        javaOpClass = "IAMax"
+    Op("iamax", indexAccumCustom) {
+        javaOpClass = "ArgMax"
         //Signature(in, dimensions)
         Doc(Language.ANY, DocScope.ALL){
             """
@@ -630,8 +630,8 @@ fun Math() =  Namespace("Math"){
         }
     }
 
-    Op("iamin", indexAccum) {
-        javaOpClass = "IAMin"
+    Op("iamin", indexAccumCustom) {
+        javaOpClass = "ArgMin"
         Doc(Language.ANY, DocScope.ALL){
             """
                 Index of the min absolute value: argmin(abs(in))
