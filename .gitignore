@@ -67,3 +67,5 @@ docs/_build/
 
 # PyBuilder
 target/
+
+keras-tests/tfkeras/used_layers.json
