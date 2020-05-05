@@ -346,6 +346,21 @@ class OpCreator:
                                  bias_regularizer=self.op.get("bias_regularizer",None), activity_regularizer=self.op.get("activity_regularizer",None),
                                  kernel_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
 
+    def execute_conv2d_transpose(self):
+        return [
+        tf.nn.conv2d_transpose(
+                value=self.vars[0],
+                filter=self.vars[1],
+                output_shape=self.vars[2],
+                strides=self.op["strides"],
+                padding=self.op["padding"],
+                data_format=self.op["data_format"],
+                dilations=self.op["dilations"]
+            )
+            ]
+
+
+
 
     def execute_layers_conv3d(self):
         return [tf.compat.v1.layers.conv3d(inputs=self.vars[0], filters=self.op["filters"], kernel_size=self.op["kernel_size"], strides=self.op["strides"],
@@ -1062,6 +1077,9 @@ class OpCreator:
 
     def execute_zeros_like(self):
         return [tf.zeros_like(input=self.vars[0], dtype=self.op["dtype"])]
+
+    def execute_zeros_like_tf1(self):
+            return [tf.zeros_like(tensor=self.vars[0], dtype=self.op.get("dtype", None))]
 
     def execute_range(self):
         return [tf.range(start=self.vars[0], limit=self.vars[1], delta=self.vars[2])]
