@@ -301,8 +301,12 @@ class OpCreator:
         return [tf.compat.v1.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_max_pool_with_argmax(self):
-        return [tf.nn.max_pool_with_argmax(input = self.vars[0], ksize = self.op["ksizes"], strides = self.op["strides"],\
-                                           padding = self.op["padding"],  data_format = self.op["data_format"], output_dtype = self.op["output_dtype"])]
+        return tf.raw_ops.MaxPoolWithArgmax(input =  self.vars[0],
+                                             ksize = self.op["ksizes"],
+                                             strides = self.op["strides"],
+                                             padding = self.op["padding"],
+                                             Targmax= self.op["output_dtype"],
+                                             include_batch_in_index= self.op["include_batch_in_index"])
 
     def execute_dense(self):
         kr = self.op.get("kernel_regularizer",None)
@@ -355,7 +359,7 @@ class OpCreator:
                 strides=self.op["strides"],
                 padding=self.op["padding"],
                 data_format=self.op["data_format"],
-                dilations=self.op.get("dilations", None)
+                dilations=self.op["dilations"]
             )
             ]
 

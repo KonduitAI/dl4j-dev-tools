@@ -2289,7 +2289,7 @@ def test_mathtransform():
 #           doesnt work on cpu, better launch on kraken
 #          {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInput/someoutput", "varShapes":[[5], [1, 1, 1, 3, 1], [1, 3, 3, 3, 1]], "varTypes":["int32","float32", "float32"], "varInit": ["uniform_int10","uniform","uniform"], "strides":[1,1,1,1,1], "padding":"SAME", "dilations":[1, 1, 1, 1, 1]},
 
-#          {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 2]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[2,2,2,2], "strides":[1,1,1,1], "dilations":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+          {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 2]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[2,2,2,2], "strides":[1,1,1,1], "dilations":1, "padding":"SAME", "data_format":"NHWC"},
 #         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k3_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
 #         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
 #         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC", "dilation":[1,2,2,1]},
@@ -2371,9 +2371,28 @@ def test_mathtransform():
 #         {"opName": "lgamma", "outName": "lgamma/emptyArrayTest/float32", "varShapes": [[0, 0]], "varTypes": ["float32"], "varInit": ["empty"]},
 
 
-        # https://gist.github.com/atuzhykov/b9ba46de91c54eda65c24546db11b9d3 looks like problem with CPU compatible
-        #  {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/someoutput", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
-        #             "strides": [1,1,1,1],   "padding":"SAME", "data_format":'NHWC' ,"include_batch_in_index": True, "output_dtype": tf.int32},
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
+
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float64"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int32"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int64"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
+
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_VALID", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"VALID"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+
+{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_VALID_includeBatch_false", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+                                "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": False, "output_dtype": tf.int64},
+
+
+
 
 
 #           {"opName":"mod", "outName":"mod/float32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
@@ -2535,4 +2554,6 @@ print("TF version: " + tf.version.VERSION)
 tf.compat.v1.disable_eager_execution()
 
 if __name__ == '__main__':
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+
     test_mathtransform()
