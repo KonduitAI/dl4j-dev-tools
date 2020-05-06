@@ -351,11 +351,11 @@ class OpCreator:
         tf.nn.conv2d_transpose(
                 value=self.vars[0],
                 filter=self.vars[1],
-                output_shape=self.vars[2],
+                output_shape=self.op["output_shape"],
                 strides=self.op["strides"],
                 padding=self.op["padding"],
                 data_format=self.op["data_format"],
-                dilations=self.op["dilations"]
+                dilations=self.op.get("dilations", None)
             )
             ]
 
@@ -1070,7 +1070,7 @@ class OpCreator:
         return [tf.ones(shape=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_ones_like(self):
-        return [tf.ones_like(input=self.vars[0])]
+        return [tf.raw_ops.OnesLike(x = self.vars[0])]
 
     def execute_zeros(self):
         return [tf.zeros(shape=self.vars[0], dtype=self.op["dtype"])]
@@ -1079,7 +1079,7 @@ class OpCreator:
         return [tf.zeros_like(input=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_zeros_like_tf1(self):
-            return [tf.zeros_like(tensor=self.vars[0], dtype=self.op.get("dtype", None))]
+        return [tf.raw_ops.ZerosLike(x=self.vars[0])]
 
     def execute_range(self):
         return [tf.range(start=self.vars[0], limit=self.vars[1], delta=self.vars[2])]
@@ -1323,7 +1323,8 @@ class OpCreator:
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
 
     def execute_random_crop(self):
-        return [tf.image.random_crop(self.vars[0], self.vars[1])]
+#         return [tf.image.random_crop(self.vars[0], self.vars[1])]
+        return [tf.raw_ops.RandomCrop(image = self.vars[0], size = self.vars[1])]
 
     def execute_draw_bounding_boxes(self):
         return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
@@ -1341,8 +1342,8 @@ class OpCreator:
                                         half_pixel_centers=self.op["half_pixel_centers"])]
 
     def execute_resize_area(self):
-        return [tf.image.resize(images=self.vars[0], size=self.vars[1], \
-                                        method=tf.image.ResizeMethod.AREA)]
+        return [tf.raw_ops.ResizeArea(
+                    images = self.vars[0], size = self.vars[1], align_corners=self.op.get("align_corners", False) )]
 
     def execute_non_max_suppression(self):
         iou_threshold = 0.5
@@ -1435,9 +1436,6 @@ class OpCreator:
     def execute_deep_copy(self):
         return [tf.raw_ops.DeepCopy(x = self.vars[0])]
 
-    def execute_ones_like_tf1(self):
-        return [tf.ones_like(tensor = self.vars[0])]
-
     def execute_random_gamma(self):
          return [tf.random.gamma(
                      shape = self.vars[0] ,
@@ -1473,14 +1471,20 @@ class OpCreator:
                      seed = self.op.get("seed", None),
                  )]
 
-    def execute_random_uniform(self):
-         return [tf.random.uniform(
+    def execute_random_uniform_int(self):
+         return [tf.raw_ops.RandomUniformInt(
                      shape = self.vars[0],
                      minval=self.op["minval"],
                      maxval=self.op["maxval"],
-                     dtype=self.op["dtype"],
-                     seed = self.op.get("seed", None),
+                     seed = self.op.get("seed", 0),
+                     seed2 = self.op.get("seed2", 0)
                  )]
+
+    def execute_random_uniform(self):
+         return [tf.raw_ops.RandomUniform(
+                     shape = self.vars[0], dtype = self.op["dtype"], seed = self.op.get("seed", 0), seed2 = self.op.get("seed2", 0)
+                 )]
+
 
 
     def execute_div(self):

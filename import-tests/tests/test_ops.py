@@ -498,7 +498,6 @@ def test_mathtransform():
         # {"opName":"layers_conv2d_transpose", "outName":"conv2d_transpose/channels_last_b1_k2_s1_SAME_crelu", "varShapes":[[1, 5, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":[2,2], "strides":[1,1], "padding":"SAME", "data_format":"channels_last", "activation":tf.nn.crelu},
         # {"opName":"layers_conv2d_transpose", "outName":"conv2d_transpose/channels_last_b2_k2_s1_SAME_regularizers", "varShapes":[[2, 5, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":[2,2], "strides":[1,1], "padding":"SAME", "data_format":"channels_last",
         #  "kernel_regularizer":tf.contrib.layers.l2_regularizer(scale=0.1), "bias_regularizer":tf.contrib.layers.l1_regularizer(scale=0.2), "activity_regularizer":tf.contrib.layers.l1_l2_regularizer(scale_l1=0.1,scale_l2=0.2)},
-         {"opName":"Conv2DTranspose", "outName":"Conv2DTranspose", "varShapes":[[1, 5, 5, 2]], "varTypes":["float32","float32"], "kernel_size":[2,2], "filters":2},
 
         # Data format: ch_last: NDHWC, ch_first: NCDHW
         # "CPU implementation of Conv3D currently only supports the NHWC tensor format."
@@ -628,6 +627,7 @@ def test_mathtransform():
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank3_d05_train_mask2", "varShapes":[[4,5,6]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True, "noise_shape":[4,5,1]},
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank3_d05_test", "varShapes":[[4,5,6]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":False},
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank4_d05_train", "varShapes":[[2,5,5,3]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True},
+        # {"opName":"layers_dropout", "outName":"layers_dropout/rank4_d05_train_mask", "varShapes":[[2,5,5,3]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True, "noise_shape":[2,1,1,3]},
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank4_d05_train_mask", "varShapes":[[2,5,5,3]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True, "noise_shape":[2,1,1,3]},
 
         # {"opName":"contrib_nn_alpha_dropout", "outName":"alpha_dropout/rank2_p05", "varShapes":[[4,5]], "varTypes":["float32"], "varInit":["uniform"], "keep_prob":0.5},
@@ -1250,6 +1250,8 @@ def test_mathtransform():
 
         # {"opName": "ones_like", "outName": "ones_like/rank0", "varShapes":[[]], "varTypes":["float32"], "varInit":["uniform"]},
         # {"opName": "ones_like", "outName": "ones_like/rank2", "varShapes":[[2,2]], "varTypes":["float64"], "varInit":["uniform"]},
+        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank1", "varShapes":[[0]], "varTypes":["float32"], "varInit":["empty"]},
+        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank2", "varShapes":[[2,0]], "varTypes":["float64"], "varInit":["empty"]},
 
         # {"opName": "reverse", "outName": "reverse/rank1", "varShapes":[[3]], "varTypes":["float32"], "varInit":["uniform"], "axis":[0]},
         # {"opName": "reverse", "outName": "reverse/rank2_axis0", "varShapes":[[3,4]], "varTypes":["float32"], "varInit":["uniform"], "axis":[0]},
@@ -1374,9 +1376,6 @@ def test_mathtransform():
         # {"opName": "one", "outName": "emptyArrayTests/ones/ones_rank1", "varShapes":[[1]], "varTypes":["int32"], "varInit":["zero"], "dtype":tf.int32},
         # {"opName": "one", "outName": "emptyArrayTests/ones/ones_rank2", "varShapes":[[2]], "varTypes":["int32"], "varInit":["fixed_2_0"], "dtype":tf.float32},
         # {"opName": "one", "outName": "emptyArrayTests/ones/ones_rank3", "varShapes":[[3]], "varTypes":["int32"], "varInit":["fixed_0_0_3"], "dtype":tf.int64},
-
-        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank1", "varShapes":[[0]], "varTypes":["float32"], "varInit":["empty"]},
-        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank2", "varShapes":[[2,0]], "varTypes":["float64"], "varInit":["empty"]},
 
         # {"opName": "range", "outName": "emptyArrayTests/range/0_0_1", "varShapes":[[],[],[]], "varTypes":["float32","float32","float32"], "varInit":["zero","zero","one"]},
         # {"opName": "range", "outName": "emptyArrayTests/range/2_2_2", "varShapes":[[],[],[]], "varTypes":["float32","float32","float32"], "varInit":["two","two","two"]},
@@ -2290,19 +2289,19 @@ def test_mathtransform():
 #           doesnt work on cpu, better launch on kraken
 #          {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInput/someoutput", "varShapes":[[5], [1, 1, 1, 3, 1], [1, 3, 3, 3, 1]], "varTypes":["int32","float32", "float32"], "varInit": ["uniform_int10","uniform","uniform"], "strides":[1,1,1,1,1], "padding":"SAME", "dilations":[1, 1, 1, 1, 1]},
 
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k3_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC", "dilation":[1,2,2,1]},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_VALID", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,2,2,1], "padding":"SAME", "data_format":"NHWC"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b1_k2_s1_d1_SAME", "varShapes":[[1, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k3_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d1_VALID", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NCHW"},
-        {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b1_k2_s2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,2], "padding":"SAME", "data_format":"NCHW"},
+#          {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 2]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[2,2,2,2], "strides":[1,1,1,1], "dilations":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k3_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC", "dilation":[1,2,2,1]},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_VALID", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,2,2,1], "padding":"SAME", "data_format":"NHWC"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b1_k2_s1_d1_SAME", "varShapes":[[1, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k3_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d1_VALID", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NCHW"},
+#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b1_k2_s2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,2], "padding":"SAME", "data_format":"NCHW"},
 
 # Only for TF 2.X
 #           {"opName":"copy", "outName":"Copy/float32", "varShapes":[[1,  3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
@@ -2420,11 +2419,12 @@ def test_mathtransform():
 #           {"opName": "random_normal", "outName": "random_normal/rank3_float64", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "mean": 0., "stddev":1.0, "seed":12345, "dtype":tf.float64},
 #           {"opName": "random_normal", "outName": "random_normal/rank2_half", "varShapes": [[2]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "mean": 0., "stddev":1.0, "seed":12345, "dtype":tf.half},
 # 
-#            {"opName": "random_uniform", "outName": "random_unidorm/rank1_float16", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":[1,2,7,4], "seed":12345, "dtype":tf.float16},
-#            {"opName": "random_uniform", "outName": "random_unidorm/rank3_float32", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345, "dtype":tf.float32},
-#            {"opName": "random_uniform", "outName": "random_unidorm/rank3_float64", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":3, "seed":12345, "dtype":tf.float64},
-#            {"opName": "random_uniform", "outName": "random_unidorm/rank4_int64", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345, "dtype":tf.int64},
-#
+#            {"opName": "random_uniform_int", "outName": "random_uniform_int/rank1_int32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345, },
+#             {"opName": "random_uniform_int", "outName": "random_uniform_int/rank3_int64", "varShapes": [[3]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345},
+#             {"opName": "random_uniform", "outName": "random_uniform/rank3_float32", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "dtype":tf.float32, "seed":12345},
+#             {"opName": "random_uniform", "outName": "random_uniform/rank3_float64", "varShapes": [[3]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "dtype":tf.float64, "seed2":1, "seed":12345},
+#             {"opName": "random_uniform", "outName": "random_uniform/rank3_half", "varShapes": [[3]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "dtype":tf.half, "seed2":1, "seed":12345},
+
 #         {"opName": "zeros_like_tf1", "outName": "emptyArrayTests/zeros_like_tf1/rank1", "varShapes":[[0]], "varTypes":["float32"], "varInit":["empty"]},
 #         {"opName": "zeros_like_tf1", "outName": "emptyArrayTests/zeros_like_tf1/rank2", "varShapes":[[2,0]], "varTypes":["float64"], "varInit":["empty"]},
 #         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float16", "varShapes": [[3, 12]],"varTypes": ["float16"], "varInit": ["uniform"]},
@@ -2432,12 +2432,12 @@ def test_mathtransform():
 #         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float64", "varShapes": [[3, 12]], "varTypes": ["float64"], "varInit": ["uniform"]},
 #         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_int32", "varShapes": [[3, 10]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
 #         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_int64", "varShapes": [[3, 10]], "varTypes": ["int64"], "varInit": ["uniform_int10"]},
-#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int8", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"], "dtype": tf.int8},
-#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int16", "varShapes": [[3, 12]],"varTypes": ["float32"], "varInit": ["uniform"], "dtype": tf.int16},
-#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int32", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"], "dtype":tf.int32},
-#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float16", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"], "dtype": tf.float16},
-#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float32", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"], "dtype": tf.float32},
-#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float64", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"], "dtype": tf.float64},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int8", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"] },
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int16", "varShapes": [[3, 12]],"varTypes": ["float32"], "varInit": ["uniform"] },
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int32", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float16", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float32", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float64", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"]},
 
     ]
 
