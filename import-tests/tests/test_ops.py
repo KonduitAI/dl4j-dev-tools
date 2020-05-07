@@ -2286,22 +2286,17 @@ def test_mathtransform():
 #          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/int32", "varShapes": [[8]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "threshold":2,},
 #          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/int64", "varShapes": [[16]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "threshold":1,},
 
-#           doesnt work on cpu, better launch on kraken
-#          {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInput/someoutput", "varShapes":[[5], [1, 1, 1, 3, 1], [1, 3, 3, 3, 1]], "varTypes":["int32","float32", "float32"], "varInit": ["uniform_int10","uniform","uniform"], "strides":[1,1,1,1,1], "padding":"SAME", "dilations":[1, 1, 1, 1, 1]},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NDHWC_SAME_float32", "varShapes":[[1, 8, 8, 8, 6],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 16, 16, 16, 3], "strides":[1,2,2,2,1], "padding":"SAME", "dilations":[1, 1, 1, 1, 1], "data_format":"NDHWC"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NDHWC_VALID_float32", "varShapes":[[1, 8, 8, 8, 6],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 16, 16, 16, 3], "strides":[1,2,2,2,1], "padding":"VALID", "dilations":[1, 1, 1, 1, 1], "data_format":"NDHWC"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NDHWC_VALID_half", "varShapes":[[1, 8, 8, 8, 6],[2, 2, 2, 3, 6]], "varTypes":["half","half"], "varInit": ["uniform","uniform"], "input_sizes":[1, 16, 16, 16, 3], "strides":[1,2,2,2,1], "padding":"VALID", "dilations":[1, 1, 1, 1, 1], "data_format":"NDHWC"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NCDHW_VALID_float32", "varShapes":[[1, 6, 8, 8, 8],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 3, 16, 16, 16], "strides":[1,1,2,2,2], "padding":"VALID", "dilations":[1, 1, 1, 1, 1], "data_format":"NCDHW"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NCDHW_SAME_float32", "varShapes":[[1, 6, 8, 8, 8],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 3, 16, 16, 16], "strides":[1,1,2,2,2], "padding":"SAME", "dilations":[1, 1, 1, 1, 1], "data_format":"NCDHW"},
 
-          {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 2]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[2,2,2,2], "strides":[1,1,1,1], "dilations":1, "padding":"SAME", "data_format":"NHWC"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k3_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC", "dilation":[1,2,2,1]},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b2_k2_s1_d1_VALID", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_b1_k2_s2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,2,2,1], "padding":"SAME", "data_format":"NHWC"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b1_k2_s1_d1_SAME", "varShapes":[[1, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k3_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b2_k2_s1_d1_VALID", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NCHW"},
-#         {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nchw_b1_k2_s2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,2], "padding":"SAME", "data_format":"NCHW"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1111_SAME", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1111_VALID", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1111_VALID", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1_VALID", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":1, "padding":"VALID", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1_SAME", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":1, "padding":"SAME", "data_format":"NHWC"},
 
 # Only for TF 2.X
 #           {"opName":"copy", "outName":"Copy/float32", "varShapes":[[1,  3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
@@ -2371,25 +2366,25 @@ def test_mathtransform():
 #         {"opName": "lgamma", "outName": "lgamma/emptyArrayTest/float32", "varShapes": [[0, 0]], "varTypes": ["float32"], "varInit": ["empty"]},
 
 
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
-
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float64"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
-
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int32"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
-
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int64"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
-
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_VALID", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"VALID"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
-
-{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_VALID_includeBatch_false", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
-                                "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": False, "output_dtype": tf.int64},
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float64"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int32"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int64"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_VALID", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"VALID"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_VALID_includeBatch_false", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": False, "output_dtype": tf.int64},
 
 
 
@@ -2554,6 +2549,4 @@ print("TF version: " + tf.version.VERSION)
 tf.compat.v1.disable_eager_execution()
 
 if __name__ == '__main__':
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
     test_mathtransform()

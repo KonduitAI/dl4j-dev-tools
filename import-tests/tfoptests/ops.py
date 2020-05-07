@@ -351,17 +351,14 @@ class OpCreator:
                                  kernel_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
 
     def execute_conv2d_transpose(self):
-        return [
-        tf.nn.conv2d_transpose(
-                value=self.vars[0],
-                filter=self.vars[1],
-                output_shape=self.op["output_shape"],
-                strides=self.op["strides"],
-                padding=self.op["padding"],
-                data_format=self.op["data_format"],
-                dilations=self.op["dilations"]
-            )
-            ]
+        return [ tf.nn.conv2d_transpose(input = self.vars[0],
+                                         filter = self.vars[1],
+                                         output_shape = self.op["output_shape"],
+                                         strides = self.op["strides"],
+                                         dilations = self.op["dilations"],
+                                         data_format = self.op["data_format"],
+                                         padding = self.op["padding"])]
+
 
 
 
@@ -1432,7 +1429,14 @@ class OpCreator:
         return [tf.raw_ops.CompareAndBitpack(input=self.vars[0], threshold = self.op["threshold"])]
 
     def execute_Conv3DBackpropInputV2(self):
-        return [tf.raw_ops.Conv3DBackpropInputV2(input_sizes=self.vars[0],filter=self.vars[1], out_backprop=self.vars[2], strides=self.op["strides"], padding=self.op["padding"], dilations=self.op["dilations"])]
+        return [tf.raw_ops.Conv3DBackpropInputV2(
+                                input_sizes=self.op["input_sizes"],
+                                filter=self.vars[1],
+                                out_backprop=self.vars[0],
+                                strides=self.op["strides"],
+                                padding=self.op["padding"],
+                                data_format=self.op["data_format"],
+                                dilations=self.op["dilations"])]
 
     def execute_empty(self):
         return [tf.raw_ops.Empty(shape = self.vars[0], dtype = self.op["dtype"])]
