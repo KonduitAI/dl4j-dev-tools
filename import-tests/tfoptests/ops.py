@@ -1347,20 +1347,52 @@ class OpCreator:
                     images = self.vars[0], size = self.vars[1], align_corners=self.op.get("align_corners", False) )]
 
     def execute_non_max_suppression(self):
-        iou_threshold = 0.5
-        score_threshold = 0.5
-        if("iou_threshold" in self.op):
-            iou_threshold = self.op["iou_threshold"]
-        if("score_threshold" in self.op):
-            score_threshold = self.op["score_threshold"]
+        return [tf.raw_ops.NonMaxSuppression(
+                                          boxes = self.vars[0],
+                                          scores = self.vars[1],
+                                          max_output_size = self.vars[2],
+                                          iou_threshold  = self.op.get("iou_threshold", 0.5),
 
-        return [tf.image.non_max_suppression(boxes =
-                                             self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
-                                             iou_threshold=iou_threshold, score_threshold=score_threshold)]
+                                      )]
 
     def execute_non_max_suppression_v2(self):
-        return [tf.image.non_max_suppression(self.vars[0], self.vars[1], self.vars[2])]
+        return [tf.raw_ops.NonMaxSuppressionV2(
+                                       boxes = self.vars[0],
+                                       scores = self.vars[1],
+                                       max_output_size = self.vars[2],
+                                       iou_threshold  = self.op.get("iou_threshold", 0.5),
 
+                                   )]
+
+    def execute_non_max_suppression_v3(self):
+            return [tf.raw_ops.NonMaxSuppressionV3(
+                        boxes = self.vars[0],
+                        scores = self.vars[1],
+                        max_output_size = self.vars[2],
+                        iou_threshold  = self.op.get("iou_threshold", 0.5),
+                        score_threshold = self.op.get("score_threshold", 0.5)
+                    )]
+
+    def execute_non_max_suppression_v4(self):
+            return tf.raw_ops.NonMaxSuppressionV4(
+                        boxes = self.vars[0],
+                        scores = self.vars[1],
+                        max_output_size = self.vars[2],
+                        iou_threshold  = self.op.get("iou_threshold", 0.5),
+                        score_threshold = self.op.get("score_threshold", 0.5),
+                        pad_to_max_output_size=self.op.get("pad_to_max_output_size", False),
+                    )
+
+    def execute_non_max_suppression_v5(self):
+            return tf.raw_ops.NonMaxSuppressionV5(
+                        boxes = self.vars[0],
+                        scores = self.vars[1],
+                        max_output_size = self.vars[2],
+                        iou_threshold  = self.op.get("iou_threshold", 0.5),
+                        score_threshold = self.op.get("score_threshold", 0.5),
+                        soft_nms_sigma = self.op.get("soft_nms_sigma", 0.0),
+                        pad_to_max_output_size=self.op.get("pad_to_max_output_size", False),
+                    )
     def execute_dropout(self):
         return [tf.nn.dropout(x = self.vars[0], rate = self.op["rate"], seed = self.op.get("seed", None), noise_shape = self.op.get("noise_shape", None))]
 
@@ -1510,3 +1542,4 @@ class OpCreator:
          return [tf.raw_ops.CopyHost(
                      x = self.vars[0]
                  )]
+

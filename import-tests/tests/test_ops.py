@@ -2096,14 +2096,25 @@ def test_mathtransform():
         #{"opName": "log_softmax", "outName": "log_softmax/emptyArrayTest/partial_rank4_float64", "varShapes": [[0, 1, 0, 0]], "varTypes": ["float32"], "varInit": ["uniform"], "axis":0},
         # {"opName": "log_softmax", "outName": "log_softmax/partial_rank3_float64", "varShapes": [[1, 0, 0]], "varTypes": ["float64"], "varInit": ["uniform"],"axis":0},
 
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/float32", "varShapes": [[3, 4],[3],[]], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","zero"]},
-        #{"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/float32", "varShapes": [[3, 4], [3], []], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","uniform_int10"]},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/float16", "varShapes": [[3, 4], [3], []],"varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "uniform_int10"]},
-        #{"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/float16", "varShapes": [[3, 4], [3], []],"varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "uniform_int10"]},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/float32_with_thresholds", "varShapes": [[3, 4], [3], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.0, "score_threshold": 0.0},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.2, "score_threshold": 0.5},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float16_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds",  "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#         {"opName": "non_max_suppression", "outName": "non_max_suppression/float32", "varShapes": [[3, 4],[3],[]], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","zero"]},
+#         {"opName": "non_max_suppression", "outName": "non_max_suppression/float32_with_thresholds", "varShapes": [[3, 4], [3], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.0, "score_threshold": 0.0},
+#         {"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.2, "score_threshold": 0.5},
+
+#         {"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/float32", "varShapes": [[3, 4], [3], []], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","uniform_int10"]},
+#         {"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/half", "varShapes": [[3, 4], [3], []],"varTypes": ["half", "half", "int32"], "varInit": ["uniform", "uniform", "uniform_int10"]},
+#
+#         {"opName": "non_max_suppression_v3", "outName": "non_max_suppression_v3/float16_with_thresholds", "varShapes": [[3, 4],[3],[]], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
+#         {"opName": "non_max_suppression_v3", "outName": "non_max_suppression_v3/float32_with_thresholds",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#
+#         {"opName": "non_max_suppression_v4", "outName": "non_max_suppression_v4/float16_with_thresholds", "varShapes": [[3, 4],[3],[]], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
+#         {"opName": "non_max_suppression_v4", "outName": "non_max_suppression_v4/float32_with_thresholds",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#         {"opName": "non_max_suppression_v4", "outName": "non_max_suppression_v4/float32_with_thresholds_pad_to_max_output_size",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4, "pad_to_max_output_size":True},
+
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float16_with_thresholds", "varShapes": [[3, 4],[3],[]], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float32_with_thresholds",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float32_with_thresholds_pad_to_max_output_size",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4, "pad_to_max_output_size":True},
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float32_with_thresholds_soft_nms_sigma",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4, "soft_nms_sigma":0.3},
+
 
         # {"opName": "betainc", "outName": "betainc/rank1_float32", "varShapes":[[4],[4],[4]], "varTypes":["float32","float32","float32"], "varInit":["uniform_0_1","uniform_0_1","uniform_0_1"]},
         # {"opName": "betainc", "outName": "betainc/rank2_float32", "varShapes": [[3,4],[3,4],[3,4]], "varTypes": ["float32","float32","float32"], "varInit": ["uniform_0_1","uniform_0_1","uniform_0_1"]},
@@ -2407,7 +2418,7 @@ def test_mathtransform():
 # 
 #        {"opName": "random_gamma", "outName": "random_gamma/rank4_float32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":1, "alpha":[0.5, 1.5], "dtype":tf.float32},
 #        {"opName": "random_gamma", "outName": "random_gamma/rank3_float64", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":12, "alpha":[1.5, 2.5],  "beta":[0.5, 1.5], "dtype":tf.float64},
-#        {"opName": "random_gamma", "outName": "random_gamma/rank3_half", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":12, "alpha":[1.5, 2.5],  "beta":[0.5, 1.5], "dtype":tf.half},
+        {"opName": "random_gamma", "outName": "random_gamma/rank3_half", "varShapes": [[6]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":123, "alpha":[1.5, 2.5],  "beta":[0.5, 1.5], "dtype":tf.half},
 # 
 # 
 #         {"opName": "random_poisson", "outName": "random_poisson/rank1_float16", "varShapes": [[4], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "lam":[0.5, 2.5],"dtype":tf.float16},
