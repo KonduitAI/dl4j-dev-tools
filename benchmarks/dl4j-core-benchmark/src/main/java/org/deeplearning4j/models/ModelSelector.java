@@ -61,6 +61,9 @@ public class ModelSelector {
             case RNN_SMALL:
                 netmap.put(ModelType.RNN_SMALL, new RNN(inputShape[0], new int[]{256,256},numLabels, seed, updater, workspaceMode, cacheMode ));
                 break;
+            case DEBUGCNN:
+                netmap.put(ModelType.DEBUGCNN, new DebugCNN(workspaceMode, cacheMode, updater));
+                break;
             default:
 //                // do nothing
         }

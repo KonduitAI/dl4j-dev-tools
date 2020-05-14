@@ -16,6 +16,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.api.TrainingListener;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.deeplearning4j.parallelism.ParallelWrapper;
+import org.nd4j.base.Preconditions;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.executioner.OpExecutioner;
 import org.nd4j.linalg.dataset.api.DataSet;
@@ -38,7 +39,7 @@ public abstract class BaseBenchmark {
     @Builder(builderClassName = "Benchmark", buildMethodName = "execute")
     public void benchmark(Map.Entry<ModelType, TestableModel> net, String description, int numLabels, int batchSize, int seed, String datasetName,
                           DataSetIterator iter, ModelType modelType, boolean profile, int gcWindow, int occasionalGCFreq,
-                          boolean usePW, int pwNumThreads, int pwAvgFreq, int pwPrefetchBuffer, boolean memoryListener) throws Exception {
+                          int warmupIters, boolean usePW, int pwNumThreads, int pwAvgFreq, int pwPrefetchBuffer, boolean memoryListener) throws Exception {
 
 
         log.info("=======================================");
@@ -93,15 +94,16 @@ public abstract class BaseBenchmark {
 
         //Warm-up
         log.info("===== Warming up =====");
+        Preconditions.checkArgument(warmupIters > 0, "Warmup iterations must be > 0, got %s", warmupIters);
         if(!usePW) {
-            DataSetIterator warmup = new EarlyTerminationDataSetIterator(iter, 10);
+            DataSetIterator warmup = new EarlyTerminationDataSetIterator(iter, warmupIters);
             if (model instanceof MultiLayerNetwork) {
                 ((MultiLayerNetwork) model).fit(warmup);
             } else if (model instanceof ComputationGraph) {
                 ((ComputationGraph) model).fit(warmup);
             }
         } else {
-            DataSetIterator warmup = new EarlyTerminationDataSetIterator(iter, 10 * pwNumThreads);
+            DataSetIterator warmup = new EarlyTerminationDataSetIterator(iter, warmupIters * pwNumThreads);
             pw.fit(warmup);
         }
         iter.reset();

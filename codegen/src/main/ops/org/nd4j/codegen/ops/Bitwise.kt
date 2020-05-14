@@ -53,7 +53,7 @@ fun Bitwise() = Namespace("Bitwise"){
         Doc(Language.ANY, DocScope.ALL){
             """
             Bitwise left cyclical shift operation. Supports broadcasting.
-            Unlike {@link #leftShift(%INPUT_TYPE%, %INPUT_TYPE%)} the bits will "wrap around":
+            Unlike #leftShift(%INPUT_TYPE%, %INPUT_TYPE%) the bits will "wrap around":
             {@code leftShiftCyclic(01110000, 2) -> 11000001}
             """.trimIndent()
         }
@@ -71,7 +71,7 @@ fun Bitwise() = Namespace("Bitwise"){
         Doc(Language.ANY, DocScope.ALL){
             """
             Bitwise right cyclical shift operation. Supports broadcasting.
-            Unlike {@link #rightShift(%INPUT_TYPE%, %INPUT_TYPE%)} the bits will "wrap around":
+            Unlike rightShift(%INPUT_TYPE%, %INPUT_TYPE%) the bits will "wrap around":
             {@code rightShiftCyclic(00001110, 2) -> 10000011}
             """.trimIndent()
         }

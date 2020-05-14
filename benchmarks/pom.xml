@@ -393,7 +393,7 @@
             </activation>
             <properties>
                 <nd4j.backend>nd4j-cuda-10.1</nd4j.backend>
-                <artifact.backend.name>cuda11</artifact.backend.name>
+                <artifact.backend.name>cuda101</artifact.backend.name>
             </properties>
         </profile>
         <profile>

@@ -1,6 +1,7 @@
 package org.nd4j.codegen.dsl;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.codegen.api.NamespaceOps;
@@ -27,7 +28,7 @@ class TestGeneration {
         List<NamespaceOps> list = Arrays.asList(RNNKt.SDRNN());
 
         for(NamespaceOps ops : list) {
-            Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java", "org.nd4j.linalg.factory");
+            Nd4jNamespaceGenerator.generate(ops, null, f, ops.getName() + ".java", "org.nd4j.linalg.factory", StringUtils.EMPTY);
         }
 
         File[] files = f.listFiles();

@@ -17,5 +17,6 @@ public enum ModelType {
     MLP_SMALL,
     RNN_SMALL,
     RESNET50,
-    RESNET50PRE
+    RESNET50PRE,
+    DEBUGCNN
 }
