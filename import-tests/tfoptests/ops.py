@@ -78,8 +78,9 @@ class OpCreator:
         return [tf.compat.v1.depth_to_space(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
 
     def execute_size(self):
-        temp = tf.add(self.vars[0], 1.0)
-        return [tf.add(tf.size(input=temp), 1)]
+        return [tf.raw_ops.Size(
+                    input = self.vars[0], out_type=tf.dtypes.int32, name=None
+                )]
 
     def execute_shape(self):
         temp = tf.add(self.vars[0], 1.0)
@@ -1415,7 +1416,7 @@ class OpCreator:
         return [tf.math.minimum(self.vars[0], self.vars[1])]
 
     def execute_mod(self):
-        return [tf.math.mod(self.vars[0], self.vars[1])]
+        return [tf.raw_ops.Mod(x = self.vars[0], y = self.vars[1])]
 
     def execute_mul(self):
         return [tf.math.mul(self.vars[0], self.vars[1])]
