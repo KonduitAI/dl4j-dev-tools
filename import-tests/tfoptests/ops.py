@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+isApiV2 = tf.version.VERSION.startswith("2.")
 
 class OpCreator:
     def __init__(self, op):
@@ -66,7 +67,7 @@ class OpCreator:
         return [tf.math.segment_sum(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_space_to_batch(self):
-        return [tf.space_to_batch(input=self.vars[0], paddings=self.vars[1], block_shape=2)]
+        return [tf.space_to_batch(input=self.vars[0], paddings=self.vars[1], block_shape=[2,2])]
 
     def execute_space_to_depth(self):
         return [tf.compat.v1.space_to_depth(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
@@ -95,6 +96,12 @@ class OpCreator:
         return [tf.linalg.inv(input=self.vars[0])]
 
     def execute_pad(self):
+        if isApiV2:
+            if(len(self.vars) > 2):
+                return [tf.raw_ops.PadV2( input = self.vars[0] , paddings = self.vars[1], constant_values = self.vars[2])]
+            else:
+                return [tf.raw_ops.Pad( input = self.vars[0] , paddings = self.vars[1])]
+
         if(len(self.vars) > 2):
             return [tf.pad(tensor=self.vars[0], paddings=self.vars[1], constant_values=self.vars[2], mode = self.op["mode"])]
         else:
@@ -223,7 +230,7 @@ class OpCreator:
             weights = self.vars[2]
         r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.compat.v1.losses.cosine_distance(labels=self.vars[0], predictions=self.vars[1], weights=weights, axis=self.op["axis"], reduction=r)]
+        return [tf.compat.v1.losses.cosine_distance(labels=self.vars[0], predictions=self.vars[1], weights=weights, axis=self.op.get("axis", 0), reduction=r)]
 
     def execute_hinge_loss(self):
         weights = 1.0
@@ -302,12 +309,22 @@ class OpCreator:
         return [tf.compat.v1.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_max_pool_with_argmax(self):
+        if isApiV2:
+            return tf.raw_ops.MaxPoolWithArgmax(input =  self.vars[0],
+                                                         ksize = self.op["ksizes"],
+                                                         strides = self.op["strides"],
+                                                         padding = self.op["padding"],
+                                                         Targmax= tf.int64,
+                                                         include_batch_in_index= self.op.get("include_batch_in_index", False)
+                                                         )
+
         return tf.raw_ops.MaxPoolWithArgmax(input =  self.vars[0],
                                              ksize = self.op["ksizes"],
                                              strides = self.op["strides"],
                                              padding = self.op["padding"],
                                              Targmax= self.op["output_dtype"],
-                                             include_batch_in_index= self.op["include_batch_in_index"])
+                                             include_batch_in_index= self.op.get("include_batch_in_index", False)
+                                             )
 
     def execute_dense(self):
         kr = self.op.get("kernel_regularizer",None)
