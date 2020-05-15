@@ -104,24 +104,24 @@ def test_mathtransform():
         # {"opName": "matrix_inverse", "outName": "matrix_inverse/rank2", "varShapes":[[3,3]], "varTypes":["float32"], "varInit":["uniform"]},
         # {"opName": "matrix_inverse", "outName": "matrix_inverse/rank3", "varShapes":[[2,3,3]], "varTypes":["float32"], "varInit":["uniform"]},
         # {"opName": "matrix_inverse", "outName": "matrix_inverse/rank4", "varShapes":[[2,2,3,3]], "varTypes":["float32"], "varInit":["uniform"]}
-        # {"opName": "pad", "outName": "pad/rank1Pzero_const0", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","zero"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank1Pzero_const10", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","ten"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank1Pone_const0", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","zero"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank1Pone_const10", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","ten"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank1Pone_reflect", "varShapes":[[5],[1,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"REFLECT"},
-        # {"opName": "pad", "outName": "pad/rank1Pone_symmetric", "varShapes":[[5],[1,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"SYMMETRIC"}
-        # {"opName": "pad", "outName": "pad/rank2Pzero_const0", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","zero"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank2Pzero_const10", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","ten"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank2Pone_const0", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","zero"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank2Pone_const10", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","ten"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank2Pone_reflect", "varShapes":[[3,4],[2,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"REFLECT"},
-        # {"opName": "pad", "outName": "pad/rank2Pone_symmetric", "varShapes":[[3,4],[2,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"SYMMETRIC"},
-        # {"opName": "pad", "outName": "pad/rank3Pzero_const0", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","zero"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank3Pzero_const10", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","ten"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank3Pone_const0", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","zero"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank3Pone_const10", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","ten"], "mode":"CONSTANT"},
-        # {"opName": "pad", "outName": "pad/rank3Pone_reflect", "varShapes":[[2,3,4],[3,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"REFLECT"},
-        # {"opName": "pad", "outName": "pad/rank3Pone_symmetric", "varShapes":[[2,3,4],[3,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"SYMMETRIC"},
+#         {"opName": "pad", "outName": "pad/rank1Pzero_const0", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","zero"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank1Pzero_const10", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","ten"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank1Pone_const0", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","zero"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank1Pone_const10", "varShapes":[[5],[1,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","ten"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank1Pone_reflect", "varShapes":[[5],[1,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"REFLECT"},
+#         {"opName": "pad", "outName": "pad/rank1Pone_symmetric", "varShapes":[[5],[1,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"SYMMETRIC"},
+#         {"opName": "pad", "outName": "pad/rank2Pzero_const0", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","zero"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank2Pzero_const10", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","ten"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank2Pone_const0", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","zero"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank2Pone_const10", "varShapes":[[3,4],[2,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","ten"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank2Pone_reflect", "varShapes":[[3,4],[2,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"REFLECT"},
+#         {"opName": "pad", "outName": "pad/rank2Pone_symmetric", "varShapes":[[3,4],[2,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"SYMMETRIC"},
+#         {"opName": "pad", "outName": "pad/rank3Pzero_const0", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","zero"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank3Pzero_const10", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","zero","ten"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank3Pone_const0", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","zero"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank3Pone_const10", "varShapes":[[2,3,4],[3,2],[]], "varTypes":["float32", "int32", "float32"], "varInit":["uniform","one","ten"], "mode":"CONSTANT"},
+#         {"opName": "pad", "outName": "pad/rank3Pone_reflect", "varShapes":[[2,3,4],[3,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"REFLECT"},
+#         {"opName": "pad", "outName": "pad/rank3Pone_symmetric", "varShapes":[[2,3,4],[3,2]], "varTypes":["float32", "int32"], "varInit":["uniform","one"], "mode":"SYMMETRIC"},
         # {"opName": "unique", "outName": "unique10-5", "varShapes":[[10]], "varTypes":["float32"], "varInit":["uniform_int5"]},
         # {"opName": "unique_with_counts", "outName": "uniqueWithCounts10-5", "varShapes":[[10]], "varTypes":["float32"], "varInit":["uniform_int5"]},
         # {"opName": "topk", "outName": "topk/rank1_k1", "varShapes":[[10]], "varTypes":["float32"], "varInit":["uniform"], "k":1, "sorted":False},
@@ -240,7 +240,7 @@ def test_mathtransform():
         # {"opName": "mean_squared_error", "outName": "losses/mse_rank3_weights_1", "varShapes":[[2,3,4],[2,3,4],[]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
         # {"opName": "mean_squared_error", "outName": "losses/mse_rank3_weights_2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
         # {"opName": "mean_squared_error", "outName": "losses/mse_rank3_weights_3", "varShapes":[[2,3,4],[2,3,4],[2,1,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
-        # {"opName": "mean_squared_error", "outName": "losses/mse_rank3_weights_4", "varShapes":[[2,3,4],[2,3,4],[2,3,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]}
+        # {"opName": "mean_squared_error", "outName": "losses/mse_rank3_weights_4", "varShapes":[[2,3,4],[2,3,4],[2,3,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
         # {"opName": "absolute_difference", "outName": "losses/absdiff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
         # {"opName": "absolute_difference", "outName": "losses/absdiff_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
         # {"opName": "absolute_difference", "outName": "losses/absdiff_rank2", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
@@ -252,98 +252,98 @@ def test_mathtransform():
         # {"opName": "absolute_difference", "outName": "losses/absdiff_rank3_weights_1", "varShapes":[[2,3,4],[2,3,4],[]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
         # {"opName": "absolute_difference", "outName": "losses/absdiff_rank3_weights_2", "varShapes":[[2,3,4],[2,3,4],[2,1,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
 
-        #{"opName": "cosine_distance", "outName": "losses/cosine_diff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":None},     #Cosine doesn't like rank 0 input, it seems...
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":0},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis0_SUM", "varShapes":[[3,4],[3,4],[1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM, "axis":0},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.NONE, "axis":1},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM, "axis":1},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN, "axis":1},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE, "axis":1},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS, "axis":1},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":0},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_axis1", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":1},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_axis2", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":2},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[1,1,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},  #Can't have weights [2,1,1]? Maybe weights must match post reduce...
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},
-        # {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[1,3,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":0},     #Cosine doesn't like rank 0 input, it seems...
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":0},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis0_SUM", "varShapes":[[3,4],[3,4],[1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM, "axis":0},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE, "axis":1},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM, "axis":1},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN, "axis":1},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE, "axis":1},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank2_axis1_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS, "axis":1},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":0},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_axis1", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":1},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_axis2", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"], "axis":2},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[1,1,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},  #Can't have weights [2,1,1]? Maybe weights must match post reduce...
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},
+#         {"opName": "cosine_distance", "outName": "losses/cosine_diff_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[1,3,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"], "axis":0},
 
         #Hinge: need bernoulli (0 or 1) labels, and 0 centered predictions (<0 negative, > 0 positive)
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["bernoulli","uniform_m1_1"]},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank2_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.losses.Reduction.NONE},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank2_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank2_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank2_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank2_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["bernoulli","uniform_m1_1"]},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[2,1,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
-        # {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[2,3,4]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["bernoulli","uniform_m1_1"]},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank2_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank2_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank2_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank2_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank2_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["bernoulli","uniform_m1_1"]},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[2,1,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
+#         {"opName": "hinge_loss", "outName": "losses/hinge_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[2,3,4]], "varTypes":["float32","float32","float32"], "varInit":["bernoulli","uniform_m1_1","uniform"]},
 
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank1_d05", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"],"delta":0.5},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank1_d2", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"],"delta":2.0},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis0_SUM", "varShapes":[[3,4],[3,4],[1,4]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.NONE},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_axis1", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_axis2", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[1,1,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
-        # {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[1,3,4]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
-
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank1_eps01", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"],"epsilon":0.1},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis0_SUM", "varShapes":[[3,4],[3,4],[1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.NONE},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3_axis1", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3_axis2", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[1,1,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
-        # {"opName": "log_loss", "outName": "losses/log_loss_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[1,3,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
-
-        #sigmoid_cross_entropy: seems to only support [batch_size, num_classes] shapes?
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","stdnormal"]},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_smooth01", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","stdnormal"],"label_smoothing":0.1},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_smooth05", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","stdnormal"],"label_smoothing":0.5},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.NONE},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE},
-        # {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
-
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce", "varShapes":[[10,4],[10,4]], "varTypes":["float32","float32"], "varInit":["onehot","stdnormal"]},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_smooth01", "varShapes":[[10,4],[10,4]], "varTypes":["float32","float32"], "varInit":["onehot","stdnormal"],"label_smoothing":0.1},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_smooth05", "varShapes":[[10,4],[10,4]], "varTypes":["float32","float32"], "varInit":["onehot","stdnormal"],"label_smoothing":0.5},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_NONE", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.NONE},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_SUM", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_MEAN", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_SUM_OVER_BATCH_SIZE", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE},
-        # {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
-
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce", "varShapes":[[10],[10,5]], "varTypes":["int32","float32"], "varInit":["uniform_int5","stdnormal"]},
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_NONE", "varShapes":[[10],[10,5],[10,1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.NONE},
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM", "varShapes":[[10],[10,5],[10,1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM},
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_MEAN", "varShapes":[[10],[10,5],[10,1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.MEAN},
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM_OVER_BATCH_SIZE", "varShapes":[[10],[10,5],[10]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_OVER_BATCH_SIZE},
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[10],[10,5],[10]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
-        # {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM_BY_NONZERO_WEIGHTS_1", "varShapes":[[10],[10,5],[1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank1_d05", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"],"delta":0.5},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank1_d2", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"],"delta":2.0},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis0_SUM", "varShapes":[[3,4],[3,4],[1,4]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank2_axis1_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_axis1", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_axis2", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["stdnormal","stdnormal"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[1,1,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
+#         {"opName": "huber_loss", "outName": "losses/huber_diff_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[1,3,4]], "varTypes":["float32","float32","float32"], "varInit":["stdnormal","stdnormal","uniform"]},
+#
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank0", "varShapes":[[],[]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank1", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank1_eps01", "varShapes":[[5],[5]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"],"epsilon":0.1},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis0_SUM", "varShapes":[[3,4],[3,4],[1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank2_axis1_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3_axis1", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3_axis2", "varShapes":[[2,3,4],[2,3,4]], "varTypes":["float32","float32"], "varInit":["uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3_weights0", "varShapes":[[2,3,4],[2,3,4],[1,1,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3_weights1", "varShapes":[[2,3,4],[2,3,4],[1,3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3_weights2", "varShapes":[[2,3,4],[2,3,4],[1,1,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
+#         {"opName": "log_loss", "outName": "losses/log_loss_rank3_weightsAll", "varShapes":[[2,3,4],[2,3,4],[1,3,4]], "varTypes":["float32","float32","float32"], "varInit":["uniform","uniform","uniform"]},
+#
+# #         sigmoid_cross_entropy: seems to only support [batch_size, num_classes] shapes?
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","stdnormal"]},
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_smooth01", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","stdnormal"],"label_smoothing":0.1},
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_smooth05", "varShapes":[[3,4],[3,4]], "varTypes":["float32","float32"], "varInit":["uniform","stdnormal"],"label_smoothing":0.5},
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_NONE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE},
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_SUM", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#          {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_MEAN", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN},
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_SUM_OVER_BATCH_SIZE", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE},
+#         {"opName": "sigmoid_cross_entropy", "outName": "losses/sigmoid_ce_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[3,4],[3,4],[3,1]], "varTypes":["float32","float32","float32"], "varInit":["uniform","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce", "varShapes":[[10,4],[10,4]], "varTypes":["float32","float32"], "varInit":["onehot","stdnormal"]},
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_smooth01", "varShapes":[[10,4],[10,4]], "varTypes":["float32","float32"], "varInit":["onehot","stdnormal"],"label_smoothing":0.1},
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_smooth05", "varShapes":[[10,4],[10,4]], "varTypes":["float32","float32"], "varInit":["onehot","stdnormal"],"label_smoothing":0.5},
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_NONE", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE},
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_SUM", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#         {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_MEAN", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN},
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_SUM_OVER_BATCH_SIZE", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE},
+#          {"opName": "softmax_cross_entropy", "outName": "losses/softmax_ce_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[10,4],[10,4],[10]], "varTypes":["float32","float32","float32"], "varInit":["onehot","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce", "varShapes":[[10],[10,5]], "varTypes":["int32","float32"], "varInit":["uniform_int5","stdnormal"]},
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_NONE", "varShapes":[[10],[10,5],[10,1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.NONE},
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM", "varShapes":[[10],[10,5],[10,1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM},
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_MEAN", "varShapes":[[10],[10,5],[10,1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.MEAN},
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM_OVER_BATCH_SIZE", "varShapes":[[10],[10,5],[10]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_OVER_BATCH_SIZE},
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM_BY_NONZERO_WEIGHTS", "varShapes":[[10],[10,5],[10]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
+#          {"opName": "sparse_softmax_cross_entropy", "outName": "losses/sparse_softmax_ce_SUM_BY_NONZERO_WEIGHTS_1", "varShapes":[[10],[10,5],[1]], "varTypes":["int32","float32","float32"], "varInit":["uniform_int5","stdnormal","uniform_sparse"], "reduction":tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS},
 
         # {"opName":"l2_loss", "outName":"losses/l2_loss_rank0", "varShapes":[[]], "varTypes":["float32"], "varInit":["uniform"]},
         # {"opName":"l2_loss", "outName":"losses/l2_loss_rank1", "varShapes":[[10]], "varTypes":["float32"], "varInit":["uniform"]},
@@ -374,24 +374,24 @@ def test_mathtransform():
         # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_first_b2_k2_s1_d1_VALID", "varShapes":[[2, 2, 5]], "varTypes":["float32","float32"], "filters":1, "kernel_size":2, "strides":1, "padding":"VALID", "data_format":"channels_first", "dilation_rate":1},
         # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_first_b1_k2_s2_d1_SAME", "varShapes":[[1, 2, 5]], "varTypes":["float32","float32"], "filters":2, "kernel_size":2, "strides":2, "padding":"SAME", "data_format":"channels_first", "dilation_rate":1},
         # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":2, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":2},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_VALID", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":2, "kernel_size":2, "strides":1, "padding":"VALID", "data_format":"channels_last", "dilation_rate":1},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":2, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_sigmoid", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.relu},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_sigmoid", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.sigmoid},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_elu", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.elu},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_relu6", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.relu6},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_relu6", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.selu},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_crelu", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.crelu},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_regularizers", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
-        #     "kernel_regularizer":tf.contrib.layers.l2_regularizer(scale=0.1), "bias_regularizer":tf.contrib.layers.l1_regularizer(scale=0.2), "activity_regularizer":tf.contrib.layers.l1_l2_regularizer(scale_l1=0.1,scale_l2=0.2)},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_constraints1", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
-        #     "kernel_constraint":tf.keras.constraints.MaxNorm(max_value=2), "bias_constraint":tf.keras.constraints.NonNeg()},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_constraints2", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
-        #     "kernel_constraint":tf.keras.constraints.MinMaxNorm(min_value=1, max_value=2)},
-        # {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_constraints3", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
-        #     "kernel_constraint":tf.keras.constraints.UnitNorm()},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":2, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":2},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_VALID", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":2, "kernel_size":2, "strides":1, "padding":"VALID", "data_format":"channels_last", "dilation_rate":1},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":2, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_sigmoid", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.relu},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_sigmoid", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.sigmoid},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_elu", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.elu},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_relu6", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.relu6},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_relu6", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.selu},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b1_k2_s1_d1_SAME_crelu", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "activation":tf.nn.crelu},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_regularizers", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
+#             "kernel_regularizer":tf.keras.regularizers.l2(l=0.1), "bias_regularizer":tf.keras.regularizers.l2(l=0.2), "activity_regularizer":tf.keras.regularizers.l1_l2(l1=0.1,l2=0.2)},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_constraints1", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
+#             "kernel_constraint":tf.keras.constraints.MaxNorm(max_value=2), "bias_constraint":tf.keras.constraints.NonNeg()},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_constraints2", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
+#             "kernel_constraint":tf.keras.constraints.MinMaxNorm(min_value=1, max_value=2)},
+#         {"opName":"layers_cnn1d", "outName":"cnn1d_layers/channels_last_b2_k2_s1_SAME_constraints3", "varShapes":[[2, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1,
+#             "kernel_constraint":tf.keras.constraints.UnitNorm()},
         #TODO TF constraints don't appear to get saved with the model...
 
         # {"opName":"layers_sepconv1d", "outName":"sepconv1d_layers/channels_last_b1_k2_s1_d1_SAME_dm1", "varShapes":[[1, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":2, "strides":1, "padding":"SAME", "data_format":"channels_last", "dilation_rate":1, "depth_multiplier":1},
@@ -420,13 +420,13 @@ def test_mathtransform():
         # {"opName":"max_pooling1d", "outName":"max_pooling1d/channels_last_b2_k2_s1_VALID", "varShapes":[[2, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":1, "padding":"VALID", "data_format":"channels_last"},
         # {"opName":"max_pooling1d", "outName":"max_pooling1d/channels_last_b1_k2_s2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":2, "padding":"SAME", "data_format":"channels_last"},
 
-        #{"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_to_int32_nhwc", "varShapes":[[1, 2, 2, 5]], "varTypes":["int32"], "varInit":["uniform_int10"], "ksizes":[1,2,1,1],"strides":[1,1,2,1], "padding":"SAME", "data_format":"NHWC", "output_dtype":tf.int32},
-        #{"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/float32_to_int64", "varShapes": [[1, 2, 2, 5]], "varTypes": ["float32"], "varInit": ["uniform"], "ksizes": [1,2,1,1], "strides": [1,1,2,1], "padding": "SAME",  "data_format": "NHWC", "output_dtype": tf.int64},
-        #{"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/float64_to_int64", "varShapes": [[1, 2, 2, 5]], "varTypes": ["float64"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID", "data_format": "NHWC", "output_dtype": tf.int64},
-        #{"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/int32_to_int64", "varShapes": [[1, 2, 2, 5]], "varTypes": ["int32"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID","data_format": "NHWC", "output_dtype": tf.int64},
-        #{"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/int64_to_int32", "varShapes": [[1, 2, 2, 5]], "varTypes": ["int64"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID", "data_format": "NHWC", "output_dtype": tf.int32},
-        #{"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/bfloat16_to_int32", "varShapes": [[1, 2, 2, 5]], "varTypes": ["bfloat16"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID", "data_format": "NHWC", "output_dtype": tf.int32},
-        #{"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/half_to_int32", "varShapes": [[1, 2, 2, 5]], "varTypes": ["half"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,1,2], "padding": "VALID","data_format": "NHWC", "output_dtype": tf.int32},
+#         {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_to_int32_nhwc", "varShapes":[[1, 2, 2, 5]], "varTypes":["int32"], "varInit":["uniform_int10"], "ksizes":[1,2,1,1],"strides":[1,1,2,1], "padding":"SAME", "data_format":"NHWC", "output_dtype":tf.int32},
+#         {"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/float32_to_int64", "varShapes": [[1, 2, 2, 5]], "varTypes": ["float32"], "varInit": ["uniform"], "ksizes": [1,2,1,1], "strides": [1,1,2,1], "padding": "SAME",  "data_format": "NHWC", "output_dtype": tf.int64},
+#         {"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/float64_to_int64", "varShapes": [[1, 2, 2, 5]], "varTypes": ["float64"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID", "data_format": "NHWC", "output_dtype": tf.int64},
+#         {"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/int32_to_int64", "varShapes": [[1, 2, 2, 5]], "varTypes": ["int32"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID","data_format": "NHWC", "output_dtype": tf.int64},
+#         {"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/int64_to_int32", "varShapes": [[1, 2, 2, 5]], "varTypes": ["int64"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID", "data_format": "NHWC", "output_dtype": tf.int32},
+#         {"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/bfloat16_to_int32", "varShapes": [[1, 2, 2, 5]], "varTypes": ["bfloat16"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,2,1], "padding": "VALID", "data_format": "NHWC", "output_dtype": tf.int32},
+#         {"opName": "max_pool_with_argmax", "outName": "max_pool_with_argmax/half_to_int32", "varShapes": [[1, 2, 2, 5]], "varTypes": ["half"], "varInit": ["uniform"], "ksizes": [1, 2,1,1], "strides": [1, 1,1,2], "padding": "VALID","data_format": "NHWC", "output_dtype": tf.int32},
 
         #Default AvgPoolingOp only supports NHWC on device type CPU
         # {"opName":"avg_pooling1d", "outName":"avg_pooling1d/channels_first_b1_k2_s1_SAME", "varShapes":[[1, 2, 5]], "varTypes":["float32"], "pooling_size":2, "stride":1, "padding":"SAME", "data_format":"channels_first"},
@@ -439,30 +439,34 @@ def test_mathtransform():
         # {"opName":"avg_pooling1d", "outName":"avg_pooling1d/channels_last_b2_k2_s1_VALID", "varShapes":[[2, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":1, "padding":"VALID", "data_format":"channels_last"},
         # {"opName":"avg_pooling1d", "outName":"avg_pooling1d/channels_last_b1_k2_s2_SAME", "varShapes":[[1, 5, 2]], "varTypes":["float32"], "pooling_size":2, "stride":2, "padding":"SAME", "data_format":"channels_last"},
 
-        # {"opName":"dense", "outName":"dense/dense5", "varShapes":[[5,4]], "varTypes":["float32"], "units":5, "activation":None, "use_bias":True, "kernel_regularizer":None, "bias_regularizer":None},
-        # {"opName":"dense", "outName":"dense/dense5_sigmoid_nobias", "varShapes":[[5,4]], "varTypes":["float32"], "units":5, "activation":tf.nn.sigmoid, "use_bias":False, "kernel_regularizer":None, "bias_regularizer":None},
-        # {"opName":"dense", "outName":"dense/dense5_tanh_regularizer", "varShapes":[[5,4]], "varTypes":["float32"], "units":5, "activation":tf.nn.tanh, "use_bias":True, "kernel_regularizer":tf.contrib.layers.l2_regularizer(scale=0.1), "bias_regularizer":None},
-        # {"opName":"flatten", "outName":"flatten/rank2", "varShapes":[[3,4]], "varTypes":["float32"]},
-        # {"opName":"flatten", "outName":"flatten/rank3", "varShapes":[[2,3,4]], "varTypes":["float32"]},
-        # {"opName":"flatten", "outName":"flatten/rank4", "varShapes":[[2,3,2,4]], "varTypes":["float32"]},
-        # {"opName":"flatten", "outName":"flatten/rank5", "varShapes":[[2,3,2,4,2]], "varTypes":["float32"]},
+#         {"opName":"dense", "outName":"dense/dense5", "varShapes":[[5,4]], "varTypes":["float32"], "units":5, "activation":None, "use_bias":True, "kernel_regularizer":None, "bias_regularizer":None},
+#         {"opName":"dense", "outName":"dense/dense5_sigmoid_nobias", "varShapes":[[5,4]], "varTypes":["float32"], "units":5, "activation":tf.nn.sigmoid, "use_bias":False, "kernel_regularizer":None, "bias_regularizer":None},
+#         {"opName":"dense", "outName":"dense/dense5_tanh_regularizer", "varShapes":[[5,4]], "varTypes":["float32"], "units":5, "activation":tf.nn.tanh, "use_bias":True, "kernel_regularizer":tf.keras.regularizers.l2(l=0.1), "bias_regularizer":None},
+#         {"opName":"flatten", "outName":"flatten/rank2", "varShapes":[[3,4]], "varTypes":["float32"]},
+#         {"opName":"flatten", "outName":"flatten/rank3", "varShapes":[[2,3,4]], "varTypes":["float32"]},
+#         {"opName":"flatten", "outName":"flatten/rank4", "varShapes":[[2,3,2,4]], "varTypes":["float32"]},
+#         {"opName":"flatten", "outName":"flatten/rank5", "varShapes":[[2,3,2,4,2]], "varTypes":["float32"]},
 
         # NHWC format: kernel format is [kH,kW,cIn,cOut]
         #Also, strides and dilation are 4d for some reason, strides should be [1, sH, sW, 1]
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k3_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k2_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k2_s1_d2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC", "dilation":[1,2,2,1]},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k2_s1_d1_VALID", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b1_k2_s2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,2,2,1], "padding":"SAME", "data_format":"NHWC"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b1_k2_s1_d1_SAME", "varShapes":[[1, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k3_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d1_VALID", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NCHW"},
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b1_k2_s2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,2], "padding":"SAME", "data_format":"NCHW"},
+        {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+        {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k3_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+        {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k2_s1_d1_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+        {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k2_s1_d2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC", "dilation":[1,2,2,1]},
+        {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b2_k2_s1_d1_VALID", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
+        {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_b1_k2_s2_SAME", "varShapes":[[2, 5, 5, 2], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,2,2,1], "padding":"SAME", "data_format":"NHWC"},
 
-        # {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_35_35_32_b1_k3_s1_SAME", "varShapes":[[1, 35, 35, 3], [3, 3, 3, 192]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+#        The Conv2D op currently (tf 2.2.0 14/06/2020) only supports the NHWC tensor format on the CPU.
+
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b1_k2_s1_d1_SAME", "varShapes":[[1, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k3_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [3, 3, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d1_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW"},
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NCHW", "dilation":[1,1,2,2]},
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b2_k2_s1_d1_VALID", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"VALID", "data_format":"NCHW"},
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nchw_b1_k2_s2_SAME", "varShapes":[[2, 2, 5, 5], [2, 2, 2, 3]], "varTypes":["float32","float32"], "strides":[1,1,1,2], "padding":"SAME", "data_format":"NCHW"},
+
+#         {"opName":"nn_conv2d", "outName":"cnn2d_nn/nhwc_35_35_32_b1_k3_s1_SAME", "varShapes":[[1, 35, 35, 3], [3, 3, 3, 192]], "varTypes":["float32","float32"], "strides":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
 
         #Again, no channels_first on CPU
         # {"opName":"layers_conv2d", "outName":"cnn2d_layers/channels_last_b1_k2_s1_d1_SAME", "varShapes":[[1, 5, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":[2,2], "strides":[1,1], "padding":"SAME", "data_format":"channels_last", "dilation_rate":[1,1]},
@@ -497,7 +501,6 @@ def test_mathtransform():
         # {"opName":"layers_conv2d_transpose", "outName":"conv2d_transpose/channels_last_b1_k2_s1_SAME_crelu", "varShapes":[[1, 5, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":[2,2], "strides":[1,1], "padding":"SAME", "data_format":"channels_last", "activation":tf.nn.crelu},
         # {"opName":"layers_conv2d_transpose", "outName":"conv2d_transpose/channels_last_b2_k2_s1_SAME_regularizers", "varShapes":[[2, 5, 5, 2]], "varTypes":["float32","float32"], "filters":3, "kernel_size":[2,2], "strides":[1,1], "padding":"SAME", "data_format":"channels_last",
         #  "kernel_regularizer":tf.contrib.layers.l2_regularizer(scale=0.1), "bias_regularizer":tf.contrib.layers.l1_regularizer(scale=0.2), "activity_regularizer":tf.contrib.layers.l1_l2_regularizer(scale_l1=0.1,scale_l2=0.2)},
-        # {"opName":"Conv2DTranspose", "outName":"Conv2DTranspose", "varShapes":[[1, 5, 5, 2]], "varTypes":["float32","float32"], "kernel_size":[2,2], "filters":2},
 
         # Data format: ch_last: NDHWC, ch_first: NCDHW
         # "CPU implementation of Conv3D currently only supports the NHWC tensor format."
@@ -627,6 +630,7 @@ def test_mathtransform():
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank3_d05_train_mask2", "varShapes":[[4,5,6]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True, "noise_shape":[4,5,1]},
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank3_d05_test", "varShapes":[[4,5,6]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":False},
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank4_d05_train", "varShapes":[[2,5,5,3]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True},
+        # {"opName":"layers_dropout", "outName":"layers_dropout/rank4_d05_train_mask", "varShapes":[[2,5,5,3]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True, "noise_shape":[2,1,1,3]},
         # {"opName":"layers_dropout", "outName":"layers_dropout/rank4_d05_train_mask", "varShapes":[[2,5,5,3]], "varTypes":["float32"], "varInit":["uniform"], "rate":0.5, "training":True, "noise_shape":[2,1,1,3]},
 
         # {"opName":"contrib_nn_alpha_dropout", "outName":"alpha_dropout/rank2_p05", "varShapes":[[4,5]], "varTypes":["float32"], "varInit":["uniform"], "keep_prob":0.5},
@@ -1249,6 +1253,8 @@ def test_mathtransform():
 
         # {"opName": "ones_like", "outName": "ones_like/rank0", "varShapes":[[]], "varTypes":["float32"], "varInit":["uniform"]},
         # {"opName": "ones_like", "outName": "ones_like/rank2", "varShapes":[[2,2]], "varTypes":["float64"], "varInit":["uniform"]},
+        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank1", "varShapes":[[0]], "varTypes":["float32"], "varInit":["empty"]},
+        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank2", "varShapes":[[2,0]], "varTypes":["float64"], "varInit":["empty"]},
 
         # {"opName": "reverse", "outName": "reverse/rank1", "varShapes":[[3]], "varTypes":["float32"], "varInit":["uniform"], "axis":[0]},
         # {"opName": "reverse", "outName": "reverse/rank2_axis0", "varShapes":[[3,4]], "varTypes":["float32"], "varInit":["uniform"], "axis":[0]},
@@ -1373,9 +1379,6 @@ def test_mathtransform():
         # {"opName": "one", "outName": "emptyArrayTests/ones/ones_rank1", "varShapes":[[1]], "varTypes":["int32"], "varInit":["zero"], "dtype":tf.int32},
         # {"opName": "one", "outName": "emptyArrayTests/ones/ones_rank2", "varShapes":[[2]], "varTypes":["int32"], "varInit":["fixed_2_0"], "dtype":tf.float32},
         # {"opName": "one", "outName": "emptyArrayTests/ones/ones_rank3", "varShapes":[[3]], "varTypes":["int32"], "varInit":["fixed_0_0_3"], "dtype":tf.int64},
-
-        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank1", "varShapes":[[0]], "varTypes":["float32"], "varInit":["empty"]},
-        # {"opName": "ones_like", "outName": "emptyArrayTests/ones_like/rank2", "varShapes":[[2,0]], "varTypes":["float64"], "varInit":["empty"]},
 
         # {"opName": "range", "outName": "emptyArrayTests/range/0_0_1", "varShapes":[[],[],[]], "varTypes":["float32","float32","float32"], "varInit":["zero","zero","one"]},
         # {"opName": "range", "outName": "emptyArrayTests/range/2_2_2", "varShapes":[[],[],[]], "varTypes":["float32","float32","float32"], "varInit":["two","two","two"]},
@@ -2096,14 +2099,25 @@ def test_mathtransform():
         #{"opName": "log_softmax", "outName": "log_softmax/emptyArrayTest/partial_rank4_float64", "varShapes": [[0, 1, 0, 0]], "varTypes": ["float32"], "varInit": ["uniform"], "axis":0},
         # {"opName": "log_softmax", "outName": "log_softmax/partial_rank3_float64", "varShapes": [[1, 0, 0]], "varTypes": ["float64"], "varInit": ["uniform"],"axis":0},
 
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/float32", "varShapes": [[3, 4],[3],[]], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","zero"]},
-        #{"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/float32", "varShapes": [[3, 4], [3], []], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","uniform_int10"]},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/float16", "varShapes": [[3, 4], [3], []],"varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "uniform_int10"]},
-        #{"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/float16", "varShapes": [[3, 4], [3], []],"varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "uniform_int10"]},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/float32_with_thresholds", "varShapes": [[3, 4], [3], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.0, "score_threshold": 0.0},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.2, "score_threshold": 0.5},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float16_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
-        #{"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds",  "varShapes": [[0, 4], [0], []], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#         {"opName": "non_max_suppression", "outName": "non_max_suppression/float32", "varShapes": [[3, 4],[3],[]], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","zero"]},
+#         {"opName": "non_max_suppression", "outName": "non_max_suppression/float32_with_thresholds", "varShapes": [[3, 4], [3], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.0, "score_threshold": 0.0},
+#         {"opName": "non_max_suppression", "outName": "non_max_suppression/emptyArrayTest/float32_with_thresholds", "varShapes": [[0, 4], [0], []], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.2, "score_threshold": 0.5},
+
+#         {"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/float32", "varShapes": [[3, 4], [3], []], "varTypes": ["float32","float32","int32"], "varInit": ["uniform","uniform","uniform_int10"]},
+#         {"opName": "non_max_suppression_v2", "outName": "non_max_suppression_v2/half", "varShapes": [[3, 4], [3], []],"varTypes": ["half", "half", "int32"], "varInit": ["uniform", "uniform", "uniform_int10"]},
+#
+#         {"opName": "non_max_suppression_v3", "outName": "non_max_suppression_v3/float16_with_thresholds", "varShapes": [[3, 4],[3],[]], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
+#         {"opName": "non_max_suppression_v3", "outName": "non_max_suppression_v3/float32_with_thresholds",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#
+#         {"opName": "non_max_suppression_v4", "outName": "non_max_suppression_v4/float16_with_thresholds", "varShapes": [[3, 4],[3],[]], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
+#         {"opName": "non_max_suppression_v4", "outName": "non_max_suppression_v4/float32_with_thresholds",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#         {"opName": "non_max_suppression_v4", "outName": "non_max_suppression_v4/float32_with_thresholds_pad_to_max_output_size",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4, "pad_to_max_output_size":True},
+
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float16_with_thresholds", "varShapes": [[3, 4],[3],[]], "varTypes": ["float16", "float16", "int32"], "varInit": ["uniform", "uniform", "zero"], "iou_threshold": 0.5, "score_threshold": 0.5},
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float32_with_thresholds",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4},
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float32_with_thresholds_pad_to_max_output_size",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4, "pad_to_max_output_size":True},
+#         {"opName": "non_max_suppression_v5", "outName": "non_max_suppression_v5/float32_with_thresholds_soft_nms_sigma",  "varShapes": [[3, 4],[3],[]], "varTypes": ["float32", "float32", "int32"], "varInit": ["uniform", "uniform", "one"], "iou_threshold": 0.4, "score_threshold": 0.4, "soft_nms_sigma":0.3},
+
 
         # {"opName": "betainc", "outName": "betainc/rank1_float32", "varShapes":[[4],[4],[4]], "varTypes":["float32","float32","float32"], "varInit":["uniform_0_1","uniform_0_1","uniform_0_1"]},
         # {"opName": "betainc", "outName": "betainc/rank2_float32", "varShapes": [[3,4],[3,4],[3,4]], "varTypes": ["float32","float32","float32"], "varInit": ["uniform_0_1","uniform_0_1","uniform_0_1"]},
@@ -2217,28 +2231,28 @@ def test_mathtransform():
          #{"opName": "yiq_to_rgb", "outName": "yiq_to_rgb/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"],  "varInit": ["uniform"]},
          #{"opName": "yiq_to_rgb", "outName": "yiq_to_rgb/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],  "varInit": ["uniform"]},
          #{"opName": "yiq_to_rgb", "outName": "yiq_to_rgb/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
-         #{"opName": "yiq_to_rgb", "outName": "yiq_to_rgb/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+         #{"opName": "yiq_to_rgb", "outName": "yiq_to_rgb/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform"]},
 
          #{"opName": "rgb_to_yiq", "outName": "rgb_to_yiq/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"], "varInit": ["uniform"]},
          #{"opName": "rgb_to_yiq", "outName": "rgb_to_yiq/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],    "varInit": ["uniform"]},
          #{"opName": "rgb_to_yiq", "outName": "rgb_to_yiq/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
-         #{"opName": "rgb_to_yiq", "outName": "rgb_to_yiq/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+         #{"opName": "rgb_to_yiq", "outName": "rgb_to_yiq/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform"]},
 
         #{"opName": "rgb_to_grayscale", "outName": "rgb_to_grayscale/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"],  "varInit": ["uniform"]},
         #{"opName": "rgb_to_grayscale", "outName": "rgb_to_grayscale/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],  "varInit": ["uniform"]},
         #{"opName": "rgb_to_grayscale", "outName": "rgb_to_grayscale/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"], "varInit": ["empty"]},
-        #{"opName": "rgb_to_grayscale", "outName": "rgb_to_grayscale/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+        #{"opName": "rgb_to_grayscale", "outName": "rgb_to_grayscale/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform"]},
 
         # {"opName": "yuv_to_rgb", "outName": "yuv_to_rgb/float32_1", "varShapes": [[1, 1, 3]], "varTypes": ["float32"], "varInit": ["uniform"]},
         # {"opName": "yuv_to_rgb", "outName": "yuv_to_rgb/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"],  "varInit": ["uniform"]},
         # {"opName": "yuv_to_rgb", "outName": "yuv_to_rgb/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],  "varInit": ["uniform"]},
         # {"opName": "yuv_to_rgb", "outName": "yuv_to_rgb/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
-        # {"opName": "yuv_to_rgb", "outName": "yuv_to_rgb/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+        # {"opName": "yuv_to_rgb", "outName": "yuv_to_rgb/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform"]},
 
          #{"opName": "rgb_to_yuv", "outName": "rgb_to_yuv/float32", "varShapes": [[1, 2, 3]], "varTypes": ["float32"], "varInit": ["uniform"]},
          #{"opName": "rgb_to_yuv", "outName": "rgb_to_yuv/float64", "varShapes": [[2, 4, 3]], "varTypes": ["float64"],    "varInit": ["uniform"]},
          #{"opName": "rgb_to_yuv", "outName": "rgb_to_yuv/emptyArrayTest/float64", "varShapes": [[0, 4, 3]], "varTypes": ["float64"],   "varInit": ["empty"]},
-         #{"opName": "rgb_to_yuv", "outName": "rgb_to_yuv/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform_0_1"]},
+         #{"opName": "rgb_to_yuv", "outName": "rgb_to_yuv/float64_from0_to1", "varShapes": [[5, 4, 3]], "varTypes": ["float64"], "varInit": ["uniform"]},
 
         #{"opName": "lu", "outName": "lu/float32_rank2", "varShapes": [[3,3]], "varTypes": ["float32"], "varInit": ["uniform"]},
         #{"opName": "lu", "outName": "lu/float32_rank3", "varShapes": [[2,2,2]], "varTypes": ["float32"], "varInit": ["uniform"]},
@@ -2260,7 +2274,200 @@ def test_mathtransform():
         #{"opName": "linear_solve", "outName": "linear_solve/float64_rank3", "varShapes": [[2, 2, 2], [2, 2, 2]],  "varTypes": ["float64", "float64"], "varInit": ["uniform", "uniform"],  "adjoint": False},
         #{"opName": "linear_solve", "outName": "linear_solve/emptyArrayTest/float32",  "varShapes": [[0, 2, 2], [0, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["empty", "empty"], "adjoint": True},
         #{"opName": "linear_solve", "outName": "linear_solve/float32_rank3_returns_int64", "varShapes": [[2, 2, 2], [2, 2, 2]], "varTypes": ["float32", "float32"], "varInit": ["uniform", "uniform"], "adjoint": True}
-     ]
+
+
+
+
+        #  --- Ops with TF Mapping but No TF Import Tests ---
+
+
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_3channels", "varShapes": [[16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":0},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_2_channels", "varShapes": [[16,16,2]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":1},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_1_channel", "varShapes": [[16,16,1]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2.5},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float64_rank3_3_channels", "varShapes": [[16,16,3]], "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float64_rank3_2_channels", "varShapes": [[16,16,2]], "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank3_1_channel", "varShapes": [[16,16,1]], "varTypes": ["float64"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank4_1_batch", "varShapes": [[1,16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2},
+#          {"opName": "adjust_contrast", "outName": "adjust_contrast/float32_rank4_2_batch", "varShapes": [[2,16,16,3]], "varTypes": ["float32"], "varInit": ["uniform"], "contrast_factor":2},
+
+
+
+#          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/bool", "varShapes": [[8]], "varTypes": ["bool"], "varInit": ["boolean"], "threshold":True,},
+#          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/half", "varShapes": [[8]], "varTypes": ["half"], "varInit": ["uniform"], "threshold":0.,},
+#          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/float32", "varShapes": [[8]], "varTypes": ["float32"], "varInit": ["uniform"], "threshold":2.5,},
+#         {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/float64", "varShapes": [[8]], "varTypes": ["float64"], "varInit": ["uniform_int2"], "threshold":0.5,},
+#          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/int16", "varShapes": [[8]], "varTypes": ["int16"], "varInit": ["one"], "threshold":0,},
+#          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/int32", "varShapes": [[8]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "threshold":2,},
+#          {"opName": "compare_and_bitpack", "outName": "compare_and_bitpack/int64", "varShapes": [[16]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "threshold":1,},
+
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NDHWC_SAME_float32", "varShapes":[[1, 8, 8, 8, 6],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 16, 16, 16, 3], "strides":[1,2,2,2,1], "padding":"SAME", "dilations":[1, 1, 1, 1, 1], "data_format":"NDHWC"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NDHWC_VALID_float32", "varShapes":[[1, 8, 8, 8, 6],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 16, 16, 16, 3], "strides":[1,2,2,2,1], "padding":"VALID", "dilations":[1, 1, 1, 1, 1], "data_format":"NDHWC"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NDHWC_VALID_half", "varShapes":[[1, 8, 8, 8, 6],[2, 2, 2, 3, 6]], "varTypes":["half","half"], "varInit": ["uniform","uniform"], "input_sizes":[1, 16, 16, 16, 3], "strides":[1,2,2,2,1], "padding":"VALID", "dilations":[1, 1, 1, 1, 1], "data_format":"NDHWC"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NCDHW_VALID_float32", "varShapes":[[1, 6, 8, 8, 8],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 3, 16, 16, 16], "strides":[1,1,2,2,2], "padding":"VALID", "dilations":[1, 1, 1, 1, 1], "data_format":"NCDHW"},
+#           {"opName":"Conv3DBackpropInputV2", "outName":"Conv3DBackpropInputV2/NCDHW_SAME_float32", "varShapes":[[1, 6, 8, 8, 8],[2, 2, 2, 3, 6]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"], "input_sizes":[1, 3, 16, 16, 16], "strides":[1,1,2,2,2], "padding":"SAME", "dilations":[1, 1, 1, 1, 1], "data_format":"NCDHW"},
+
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1111_SAME", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":[1,1,1,1], "padding":"SAME", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1111_VALID", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1111_VALID", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":[1,1,1,1], "padding":"VALID", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1_VALID", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":1, "padding":"VALID", "data_format":"NHWC"},
+#            {"opName":"conv2d_transpose", "outName":"conv2d_transpose/nhwc_s1221_d1_SAME", "varShapes":[[1, 16, 16, 3], [2, 2, 6, 3]], "varTypes":["float32","float32"], "varInit": ["uniform", "uniform"], "output_shape":[1, 32, 32, 6], "strides":[1,2,2,1], "dilations":1, "padding":"SAME", "data_format":"NHWC"},
+
+# Only for TF 2.X
+#           {"opName":"copy", "outName":"Copy/float32", "varShapes":[[1,  3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
+#           {"opName":"copy", "outName":"Copy/float64", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"] },
+#           {"opName":"copy", "outName":"Copy/half", "varShapes":[[1, 3, 3, 2]], "varTypes":["half"], "varInit": ["uniform"] },
+#           {"opName":"copy", "outName":"Copy/int8", "varShapes":[[1,  3, 3, 2]], "varTypes":["int8"], "varInit": ["zero"] },
+#           {"opName":"copy", "outName":"Copy/int16", "varShapes":[[1,  3, 3, 2]], "varTypes":["int16"], "varInit": ["one"] },
+#           {"opName":"copy", "outName":"Copy/int32", "varShapes":[[1,  3, 3, 2]], "varTypes":["int32"], "varInit": ["uniform_int10"] },
+#           {"opName":"copy", "outName":"Copy/int64", "varShapes":[[1,3, 2]], "varTypes":["int64"], "varInit": ["uniform_int10"] },
+
+# Only for TF 2.X
+#           {"opName":"copy_host", "outName":"copy_host/float32", "varShapes":[[1,  3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
+#           {"opName":"copy_host", "outName":"copy_host/float64", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"] },
+#           {"opName":"copy_host", "outName":"copy_host/half", "varShapes":[[1, 3, 3, 2]], "varTypes":["half"], "varInit": ["uniform"] },
+#           {"opName":"copy_host", "outName":"copy_host/int8", "varShapes":[[1,  3, 3, 2]], "varTypes":["int8"], "varInit": ["zero"] },
+#           {"opName":"copy_host", "outName":"copy_host/int16", "varShapes":[[1,  3, 3, 2]], "varTypes":["int16"], "varInit": ["one"] },
+#           {"opName":"copy_host", "outName":"copy_host/int32", "varShapes":[[1,  3, 3, 2]], "varTypes":["int32"], "varInit": ["uniform_int10"] },
+#           {"opName":"copy_host", "outName":"copy_host/int64", "varShapes":[[1,3, 2]], "varTypes":["int64"], "varInit": ["uniform_int10"] },
+
+
+
+#          {"opName":"deep_copy", "outName":"DeepCopy/float32", "varShapes":[[1,  3, 2]], "varTypes":["float32"], "varInit": ["uniform"] },
+#          {"opName":"deep_copy", "outName":"DeepCopy/float64", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"] },
+#          {"opName":"deep_copy", "outName":"DeepCopy/half", "varShapes":[[1, 3, 3, 2]], "varTypes":["half"], "varInit": ["uniform"] },
+#          {"opName":"deep_copy", "outName":"DeepCopy/int8", "varShapes":[[1,  3, 3, 2]], "varTypes":["int8"], "varInit": ["zero"] },
+#          {"opName":"deep_copy", "outName":"DeepCopy/int16", "varShapes":[[1,  3, 3, 2]], "varTypes":["int16"], "varInit": ["one"] },
+#          {"opName":"deep_copy", "outName":"DeepCopy/int32", "varShapes":[[1,  3, 3, 2]], "varTypes":["int32"], "varInit": ["uniform_int10"] },
+#          {"opName":"deep_copy", "outName":"DeepCopy/int64", "varShapes":[[1,3, 2]], "varTypes":["int64"], "varInit": ["uniform_int10"] },
+
+#          {"opName":"div", "outName":"div/float32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
+#          {"opName":"div", "outName":"div/float32", "varShapes":[[3,4],[3,1]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
+#          {"opName":"div", "outName":"div/float64", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float64","float64"], "varInit": ["uniform","uniform"]},
+#          {"opName":"div", "outName":"div/int8", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int8","int8"], "varInit": ["one","one"]},
+#          {"opName":"div", "outName":"div/int16", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int16","int16"], "varInit": ["one","one"]},
+#          {"opName":"div", "outName":"div/int32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int32","int32"], "varInit": ["one","one"]},
+
+#          {"opName":"dropout", "outName":"dropout/float32_rate_02_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"], "rate":0.2, "seed": 123 },
+#          {"opName":"dropout", "outName":"dropout/float64_rate_02_seed_123_noise_shape_None", "varShapes":[[1, 3, 4, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.2, "seed": 123},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_02_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.2, "seed": 123},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_01_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.1},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_06_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.6},
+#          {"opName":"dropout", "outName":"dropout/float64_rate_03_seed_123_noise_shape_None", "varShapes":[[1, 3, 3, 3, 2]], "varTypes":["float64"], "varInit": ["uniform"], "rate":0.3, "noise_shape": [1, 1, 1, 1, 2] },
+#          {"opName":"dropout", "outName":"dropout/float32_rate_02_seed_123_noise_shape_None", "varShapes":[[ 2, 3, 3, 2]], "varTypes":["float32"], "varInit": ["uniform"], "rate":0.2, "noise_shape": [2, 1, 1, 2] },
+
+# TRY half, int16/32 on non CPU device
+#          {"opName":"empty", "outName":"empty/shape_5_float32", "varShapes":[[5]], "varTypes":["int32"], "varInit": ["uniform_int10"], "dtype":tf.float32},
+#          {"opName":"empty", "outName":"empty/shape_5_float64", "varShapes":[[4]], "varTypes":["int32"], "varInit": ["uniform_int10"], "dtype":tf.float64},
+#          {"opName":"empty", "outName":"empty/shape_5_uint8", "varShapes":[[4]], "varTypes":["int32"], "varInit": ["uniform_int10"], "dtype":tf.uint8},
+#          {"opName":"empty", "outName":"empty/shape_5_uint16", "varShapes":[[4]], "varTypes":["int32"], "varInit": ["uniform_int10"], "dtype":tf.uint16},
+
+
+
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/float32", "varShapes":[[1, 2, 3]], "varTypes":["float32"], "varInit": ["uniform"]},
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/float64", "varShapes":[[1, 2]], "varTypes":["float64"], "varInit": ["uniform"]},
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/int16", "varShapes":[[1, 3]], "varTypes":["int16"], "varInit": ["one"]},
+#          {"opName":"is_non_decreasing", "outName":"is_non_decreasing/int32", "varShapes":[[2, 3]], "varTypes":["int16"], "varInit": ["zero"]},
+
+
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank2_a0", "varShapes":[[4, 5]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.0},
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank4_a05", "varShapes":[[4, 5]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.5},
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank4_a0", "varShapes":[[4, 5, 5, 1]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.0},
+#         {"opName":"leaky_relu", "outName":"leaky_relu/rank4_a02", "varShapes":[[4, 5, 5, 1]], "varTypes":["float32"], "varInit":["stdnormal"], "alpha":0.2},
+
+
+#          {"opName": "lgamma", "outName": "lgamma/float32", "varShapes": [[3, 4]], "varTypes": ["float32"], "varInit": ["uniform"]},
+#        {"opName": "lgamma", "outName": "lgamma/float64", "varShapes": [[3, 4]], "varTypes": ["float64"], "varInit": ["uniform"]},
+#         {"opName": "lgamma", "outName": "lgamma/emptyArrayTest/float32", "varShapes": [[0, 0]], "varTypes": ["float32"], "varInit": ["empty"]},
+
+
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float64"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int32"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/int64_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["int64"], "varInit": ["uniform_int10"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_SAME", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float32_int64_padding_VALID", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"VALID"  ,"include_batch_in_index": True, "output_dtype": tf.int64},
+#
+# {"opName":"max_pool_with_argmax", "outName":"max_pool_with_argmax/float64_int64_padding_VALID_includeBatch_false", "varShapes":[[1, 16, 16 ,3]], "varTypes":["float32"], "varInit": ["uniform"], "ksizes": [1,1,1,1],
+#                                 "strides": [1,1,1,1],   "padding":"SAME" ,"include_batch_in_index": False, "output_dtype": tf.int64},
+
+
+
+
+
+#           {"opName":"mod", "outName":"mod/float32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
+#           {"opName":"mod", "outName":"mod/float32", "varShapes":[[3, 4],[3, 1]], "varTypes":["float32","float32"], "varInit": ["uniform","uniform"]},
+#           {"opName":"mod", "outName":"mod/float64", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["float64","float64"], "varInit": ["uniform","uniform"]},
+#           {"opName":"mod", "outName":"mod/int16", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int32","int32"], "varInit": ["one","one"]},
+#           {"opName":"mod", "outName":"mod/int32", "varShapes":[[1, 2, 3],[1, 2, 3]], "varTypes":["int64","int64"], "varInit": ["one","one"]},
+
+#           mish https://www.tensorflow.org/addons/api_docs/python/tfa/activations/mish
+#             is accesible only in addon and only for TF2
+#
+
+#          {"opName": "random_crop", "outName": "random_crop/rank3_float32", "varShapes": [[8, 8, 3], [3]],   "varTypes": ["float32", "int32"], "varInit": ["stdnormal", "uniform_int2"]},
+#          {"opName": "random_crop", "outName": "random_crop/rank3_float64", "varShapes": [[8, 8, 3], [3]],   "varTypes": ["float64", "int32"], "varInit": ["stdnormal", "uniform_int2"]},
+#          {"opName": "random_crop", "outName": "random_crop/rank3_half", "varShapes": [[8, 8, 3], [3]],   "varTypes": ["half", "int32"], "varInit": ["stdnormal", "uniform_int2"]},
+#
+#
+#        {"opName": "random_gamma", "outName": "random_gamma/rank4_float32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":1, "alpha":[0.5, 1.5], "dtype":tf.float32},
+#        {"opName": "random_gamma", "outName": "random_gamma/rank3_float64", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":12, "alpha":[1.5, 2.5],  "beta":[0.5, 1.5], "dtype":tf.float64},
+#         {"opName": "random_gamma", "outName": "random_gamma/rank3_half", "varShapes": [[6]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":123, "alpha":[1.5, 2.5],  "beta":[0.5, 1.5], "dtype":tf.half},
+#
+#
+#         {"opName": "random_poisson", "outName": "random_poisson/rank1_float16", "varShapes": [[4], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "lam":[0.5, 2.5],"dtype":tf.float16},
+#         {"opName": "random_poisson", "outName": "random_poisson/rank1_float32", "varShapes": [[4], [2]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "lam":[0.5, 1.5],"dtype":tf.float32},
+#         {"opName": "random_poisson", "outName": "random_poisson/rank1_float64", "varShapes": [[3], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "lam":[0.8, 1.5],"dtype":tf.float64},
+#         {"opName": "random_poisson", "outName": "random_poisson/rank1_half", "varShapes": [[2], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "lam":[0.5, 3],"dtype":tf.half},
+#         {"opName": "random_poisson", "outName": "random_poisson/rank1_half", "varShapes": [[2], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "lam":[0.5, 3],"dtype":tf.half},
+#         {"opName": "random_poisson", "outName": "random_poisson/rank1_half", "varShapes": [[4], [1]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "seed":123, "lam":[0.5, 1.5],"dtype":tf.half},
+#
+#         {"opName": "random_poisson_v2", "outName": "random_poisson_v2/rank1_float16", "varShapes": [[4], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"] ,"dtype":tf.float16},
+#         {"opName": "random_poisson_v2", "outName": "random_poisson_v2/rank1_float32", "varShapes": [[4], [2]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "dtype":tf.float32},
+#         {"opName": "random_poisson_v2", "outName": "random_poisson_v2/rank1_float64", "varShapes": [[3], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"],"dtype":tf.float64},
+#         {"opName": "random_poisson_v2", "outName": "random_poisson_v2/rank1_half", "varShapes": [[2], [4]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"],"seed":12 ,"dtype":tf.half},
+#         {"opName": "random_poisson_v2", "outName": "random_poisson_v2/rank1_half", "varShapes": [[4], [1]], "varTypes": ["int32", "float32"], "varInit": ["uniform_int10", "uniform"], "seed":123, "seed":42,"dtype":tf.half},
+#
+#          {"opName": "random_shuffle", "outName": "random_shuffle/rank1_float32", "varShapes": [[4]], "varTypes": ["float32"], "varInit": ["uniform"], "seed":42},
+#          {"opName": "random_shuffle", "outName": "random_shuffle/rank2_float32", "varShapes": [[4,4]], "varTypes": ["float32"], "varInit": ["uniform"], "seed":1345},
+#          {"opName": "random_shuffle", "outName": "random_shuffle/rank3_float32", "varShapes": [[1,2,3]], "varTypes": ["float32"], "varInit": ["uniform"], "seed":1235},
+#          {"opName": "random_shuffle", "outName": "random_shuffle/rank1_float64", "varShapes": [[4]], "varTypes": ["float64"], "varInit": ["uniform"]},
+#          {"opName": "random_shuffle", "outName": "random_shuffle/rank1_int32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "seed":1245},
+#
+#           {"opName": "random_normal", "outName": "random_normal/rank4_float32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "mean": 0., "stddev":1.0, "seed":12345, "dtype":tf.float32},
+#           {"opName": "random_normal", "outName": "random_normal/rank3_float64", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "mean": 0., "stddev":1.0, "seed":12345, "dtype":tf.float64},
+#           {"opName": "random_normal", "outName": "random_normal/rank2_half", "varShapes": [[2]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "mean": 0., "stddev":1.0, "seed":12345, "dtype":tf.half},
+#
+#            {"opName": "random_uniform_int", "outName": "random_uniform_int/rank1_int32", "varShapes": [[4]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345, },
+#             {"opName": "random_uniform_int", "outName": "random_uniform_int/rank3_int64", "varShapes": [[3]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "maxval": 10, "minval":1, "seed":12345},
+#             {"opName": "random_uniform", "outName": "random_uniform/rank3_float32", "varShapes": [[3]], "varTypes": ["int32"], "varInit": ["uniform_int10"], "dtype":tf.float32, "seed":12345},
+#             {"opName": "random_uniform", "outName": "random_uniform/rank3_float64", "varShapes": [[3]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "dtype":tf.float64, "seed2":1, "seed":12345},
+#             {"opName": "random_uniform", "outName": "random_uniform/rank3_half", "varShapes": [[3]], "varTypes": ["int64"], "varInit": ["uniform_int10"], "dtype":tf.half, "seed2":1, "seed":12345},
+
+#         {"opName": "zeros_like_tf1", "outName": "emptyArrayTests/zeros_like_tf1/rank1", "varShapes":[[0]], "varTypes":["float32"], "varInit":["empty"]},
+#         {"opName": "zeros_like_tf1", "outName": "emptyArrayTests/zeros_like_tf1/rank2", "varShapes":[[2,0]], "varTypes":["float64"], "varInit":["empty"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float16", "varShapes": [[3, 12]],"varTypes": ["float16"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float64", "varShapes": [[3, 12]], "varTypes": ["float64"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_int32", "varShapes": [[3, 10]], "varTypes": ["int32"], "varInit": ["uniform_int10"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_int64", "varShapes": [[3, 10]], "varTypes": ["int64"], "varInit": ["uniform_int10"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int8", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"] },
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int16", "varShapes": [[3, 12]],"varTypes": ["float32"], "varInit": ["uniform"] },
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_int32", "varShapes": [[3, 12]], "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float16", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float32", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"]},
+#         {"opName": "zeros_like_tf1", "outName": "zeros_like_tf1/rank2_float32_dtype_float64", "varShapes": [[3, 12]],  "varTypes": ["float32"], "varInit": ["uniform"]},
+
+    ]
 
     '''
     Ops requiring tests: (note that some of these might not support 0 shapes)
@@ -2293,7 +2500,7 @@ def test_mathtransform():
     *split (doesn't support num_or_size_splits=0?)
     tile
     unique
-    
+
     tf.linalg:
     det
     diag
@@ -2303,7 +2510,7 @@ def test_mathtransform():
     tensor_diag
     tensor_diag_part
     trace
-    
+
     tf.math:
     angle
     atan2

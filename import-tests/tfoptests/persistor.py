@@ -20,7 +20,11 @@ if isApiV2:
     BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples' + tf.version.VERSION
 else:
     BASE_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
-SRC_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
+
+if isApiV2:
+    SRC_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples' + tf.version.VERSION
+else:
+    SRC_DIR = os.environ['DL4J_TEST_RESOURCES'] + '/src/main/resources/tf_graphs/examples'
 
 class TensorFlowPersistor:
     '''

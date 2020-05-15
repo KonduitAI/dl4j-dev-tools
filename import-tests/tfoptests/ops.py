@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+isApiV2 = tf.version.VERSION.startswith("2.")
 
 class OpCreator:
     def __init__(self, op):
@@ -66,7 +67,7 @@ class OpCreator:
         return [tf.math.segment_sum(data=self.vars[0], segment_ids=self.vars[1])]
 
     def execute_space_to_batch(self):
-        return [tf.space_to_batch(input=self.vars[0], paddings=self.vars[1], block_shape=2)]
+        return [tf.space_to_batch(input=self.vars[0], paddings=self.vars[1], block_shape=[2,2])]
 
     def execute_space_to_depth(self):
         return [tf.compat.v1.space_to_depth(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
@@ -78,8 +79,9 @@ class OpCreator:
         return [tf.compat.v1.depth_to_space(input=self.vars[0], block_size=2, data_format=self.op["data_format"])]
 
     def execute_size(self):
-        temp = tf.add(self.vars[0], 1.0)
-        return [tf.add(tf.size(input=temp), 1)]
+        return [tf.raw_ops.Size(
+                    input = self.vars[0], out_type=tf.dtypes.int32, name=None
+                )]
 
     def execute_shape(self):
         temp = tf.add(self.vars[0], 1.0)
@@ -94,6 +96,12 @@ class OpCreator:
         return [tf.linalg.inv(input=self.vars[0])]
 
     def execute_pad(self):
+        if isApiV2:
+            if(len(self.vars) > 2):
+                return [tf.raw_ops.PadV2( input = self.vars[0] , paddings = self.vars[1], constant_values = self.vars[2])]
+            else:
+                return [tf.raw_ops.Pad( input = self.vars[0] , paddings = self.vars[1])]
+
         if(len(self.vars) > 2):
             return [tf.pad(tensor=self.vars[0], paddings=self.vars[1], constant_values=self.vars[2], mode = self.op["mode"])]
         else:
@@ -222,7 +230,7 @@ class OpCreator:
             weights = self.vars[2]
         r = self.op.get("reduction", tf.compat.v1.losses.Reduction.SUM_BY_NONZERO_WEIGHTS)
 
-        return [tf.compat.v1.losses.cosine_distance(labels=self.vars[0], predictions=self.vars[1], weights=weights, axis=self.op["axis"], reduction=r)]
+        return [tf.compat.v1.losses.cosine_distance(labels=self.vars[0], predictions=self.vars[1], weights=weights, axis=self.op.get("axis", 0), reduction=r)]
 
     def execute_hinge_loss(self):
         weights = 1.0
@@ -301,8 +309,22 @@ class OpCreator:
         return [tf.compat.v1.layers.average_pooling1d(inputs=self.vars[0], pool_size=self.op["pooling_size"], strides=self.op["stride"], padding=self.op["padding"], data_format=self.op["data_format"])]
 
     def execute_max_pool_with_argmax(self):
-        return [tf.nn.max_pool_with_argmax(input = self.vars[0], ksize = self.op["ksizes"], strides = self.op["strides"],\
-                                           padding = self.op["padding"],  data_format = self.op["data_format"], output_dtype = self.op["output_dtype"])]
+        if isApiV2:
+            return tf.raw_ops.MaxPoolWithArgmax(input =  self.vars[0],
+                                                         ksize = self.op["ksizes"],
+                                                         strides = self.op["strides"],
+                                                         padding = self.op["padding"],
+                                                         Targmax= tf.int64,
+                                                         include_batch_in_index= self.op.get("include_batch_in_index", False)
+                                                         )
+
+        return tf.raw_ops.MaxPoolWithArgmax(input =  self.vars[0],
+                                             ksize = self.op["ksizes"],
+                                             strides = self.op["strides"],
+                                             padding = self.op["padding"],
+                                             Targmax= self.op["output_dtype"],
+                                             include_batch_in_index= self.op.get("include_batch_in_index", False)
+                                             )
 
     def execute_dense(self):
         kr = self.op.get("kernel_regularizer",None)
@@ -345,6 +367,18 @@ class OpCreator:
                                  activation=self.op.get("activation",None), kernel_regularizer=self.op.get("kernel_regularizer",None),
                                  bias_regularizer=self.op.get("bias_regularizer",None), activity_regularizer=self.op.get("activity_regularizer",None),
                                  kernel_constraint=self.op.get("kernel_constraint",None), bias_constraint=self.op.get("bias_constraint",None))]
+
+    def execute_conv2d_transpose(self):
+        return [ tf.nn.conv2d_transpose(input = self.vars[0],
+                                         filter = self.vars[1],
+                                         output_shape = self.op["output_shape"],
+                                         strides = self.op["strides"],
+                                         dilations = self.op["dilations"],
+                                         data_format = self.op["data_format"],
+                                         padding = self.op["padding"])]
+
+
+
 
 
     def execute_layers_conv3d(self):
@@ -1055,13 +1089,16 @@ class OpCreator:
         return [tf.ones(shape=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_ones_like(self):
-        return [tf.ones_like(input=self.vars[0])]
+        return [tf.raw_ops.OnesLike(x = self.vars[0])]
 
     def execute_zeros(self):
         return [tf.zeros(shape=self.vars[0], dtype=self.op["dtype"])]
 
     def execute_zeros_like(self):
         return [tf.zeros_like(input=self.vars[0], dtype=self.op["dtype"])]
+
+    def execute_zeros_like_tf1(self):
+        return [tf.raw_ops.ZerosLike(x=self.vars[0])]
 
     def execute_range(self):
         return [tf.range(start=self.vars[0], limit=self.vars[1], delta=self.vars[2])]
@@ -1305,7 +1342,8 @@ class OpCreator:
                                          method = self.op["method"], extrapolation_value = self.op["ext_value"])]
 
     def execute_random_crop(self):
-        return [tf.image.random_crop(self.vars[0], self.vars[1])]
+#         return [tf.image.random_crop(self.vars[0], self.vars[1])]
+        return [tf.raw_ops.RandomCrop(image = self.vars[0], size = self.vars[1])]
 
     def execute_draw_bounding_boxes(self):
         return [tf.image.draw_bounding_boxes(images = self.vars[0], boxes = self.vars[1], colors = self.vars[2])]
@@ -1323,26 +1361,58 @@ class OpCreator:
                                         half_pixel_centers=self.op["half_pixel_centers"])]
 
     def execute_resize_area(self):
-        return [tf.image.resize(images=self.vars[0], size=self.vars[1], \
-                                        method=tf.image.ResizeMethod.AREA)]
+        return [tf.raw_ops.ResizeArea(
+                    images = self.vars[0], size = self.vars[1], align_corners=self.op.get("align_corners", False) )]
 
     def execute_non_max_suppression(self):
-        iou_threshold = 0.5
-        score_threshold = 0.5
-        if("iou_threshold" in self.op):
-            iou_threshold = self.op["iou_threshold"]
-        if("score_threshold" in self.op):
-            score_threshold = self.op["score_threshold"]
+        return [tf.raw_ops.NonMaxSuppression(
+                                          boxes = self.vars[0],
+                                          scores = self.vars[1],
+                                          max_output_size = self.vars[2],
+                                          iou_threshold  = self.op.get("iou_threshold", 0.5),
 
-        return [tf.image.non_max_suppression(boxes =
-                                             self.vars[0], scores = self.vars[1], max_output_size = self.vars[2],
-                                             iou_threshold=iou_threshold, score_threshold=score_threshold)]
+                                      )]
 
     def execute_non_max_suppression_v2(self):
-        return [tf.image.non_max_suppression(self.vars[0], self.vars[1], self.vars[2])]
+        return [tf.raw_ops.NonMaxSuppressionV2(
+                                       boxes = self.vars[0],
+                                       scores = self.vars[1],
+                                       max_output_size = self.vars[2],
+                                       iou_threshold  = self.op.get("iou_threshold", 0.5),
 
+                                   )]
+
+    def execute_non_max_suppression_v3(self):
+            return [tf.raw_ops.NonMaxSuppressionV3(
+                        boxes = self.vars[0],
+                        scores = self.vars[1],
+                        max_output_size = self.vars[2],
+                        iou_threshold  = self.op.get("iou_threshold", 0.5),
+                        score_threshold = self.op.get("score_threshold", 0.5)
+                    )]
+
+    def execute_non_max_suppression_v4(self):
+            return tf.raw_ops.NonMaxSuppressionV4(
+                        boxes = self.vars[0],
+                        scores = self.vars[1],
+                        max_output_size = self.vars[2],
+                        iou_threshold  = self.op.get("iou_threshold", 0.5),
+                        score_threshold = self.op.get("score_threshold", 0.5),
+                        pad_to_max_output_size=self.op.get("pad_to_max_output_size", False),
+                    )
+
+    def execute_non_max_suppression_v5(self):
+            return tf.raw_ops.NonMaxSuppressionV5(
+                        boxes = self.vars[0],
+                        scores = self.vars[1],
+                        max_output_size = self.vars[2],
+                        iou_threshold  = self.op.get("iou_threshold", 0.5),
+                        score_threshold = self.op.get("score_threshold", 0.5),
+                        soft_nms_sigma = self.op.get("soft_nms_sigma", 0.0),
+                        pad_to_max_output_size=self.op.get("pad_to_max_output_size", False),
+                    )
     def execute_dropout(self):
-        return [tf.nn.dropout(x = self.vars[0], rate = 0.25)]
+        return [tf.nn.dropout(x = self.vars[0], rate = self.op["rate"], seed = self.op.get("seed", None), noise_shape = self.op.get("noise_shape", None))]
 
     def execute_is_non_decreasing(self):
         return [tf.math.is_non_decreasing(x = self.vars[0])]
@@ -1363,7 +1433,7 @@ class OpCreator:
         return [tf.math.minimum(self.vars[0], self.vars[1])]
 
     def execute_mod(self):
-        return [tf.math.mod(self.vars[0], self.vars[1])]
+        return [tf.raw_ops.Mod(x = self.vars[0], y = self.vars[1])]
 
     def execute_mul(self):
         return [tf.math.mul(self.vars[0], self.vars[1])]
@@ -1404,3 +1474,90 @@ class OpCreator:
 
     def execute_lstsq(self):
         return [tf.linalg.lstsq(self.vars[0], self.vars[1], l2_regularizer = self.op["l2_regularizer"], fast = self.op["fast"])]
+
+    def execute_compare_and_bitpack(self):
+        return [tf.raw_ops.CompareAndBitpack(input=self.vars[0], threshold = self.op["threshold"])]
+
+    def execute_Conv3DBackpropInputV2(self):
+        return [tf.raw_ops.Conv3DBackpropInputV2(
+                                input_sizes=self.op["input_sizes"],
+                                filter=self.vars[1],
+                                out_backprop=self.vars[0],
+                                strides=self.op["strides"],
+                                padding=self.op["padding"],
+                                data_format=self.op["data_format"],
+                                dilations=self.op["dilations"])]
+
+    def execute_empty(self):
+        return [tf.raw_ops.Empty(shape = self.vars[0], dtype = self.op["dtype"])]
+
+    def execute_deep_copy(self):
+        return [tf.raw_ops.DeepCopy(x = self.vars[0])]
+
+    def execute_random_gamma(self):
+         return [tf.random.gamma(
+                     shape = self.vars[0] ,
+                     alpha = self.op["alpha"],
+                     beta = self.op.get("beta",None),
+                     dtype = self.op["dtype"],
+                     seed = self.op.get("seed", None)
+                 )]
+
+
+    def execute_random_poisson(self):
+         return [tf.random.poisson(shape = self.vars[0],
+                                   lam = self.op["lam"],
+                                   seed = self.op.get("seed", None),
+                                   dtype=self.op["dtype"])]
+
+    def execute_random_poisson_v2(self):
+         return [tf.raw_ops.RandomPoissonV2(shape = self.vars[0], rate = self.vars[1], seed = self.op.get("seed", None),
+                                            seed2 = self.op.get("seed2", None), dtype=self.op["dtype"])]
+
+    def execute_random_shuffle(self):
+         return [tf.random.shuffle(
+                     value = self.vars[0],
+                     seed = self.op.get("seed", None),
+                 )]
+
+    def execute_random_normal(self):
+         return [tf.random.normal(
+                     shape = self.vars[0],
+                     mean=self.op["mean"],
+                     stddev=self.op["stddev"],
+                     dtype=self.op["dtype"],
+                     seed = self.op.get("seed", None),
+                 )]
+
+    def execute_random_uniform_int(self):
+         return [tf.raw_ops.RandomUniformInt(
+                     shape = self.vars[0],
+                     minval=self.op["minval"],
+                     maxval=self.op["maxval"],
+                     seed = self.op.get("seed", 0),
+                     seed2 = self.op.get("seed2", 0)
+                 )]
+
+    def execute_random_uniform(self):
+         return [tf.raw_ops.RandomUniform(
+                     shape = self.vars[0], dtype = self.op["dtype"], seed = self.op.get("seed", 0), seed2 = self.op.get("seed2", 0)
+                 )]
+
+
+
+    def execute_div(self):
+         return [tf.raw_ops.Div(
+                     x = self.vars[0],
+                     y = self.vars[1]
+                 )]
+
+    def execute_copy(self):
+         return [tf.raw_ops.Copy(
+                     x = self.vars[0]
+                 )]
+
+    def execute_copy_host(self):
+         return [tf.raw_ops.CopyHost(
+                     x = self.vars[0]
+                 )]
+
