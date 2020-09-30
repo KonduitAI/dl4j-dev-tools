@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2020 Konduit KK.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ******************************************************************************/
 package org.nd4j.gen;
 
 import java.io.File;
@@ -6,6 +21,16 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.*;
 
+/**
+ * Parses the libnd4j code base based on a relative path
+ * default of ../deeplearning4j/libnd4j
+ * or a passed in file path.
+ * It generates a descriptor for each op.
+ * The file properties can be found at {@link OpDeclarationDescriptor}
+ *
+ *
+ * @author Adam Gibson
+ */
 public class ParseOpFile {
 
     public final static String CUSTOM_OP_IMPL = "CUSTOM_OP_IMPL";
@@ -28,10 +53,16 @@ public class ParseOpFile {
     public final static String T_ARG = "T_ARG";
     public final static String B_ARG = "B_ARG";
     public final static String DECLARE_SYN = "DECLARE_SYN";
+
+    public final static String DEFAULT_LIBND4J_DIRECTORY = "../deeplearning4j/libnd4j";
+
+
     public static void main(String...args) throws Exception {
-        File libnd4jRootDir = new File("C:\\Users\\agibs\\Documents\\GitHub\\deeplearning4j\\libnd4j");
-        List<OpDescriptor> opDescriptors = new ArrayList<>();
-        Map<String, OpDescriptor> descriptorMap = new HashMap<>();
+        String libnd4jPath = args.length > 0 ? args[0] : DEFAULT_LIBND4J_DIRECTORY;
+        File libnd4jRootDir = new File(libnd4jPath);
+        System.out.println("Parsing  libnd4j code base at " + libnd4jRootDir.getAbsolutePath());
+        List<OpDeclarationDescriptor> opDeclarationDescriptors = new ArrayList<>();
+        Map<String, OpDeclarationDescriptor> descriptorMap = new HashMap<>();
 
         Files.walk(libnd4jRootDir.toPath(), new FileVisitOption[]{
                 FileVisitOption.FOLLOW_LINKS
@@ -46,26 +77,24 @@ public class ParseOpFile {
                 List<String> tArgNames = new ArrayList<>();
                 List<String> iArgNames = new ArrayList<>();
                 List<String> bArgNames = new ArrayList<>();
-                OpDescriptor opDescriptor = null;
-                OpDescriptor.OpDescriptorBuilder builder = OpDescriptor.builder();
+                OpDeclarationDescriptor opDeclarationDescriptor = null;
+                OpDeclarationDescriptor.OpDeclarationDescriptorBuilder builder = OpDeclarationDescriptor.builder();
                 for (String line : lines) {
                     if(line.isEmpty())
                         continue;
                     if (line.contains(CUSTOM_OP_IMPL)) {
                         // CUSTOM_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS)
                         foundOp = true;
-                        line = line.replace(CUSTOM_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,CUSTOM_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
                         int tArgs = Integer.parseInt(split[4].trim());
                         int iArgs = Integer.parseInt(split[5].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.CUSTOM_OP_IMPL)
                                 .nIn(nIn).nOut(nOut)
                                 .inplaceAble(inplaceAble)
                                 .iArgs(iArgs).tArgs(tArgs);
@@ -78,16 +107,16 @@ public class ParseOpFile {
                         if(line.contains(");")) {
                             oneLineOp = true;
                         }
-                        line = line.replace(BOOLEAN_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+
+                        line = removeBracesFromDeclarationMacro(line,BOOLEAN_OP_IMPL);
+
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         // BOOLEAN_OP_IMPL(NAME, NIN, SCALAR)
                         int nIn = Integer.parseInt(split[1].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[2].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BOOLEAN_OP_IMPL)
                                 .nIn(nIn)
                                 .inplaceAble(inplaceAble);
 
@@ -95,17 +124,16 @@ public class ParseOpFile {
                     } else if(line.contains(LIST_OP_IMPL)) {
                         // LIST_OP_IMPL(NAME, NIN, NOUT, TARGS, IARGS)
                         foundOp = true;
-                        line = line.replace(LIST_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,LIST_OP_IMPL);
+
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         int tArgs = Integer.parseInt(split[3].trim());
                         int iArgs = Integer.parseInt(split[4].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LIST_OP_IMPL)
                                 .nIn(nIn).nOut(nOut)
                                 .iArgs(iArgs).tArgs(tArgs);
 
@@ -115,29 +143,26 @@ public class ParseOpFile {
                         foundOp = true;
                         if(line.contains(");"))
                             oneLineOp = true;
-                        line = line.replace(LOGIC_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
-                        line = line.replace(";","");
+                        line = removeBracesFromDeclarationMacro(line,LOGIC_OP_IMPL);
+
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
-                        builder.name(name);
+                        
+                        builder.name(name)
+                                .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LOGIC_OP_IMPL);
 
                         inOpBlock = true;
                     } else if(line.contains(DIVERGENT_OP_IMPL)) {
                         foundOp = true;
                         //DIVERGENT_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)
-                        line = line.replace(DIVERGENT_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,DIVERGENT_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.DIVERGENT_OP_IMPL)
                                 .nIn(nIn).nOut(nOut)
                                 .inplaceAble(inplaceAble);
 
@@ -145,18 +170,16 @@ public class ParseOpFile {
                     } else if(line.contains(CONFIGURABLE_OP_IMPL)) {
                         // CONFIGURABLE_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS)
                         foundOp = true;
-                        line = line.replace(CONFIGURABLE_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,CONFIGURABLE_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
                         int tArgs = Integer.parseInt(split[4].trim());
                         int iArgs = Integer.parseInt(split[5].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.CONFIGURABLE_OP_IMPL)
                                 .nIn(nIn).nOut(nOut)
                                 .inplaceAble(inplaceAble)
                                 .iArgs(iArgs).tArgs(tArgs);
@@ -165,18 +188,16 @@ public class ParseOpFile {
                     } else if(line.contains(REDUCTION_OP_IMPL)) {
                         //REDUCTION_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS)
                         foundOp = true;
-                        line = line.replace(REDUCTION_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,REDUCTION_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
                         int tArgs = Integer.parseInt(split[4].trim());
                         int iArgs = Integer.parseInt(split[5].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.REDUCTION_OP_IMPL)
                                 .nIn(nIn).nOut(nOut)
                                 .inplaceAble(inplaceAble)
                                 .iArgs(iArgs).tArgs(tArgs);
@@ -185,15 +206,14 @@ public class ParseOpFile {
                     } else if(line.contains(BROADCASTABLE_OP_IMPL)) {
                         //BROADCASTABLE_OP_IMPL(NAME, TARGS, IARGS)
                         foundOp = true;
-                        line = line.replace(BROADCASTABLE_OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,BROADCASTABLE_OP_IMPL);
+
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int tArgs = Integer.parseInt(split[1].trim());
                         int iArgs = Integer.parseInt(split[2].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BROADCASTABLE_OP_IMPL)
                                 .iArgs(iArgs).tArgs(tArgs);
 
                         inOpBlock = true;
@@ -205,34 +225,28 @@ public class ParseOpFile {
                         line = line.replace("{", "");
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
+                        
                         int tArgs = Integer.parseInt(split[1].trim());
                         int iArgs = Integer.parseInt(split[2].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BROADCASTABLE_BOOL_OP_IMPL)
                                 .iArgs(iArgs).tArgs(tArgs);
 
                         inOpBlock = true;
                     }  else if(line.contains(OP_IMPL)) {
                         //OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)
                         foundOp = true;
-                        line = line.replace(OP_IMPL + "(", "");
-                        line = line.replace(")", "");
-                        line = line.replace("{", "");
+                        line = removeBracesFromDeclarationMacro(line,OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        System.out.println("Name " + name);
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
-                        builder.name(name)
+                        builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.OP_IMPL)
                                 .nIn(nIn).nOut(nOut)
                                 .inplaceAble(inplaceAble);
 
                         inOpBlock = true;
                     }
-
-
-
 
                     line = line.trim();
 
@@ -246,31 +260,29 @@ public class ParseOpFile {
                             builder.iArgNames(iArgNames);
                             builder.bArgNames(bArgNames);
 
-                            opDescriptor = builder.build();
-                            System.out.println(opDescriptor);
+                            opDeclarationDescriptor = builder.build();
+                            System.out.println(opDeclarationDescriptor);
 
-                            //NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS
+                            opDeclarationDescriptors.add(opDeclarationDescriptor);
 
-                            opDescriptors.add(opDescriptor);
-
-                            if (opDescriptor != null) {
-                                System.out.println("Op descriptor " + opDescriptor);
+                            if (opDeclarationDescriptor != null) {
+                                System.out.println("Op descriptor " + opDeclarationDescriptor);
                                 System.out.println("Input arg name " + inArgNames);
                                 System.out.println("Output arg names " + outArgNames);
                                 System.out.println("T Arg names " + tArgNames);
                                 System.out.println("Integer arg names " + iArgNames);
                                 System.out.println("Boolean arg names " + bArgNames);
-                                opDescriptor.validate();
+                                opDeclarationDescriptor.validate();
                             }
                         }
 
-                        descriptorMap.put(opDescriptor.getName(),opDescriptor);
+                        descriptorMap.put(opDeclarationDescriptor.getName(), opDeclarationDescriptor);
 
                         inOpBlock = false;
                         foundOp = false;
                         oneLineOp = false;
-                        opDescriptor = null;
-                        builder = OpDescriptor.builder();
+                        opDeclarationDescriptor = null;
+                        builder = OpDeclarationDescriptor.builder();
                     }
 
                     if (inOpBlock) {
@@ -291,11 +303,7 @@ public class ParseOpFile {
 
                     //add alias descriptors
                     if (line.contains(DECLARE_SYN)) {
-                        //DECLARE_SYN(mMul, matmul);
-                        line = line.replace(DECLARE_SYN,"");
-                        line = line.replace("(","");
-                        line = line.replace(")","");
-                        line = line.replace(";","");
+                        line = removeBracesFromDeclarationMacro(line,DECLARE_SYN);
                         String[] args2 = line.split(",");
                         String aliasFor = args2[1].trim();
                         String newKey = args2[0].trim();
@@ -303,10 +311,10 @@ public class ParseOpFile {
                             throw new IllegalStateException("Descriptor map should not be empty here");
                         }
 
-                        OpDescriptor.OpDescriptorBuilder opDescriptor2 = descriptorMap.get(aliasFor).toBuilder();
+                        OpDeclarationDescriptor.OpDeclarationDescriptorBuilder opDescriptor2 = descriptorMap.get(aliasFor).toBuilder();
                         opDescriptor2.name(newKey);
-                        OpDescriptor newDescriptor = opDescriptor2.build();
-                        opDescriptors.add(newDescriptor);
+                        OpDeclarationDescriptor newDescriptor = opDescriptor2.build();
+                        opDeclarationDescriptors.add(newDescriptor);
                         descriptorMap.put(args2[1],newDescriptor);
                     }
                 }
@@ -317,7 +325,15 @@ public class ParseOpFile {
             }
         });
 
-        System.out.println("Number of op descriptors " + opDescriptors.size());
+        System.out.println("Number of op descriptors " + opDeclarationDescriptors.size());
+    }
+
+    public static String removeBracesFromDeclarationMacro(String line,String nameOfMacro) {
+        line = line.replace(nameOfMacro + "(", "");
+        line = line.replace(")", "");
+        line = line.replace("{", "");
+        line = line.replace(";","");
+        return line;
     }
 
     public static void addNameToList(String line,List<String> list) {
