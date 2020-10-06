@@ -15,6 +15,10 @@
  ******************************************************************************/
 package org.nd4j.gen;
 
+import org.nd4j.common.util.SetUtils;
+import org.nd4j.linalg.api.ops.CustomOpDescriptor;
+import org.nd4j.linalg.factory.Nd4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -64,6 +68,8 @@ public class ParseOpFile {
         List<OpDeclarationDescriptor> opDeclarationDescriptors = new ArrayList<>();
         Map<String, OpDeclarationDescriptor> descriptorMap = new HashMap<>();
 
+        Map<String, CustomOpDescriptor> customOperations = Nd4j.getExecutioner().getCustomOperations();
+
         Files.walk(libnd4jRootDir.toPath(), new FileVisitOption[]{
                 FileVisitOption.FOLLOW_LINKS
         }).filter(path -> path.toFile().getAbsolutePath().endsWith(".cpp")).forEach(path -> {
@@ -88,7 +94,7 @@ public class ParseOpFile {
                         line = removeBracesFromDeclarationMacro(line,CUSTOM_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
@@ -112,7 +118,7 @@ public class ParseOpFile {
 
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         // BOOLEAN_OP_IMPL(NAME, NIN, SCALAR)
                         int nIn = Integer.parseInt(split[1].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[2].trim());
@@ -128,7 +134,7 @@ public class ParseOpFile {
 
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         int tArgs = Integer.parseInt(split[3].trim());
@@ -147,7 +153,7 @@ public class ParseOpFile {
 
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         builder.name(name)
                                 .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LOGIC_OP_IMPL);
 
@@ -158,7 +164,7 @@ public class ParseOpFile {
                         line = removeBracesFromDeclarationMacro(line,DIVERGENT_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
@@ -173,7 +179,7 @@ public class ParseOpFile {
                         line = removeBracesFromDeclarationMacro(line,CONFIGURABLE_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
@@ -191,7 +197,7 @@ public class ParseOpFile {
                         line = removeBracesFromDeclarationMacro(line,REDUCTION_OP_IMPL);
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int nIn = Integer.parseInt(split[1].trim());
                         int nOut = Integer.parseInt(split[2].trim());
                         boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
@@ -210,7 +216,7 @@ public class ParseOpFile {
 
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int tArgs = Integer.parseInt(split[1].trim());
                         int iArgs = Integer.parseInt(split[2].trim());
                         builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BROADCASTABLE_OP_IMPL)
@@ -225,7 +231,7 @@ public class ParseOpFile {
                         line = line.replace("{", "");
                         String[] split = line.trim().split(",");
                         String name = split[0];
-                        
+
                         int tArgs = Integer.parseInt(split[1].trim());
                         int iArgs = Integer.parseInt(split[2].trim());
                         builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BROADCASTABLE_BOOL_OP_IMPL)
@@ -283,6 +289,12 @@ public class ParseOpFile {
                         oneLineOp = false;
                         opDeclarationDescriptor = null;
                         builder = OpDeclarationDescriptor.builder();
+                        //clear list references
+                        inArgNames = new ArrayList<>();
+                        outArgNames = new ArrayList<>();
+                        tArgNames = new ArrayList<>();
+                        iArgNames = new ArrayList<>();
+                        bArgNames = new ArrayList<>();
                     }
 
                     if (inOpBlock) {
@@ -325,7 +337,20 @@ public class ParseOpFile {
             }
         });
 
-        System.out.println("Number of op descriptors " + opDeclarationDescriptors.size());
+        Set<String> opNamesForCompare = new HashSet<>(customOperations.keySet());
+        Set<String> opsFoundInDeclarations = new HashSet<>();
+
+        for(OpDeclarationDescriptor declarationDescriptor : opDeclarationDescriptors) {
+            System.out.println(declarationDescriptor);
+            opsFoundInDeclarations.add(declarationDescriptor.getName());
+        }
+
+        Set<String> differences = SetUtils.difference(opsFoundInDeclarations,opNamesForCompare);
+        if(!differences.isEmpty()) {
+            System.out.println("Differences found in declarations vs registered ops " + differences);
+        }
+
+        //System.out.println("Number of op descriptors " + opDeclarationDescriptors);
     }
 
     public static String removeBracesFromDeclarationMacro(String line,String nameOfMacro) {
