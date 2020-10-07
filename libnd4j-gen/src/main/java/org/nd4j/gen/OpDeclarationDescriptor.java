@@ -23,7 +23,11 @@ import java.util.List;
 
 /**
  * The op descriptor for the libnd4j code base.
- * Each 
+ * Each op represents a serialized version of
+ * {@link org.nd4j.linalg.api.ops.DynamicCustomOp}
+ * that has naming metadata attached.
+ *
+ * @author Adam Gibson
  */
 @Data
 @Builder(toBuilder = true)
@@ -37,6 +41,7 @@ public class OpDeclarationDescriptor implements Serializable  {
     private List<String> iArgNames;
     private List<String> bArgNames;
     private OpDeclarationType opDeclarationType;
+
 
     public enum OpDeclarationType {
         CUSTOM_OP_IMPL,
@@ -53,20 +58,57 @@ public class OpDeclarationDescriptor implements Serializable  {
 
 
     public void validate() {
-        if(nIn >= 0 && nIn != inArgNames.size()) {
+        if(nIn >= 0 && nIn != inArgNames.size() && !isVariableInputSize()) {
             System.err.println("In arg names was not equal to number of inputs found for op " + name);
         }
 
-        if(nOut >= 0 && nOut != outArgNames.size()) {
+        if(nOut >= 0 && nOut != outArgNames.size() && !isVariableOutputSize()) {
             System.err.println("Output arg names was not equal to number of outputs found for op " + name);
         }
 
-        if(tArgs >= 0 && tArgs != tArgNames.size()) {
+        if(tArgs >= 0 && tArgs != tArgNames.size() && !isVariableTArgs()) {
             System.err.println("T arg names was not equal to number of T found for op " + name);
         }
-        if(iArgs >= 0 && iArgs != iArgNames.size()) {
+        if(iArgs >= 0 && iArgs != iArgNames.size() && !isVariableIntArgs()) {
             System.err.println("Integer arg names was not equal to number of integer args found for op " + name);
         }
     }
+
+
+    /**
+     * Returns true if there is a variable number
+     * of integer arguments for an op
+     * @return
+     */
+    public boolean isVariableIntArgs() {
+        return iArgs < 0;
+    }
+
+    /**
+     * Returns true if there is a variable
+     * number of t arguments for an op
+     * @return
+     */
+    public boolean isVariableTArgs() {
+        return tArgs < 0;
+    }
+
+    /**
+     * Returns true if the number of outputs is variable size
+     * @return
+     */
+    public boolean isVariableOutputSize() {
+        return nOut < 0;
+    }
+
+    /**
+     * Returns true if the number of
+     * inputs is variable size
+     * @return
+     */
+    public boolean isVariableInputSize() {
+        return nIn < 0;
+    }
+
 
 }
