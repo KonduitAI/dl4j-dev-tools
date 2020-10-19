@@ -15,17 +15,20 @@
  ******************************************************************************/
 package org.nd4j.gen;
 
+import org.apache.commons.io.FileUtils;
 import org.nd4j.common.util.SetUtils;
+import org.nd4j.ir.OpNamespace;
 import org.nd4j.linalg.api.ops.CustomOpDescriptor;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.*;
 
-import static org.nd4j.gen.OpDeclarationDescriptor.*;
+
 
 /**
  * Parses the libnd4j code base based on a relative path
@@ -60,6 +63,7 @@ public class ParseOpFile {
     public final static String B_ARG = "B_ARG";
     public final static String DECLARE_SYN = "DECLARE_SYN";
     public final static String DEFAULT_LIBND4J_DIRECTORY = "../deeplearning4j/libnd4j";
+    public final static String DEFAULT_OUTPUT_FILE = "op-ir.proto";
 
     public final static int BROADCASTABLE_OP_IMPL_DEFAULT_NIN = 2;
     public final static int BROADCASTABLE_OP_IMPL_DEFAULT_NOUT = 1;
@@ -68,8 +72,11 @@ public class ParseOpFile {
 
     public static void main(String...args) throws Exception {
         String libnd4jPath = args.length > 0 ? args[0] : DEFAULT_LIBND4J_DIRECTORY;
+        String outputFilePath = args.length > 1 ? args[1] : DEFAULT_OUTPUT_FILE;
+
         File libnd4jRootDir = new File(libnd4jPath);
-        System.out.println("Parsing  libnd4j code base at " + libnd4jRootDir.getAbsolutePath());
+        File outputFile = new File(outputFilePath);
+        System.out.println("Parsing  libnd4j code base at " + libnd4jRootDir.getAbsolutePath() + " and writing to " + outputFilePath);
         List<OpDeclarationDescriptor> opDeclarationDescriptors = new ArrayList<>();
         Map<String, OpDeclarationDescriptor> descriptorMap = new HashMap<>();
 
@@ -119,7 +126,7 @@ public class ParseOpFile {
                             hasTArgs = true;
 
                             builder.name(name)
-                                    .opDeclarationType(OpDeclarationType.CUSTOM_OP_IMPL)
+                                    .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.CUSTOM_OP_IMPL)
                                     .nIn(nIn).nOut(nOut)
                                     .inplaceAble(inplaceAble)
                                     .iArgs(iArgs).tArgs(tArgs);
@@ -143,7 +150,7 @@ public class ParseOpFile {
                             currentOpNin = nIn;
                             hasNin = true;
                             boolean inplaceAble = Boolean.parseBoolean(split[2].trim());
-                            builder.name(name).opDeclarationType(OpDeclarationType.BOOLEAN_OP_IMPL)
+                            builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BOOLEAN_OP_IMPL)
                                     .nIn(nIn)
                                     .inplaceAble(inplaceAble);
 
@@ -170,7 +177,7 @@ public class ParseOpFile {
                             hasIntArgs = true;
                             hasTArgs = true;
 
-                            builder.name(name).opDeclarationType(OpDeclarationType.LIST_OP_IMPL)
+                            builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LIST_OP_IMPL)
                                     .nIn(nIn).nOut(nOut)
                                     .iArgs(iArgs).tArgs(tArgs);
 
@@ -186,7 +193,7 @@ public class ParseOpFile {
                             String name = split[0];
 
                             builder.name(name)
-                                    .opDeclarationType(OpDeclarationType.LOGIC_OP_IMPL);
+                                    .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LOGIC_OP_IMPL);
 
                             inOpBlock = true;
                         } else if(line.contains(DIVERGENT_OP_IMPL)) {
@@ -229,7 +236,7 @@ public class ParseOpFile {
                             hasTArgs = true;
 
                             builder.name(name)
-                                    .opDeclarationType(OpDeclarationType.CONFIGURABLE_OP_IMPL)
+                                    .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.CONFIGURABLE_OP_IMPL)
                                     .nIn(nIn).nOut(nOut)
                                     .inplaceAble(inplaceAble)
                                     .iArgs(iArgs).tArgs(tArgs);
@@ -255,7 +262,7 @@ public class ParseOpFile {
                             hasIntArgs = true;
                             hasTArgs = true;
 
-                            builder.name(name).opDeclarationType(OpDeclarationType.REDUCTION_OP_IMPL)
+                            builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.REDUCTION_OP_IMPL)
                                     .nIn(nIn).nOut(nOut)
                                     .inplaceAble(inplaceAble)
                                     .iArgs(iArgs).tArgs(tArgs);
@@ -276,7 +283,7 @@ public class ParseOpFile {
                             hasIntArgs = true;
 
                             builder.name(name)
-                                    .opDeclarationType(OpDeclarationType.BROADCASTABLE_OP_IMPL)
+                                    .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BROADCASTABLE_OP_IMPL)
                                     .nIn(BROADCASTABLE_OP_IMPL_DEFAULT_NIN)
                                     .nOut(BROADCASTABLE_OP_IMPL_DEFAULT_NOUT)
                                     .iArgs(iArgs).tArgs(tArgs);
@@ -301,7 +308,7 @@ public class ParseOpFile {
 
 
                             builder.name(name)
-                                    .opDeclarationType(OpDeclarationType.BROADCASTABLE_BOOL_OP_IMPL)
+                                    .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.BROADCASTABLE_BOOL_OP_IMPL)
                                     .nIn(BROADCASTABLE_OP_IMPL_DEFAULT_NIN)
                                     .nOut(BROADCASTABLE_OP_IMPL_DEFAULT_NOUT)
                                     .iArgs(iArgs).tArgs(tArgs);
@@ -320,7 +327,7 @@ public class ParseOpFile {
                             hasNin = true;
                             hasNout = true;
                             boolean inplaceAble = Boolean.parseBoolean(split[3].trim());
-                            builder.name(name).opDeclarationType(OpDeclarationType.OP_IMPL)
+                            builder.name(name).opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.OP_IMPL)
                                     .nIn(nIn).nOut(nOut)
                                     .inplaceAble(inplaceAble);
 
@@ -428,11 +435,29 @@ public class ParseOpFile {
         Set<String> opNamesForCompare = new HashSet<>(customOperations.keySet());
         Set<String> opsFoundInDeclarations = new HashSet<>();
 
+
+        OpNamespace.OpDescriptorList.Builder listBuilder = OpNamespace.OpDescriptorList.newBuilder();
         for(OpDeclarationDescriptor declarationDescriptor : opDeclarationDescriptors) {
+            Map<String, OpNamespace.ArgDescriptor.ArgType> stringArgTypeMap = declarationDescriptor.argsByType();
+            OpNamespace.OpDescriptor.Builder opDescriptorBuilder = OpNamespace.OpDescriptor.newBuilder();
+            for(Map.Entry<String, OpNamespace.ArgDescriptor.ArgType> argTypeEntry : stringArgTypeMap.entrySet()) {
+                OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                        .setArgType(argTypeEntry.getValue())
+                        .setName(argTypeEntry.getKey())
+                        .build();
+                opDescriptorBuilder.addArgDescriptor(argDescriptor);
+            }
+
+            opDescriptorBuilder.setName(declarationDescriptor.getName());
+            OpNamespace.OpDescriptor opDescriptor = opDescriptorBuilder.build();
+            listBuilder.addOpList(opDescriptor);
             System.out.println(declarationDescriptor);
             opsFoundInDeclarations.add(declarationDescriptor.getName());
         }
 
+        OpNamespace.OpDescriptorList build = listBuilder.build();
+        String item = build.toString();
+        FileUtils.writeStringToFile(outputFile,item, Charset.defaultCharset());
         Set<String> differences = SetUtils.difference(opsFoundInDeclarations,opNamesForCompare);
         if(!differences.isEmpty()) {
             System.out.println("Differences found in declarations vs registered ops " + differences);

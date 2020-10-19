@@ -19,7 +19,13 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.nd4j.ir.OpNamespace;
+import org.nd4j.ir.MapperNamespace;
+import org.nd4j.ir.TensorNamespace;
 
 /**
  * The op descriptor for the libnd4j code base.
@@ -54,6 +60,33 @@ public class OpDeclarationDescriptor implements Serializable  {
         REDUCTION_OP_IMPL,
         BROADCASTABLE_OP_IMPL,
         BROADCASTABLE_BOOL_OP_IMPL
+    }
+
+
+    /**
+     * Get all the arguments names of this descriptor
+     * by {@link OpNamespace.ArgDescriptor.ArgType}
+     * @return the map of arg type
+     */
+    public Map<String,OpNamespace.ArgDescriptor.ArgType> argsByType() {
+        Map<String,OpNamespace.ArgDescriptor.ArgType> argsByType = new HashMap<>();
+        for(String s : inArgNames) {
+            argsByType.put(s,OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+        }
+        for(String s : outArgNames) {
+            argsByType.put(s,OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+        }
+        for(String s : iArgNames) {
+            argsByType.put(s,OpNamespace.ArgDescriptor.ArgType.INT64);
+        }
+        for(String s : tArgNames) {
+            argsByType.put(s,OpNamespace.ArgDescriptor.ArgType.FLOAT);
+        }
+        for(String s : bArgNames) {
+            argsByType.put(s,OpNamespace.ArgDescriptor.ArgType.BOOL);
+        }
+
+        return argsByType;
     }
 
 

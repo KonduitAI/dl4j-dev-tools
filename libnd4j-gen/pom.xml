@@ -15,10 +15,20 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <nd4j.version>1.0.0-beta7</nd4j.version>
+    <nd4j.version>1.0.0-SNAPSHOT</nd4j.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>javacpp-platform</artifactId>
+      <version>1.5.4-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.nd4j</groupId>
+      <artifactId>protobuf</artifactId>
+      <version>${nd4j.version}</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -45,7 +55,7 @@
 
     <dependency>
       <groupId>org.nd4j</groupId>
-      <artifactId>nd4j-native</artifactId>
+      <artifactId>nd4j-native-platform</artifactId>
       <version>${nd4j.version}</version>
     </dependency>
   </dependencies>
