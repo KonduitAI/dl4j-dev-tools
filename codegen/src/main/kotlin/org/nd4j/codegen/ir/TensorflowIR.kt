@@ -346,17 +346,13 @@ fun convertTensorflowTensorToArgDescriptorTensor(input: TensorProto): Tensorflow
     return TensorflowIRTensor(input)
 }
 
+//TODO: How to handle base classes? Parameterized constructors?
+//TODO: Framework specific mappers? How to share logic across different frameworks? Are generics enough?
+//Init logic for mapping rules should ideally be generic where possible
+class NDArrayMappingRule(opDescriptor: OpNamespace.OpDescriptor,inputTensors: Map<String, TensorProto>): MappingRule<AttrDef,AttrValue,TensorProto,org.tensorflow.framework.DataType> {
 
-class NDArrayMappingRule(inputAttributeNames: List<String> = emptyList(),
-                         outputAttributeNames: List<String> = emptyList(),
-                         inputArgumentNames: List<String> = emptyList(),
-                         outputArgumentNames: List<String> = emptyList(),
-                         opDescriptor: OpNamespace.OpDescriptor): MappingRule<AttrDef,AttrValue,TensorProto,org.tensorflow.framework.DataType> {
-    val inputAttributes = inputAttributeNames
-    val outputAttributes = outputAttributeNames
-    val inputArguments = inputArgumentNames
-    val outputArguments = outputArgumentNames
-    val opDescriptor = opDescriptor
+    private val opDescriptor = opDescriptor
+    private val inputTensors = inputTensors
 
     override fun name(): String {
         return "ndarraymapping"
@@ -364,13 +360,20 @@ class NDArrayMappingRule(inputAttributeNames: List<String> = emptyList(),
 
     override fun convert(): List<OpNamespace.ArgDescriptor> {
         val ret = ArrayList<OpNamespace.ArgDescriptor>()
+        val mappingsToPerform = inputArgumentMapping()
         for(i in 0.. opDescriptor.argDescriptorCount) {
-            val builder = OpNamespace.ArgDescriptor.newBuilder()
-            builder.argType = opDescriptor.argDescriptorList[i].argType
-            builder.name = opDescriptor.argDescriptorList[i].name
-            require(opDescriptor.argDescriptorList[i].argType == ArgType.INPUT_TENSOR) {"Input type must be INPUT_TENSOR"}
-            builder.argIndex = opDescriptor.argDescriptorList[i].argIndex
-            ret.add(builder.build())
+            if(mappingsToPerform.containsKey(opDescriptor.getArgDescriptor(i).name)) {
+                val outputName = mappingsToPerform[mappingsToPerform[opDescriptor.getArgDescriptor(i).name]]
+                val builder = OpNamespace.ArgDescriptor.newBuilder()
+                builder.argType = opDescriptor.argDescriptorList[i].argType
+                builder.name = outputName
+                require(opDescriptor.argDescriptorList[i].argType == ArgType.INPUT_TENSOR) {"Input type must be INPUT_TENSOR"}
+                builder.argIndex = opDescriptor.argDescriptorList[i].argIndex
+                val tensorToConvert = getInputTensor(opDescriptor.getArgDescriptor(i).name)
+                builder.inputValue = TensorflowIRTensor(tensorToConvert).toArgTensor()
+                ret.add(builder.build())
+            }
+
         }
 
         return ret
@@ -401,16 +404,32 @@ class NDArrayMappingRule(inputAttributeNames: List<String> = emptyList(),
         return opDescriptor
     }
 
-    override fun inputTensorsToConvert(): List<TensorProto> {
-        TODO("Not yet implemented")
+    override fun inputTensorsToConvert(): Map<String, TensorProto> {
+        return inputTensors
     }
 
-    override fun inputAttributeDefsToConvert(): List<AttrDef> {
-        return emptyList()
+    override fun inputAttributeDefsToConvert(): Map<String, AttrDef> {
+        return emptyMap()
     }
 
-    override fun inputAttributeValuesToConvert(): List<AttrValue> {
-        return emptyList()
+    override fun inputAttributeValuesToConvert(): Map<String, AttrValue> {
+        return emptyMap()
+    }
+
+    override fun mappingType(): MappingRuleType {
+        return MappingRuleType.INPUT_TENSOR
+    }
+
+    override fun getInputTensor(key: String): TensorProto {
+        return inputTensorsToConvert().getOrDefault(key, TensorProto.getDefaultInstance())
+    }
+
+    override fun getInputAttribute(input: String): AttrDef {
+        return inputAttributeDefsToConvert().getOrDefault(input,AttrDef.getDefaultInstance())
+    }
+
+    override fun getInputAttributeValue(input: String): AttrValue {
+        return inputAttributeValuesToConvert().getOrDefault(input,AttrValue.getDefaultInstance())
     }
 
 

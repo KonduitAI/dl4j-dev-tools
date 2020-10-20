@@ -79,6 +79,12 @@ interface MappingProcess<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TY
     fun createDescriptor(argDescriptors: List<OpNamespace.ArgDescriptor>): OpDeclarationDescriptor
 }
 
+enum class MappingRuleType {
+    ATTRIBUTE,
+    INPUT_TENSOR,
+    OUTPUT_TENSOR
+}
+
 interface MappingRule<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE> {
     fun name(): String
 
@@ -97,11 +103,19 @@ interface MappingRule<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
 
     fun opDescriptor(): OpNamespace.OpDescriptor
 
-    fun inputTensorsToConvert(): List<TENSOR_TYPE>
+    fun inputTensorsToConvert(): Map<String, TENSOR_TYPE>
 
-    fun inputAttributeDefsToConvert(): List<ATTRIBUTE_TYPE>
+    fun getInputTensor(key: String): TENSOR_TYPE
 
-    fun inputAttributeValuesToConvert(): List<ATTRIBUTE_VALUE_TYPE>
+    fun inputAttributeDefsToConvert(): Map<String, ATTRIBUTE_TYPE>
+
+    fun getInputAttribute(input: String): ATTRIBUTE_TYPE
+
+    fun inputAttributeValuesToConvert(): Map<String, ATTRIBUTE_VALUE_TYPE>
+
+    fun getInputAttributeValue(input:String): ATTRIBUTE_VALUE_TYPE
+
+    fun mappingType(): MappingRuleType
 }
 
 
