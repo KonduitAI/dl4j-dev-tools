@@ -5,6 +5,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.api.ops.CustomOp
 import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
+import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
 
 
@@ -12,6 +13,7 @@ interface IRTensor<TENSOR_TYPE,DATA_TYPE> {
     fun shape(): List<Long>
     fun stride(): List<Long>
     fun dataType(): IRDataType<DATA_TYPE>
+    fun toArgTensor(): TensorNamespace.TensorProto
 }
 
 
@@ -60,7 +62,7 @@ interface IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
 
 
 
-interface MappingProcess<T,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
+interface MappingProcess<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
     fun opName(): String
 
     fun frameworkVersion(): String
@@ -70,9 +72,9 @@ interface MappingProcess<T,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_
     fun rules(): List<MappingRule<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>>
 
 
-    fun applyProcess(inputNode: IRNode<T,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): OpDeclarationDescriptor
+    fun applyProcess(inputNode: IRNode<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): OpDeclarationDescriptor
 
-    fun applyProcessReverse(input: OpDeclarationDescriptor): IRNode<T,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+    fun applyProcessReverse(input: OpDeclarationDescriptor): IRNode<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
 
     fun createDescriptor(argDescriptors: List<OpNamespace.ArgDescriptor>): OpDeclarationDescriptor
 }
@@ -83,15 +85,28 @@ interface MappingRule<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
     /**
      * Convert 1 or more attributes in to a list of {@link ArgDescriptor}
      */
-    fun convert(inputs: List<IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>> ): List<OpNamespace.ArgDescriptor>
+    fun convert(): List<OpNamespace.ArgDescriptor>
 
-    fun convertReverse(input: List<OpNamespace.ArgDescriptor>): List<IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>>
+    fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>>
 
+    fun convertInputsReverse(toReverse: List<OpNamespace.ArgDescriptor>): List<TENSOR_TYPE>
+
+    fun inputArgumentMapping(): Map<String,String>
+
+    fun inputAttributeMapping(): Map<String,String>
+
+    fun opDescriptor(): OpNamespace.OpDescriptor
+
+    fun inputTensorsToConvert(): List<TENSOR_TYPE>
+
+    fun inputAttributeDefsToConvert(): List<ATTRIBUTE_TYPE>
+
+    fun inputAttributeValuesToConvert(): List<ATTRIBUTE_VALUE_TYPE>
 }
 
 
 
-interface IRNode<T,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
+interface IRNode<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
     /**
      * List of inputs in to the node
      * @return the list of input names for this node
@@ -125,7 +140,7 @@ interface IRNode<T,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
     fun getAttribute(inputName: String): IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
     fun hasAttribute(inputName: String): Boolean
 
-    fun internalValue(): T
+    fun internalValue(): NODE_TYPE
 }
 
 interface IRArgDef<T,DATA_TYPE> {
@@ -210,7 +225,7 @@ interface Mapper<NODE_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,OP_DEF_TYPE,DATATYPE_TY
 
     fun map(input: NODE_TYPE) : INDArray
 
-    fun map(input: OP_DEF_TYPE) : OpDeclarationDescriptor
+    fun map(input: OP_DEF_TYPE) : OpNamespace.OpDescriptor
 
     fun opDefList(): List<OP_DEF_TYPE>
 
