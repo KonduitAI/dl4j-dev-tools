@@ -206,6 +206,14 @@ class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue
         return TensorflowIRTensor(attributeValue.tensor)
     }
 
+    override fun stringValue(): String {
+        return attributeValue.s.toStringUtf8()
+    }
+
+    override fun listStringValue(): List<String> {
+      return attributeValue.list.sList.map { it.toStringUtf8() }
+    }
+
 }
 
 class TensorflowIRArgDef(input: OpDef.ArgDef): IRArgDef<OpDef.ArgDef,org.tensorflow.framework.DataType> {
@@ -342,84 +350,10 @@ fun argDescriptor(name: String,inputBoolean: Boolean,inputString: String): OpNam
             .build()
 }
 
-fun convertTensorflowTensorToArgDescriptorTensor(input: TensorProto): TensorflowIRTensor {
-    return TensorflowIRTensor(input)
-}
 
-//TODO: How to handle base classes? Parameterized constructors?
-//TODO: Framework specific mappers? How to share logic across different frameworks? Are generics enough?
-//Init logic for mapping rules should ideally be generic where possible
-class NDArrayMappingRule(opDescriptor: OpNamespace.OpDescriptor,inputTensors: Map<String, TensorProto>): MappingRule<AttrDef,AttrValue,TensorProto,org.tensorflow.framework.DataType> {
 
-    private val opDescriptor = opDescriptor
-    private val inputTensors = inputTensors
 
-    override fun name(): String {
-        return "ndarraymapping"
-    }
-
-    override fun convert(): List<OpNamespace.ArgDescriptor> {
-        val ret = ArrayList<OpNamespace.ArgDescriptor>()
-        val mappingsToPerform = inputArgumentMapping()
-        for(i in 0.. opDescriptor.argDescriptorCount) {
-            if(mappingsToPerform.containsKey(opDescriptor.getArgDescriptor(i).name)) {
-                val outputName = mappingsToPerform[mappingsToPerform[opDescriptor.getArgDescriptor(i).name]]
-                val builder = OpNamespace.ArgDescriptor.newBuilder()
-                builder.argType = opDescriptor.argDescriptorList[i].argType
-                builder.name = outputName
-                require(opDescriptor.argDescriptorList[i].argType == ArgType.INPUT_TENSOR) {"Input type must be INPUT_TENSOR"}
-                builder.argIndex = opDescriptor.argDescriptorList[i].argIndex
-                val tensorToConvert = getInputTensor(opDescriptor.getArgDescriptor(i).name)
-                builder.inputValue = TensorflowIRTensor(tensorToConvert).toArgTensor()
-                ret.add(builder.build())
-            }
-
-        }
-
-        return ret
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
-        return emptyList()
-    }
-
-    override fun convertInputsReverse(toReverse: List<OpNamespace.ArgDescriptor>): List<TensorProto> {
-        for(argument in toReverse) {
-            require(argument.argType == ArgType.INPUT_TENSOR) {"Type to reverse must be an input tensor."}
-        }
-        TODO("Not yet implemented")
-    }
-
-    override fun inputArgumentMapping(): Map<String, String> {
-        return hashMapOf(
-                "input" to "input"
-        )
-    }
-
-    override fun inputAttributeMapping(): Map<String, String> {
-        return emptyMap()
-    }
-
-    override fun opDescriptor(): OpNamespace.OpDescriptor {
-        return opDescriptor
-    }
-
-    override fun inputTensorsToConvert(): Map<String, TensorProto> {
-        return inputTensors
-    }
-
-    override fun inputAttributeDefsToConvert(): Map<String, AttrDef> {
-        return emptyMap()
-    }
-
-    override fun inputAttributeValuesToConvert(): Map<String, AttrValue> {
-        return emptyMap()
-    }
-
-    override fun mappingType(): MappingRuleType {
-        return MappingRuleType.INPUT_TENSOR
-    }
-
+class NDArrayMappingRule(opDescriptor: OpNamespace.OpDescriptor, inputTensors: Map<String, TensorProto>, mappingNamesToPerform: Map<String,String>, transformerArgs: Map<String, List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>>>): BaseNDArrayMappingRule<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(opDescriptor, inputTensors,mappingNamesToPerform, transformerArgs) {
     override fun getInputTensor(key: String): TensorProto {
         return inputTensorsToConvert().getOrDefault(key, TensorProto.getDefaultInstance())
     }
@@ -432,7 +366,9 @@ class NDArrayMappingRule(opDescriptor: OpNamespace.OpDescriptor,inputTensors: Ma
         return inputAttributeValuesToConvert().getOrDefault(input,AttrValue.getDefaultInstance())
     }
 
-
+    override fun createTensorProto(input: TensorProto): TensorNamespace.TensorProto {
+        return TensorflowIRTensor(input).toArgTensor()
+    }
 }
 
 class AbsMappingProcess: MappingProcess<NodeDef,TensorProto,AttrDef,AttrValue,org.tensorflow.framework.DataType> {
@@ -458,7 +394,7 @@ class AbsMappingProcess: MappingProcess<NodeDef,TensorProto,AttrDef,AttrValue,or
         val attributeList = inputNode.attributeMap().entries.toList().map { it.value }
 
         for(rule in rules()) {
-            rule.convert()
+            rule.convertInput()
         }
 
         return builder.build()
@@ -478,6 +414,61 @@ class AbsMappingProcess: MappingProcess<NodeDef,TensorProto,AttrDef,AttrValue,or
 
 
 }
+
+
+class TensorflowNDArrayMappingRule(opDescriptor: OpNamespace.OpDescriptor, inputTensors: Map<String, TensorProto>, mappingNamesToPerform: Map<String, String>,
+                                   transformerArgs: Map<String, List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>>>)
+    : BaseNDArrayMappingRule<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(opDescriptor, inputTensors, mappingNamesToPerform, transformerArgs) {
+    override fun createTensorProto(input: TensorProto): TensorNamespace.TensorProto {
+        return TensorflowIRTensor(input).toArgTensor()
+    }
+}
+
+class TensorflowStringEqualsAdapterRule(opDescriptor: OpNamespace.OpDescriptor, mappingNamesToPerform: Map<String, String>, inputAttributeDef: AttrDef, inputAttributeValue: AttrValue, transformerArgs: Map<String, List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>>>) : StringEqualsAdapterRule<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(opDescriptor, mappingNamesToPerform, inputAttributeDef, inputAttributeValue, transformerArgs) {
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun convertInput(): List<OpNamespace.ArgDescriptor> {
+        TODO("Not yet implemented")
+    }
+
+    override fun convertInputsReverse(toReverse: List<OpNamespace.ArgDescriptor>): List<TensorProto> {
+        TODO("Not yet implemented")
+    }
+
+    override fun inputTensorsToConvert(): Map<String, TensorProto> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getInputTensor(key: String): TensorProto {
+        TODO("Not yet implemented")
+    }
+
+    override fun inputAttributeDefsToConvert(): Map<String, AttrDef> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getInputAttribute(input: String): AttrDef {
+        TODO("Not yet implemented")
+    }
+
+    override fun inputAttributeValuesToConvert(): Map<String, AttrValue> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getInputAttributeValue(input: String): AttrValue {
+        TODO("Not yet implemented")
+    }
+
+    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+
 
 class TensorflowMapper: Mapper<NodeDef,AttrDef,AttrValue,OpDef,org.tensorflow.framework.DataType> {
     override fun createOpFrom(input: OpDef): CustomOp {
