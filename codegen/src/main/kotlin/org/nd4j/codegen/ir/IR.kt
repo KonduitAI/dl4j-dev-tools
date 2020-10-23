@@ -3,6 +3,7 @@ package org.nd4j.codegen.ir
 import org.apache.commons.io.IOUtils
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.gen.OpDeclarationDescriptor
+import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
@@ -130,8 +131,121 @@ interface MappingProcess<NODE_TYPE : GeneratedMessageV3, TENSOR_TYPE : Generated
 
     fun createDescriptor(argDescriptors: List<OpNamespace.ArgDescriptor>): OpDeclarationDescriptor
 
+    fun serialize(): MapperNamespace.MapperDeclaration
 
 }
+
+abstract  class AbstractMappingProcess<NODE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>
+(inputFramework: String,frameworkVersion: String,opName: String,rules: List<MappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> ):
+        MappingProcess<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+where DATA_TYPE: ProtocolMessageEnum {
+
+    private val inputFramework = inputFramework
+    private val frameworkVersion = frameworkVersion
+    private val opName = opName
+    private val rules = rules
+
+    override fun rules(): List<MappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> {
+       return rules
+    }
+
+    override fun opName(): String {
+        return opName
+    }
+
+    override fun frameworkVersion(): String {
+        return frameworkVersion
+    }
+
+    override fun inputFramework(): String {
+       return inputFramework
+    }
+
+    override fun applyProcess(inputNode: IRNode<NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpDeclarationDescriptor {
+        val builder = OpDeclarationDescriptor.builder()
+        builder.name(opName())
+        val allArgs = ArrayList<OpNamespace.ArgDescriptor>()
+         rules().forEach {
+             allArgs.addAll(it.convertInput())
+
+         }
+
+        var numTArgs = 0
+        var numIArgs = 0
+        var nOut = 0
+
+        var nIn = 0
+        var numBArgs = 0
+
+        val tArgName = ArrayList<String>()
+        val iArgName = ArrayList<String>()
+
+        val inputTensorNames = ArrayList<String>()
+        val outputTensorNames = ArrayList<String>()
+        allArgs.forEach   {
+            when(it.argType) {
+                OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR -> {
+                    nOut += 1
+                    outputTensorNames.add(it.name)
+                }
+
+                OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
+                    nIn += 1
+                    inputTensorNames.add(it.name)
+                }
+                OpNamespace.ArgDescriptor.ArgType.INT64 -> {
+                    numIArgs += 1
+                    iArgName.add(it.name)
+                }
+                OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
+                    numTArgs += 1
+                    tArgName.add(it.name)
+                }
+                OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
+                    numTArgs += 1
+                    tArgName.add(it.name)
+                }
+                OpNamespace.ArgDescriptor.ArgType.BOOL ->  {
+                    numBArgs += 1
+                }
+                OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                    numIArgs += 1
+                    iArgName.add(it.name)
+
+                }
+            }
+        }
+
+
+        builder.tArgs(numTArgs)
+        builder.iArgs(numIArgs)
+
+        builder.inArgNames(inputTensorNames)
+        builder.outArgNames(outputTensorNames)
+
+
+        /**
+         * Don't really need to map type.
+         * Pull from existing op descriptor by looking up via name?
+         */
+       // builder.opDeclarationType()
+
+        return builder.build()
+    }
+
+    override fun serialize(): MapperNamespace.MapperDeclaration {
+        val retBuilder = MapperNamespace.MapperDeclaration.newBuilder()
+        retBuilder.frameworkName = inputFramework()
+        retBuilder.opName = opName()
+
+        for(rule in rules()) {
+            retBuilder.ruleBuilderList.add(rule.serialize().toBuilder())
+        }
+
+        return retBuilder.build()
+    }
+}
+
 
 enum class MappingRuleType {
     ATTRIBUTE,
@@ -178,7 +292,7 @@ interface MappingRule<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE 
 
     fun mappingType(): MappingRuleType
 
-    fun toSaving(): org.nd4j.ir.MapperNamespace.MappingRule
+    fun serialize(): MapperNamespace.MappingRule
 }
 
 

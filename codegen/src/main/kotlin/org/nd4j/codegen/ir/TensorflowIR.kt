@@ -3,6 +3,7 @@ package org.nd4j.codegen.ir
 import org.apache.commons.io.IOUtils
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.gen.OpDeclarationDescriptor
+import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.OpNamespace.ArgDescriptor.ArgType
 import org.nd4j.ir.TensorNamespace
@@ -540,7 +541,17 @@ class AbsMappingProcess: MappingProcess<NodeDef,TensorProto,AttrDef,AttrValue,or
         TODO("Not yet implemented")
     }
 
+    override fun serialize(): MapperNamespace.MapperDeclaration {
+        val retBuilder = MapperNamespace.MapperDeclaration.newBuilder()
+        retBuilder.frameworkName = inputFramework()
+        retBuilder.opName = opName()
 
+        for(rule in rules()) {
+            retBuilder.ruleBuilderList.add(rule.serialize().toBuilder())
+        }
+
+        return retBuilder.build()
+    }
 
 
 }

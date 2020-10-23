@@ -42,7 +42,7 @@ abstract class BaseAttributeExtractionRule<ATTR_DEF : GeneratedMessageV3, ATTR_V
         return MappingRuleType.ATTRIBUTE
     }
 
-    override fun toSaving(): MapperNamespace.MappingRule {
+    override fun serialize(): MapperNamespace.MappingRule {
         val builder = MapperNamespace.MappingRule.newBuilder()
         builder.ruleName = name()
         builder.functionName = name()
@@ -314,7 +314,7 @@ abstract class BaseNDArrayMappingRule<ATTR_DEF : GeneratedMessageV3, ATTR_VALUE_
         return MappingRuleType.INPUT_TENSOR
     }
 
-    override fun toSaving(): MapperNamespace.MappingRule {
+    override fun serialize(): MapperNamespace.MappingRule {
         val builder = MapperNamespace.MappingRule.newBuilder()
         builder.ruleName = name()
         builder.functionName = name()

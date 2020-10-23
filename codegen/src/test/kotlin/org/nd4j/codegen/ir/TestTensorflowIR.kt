@@ -1,16 +1,7 @@
 package org.nd4j.codegen.ir
 
-import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Test
-import org.nd4j.common.io.ClassPathResource
-import org.nd4j.ir.OpNamespace
-import org.nd4j.shade.protobuf.ByteString
-import org.nd4j.shade.protobuf.TextFormat
-import org.tensorflow.framework.AttrValue
-import org.tensorflow.framework.DataType
 import org.tensorflow.framework.OpDef
-import org.tensorflow.framework.OpList
-import java.nio.charset.Charset
 
 class TestTensorflowIR {
 
@@ -30,7 +21,7 @@ class TestTensorflowIR {
                 attrDef,
                 attrValue,
                 hashMapOf("isNCHW" to irAttribute))
-        val convertedRule = tensorflowStringEquals.toSaving()
+        val convertedRule = tensorflowStringEquals.serialize()
         val convertedAttributes = tensorflowStringEquals.convertAttributes()
 
 
