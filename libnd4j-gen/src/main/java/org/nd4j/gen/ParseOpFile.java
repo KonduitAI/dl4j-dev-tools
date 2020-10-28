@@ -16,18 +16,24 @@
 package org.nd4j.gen;
 
 import org.apache.commons.io.FileUtils;
+import org.nd4j.autodiff.functions.DifferentialFunction;
+import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.common.util.SetUtils;
 import org.nd4j.ir.OpNamespace;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOpDescriptor;
 import org.nd4j.linalg.factory.Nd4j;
+import org.reflections.Reflections;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 
 /**
@@ -455,15 +461,136 @@ public class ParseOpFile {
             opsFoundInDeclarations.add(declarationDescriptor.getName());
         }
 
-        OpNamespace.OpDescriptorList build = listBuilder.build();
-        String item = build.toString();
-        FileUtils.writeStringToFile(outputFile,item, Charset.defaultCharset());
-        Set<String> differences = SetUtils.difference(opsFoundInDeclarations,opNamesForCompare);
-        if(!differences.isEmpty()) {
-            System.out.println("Differences found in declarations vs registered ops " + differences);
+
+
+        Reflections reflections = new Reflections("org.nd4j");
+        Set<Class<? extends DifferentialFunction>> subTypesOf = reflections.getSubTypesOf(DifferentialFunction.class);
+        Set<String> opNamesForDifferentialFunction = new HashSet<>();
+        for(Class<? extends DifferentialFunction> clazz : subTypesOf) {
+            try {
+                DifferentialFunction differentialFunction = clazz.newInstance();
+                String name = differentialFunction.opName();
+                opNamesForDifferentialFunction.add(name);
+            } catch(Exception e) {
+                System.err.println("Unable to instantiate " + clazz.getName());
+            }
+
         }
 
+
+        OpNamespace.OpDescriptorList build = listBuilder.build();
+        String item = build.toString();
+        Set<String> differences = SetUtils.difference(opNamesForDifferentialFunction,opsFoundInDeclarations);
+        differences.remove(null);
+        List<String> sorted = new ArrayList<>(differences);
+        Collections.sort(sorted);
+        Set<String> superClasses = new HashSet<>();
+        Set<String> fieldNameFilters = new HashSet<>();
+        fieldNameFilters.add("sameDiff");
+        fieldNameFilters.add("xVertexId");
+        fieldNameFilters.add("yVertexId");
+        fieldNameFilters.add("zVertexId");
+        fieldNameFilters.add("extraArgs");
+        fieldNameFilters.add("extraArgz");
+        fieldNameFilters.add("dimensionz");
+
+        for(Class<? extends DifferentialFunction> clazz : subTypesOf) {
+            try {
+                DifferentialFunction differentialFunction = clazz.newInstance();
+                String name = differentialFunction.opName();
+                if(differences.contains(name)) {
+                    List<Field> validFields = new ArrayList<>();
+                    List<Field> allFields = getAllFields(clazz);
+                    for(Field field : allFields) {
+                        if(Modifier.isFinal(field.getModifiers()) && Modifier.isStatic(field.getModifiers())
+                                || fieldNameFilters.contains(field.getName())) {
+                        }
+                        else {
+                            validFields.add(field);
+                        }
+                    }
+
+                    List<String> fieldNames =  validFields.stream().map(input -> input.getName()).collect(Collectors.toList());
+
+                    System.out.println("Class name " + clazz.getName() + " parent class " + clazz.getSuperclass().getName() + " field names were " + fieldNames);
+                    superClasses.add(clazz.getSuperclass().getName());
+
+                    OpNamespace.OpDescriptor.Builder opDescriptor = OpNamespace.OpDescriptor.newBuilder();
+                    opDescriptor.setName(differentialFunction.opName());
+                    for(Field field : validFields) {
+                        if(Boolean.class.isAssignableFrom(field.getType()) || boolean.class.isAssignableFrom(field.getType())) {
+                            opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setName(field.getName())
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                    .build());
+
+                        } else if(INDArray.class.isAssignableFrom(field.getType())) {
+                            if(field.getName().equals("z")) {
+                                opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                        .setName(field.getName())
+                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                        .build());
+                            } else  {
+                                opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                        .setName(field.getName())
+                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                        .build());
+                            }
+
+
+                        } else if(Number.class.isAssignableFrom(field.getType())) {
+                            if(Long.class.isAssignableFrom(field.getType()) || Integer.class.isAssignableFrom(field.getType()) || int.class.isAssignableFrom(field.getType()) || long.class.isAssignableFrom(field.getType())) {
+                                opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                        .setName(field.getName())
+                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                        .build());
+                            } else if(Float.class.isAssignableFrom(field.getType()) || Double.class.isAssignableFrom(field.getType()) || float.class.isAssignableFrom(field.getType()) || double.class.isAssignableFrom(field.getType())) {
+                                opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                        .setName(field.getName())
+                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
+                                        .build());
+                            }
+                        }
+                        System.out.println();
+                    }
+
+                    listBuilder.addOpList(opDescriptor.build());
+
+                }
+
+                opNamesForDifferentialFunction.add(name);
+
+            } catch(Exception e) {
+                System.err.println("Unable to instantiate " + clazz.getName());
+            }
+
+        }
+
+
+        if(!differences.isEmpty()) {
+            System.out.println("Differences found in declarations vs registered ops " + sorted);
+        }
+
+        System.out.println("Op differences " + differences.size());
+        System.out.println("Super classes " + superClasses);
+
+        FileUtils.writeStringToFile(outputFile,listBuilder.build().toString(), Charset.defaultCharset());
+
         //System.out.println("Number of op descriptors " + opDeclarationDescriptors);
+    }
+
+
+    public static List<Field> getAllFields(Class clazz) {
+        if (clazz == null) {
+            return Collections.emptyList();
+        }
+
+        List<Field> result = new ArrayList<>(getAllFields(clazz.getSuperclass()));
+        List<Field> filteredFields = Arrays.stream(clazz.getDeclaredFields())
+                .filter(f -> Modifier.isPublic(f.getModifiers()) || Modifier.isProtected(f.getModifiers()))
+                .collect(Collectors.toList());
+        result.addAll(filteredFields);
+        return result;
     }
 
     public static String removeBracesFromDeclarationMacro(String line,String nameOfMacro) {

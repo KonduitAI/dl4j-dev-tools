@@ -20,6 +20,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.10</version>
+    </dependency>
+    <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacpp-platform</artifactId>
       <version>1.5.4-SNAPSHOT</version>

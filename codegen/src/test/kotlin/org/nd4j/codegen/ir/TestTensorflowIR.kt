@@ -1,9 +1,54 @@
 package org.nd4j.codegen.ir
 
 import org.junit.jupiter.api.Test
+import org.nd4j.codegen.ir.tensorflow.*
+import org.nd4j.ir.OpNamespace
+import org.tensorflow.framework.NodeDef
 import org.tensorflow.framework.OpDef
 
 class TestTensorflowIR {
+
+    @Test
+    fun testTensorflowAbs() {
+        val xArgBuilder = OpNamespace.ArgDescriptor.newBuilder().apply {
+            name = "x"
+            argType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
+        }
+
+        val yArgBuilder = OpNamespace.ArgDescriptor.newBuilder().apply {
+            name = "y"
+            argType = OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR
+
+        }
+
+        val absOpDescriptorBuilder = OpNamespace.OpDescriptor.newBuilder().apply {
+            name = "abs"
+            addArgDescriptor(xArgBuilder.build())
+            addArgDescriptor(yArgBuilder.build())
+        }
+
+        val absDescriptor = absOpDescriptorBuilder.build()
+        val opDef = tensorflowOps.opList.filter { it.name == "Abs" }[0]
+        val tensorflowAbsMapper = TensorflowNDArrayMappingRule(
+                nd4jOpName = "abs",
+                mappingNamesToPerform = mapOf("x" to "x","y" to "y"))
+
+        val nodeDef = NodeDef.newBuilder()
+                .addInput("x").addInput("y")
+                .setOp("Abs")
+                .setName("test")
+                .build()
+
+
+
+
+        val tensorflowNode = TensorflowIRNode(nodeDef,opDef)
+        val absMappingProcess = AbsMappingProcess()
+
+        val input = absMappingProcess.applyProcess(tensorflowNode)
+        System.out.println(input)
+
+    }
 
     @Test
     fun testStringEqualsMapper() {
