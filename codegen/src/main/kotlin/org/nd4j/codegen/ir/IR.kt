@@ -1,6 +1,10 @@
 package org.nd4j.codegen.ir
 
 import org.apache.commons.io.IOUtils
+import org.nd4j.autodiff.functions.DifferentialFunction
+import org.nd4j.autodiff.samediff.SDVariable
+import org.nd4j.autodiff.samediff.SameDiff
+import org.nd4j.autodiff.samediff.VariableType
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.gen.OpDeclarationDescriptor
 import org.nd4j.ir.MapperNamespace
@@ -9,6 +13,7 @@ import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.api.ops.CustomOp
+import org.nd4j.linalg.api.ops.DynamicCustomOp
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.nd4j.shade.protobuf.TextFormat
@@ -420,6 +425,51 @@ abstract  class AbstractMappingProcess<NODE_TYPE : GeneratedMessageV3, TENSOR_TY
     }
 }
 
+
+
+fun convertOpDescriptorToFunction(inputDescriptor: OpNamespace.OpDescriptor, sameDiff: SameDiff): DifferentialFunction {
+    val dynamicCustomOpsBuilder = DynamicCustomOp.builder(inputDescriptor.name)
+    val intArgs = ArrayList<OpNamespace.ArgDescriptor>()
+    val tArgs = ArrayList<OpNamespace.ArgDescriptor>()
+    val inputArrays = ArrayList<OpNamespace.ArgDescriptor>()
+    val outputArrays = ArrayList<OpNamespace.ArgDescriptor>()
+    val boolArgs = ArrayList<OpNamespace.ArgDescriptor>()
+    val sdVariables = ArrayList<SDVariable>()
+    inputDescriptor.argDescriptorList.forEach {
+        when(it.argType) {
+            OpNamespace.ArgDescriptor.ArgType.FLOAT, OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
+                tArgs.add(it)
+            }
+
+            OpNamespace.ArgDescriptor.ArgType.INT64, OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                intArgs.add(it)
+            }
+
+            OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
+                val variable = SDVariable(it.name, VariableType.VARIABLE,sameDiff,null,null)
+                sdVariables.add(variable)
+                inputArrays.add(it)
+            }
+
+            OpNamespace.ArgDescriptor.ArgType.BOOL -> {
+                boolArgs.add(it)
+            }
+
+        }
+    }
+
+    intArgs.sortBy { it.argIndex }
+    intArgs.forEach { dynamicCustomOpsBuilder.addIntegerArguments(it.int64Value) }
+    inputArrays.sortBy { it.argIndex }
+    tArgs.sortBy { it.argIndex }
+    tArgs.forEach { dynamicCustomOpsBuilder.addFloatingPointArguments(it.doubleValue) }
+
+    boolArgs.sortBy { it.argIndex }
+    boolArgs.forEach { dynamicCustomOpsBuilder.addBooleanArguments(it.boolValue) }
+
+    sameDiff.addArgsFor(sdVariables.toTypedArray(),dynamicCustomOpsBuilder.build())
+    return dynamicCustomOpsBuilder.build()
+}
 
 
 fun getArgByName(name: String, descriptor: OpNamespace.OpDescriptor): OpNamespace.ArgDescriptor {
