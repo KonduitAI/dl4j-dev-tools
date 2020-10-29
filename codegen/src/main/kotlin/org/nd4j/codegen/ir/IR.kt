@@ -131,24 +131,26 @@ interface IRAttribute<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE 
 
 
 
-interface MappingProcess<NODE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>
+interface MappingProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
+
+    fun lookupInputOpDef(opName: String): OP_DEF_TYPE
+
+    fun inputOpDef(): OP_DEF_TYPE
+
     fun opName(): String
 
     fun frameworkVersion(): String
 
     fun inputFramework(): String
 
+    fun attributeMappingRules(): List<AttributeMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
 
-    fun attributeMappingRules(): List<AttributeMappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
+    fun tensorMappingRules():  List<TensorMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
 
+    fun applyProcess(inputNode: IRNode<NODE_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor
 
-    fun tensorMappingRules():  List<TensorMappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
-
-
-    fun applyProcess(inputNode: IRNode<NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor
-
-    fun applyProcessReverse(input: OpDeclarationDescriptor): IRNode<NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>
+    fun applyProcessReverse(input: OpDeclarationDescriptor): IRNode<NODE_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>
 
     fun serialize(): MapperNamespace.MapperDeclaration
 
@@ -163,29 +165,22 @@ enum class MappingRuleType {
 }
 
 
-
-
-interface MappingRule<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>
+interface TensorMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
+
+
+    fun initWithMappingProcess(mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
+
+    fun inputOpDescriptor(): OP_DEF_TYPE
 
     fun name(): String
 
-    fun mappingNamesToPerform(): Map<String,String>
-
-    /**
-     * Map of string to list of arguments needed for a transform
-     */
-    fun mappingTransformerArgs(): Map<String, List<IRAttribute<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>>
-
-    fun opDescriptor(): OpNamespace.OpDescriptor
-
-    fun mappingType(): MappingRuleType
 
     fun serialize(): MapperNamespace.MappingRule
-}
 
-interface TensorMappingRule<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>: MappingRule<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
-        where DATA_TYPE: ProtocolMessageEnum {
+
+    fun mappingNamesToPerform(): Map<String,String>
+
     /**
      * Convert 1 or more attributes in to a list of {@link ArgDescriptor}
      */
@@ -196,25 +191,32 @@ interface TensorMappingRule<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE
 
     fun convertInputsReverse(toReverse: List<OpNamespace.ArgDescriptor>): List<TENSOR_TYPE>
 
+
+
 }
 
 
-interface AttributeMappingRule<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>: MappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE,DATA_TYPE>
+interface AttributeMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
 
-    fun convertAttributes(): List<OpNamespace.ArgDescriptor>
+    fun initWithMappingProcess(mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
 
-    fun inputAttributeDefsToConvert(): Map<String, ATTRIBUTE_TYPE>
 
-    fun getInputAttribute(input: String): ATTRIBUTE_TYPE
+    fun  getIRAttribute(name: String, nodeWithValues: NODE_DEF_TYPE): IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
 
-    fun inputAttributeValuesToConvert(): Map<String, ATTRIBUTE_VALUE_TYPE>
+    fun mappingNamesToPerform(): Map<String,String>
 
-    fun getInputAttributeValue(input: String): ATTRIBUTE_VALUE_TYPE
+    fun mappingTransformerArgs(): Map<String, List<OpNamespace.ArgDescriptor>>
+
+    fun name(): String
+
+    fun serialize(): MapperNamespace.MappingRule
+
+    fun getAttributeDefFromName(inputName: String): ATTRIBUTE_TYPE
+
+    fun convertAttributes(inputNode: NODE_DEF_TYPE): List<OpNamespace.ArgDescriptor>
 
     fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
-
-
 }
 
 
@@ -353,24 +355,48 @@ interface Mapper<NODE_TYPE: GeneratedMessageV3, ATTR_DEF_TYPE: GeneratedMessageV
     fun typeFor(tensorflowType: DATA_TYPE): DataType
 }
 
-abstract  class AbstractMappingProcess<NODE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>
-(inputFramework: String,frameworkVersion: String,opName: String,tensorMappingRules: List<TensorMappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
- ,attributeMappingRules: List<AttributeMappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> ):
-        MappingProcess<NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>(inputFramework: String,
+                                                              frameworkVersion: String,
+                                                              inputFrameworkOpName: String,
+                                                              opName: String,
+                                                              tensorMappingRules: List<TensorMappingRule<OP_DEF_TYPE,NODE_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>,
+                                                              attributeMappingRules: List<AttributeMappingRule<OP_DEF_TYPE,NODE_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>):
+        MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
 
     protected val inputFramework = inputFramework
     protected val frameworkVersion = frameworkVersion
+    protected val inputFrameworkOpName = inputFrameworkOpName
     protected val opName = opName
     protected val tensorMappingRules = tensorMappingRules
     protected val attributeMappingRules = attributeMappingRules
+    protected var opDef: OP_DEF_TYPE? = null
 
+    init {
+        tensorMappingRules.forEach {
+            it.initWithMappingProcess(this)
+        }
 
-    override fun attributeMappingRules(): List<AttributeMappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> {
+        attributeMappingRules.forEach {
+            it.initWithMappingProcess(this)
+        }
+    }
+
+    override fun inputOpDef(): OP_DEF_TYPE {
+        if(opDef == null)
+            this.opDef = lookupInputOpDef(inputFrameworkOpName)
+        return opDef!!
+    }
+
+    override fun attributeMappingRules(): List<AttributeMappingRule<OP_DEF_TYPE,NODE_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> {
         return attributeMappingRules
     }
 
-    override fun tensorMappingRules(): List<TensorMappingRule<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> {
+    override fun tensorMappingRules(): List<TensorMappingRule<OP_DEF_TYPE,NODE_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>> {
         return tensorMappingRules
     }
 
@@ -393,15 +419,16 @@ abstract  class AbstractMappingProcess<NODE_TYPE : GeneratedMessageV3, TENSOR_TY
     override fun applyProcess(inputNode: IRNode<NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor {
         val descriptorBuilder = OpNamespace.OpDescriptor.newBuilder()
         descriptorBuilder.name = opName()
-        tensorMappingRules.forEach { it.convertInput().forEach {
-            descriptorBuilder.addArgDescriptor(it)
-        }
+        tensorMappingRules.forEach {
+            it.convertInput().forEach { descriptor ->
+                descriptorBuilder.addArgDescriptor(descriptor)
+            }
         }
 
 
         attributeMappingRules.forEach {
-            it.convertAttributes().forEach {
-                descriptorBuilder.addArgDescriptor(it)
+            it.convertAttributes(inputNode.internalValue()).forEach {
+                descriptor -> descriptorBuilder.addArgDescriptor(descriptor)
             }
         }
 
@@ -435,24 +462,24 @@ fun convertOpDescriptorToFunction(inputDescriptor: OpNamespace.OpDescriptor, sam
     val outputArrays = ArrayList<OpNamespace.ArgDescriptor>()
     val boolArgs = ArrayList<OpNamespace.ArgDescriptor>()
     val sdVariables = ArrayList<SDVariable>()
-    inputDescriptor.argDescriptorList.forEach {
-        when(it.argType) {
+    inputDescriptor.argDescriptorList.forEach { argDescriptor ->
+        when(argDescriptor.argType) {
             OpNamespace.ArgDescriptor.ArgType.FLOAT, OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
-                tArgs.add(it)
+                tArgs.add(argDescriptor)
             }
 
             OpNamespace.ArgDescriptor.ArgType.INT64, OpNamespace.ArgDescriptor.ArgType.INT32 -> {
-                intArgs.add(it)
+                intArgs.add(argDescriptor)
             }
 
             OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
-                val variable = SDVariable(it.name, VariableType.VARIABLE,sameDiff,null,null)
+                val variable = SDVariable(argDescriptor.name, VariableType.VARIABLE,sameDiff,null,null)
                 sdVariables.add(variable)
-                inputArrays.add(it)
+                inputArrays.add(argDescriptor)
             }
 
             OpNamespace.ArgDescriptor.ArgType.BOOL -> {
-                boolArgs.add(it)
+                boolArgs.add(argDescriptor)
             }
 
         }
