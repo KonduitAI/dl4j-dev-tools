@@ -5,6 +5,7 @@ import org.nd4j.autodiff.functions.DifferentialFunction
 import org.nd4j.autodiff.samediff.SDVariable
 import org.nd4j.autodiff.samediff.SameDiff
 import org.nd4j.autodiff.samediff.VariableType
+import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.gen.OpDeclarationDescriptor
 import org.nd4j.ir.MapperNamespace
@@ -68,6 +69,8 @@ interface IR<NODE_TYPE : GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3, DAT
 
 
 }
+
+annotation class OpMappingProcess(val inputFrameworkName: String,val inputFrameworkOpName: String)
 
 interface IRTensor<TENSOR_TYPE: GeneratedMessageV3, DATA_TYPE>
         where  DATA_TYPE: ProtocolMessageEnum {
@@ -134,9 +137,8 @@ interface IRAttribute<ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE 
 interface MappingProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
 
-    fun lookupInputOpDef(opName: String): OP_DEF_TYPE
 
-    fun inputOpDef(): OP_DEF_TYPE
+    fun inputOpDef(graphDef: IRGraph<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OP_DEF_TYPE
 
     fun opName(): String
 
@@ -144,24 +146,19 @@ interface MappingProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Generate
 
     fun inputFramework(): String
 
+    fun inputFrameworkOpName(): String
+
     fun attributeMappingRules(): List<AttributeMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
 
     fun tensorMappingRules():  List<TensorMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
 
-    fun applyProcess(inputNode: IRNode<NODE_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor
+    fun applyProcess(inputNode: IRNode<NODE_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>, inputGraph: IRGraph<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor
 
     fun applyProcessReverse(input: OpDeclarationDescriptor): IRNode<NODE_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>
 
     fun serialize(): MapperNamespace.MapperDeclaration
 
-}
 
-
-
-enum class MappingRuleType {
-    ATTRIBUTE,
-    INPUT_TENSOR,
-    OUTPUT_TENSOR
 }
 
 
@@ -199,8 +196,9 @@ interface TensorMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Gener
 interface AttributeMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
 
-    fun initWithMappingProcess(mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
 
+
+    fun initWithMappingProcess(mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
 
     fun  getIRAttribute(name: String, nodeWithValues: NODE_DEF_TYPE): IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
 
@@ -219,6 +217,26 @@ interface AttributeMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Ge
     fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
 }
 
+
+/**
+ * TODO: Need to add IRGraph Definition and Import Process (a list of mapping processes).
+ * IR Graph definition has list of IRNodes that get passed to a mapping process.
+ * Each node will have a mapping process attached to it.
+ *
+ * An overall import process will be a list of mapping processes.
+ *
+ * An import process will take in an IRGraph.
+ */
+
+interface IRGraph<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE: GeneratedMessageV3,ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,DATA_TYPE>
+        where DATA_TYPE: ProtocolMessageEnum {
+
+    fun opDefFor(name: String): OP_DEF_TYPE
+
+    fun nodeByName(input: String): NODE_TYPE
+
+    fun nodeList(): List<NODE_TYPE>
+}
 
 interface IRNode<NODE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE>
         where  DATA_TYPE: ProtocolMessageEnum {
@@ -355,7 +373,8 @@ interface Mapper<NODE_TYPE: GeneratedMessageV3, ATTR_DEF_TYPE: GeneratedMessageV
     fun typeFor(tensorflowType: DATA_TYPE): DataType
 }
 
-abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
+abstract  class AbstractMappingProcess<
+        OP_DEF_TYPE: GeneratedMessageV3,
         NODE_TYPE : GeneratedMessageV3,
         TENSOR_TYPE : GeneratedMessageV3,
         ATTRIBUTE_TYPE : GeneratedMessageV3,
@@ -363,6 +382,7 @@ abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
                                                               frameworkVersion: String,
                                                               inputFrameworkOpName: String,
                                                               opName: String,
+                                                              opMappingRegistry: OpMappingRegistry<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,DATA_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE>,
                                                               tensorMappingRules: List<TensorMappingRule<OP_DEF_TYPE,NODE_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>,
                                                               attributeMappingRules: List<AttributeMappingRule<OP_DEF_TYPE,NODE_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>):
         MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
@@ -375,6 +395,7 @@ abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
     protected val tensorMappingRules = tensorMappingRules
     protected val attributeMappingRules = attributeMappingRules
     protected var opDef: OP_DEF_TYPE? = null
+    protected val opMappingRegistry = opMappingRegistry
 
     init {
         tensorMappingRules.forEach {
@@ -384,11 +405,17 @@ abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
         attributeMappingRules.forEach {
             it.initWithMappingProcess(this)
         }
+
+
+        opMappingRegistry.registerMappingProcess(
+                inputFrameworkOpName = inputFrameworkOpName,
+                processToRegister = this
+        )
     }
 
-    override fun inputOpDef(): OP_DEF_TYPE {
+    override fun inputOpDef(graphDef: IRGraph<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OP_DEF_TYPE {
         if(opDef == null)
-            this.opDef = lookupInputOpDef(inputFrameworkOpName)
+            this.opDef = graphDef.opDefFor(inputFrameworkOpName)
         return opDef!!
     }
 
@@ -404,6 +431,10 @@ abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
         TODO("Not yet implemented")
     }
 
+    override fun inputFrameworkOpName(): String {
+        return inputFrameworkOpName
+    }
+
     override fun opName(): String {
         return opName
     }
@@ -416,7 +447,7 @@ abstract  class AbstractMappingProcess<OP_DEF_TYPE: GeneratedMessageV3,
         return inputFramework
     }
 
-    override fun applyProcess(inputNode: IRNode<NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor {
+    override fun applyProcess(inputNode: IRNode<NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>, inputGraph: IRGraph<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OpNamespace.OpDescriptor {
         val descriptorBuilder = OpNamespace.OpDescriptor.newBuilder()
         descriptorBuilder.name = opName()
         tensorMappingRules.forEach {

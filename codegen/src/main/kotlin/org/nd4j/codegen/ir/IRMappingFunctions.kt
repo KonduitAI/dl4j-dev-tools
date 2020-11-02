@@ -188,6 +188,43 @@ abstract class ConditionalFieldValueIntIndexArrayRule<
     }
 }
 
+
+/**
+ * Need to implement tensor size extraction value at index
+ */
+
+
+abstract class NDArraySizeAtRule<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE: GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>(mappingNamesToPerform: Map<String, String>,
+                                                     transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>):
+        BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (name = "ndarraysizeat", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs)
+        where  DATA_TYPE: ProtocolMessageEnum {
+
+
+    override fun convertAttributes(inputNode: NODE_TYPE): List<OpNamespace.ArgDescriptor> {
+        val ret = ArrayList<OpNamespace.ArgDescriptor>()
+        for((k, v) in mappingNamesToPerform()) {
+            val transformArgsForAttribute = transformerArgs[k]
+            val inputArr = getIRAttribute(v, inputNode).tensorValue()
+            val sizeIndex = transformArgsForAttribute!![0].int32Value
+            val sizeAt = inputArr.shape()[sizeIndex]
+            val descriptorBuilder = OpNamespace.ArgDescriptor.newBuilder()
+            descriptorBuilder.name = v
+            descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.INT64
+            descriptorBuilder.int64Value = sizeAt
+            ret.add(descriptorBuilder.build())
+
+        }
+        return ret
+    }
+}
+
+
 abstract class ExtractIntMappingRule<
         OP_DEF_TYPE: GeneratedMessageV3,
         NODE_TYPE: GeneratedMessageV3,
@@ -209,6 +246,7 @@ abstract class ExtractIntMappingRule<
             descriptorBuilder.name = v
             descriptorBuilder.argType = descriptorForName.argType
             descriptorBuilder.dataTypeValue = descriptorForName.dataTypeValue
+
 //            if(inputAttributeDef.attributeValueType() != AttributeValueType.LIST_INT) {
 //
 //            }
@@ -231,7 +269,7 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
         ,NODE_DEF_TYPE: GeneratedMessageV3,ATTR_DEF : GeneratedMessageV3,
         ATTR_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3,
         DATA_TYPE>(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                   transformerArgs: Map<String, List<IRAttribute<ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>> = emptyMap()):
+                   transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
         TensorMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
 
@@ -314,12 +352,12 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
             }
 
             for(associatedInput in v) {
-                when(associatedInput.attributeValueType()) {
-                    AttributeValueType.STRING -> builder.addInputStringAttrName(associatedInput.name())
-                    AttributeValueType.BOOL -> builder.addInputBooleanName(associatedInput.name())
-                    AttributeValueType.FLOAT -> builder.addInputFloatName(associatedInput.name())
-                    AttributeValueType.INT -> builder.addInputIntName(associatedInput.name())
-                    AttributeValueType.TENSOR -> builder.addInputTensorName(associatedInput.name())
+                when(associatedInput.argType) {
+                    AttributeValueType.STRING -> builder.addInputStringAttrName(associatedInput.name)
+                    AttributeValueType.BOOL -> builder.addInputBooleanName(associatedInput.name)
+                    AttributeValueType.FLOAT -> builder.addInputFloatName(associatedInput.name)
+                    AttributeValueType.INT -> builder.addInputIntName(associatedInput.name)
+                    AttributeValueType.TENSOR -> builder.addInputTensorName(associatedInput.name)
                 }
             }
 
