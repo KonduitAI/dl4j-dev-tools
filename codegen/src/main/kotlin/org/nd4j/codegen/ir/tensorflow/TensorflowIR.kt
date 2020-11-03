@@ -2,14 +2,9 @@ package org.nd4j.codegen.ir.tensorflow
 
 import org.apache.commons.io.IOUtils
 import org.nd4j.codegen.ir.*
-import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.OpNamespace
-import org.nd4j.ir.OpNamespace.ArgDescriptor.ArgType
 import org.nd4j.ir.TensorNamespace
-import org.nd4j.linalg.api.buffer.DataType
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.api.ops.CustomOp
 import org.tensorflow.framework.*
 import org.tensorflow.framework.OpDef.AttrDef
 import kotlin.collections.HashMap
@@ -17,7 +12,6 @@ import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.shade.protobuf.TextFormat
 import java.nio.charset.Charset
-import kotlin.reflect.KClass
 
 fun loadTensorflowOps(): OpList {
     val string = IOUtils.toString(ClassPathResource("ops.proto").inputStream, Charset.defaultCharset())
@@ -28,122 +22,10 @@ fun loadTensorflowOps(): OpList {
 
 val tensorflowOps = loadTensorflowOps()
 
-fun lookupOpDef(name: String): OpDef {
-    return tensorflowOps.opList.filter { it.name == name }[0]
-}
 
 
-class TensorflowIR: IR<NodeDef, TensorProto, org.tensorflow.framework.DataType, AttrDef, AttrValue, OpList> {
 
-    private val nd4jOpList = loadNd4jOpDescriptors()
-    private val tensorflowOpList = loadTensorflowOps()
-
-    override fun createNode(name: String, inputs: List<String>, opName: String, nodeAttributes: Map<String, AttrValue>): NodeDef {
-        val builder = NodeDef.newBuilder()
-        builder.name = name
-        for(i in 0 .. inputs.size) {
-            builder.addInput(inputs[i])
-        }
-
-        val op = tensorflowOpList.opList.filter { input -> input.name == opName }
-        require(op.size == 1) { "Op name $opName illegal. Name must be unique and defined within tensorflow." }
-        builder.op = opName
-        builder.putAllAttr(nodeAttributes)
-        return builder.build()
-    }
-
-    override fun createIRNode(name: String, inputNode: NodeDef): IRNode<NodeDef, TensorProto, AttrDef, AttrValue, org.tensorflow.framework.DataType> {
-        val opDef = tensorflowOpList.opList.filter { input -> input.name == inputNode.op }[0]
-        return TensorflowIRNode(inputNode,opDef)
-    }
-
-    override fun <T> createTensor(name: String, dataType: org.tensorflow.framework.DataType, shape: List<Long>, inputData: T): TensorProto {
-        val tensorProtoBuilder = TensorProto.newBuilder()
-        tensorProtoBuilder.dtype = dataType
-        val tensorShapeProtoBuilder = TensorShapeProto.newBuilder()
-        for(i in 0 .. shape.size) {
-            val dim = TensorShapeProto.Dim.newBuilder()
-            dim.size = shape[i]
-            dim.name = i.toString()
-            tensorShapeProtoBuilder.addDim(dim.build())
-        }
-
-        tensorProtoBuilder.tensorShape = tensorShapeProtoBuilder.build()
-
-        return tensorProtoBuilder.build()
-    }
-
-    override fun createIRTensor(inputTensor: TensorProto): IRTensor<TensorProto, org.tensorflow.framework.DataType> {
-        return TensorflowIRTensor(inputTensor)
-    }
-
-    override fun createAttributeValue(name: String, attributeValue: AttributeValueType): AttrValue {
-        val attrBuilder = AttrValue.newBuilder()
-        when(attributeValue) {
-            AttributeValueType.INT -> attrBuilder.type = org.tensorflow.framework.DataType.DT_INT64
-            AttributeValueType.STRING -> attrBuilder.type = org.tensorflow.framework.DataType.DT_STRING
-            AttributeValueType.FLOAT -> attrBuilder.type = org.tensorflow.framework.DataType.DT_FLOAT
-            AttributeValueType.BOOL -> attrBuilder.type = org.tensorflow.framework.DataType.DT_BOOL
-            else -> {
-                attrBuilder.type = org.tensorflow.framework.DataType.DT_VARIANT
-            }
-
-        }
-        return attrBuilder.build()
-    }
-
-    override fun createAttributeDef(name: String, description: String, type: String): AttrDef {
-        val attrDef = AttrDef.newBuilder()
-        attrDef.name = name
-        attrDef.description = description
-        attrDef.type = type
-        return attrDef.build()
-    }
-
-    override fun createIRAttribute(attributeDef: AttrDef, attributeValue: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
-        return TensorflowIRAttr(attributeDef,attributeValue)
-    }
-
-    override fun createDataType(name: String, dataType: TensorNamespace.DataType): org.tensorflow.framework.DataType {
-        when(dataType) {
-            TensorNamespace.DataType.UINT64 -> return org.tensorflow.framework.DataType.DT_UINT64
-            TensorNamespace.DataType.UINT32 -> return org.tensorflow.framework.DataType.DT_UINT32
-            TensorNamespace.DataType.UINT16 -> return org.tensorflow.framework.DataType.DT_UINT16
-            TensorNamespace.DataType.FLOAT16 -> return org.tensorflow.framework.DataType.DT_HALF
-            TensorNamespace.DataType.STRING -> return org.tensorflow.framework.DataType.DT_STRING
-            TensorNamespace.DataType.FLOAT -> return org.tensorflow.framework.DataType.DT_FLOAT
-            TensorNamespace.DataType.DOUBLE -> return org.tensorflow.framework.DataType.DT_DOUBLE
-            TensorNamespace.DataType.BOOL -> return org.tensorflow.framework.DataType.DT_BOOL
-            TensorNamespace.DataType.INT64 -> return org.tensorflow.framework.DataType.DT_INT64
-            TensorNamespace.DataType.INT32 -> return org.tensorflow.framework.DataType.DT_INT32
-            TensorNamespace.DataType.INT16 -> return org.tensorflow.framework.DataType.DT_INT16
-            TensorNamespace.DataType.BFLOAT16 -> return org.tensorflow.framework.DataType.DT_BFLOAT16
-            TensorNamespace.DataType.COMPLEX64 -> return org.tensorflow.framework.DataType.DT_COMPLEX64
-            TensorNamespace.DataType.COMPLEX128 ->  return org.tensorflow.framework.DataType.DT_COMPLEX128
-            else -> {
-                return org.tensorflow.framework.DataType.UNRECOGNIZED
-            }
-
-        }
-
-    }
-
-    override fun createIRDataType(dataType: org.tensorflow.framework.DataType): IRDataType<org.tensorflow.framework.DataType> {
-        return TensorflowIRDataType(dataType)
-    }
-
-    override fun nd4jListOps(): OpNamespace.OpDescriptorList {
-        return nd4jOpList
-    }
-
-    override fun inputFrameworkOpDefs(): OpList {
-        return tensorflowOpList
-    }
-
-}
-
-
-class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, org.tensorflow.framework.DataType> {
+class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, DataType> {
 
     val tensor = input
 
@@ -157,7 +39,7 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, org.tensorfl
         return Nd4j.getStrides(shape().toTypedArray().toLongArray(),'c').asList()
     }
 
-    override fun dataType(): IRDataType<org.tensorflow.framework.DataType> {
+    override fun dataType(): IRDataType<DataType> {
         return TensorflowIRDataType(tensor.dtype)
     }
 
@@ -170,21 +52,21 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, org.tensorfl
         }
 
         when(tensor.dtype) {
-            org.tensorflow.framework.DataType.DT_UINT64 -> builder.dataType = TensorNamespace.DataType.UINT64.ordinal
-            org.tensorflow.framework.DataType.DT_UINT32 -> builder.dataType = TensorNamespace.DataType.UINT32.ordinal
-            org.tensorflow.framework.DataType.DT_UINT16 -> builder.dataType = TensorNamespace.DataType.UINT16.ordinal
-            org.tensorflow.framework.DataType.DT_HALF -> builder.dataType = TensorNamespace.DataType.FLOAT16.ordinal
-            org.tensorflow.framework.DataType.DT_STRING -> builder.dataType = TensorNamespace.DataType.STRING.ordinal
-            org.tensorflow.framework.DataType.DT_FLOAT -> builder.dataType  = TensorNamespace.DataType.FLOAT.ordinal
-            org.tensorflow.framework.DataType.DT_DOUBLE -> builder.dataType = TensorNamespace.DataType.DOUBLE.ordinal
-            org.tensorflow.framework.DataType.DT_BOOL -> builder.dataType = TensorNamespace.DataType.BOOL.ordinal
-            org.tensorflow.framework.DataType.DT_INT64 -> builder.dataType = TensorNamespace.DataType.INT64.ordinal
-            org.tensorflow.framework.DataType.DT_INT32 -> builder.dataType = TensorNamespace.DataType.INT32.ordinal
-            org.tensorflow.framework.DataType.DT_INT16 -> builder.dataType = TensorNamespace.DataType.INT16.ordinal
-            org.tensorflow.framework.DataType.DT_BFLOAT16 -> builder.dataType = TensorNamespace.DataType.BFLOAT16.ordinal
-            org.tensorflow.framework.DataType.DT_COMPLEX64 -> builder.dataType = TensorNamespace.DataType.COMPLEX64.ordinal
-            org.tensorflow.framework.DataType.DT_COMPLEX128 -> builder.dataType = TensorNamespace.DataType.COMPLEX128.ordinal
-            org.tensorflow.framework.DataType.UNRECOGNIZED -> builder.dataType = TensorNamespace.DataType.UNRECOGNIZED.ordinal
+            DataType.DT_UINT64 -> builder.dataType = TensorNamespace.DataType.UINT64.ordinal
+            DataType.DT_UINT32 -> builder.dataType = TensorNamespace.DataType.UINT32.ordinal
+            DataType.DT_UINT16 -> builder.dataType = TensorNamespace.DataType.UINT16.ordinal
+            DataType.DT_HALF -> builder.dataType = TensorNamespace.DataType.FLOAT16.ordinal
+            DataType.DT_STRING -> builder.dataType = TensorNamespace.DataType.STRING.ordinal
+            DataType.DT_FLOAT -> builder.dataType  = TensorNamespace.DataType.FLOAT.ordinal
+            DataType.DT_DOUBLE -> builder.dataType = TensorNamespace.DataType.DOUBLE.ordinal
+            DataType.DT_BOOL -> builder.dataType = TensorNamespace.DataType.BOOL.ordinal
+            DataType.DT_INT64 -> builder.dataType = TensorNamespace.DataType.INT64.ordinal
+            DataType.DT_INT32 -> builder.dataType = TensorNamespace.DataType.INT32.ordinal
+            DataType.DT_INT16 -> builder.dataType = TensorNamespace.DataType.INT16.ordinal
+            DataType.DT_BFLOAT16 -> builder.dataType = TensorNamespace.DataType.BFLOAT16.ordinal
+            DataType.DT_COMPLEX64 -> builder.dataType = TensorNamespace.DataType.COMPLEX64.ordinal
+            DataType.DT_COMPLEX128 -> builder.dataType = TensorNamespace.DataType.COMPLEX128.ordinal
+            DataType.UNRECOGNIZED -> builder.dataType = TensorNamespace.DataType.UNRECOGNIZED.ordinal
 
         }
 
@@ -229,28 +111,28 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, org.tensorfl
 
 }
 
-class TensorflowIRDataType(inputDataType: org.tensorflow.framework.DataType): IRDataType<org.tensorflow.framework.DataType> {
+class TensorflowIRDataType(inputDataType: DataType): IRDataType<DataType> {
     val dataType = inputDataType
 
-    override fun convertToDataType(input: org.tensorflow.framework.DataType): IRDataTypeValue {
+    override fun convertToDataType(input: DataType): IRDataTypeValue {
         when(input) {
-            org.tensorflow.framework.DataType.DT_BOOL -> return IRDataTypeValue.DT_BOOL
-            org.tensorflow.framework.DataType.DT_BFLOAT16 -> return IRDataTypeValue.DT_BFLOAT16
-            org.tensorflow.framework.DataType.DT_COMPLEX128 -> return IRDataTypeValue.DT_COMPLEX128
-            org.tensorflow.framework.DataType.DT_COMPLEX64 -> return IRDataTypeValue.DT_COMPLEX64
-            org.tensorflow.framework.DataType.DT_DOUBLE -> return IRDataTypeValue.DT_DOUBLE
-            org.tensorflow.framework.DataType.DT_FLOAT -> return IRDataTypeValue.DT_FLOAT
-            org.tensorflow.framework.DataType.DT_HALF -> return IRDataTypeValue.DT_HALF
-            org.tensorflow.framework.DataType.DT_INT16 -> return IRDataTypeValue.DT_INT16
-            org.tensorflow.framework.DataType.DT_INT32 -> return IRDataTypeValue.DT_INT32
-            org.tensorflow.framework.DataType.DT_INT64 -> return IRDataTypeValue.DT_INT64
-            org.tensorflow.framework.DataType.DT_QINT8 -> return IRDataTypeValue.DT_QINT8
-            org.tensorflow.framework.DataType.DT_QINT16 -> return IRDataTypeValue.DT_QINT16
-            org.tensorflow.framework.DataType.DT_QINT32 -> return IRDataTypeValue.DT_QINT32
-            org.tensorflow.framework.DataType.DT_STRING -> return IRDataTypeValue.DT_STRING
-            org.tensorflow.framework.DataType.DT_UINT16 -> return IRDataTypeValue.DT_UINT16
-            org.tensorflow.framework.DataType.DT_UINT32 -> return IRDataTypeValue.DT_UINT32
-            org.tensorflow.framework.DataType.DT_UINT64 -> return IRDataTypeValue.DT_UINT64
+            DataType.DT_BOOL -> return IRDataTypeValue.DT_BOOL
+            DataType.DT_BFLOAT16 -> return IRDataTypeValue.DT_BFLOAT16
+            DataType.DT_COMPLEX128 -> return IRDataTypeValue.DT_COMPLEX128
+            DataType.DT_COMPLEX64 -> return IRDataTypeValue.DT_COMPLEX64
+            DataType.DT_DOUBLE -> return IRDataTypeValue.DT_DOUBLE
+            DataType.DT_FLOAT -> return IRDataTypeValue.DT_FLOAT
+            DataType.DT_HALF -> return IRDataTypeValue.DT_HALF
+            DataType.DT_INT16 -> return IRDataTypeValue.DT_INT16
+            DataType.DT_INT32 -> return IRDataTypeValue.DT_INT32
+            DataType.DT_INT64 -> return IRDataTypeValue.DT_INT64
+            DataType.DT_QINT8 -> return IRDataTypeValue.DT_QINT8
+            DataType.DT_QINT16 -> return IRDataTypeValue.DT_QINT16
+            DataType.DT_QINT32 -> return IRDataTypeValue.DT_QINT32
+            DataType.DT_STRING -> return IRDataTypeValue.DT_STRING
+            DataType.DT_UINT16 -> return IRDataTypeValue.DT_UINT16
+            DataType.DT_UINT32 -> return IRDataTypeValue.DT_UINT32
+            DataType.DT_UINT64 -> return IRDataTypeValue.DT_UINT64
 
         }
 
@@ -261,17 +143,17 @@ class TensorflowIRDataType(inputDataType: org.tensorflow.framework.DataType): IR
         return convertToDataType(this.dataType)
     }
 
-    override fun internalValue(): org.tensorflow.framework.DataType {
+    override fun internalValue(): DataType {
         return this.dataType
     }
 
 }
 
-fun attrDefaultValue(): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+fun attrDefaultValue(): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
     return TensorflowIRAttr(AttrDef.getDefaultInstance(), AttrValue.getDefaultInstance())
 }
 
-class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
 
     private val attributeDef = inputAttributeDef
     private val attributeValue = inputAttributeValue
@@ -330,13 +212,13 @@ class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue
         return attributeValue
     }
 
-    override fun listTensorValue(): List<IRTensor<TensorProto, org.tensorflow.framework.DataType>> {
+    override fun listTensorValue(): List<IRTensor<TensorProto, DataType>> {
         return attributeValue.list.tensorList.map {
             input -> TensorflowIRTensor(input)
         }
     }
 
-    override fun tensorValue(): IRTensor<TensorProto, org.tensorflow.framework.DataType> {
+    override fun tensorValue(): IRTensor<TensorProto, DataType> {
         return TensorflowIRTensor(attributeValue.tensor)
     }
 
@@ -350,10 +232,10 @@ class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue
 
 }
 
-class TensorflowIRArgDef(input: OpDef.ArgDef): IRArgDef<OpDef.ArgDef, org.tensorflow.framework.DataType> {
+class TensorflowIRArgDef(input: OpDef.ArgDef): IRArgDef<OpDef.ArgDef, DataType> {
     private val argDefValue = input
 
-    override fun dataType(): IRDataType<org.tensorflow.framework.DataType> {
+    override fun dataType(): IRDataType<DataType> {
         return TensorflowIRArgDef(argDefValue).dataType()
     }
 
@@ -375,11 +257,11 @@ class TensorflowIRArgDef(input: OpDef.ArgDef): IRArgDef<OpDef.ArgDef, org.tensor
 
 }
 
-class TensorflowIROp(input: OpDef): IROpDef<OpDef, TensorProto, OpDef.ArgDef, org.tensorflow.framework.DataType, AttrDef, AttrValue> {
+class TensorflowIROp(input: OpDef): IROpDef<OpDef, TensorProto, OpDef.ArgDef, DataType, AttrDef, AttrValue> {
 
     val opDef = input
 
-    override fun attributes(): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+    override fun attributes(): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         return opDef.attrList.map {
             TensorflowIRAttr(it, AttrValue.getDefaultInstance())
         }
@@ -393,13 +275,13 @@ class TensorflowIROp(input: OpDef): IROpDef<OpDef, TensorProto, OpDef.ArgDef, or
         return opDef
     }
 
-    override fun inputArgs(): List<IRArgDef<OpDef.ArgDef, org.tensorflow.framework.DataType>> {
+    override fun inputArgs(): List<IRArgDef<OpDef.ArgDef, DataType>> {
         return opDef.inputArgList.map {
             TensorflowIRArgDef(it)
         }
     }
 
-    override fun outputArgs(): List<IRArgDef<OpDef.ArgDef, org.tensorflow.framework.DataType>> {
+    override fun outputArgs(): List<IRArgDef<OpDef.ArgDef, DataType>> {
         return opDef.outputArgList.map {
             TensorflowIRArgDef(it)
         }
@@ -407,12 +289,12 @@ class TensorflowIROp(input: OpDef): IROpDef<OpDef, TensorProto, OpDef.ArgDef, or
 
 }
 
-class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, TensorProto, AttrDef, AttrValue, org.tensorflow.framework.DataType> {
+class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
 
     private val nodeDef = inputNode
     private val opDef = inputOpDef
     private val attrDefsMap = attrDefsByName(inputOpDef.attrList)
-    private val attrMap: Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> = initAttrMapFromNode(inputNode)
+    private val attrMap: Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> = initAttrMapFromNode(inputNode)
 
     init {
 
@@ -426,8 +308,8 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
         return ret
     }
 
-    private fun initAttrMapFromNode(input: NodeDef): Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
-        val ret = HashMap<String, IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>>()
+    private fun initAttrMapFromNode(input: NodeDef): Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
+        val ret = HashMap<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>>()
         input.attrMap.forEach { (key, value) ->
             ret[key] =  TensorflowIRAttr(attrDefsMap.getOrDefault(key, AttrDef.getDefaultInstance()),value)
         }
@@ -457,19 +339,19 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
         return nodeDef.containsAttr(inputName)
     }
 
-    override fun attributeMap(): Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+    override fun attributeMap(): Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         return attrMap
     }
 
-    override fun createInputsFrom(inputData: List<TensorProto>): List<IRTensor<TensorProto, org.tensorflow.framework.DataType>> {
+    override fun createInputsFrom(inputData: List<TensorProto>): List<IRTensor<TensorProto, DataType>> {
         return inputData.map { TensorflowIRTensor(it) }
     }
 
-    override fun createOutputsFrom(inputValues: List<TensorProto>): List<IRTensor<TensorProto, org.tensorflow.framework.DataType>> {
+    override fun createOutputsFrom(inputValues: List<TensorProto>): List<IRTensor<TensorProto, DataType>> {
         return inputValues.map { TensorflowIRTensor(it) }
     }
 
-    override fun getAttribute(inputName: String): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+    override fun getAttribute(inputName: String): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
         return attrMap.getOrDefault(inputName, attrDefaultValue())
     }
 
@@ -481,7 +363,7 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
 
 class NDArrayMappingRule(mappingNamesToPerform: Map<String,String>,
                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
-        BaseNDArrayMappingRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+        BaseNDArrayMappingRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
 
 
 
@@ -503,7 +385,7 @@ fun GraphDef.nodeByName(name: String): NodeDef {
     return this.nodeList.first { it.name == name }!!
 }
 
-class TensorflowIRGraph(graphDef: GraphDef,opDef: OpList): IRGraph<NodeDef,OpDef,TensorProto,AttrDef,AttrValue,org.tensorflow.framework.DataType> {
+class TensorflowIRGraph(graphDef: GraphDef,opDef: OpList): IRGraph<NodeDef,OpDef,TensorProto,AttrDef,AttrValue,DataType> {
 
     val graphDef = graphDef
     val opList = opDef
@@ -521,7 +403,6 @@ class TensorflowIRGraph(graphDef: GraphDef,opDef: OpList): IRGraph<NodeDef,OpDef
 
 }
 
-val tfIr = TensorflowIR()
 
 fun ListAttrValue(vararg i: Long): AttrValue.ListValue =
         AttrValue.ListValue.newBuilder().apply {
@@ -531,6 +412,18 @@ fun ListAttrValue(vararg i: Long): AttrValue.ListValue =
 
 fun TensorProto(block: TensorProto.Builder.() -> Unit): TensorProto {
     return TensorProto.newBuilder().apply(block).build()
+}
+
+fun TensorShapeProto.Builder.Dim(name: String,size: Long) {
+    this.addDim(TensorShapeProto.Dim.newBuilder().setName(name).setSize(size).build())
+}
+
+fun Dim(block: TensorShapeProto.Dim.Builder.() -> Unit): TensorShapeProto.Dim {
+    return TensorShapeProto.Dim.newBuilder().apply(block).build()
+}
+
+fun TensorShapeProto(block: TensorShapeProto.Builder.() -> Unit): TensorShapeProto {
+    return TensorShapeProto.newBuilder().apply(block).build()
 }
 
 fun AttrValue(block: AttrValue.Builder.() -> Unit): AttrValue {
@@ -570,20 +463,16 @@ fun OpList.findOp(name: String): OpDef {
 
 
 
-class TensorflowConditionalFieldValueIntIndexArrayRule(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ConditionalFieldValueIntIndexArrayRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(mappingNamesToPerform, transformerArgs) {
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+class TensorflowConditionalFieldValueIntIndexArrayRule
+(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+        ConditionalFieldValueIntIndexArrayRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>
+        (mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef,attributeValueType)
     }
 
-    override fun getIRAttribute(name: String, nodeWithValues: NodeDef): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
-        return createIRAttribute(name,opDef!!.attrList.first { it.name == name },nodeWithValues.getAttrOrThrow(name))
-    }
-
-    override fun getAttributeDefFromName(inputName: String): AttrDef {
-        return opDef!!.attrList.first { it.name == inputName }
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
 
@@ -612,21 +501,13 @@ fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
 }
 
 
-class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef,attributeValueType)
     }
 
-    override fun getIRAttribute(name: String, nodeWithValues: NodeDef): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
-        return createIRAttribute(name,opDef!!.attrList.first { it.name == name },nodeWithValues.getAttrOrThrow(name))
-    }
-
-    override fun getAttributeDefFromName(inputName: String): AttrDef {
-        return opDef!!.attrList.first { it.name == inputName }
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
 
@@ -646,23 +527,15 @@ fun sizeAtRule(dimensionIndex: Int,outputAttributeName: String,inputFrameworkAtt
 
 class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
                                         transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringEqualsAdapterRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>
+        StringEqualsAdapterRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef,attributeValueType)
     }
 
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
-    }
-
-    override fun getAttributeDefFromName(inputName: String): AttrDef {
-        return opDef!!.attrList.first { it.name == inputName }
-    }
-
-    override fun getIRAttribute(name: String, nodeWithValues: NodeDef): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
-        return createIRAttribute(name,opDef!!.attrList.first { it.name == name },nodeWithValues.getAttrOrThrow(name))
     }
 
 }
@@ -678,66 +551,50 @@ fun stringEqualsRule(outputAttribute: String,inputFrameworkAttributeName: String
 
 
 class TensorflowSizeThresholdIntArrayIntIndexRule(mappingNamesToPerform: Map<String, String>,
-                                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : SizeThresholdIntArrayIntIndexRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>(mappingNamesToPerform, transformerArgs) {
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
+                                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : SizeThresholdIntArrayIntIndexRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef,attributeValueType)
     }
 
-    override fun getAttributeDefFromName(inputName: String): AttrDef {
-        return opDef!!.attrList.first { it.name == inputName }
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType>> {
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
 
-    override fun getIRAttribute(name: String, nodeWithValues: NodeDef): IRAttribute<AttrDef, AttrValue, TensorProto, org.tensorflow.framework.DataType> {
-        return createIRAttribute(name,opDef!!.attrList.first { it.name == name },nodeWithValues.getAttrOrThrow(name))
+}
+
+class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>) :
+        AbstractMappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>(opDef, node, graph) {
+
+    override fun attrDef(name: String): AttrDef {
+        val ret =  opDef().attrList.firstOrNull { it.name == name }
+        return ret!!
+    }
+
+    override fun irAttributeValueForNode(valueName: String): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
+        val attrDef = attrDef(valueName)
+        val attrValue = node.getAttrOrDefault(valueName, AttrValue.getDefaultInstance())
+        return TensorflowIRAttr(inputAttributeDef = attrDef,inputAttributeValue = attrValue)
+
+    }
+
+    override fun tensorInputFor(name: String): IRTensor<TensorProto,DataType> {
+       var foundIndex = -1
+        /**
+         * Use op definition name as 1 unified reference name in rules for static purposes, but
+         * look up via index for specific node mappings.
+         *
+         * This is equivalent to the tf input position attribute value in the previous tensorflow import.
+         */
+        opDef.inputArgList.forEachIndexed {
+           index,argDef -> if(argDef.name == name) foundIndex = index
+        }
+
+        val targetName = opDef.getInputArg(foundIndex).name
+        val graphNode = graph.nodeByName(targetName)
+        //value nodes are the values of attributes that are input nodes in a frozen graph
+        return TensorflowIRTensor(graphNode.getAttrOrThrow("value").tensor)
     }
 
 }
 
 
-
-class TensorflowMapper: Mapper<NodeDef, AttrDef, AttrValue, OpDef, org.tensorflow.framework.DataType> {
-    override fun createOpFrom(input: OpDef): CustomOp {
-        TODO("Not yet implemented")
-    }
-
-    override fun mapNameOp(input: String): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun map(input: NodeDef): INDArray {
-        TODO("Not yet implemented")
-    }
-
-    override fun map(input: OpDef): OpNamespace.OpDescriptor {
-        TODO("Not yet implemented")
-    }
-
-    override fun opDefList(): List<OpDef> {
-        TODO("Not yet implemented")
-    }
-
-    override fun mapAttr(input: AttrDef, inputValue: AttrValue): OpNamespace.ArgDescriptor {
-        TODO("Not yet implemented")
-    }
-
-    override fun typeFor(input: AttrDef): ArgType {
-        TODO("Not yet implemented")
-    }
-
-    override fun nd4jOpDefList(): OpNamespace.OpDescriptorList {
-        TODO("Not yet implemented")
-    }
-
-    override fun dataTypesForArgument(input: OpDef, argName: String): List<DataType> {
-        TODO("Not yet implemented")
-    }
-
-    override fun typeFor(tensorflowType: org.tensorflow.framework.DataType): DataType {
-        TODO("Not yet implemented")
-    }
-
-}

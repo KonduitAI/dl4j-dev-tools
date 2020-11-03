@@ -1,5 +1,6 @@
 package org.nd4j.codegen.ir.tensorflow
 
+import org.bytedeco.tensorflow.Conv2D
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.tensorflow.framework.*
@@ -11,6 +12,8 @@ class AbsMappingProcess: TensorflowMappingProcess(
         inputFrameworkOpName = "Abs", tensorMappingRules =  listOf(NDArrayMappingRule(
         mappingNamesToPerform = mapOf("x" to "x", "y" to "y"))),
         opMappingRegistry = tensorflowOpRegistry)
+
+
 
 
 class Conv2DMappingProcess: TensorflowMappingProcess(
@@ -26,9 +29,17 @@ class Conv2DMappingProcess: TensorflowMappingProcess(
                 conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
                 conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
                 conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                sizeAtRule(outputAttributeName = "kH",dimensionIndex = 0,inputFrameworkAttributeName = "value"),
-                sizeAtRule(outputAttributeName = "kW",dimensionIndex = 1,inputFrameworkAttributeName = "value")
+               //NOTE: This is a dynamically resolved attribute at runtime.
+                sizeAtRule(outputAttributeName = "kH",dimensionIndex = 0,inputFrameworkAttributeName = "filter"),
+               sizeAtRule(outputAttributeName = "kW",dimensionIndex = 1,inputFrameworkAttributeName = "filter")
         ),opMappingRegistry = tensorflowOpRegistry)
 
+object TensorflowOpDeclarations {
+        init {
+                OpRegistryHolder.registerOpMappingRegistry("tensorflow", tensorflowOpRegistry)
+                AbsMappingProcess()
+                Conv2DMappingProcess()
+        }
+}
 
 

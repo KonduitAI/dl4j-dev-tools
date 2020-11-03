@@ -4,17 +4,17 @@ name: "Abs"
 op_type: "Abs"
 attribute {
   name: "X-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nAbsolute takes one input data (Tensor<T>) and produces one output data\n(Tensor<T>) where the absolute is, y = abs(x), is applied to\nthe tensor elementwise.\n"
@@ -25,8 +25,8 @@ name: "Acos"
 op_type: "Acos"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -38,8 +38,8 @@ name: "Acosh"
 op_type: "Acosh"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -68,8 +68,8 @@ attribute {
 }
 attribute {
   name: "R-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 attribute {
@@ -79,8 +79,8 @@ attribute {
 }
 attribute {
   name: "inputs-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 doc_string: "\n    Compute one iteration of ADAGRAD, a stochastic gradient based optimization\n    algorithm. This operator can conduct the optimization of multiple tensor variables.\n\n    Let\'s define the behavior of this operator. As you can imagine, ADAGRAD requires\n    some parameters:\n     \n     - The initial learning-rate \"R\".\n     - The update count \"T\". That is, the number of training iterations conducted.\n     - A L2-norm regularization coefficient \"norm_coefficient\".\n     - A learning-rate decay factor \"decay_factor\".\n     - A small constant \"epsilon\" to avoid dividing-by-zero. \n\n    At each ADAGRAD iteration, the optimized tensors are moved along a direction\n    computed based on their estimated gradient and accumulated squared gradient. Assume\n    that only a single tensor \"X\" is updated by this operator. We need the value of \"X\",\n    its gradient \"G\", and its accumulated squared gradient \"H\". Therefore, variables in\n    this operator\'s input list are sequentially \"R\", \"T\", \"X\", \"G\", and \"H\". Other\n    parameters are given as attributes because they are usually constants. Also, the\n    corresponding output tensors are the new value of \"X\" (called \"X_new\"), and then\n    the new accumulated squared gradient (called \"H_new\"). Those outputs are computed\n    from the given inputs following the pseudo code below.\n\n    Let \"+\", \"-\", \"*\", and \"/\" are all element-wise arithmetic operations with\n    numpy-style broadcasting support. The pseudo code to compute those outputs is:\n\n      // Compute a scalar learning-rate factor. At the first update of X, T is generally\n      // 0 (0-based update index) or 1 (1-based update index).\n      r = R / (1 + T * decay_factor);\n\n      // Add gradient of 0.5 * norm_coefficient * ||X||_2^2, where ||X||_2 is the 2-norm.\n      G_regularized = norm_coefficient * X + G;\n\n      // Compute new accumulated squared gradient.\n      H_new = H + G_regularized * G_regularized;\n\n      // Compute the adaptive part of per-coordinate learning rate. Note that Sqrt(...)\n      // computes element-wise square-root.\n      H_adaptive = Sqrt(H_new) + epsilon\n\n      // Compute the new value of \"X\".\n      X_new = X - r * G_regularized / H_adaptive;\n\n    If one assign this operators to optimize multiple inputs, for example, \"X_1\" and \"X_2\", the same\n    pseudo code may be extended to handle all tensors jointly. More specifically, we can view \"X\" as a\n    concatenation of \"X_1\" and \"X_2\" (of course, their gradient and accumulate gradient should\n    be concatenated too) and then just reuse the entire pseudo code.\n\n    Note that ADAGRAD was first proposed in http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf.\n    In that reference paper, this operator is a special case of the Figure 1\'s composite mirror\n    descent update.\n"
@@ -118,8 +118,8 @@ attribute {
 }
 attribute {
   name: "R-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 attribute {
@@ -129,8 +129,8 @@ attribute {
 }
 attribute {
   name: "inputs-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 doc_string: "\n    Compute one iteration of Adam, a stochastic gradient based optimization\n    algorithm. This operator can conduct the optimization of multiple tensor variables.\n\n    Let\'s define the behavior of this operator. First of all, Adam requires\n    some parameters:\n     \n     - The learning-rate \"R\".\n     - The update count \"T\". That is, the number of training iterations conducted.\n     - A L2-norm regularization coefficient \"norm_coefficient\".\n     - A small constant \"epsilon\" to avoid dividing-by-zero. \n     - Two coefficients, \"alpha\" and \"beta\".\n\n    At each Adam iteration, the optimized tensors are moved along a direction\n    computed based on their exponentially-averaged historical gradient and\n    exponentially-averaged historical squared gradient. Assume that only a tensor\n    \"X\" is being optimized. The rest of required information is\n    \n     - the value of \"X\",\n     - \"X\"\'s gradient (denoted by \"G\"),\n     - \"X\"\'s exponentially-averaged historical gradient (denoted by \"V\"), and\n     - \"X\"\'s exponentially-averaged historical squared gradient (denoted by \"H\").\n\n    Some of those parameters are passed into this operator as input tensors and others\n    are stored as this operator\'s attributes. Specifically, this operator\'s input tensor\n    list is [\"R\", \"T\", \"X\", \"G\", \"V\", \"H\"]. That is, \"R\" is the first input, \"T\" is\n    the second input, and so on. Other parameters are given as attributes because they\n    are constants. Moreover, the corresponding output tensors are \n    \n     - the new value of \"X\" (called \"X_new\"),\n     - the new exponentially-averaged historical gradient (denoted by \"V_new\"), and\n     - the new exponentially-averaged historical squared gradient (denoted by \"H_new\").\n\n    Those outputs are computed following the pseudo code below.\n\n    Let \"+\", \"-\", \"*\", and \"/\" are all element-wise arithmetic operations with\n    numpy-style broadcasting support. The pseudo code to compute those outputs is:\n\n      // Add gradient of 0.5 * norm_coefficient * ||X||_2^2, where ||X||_2 is the 2-norm.\n      G_regularized = norm_coefficient * X + G\n\n      // Update exponentially-averaged historical gradient.\n      V_new = alpha * V + (1 - alpha) * G_regularized\n\n      // Update exponentially-averaged historical squared gradient.\n      H_new = beta * H + (1 - beta) * G_regularized * G_regularized\n\n      // Compute the element-wise square-root of H_new. V_new will be element-wisely\n      // divided by H_sqrt for a better update direction.\n      H_sqrt = Sqrt(H_new) + epsilon\n\n      // Compute learning-rate. Note that \"alpha**T\"/\"beta**T\" is alpha\'s/beta\'s T-th power.\n      R_adjusted = T > 0 ? R * Sqrt(1 - beta**T) / (1 - alpha**T) : R\n\n      // Compute new value of \"X\".\n      X_new = X - R_adjusted * V_new / H_sqrt\n\n      // Post-update regularization.\n      X_final = (1 - norm_coefficient_post) * X_new \n\n    If there are multiple inputs to be optimized, the pseudo code will be applied\n    independently to each of them.\n"
@@ -142,24 +142,24 @@ name: "Add"
 op_type: "Add"
 attribute {
   name: "A-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nPerforms element-wise binary addition (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -202,17 +202,17 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the indices of the max elements of the input tensor\'s element along the \nprovided axis. The resulting tensor has the same rank as the input if keepdims equal 1. \nIf keepdims equal 0, then the resulting tensor have the reduced dimension pruned. \nIf select_last_index is True (default False), the index of the last occurrence of the max \nis selected if the max appears more than once in the input. Otherwise the index of the \nfirst occurrence is selected.\nThe type of the output tensor is integer."
@@ -238,17 +238,17 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the indices of the min elements of the input tensor\'s element along the \nprovided axis. The resulting tensor has the same rank as the input if keepdims equal 1. \nIf keepdims equal 0, then the resulting tensor have the reduced dimension pruned. \nIf select_last_index is True (default False), the index of the last occurrence of the min \nis selected if the min appears more than once in the input. Otherwise the index of the \nfirst occurrence is selected.\nThe type of the output tensor is integer."
@@ -260,11 +260,11 @@ name: "ArrayFeatureExtractor"
 op_type: "ArrayFeatureExtractor"
 attribute {
   name: "X-types"
+  strings: "float"
+  strings: "double"
+  strings: "int32"
   strings: "int64"
   strings: "string"
-  strings: "double"
-  strings: "float"
-  strings: "int32"
   type: STRINGS
 }
 attribute {
@@ -280,8 +280,8 @@ name: "Asin"
 op_type: "Asin"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -293,8 +293,8 @@ name: "Asinh"
 op_type: "Asinh"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -306,8 +306,8 @@ name: "Atan"
 op_type: "Atan"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -319,8 +319,8 @@ name: "Atanh"
 op_type: "Atanh"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -362,8 +362,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -393,36 +393,36 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "scale-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "mean-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "var-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -439,10 +439,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Maps the values of the input tensor to either 0 or 1, element-wise, based on the outcome of a comparison against a threshold value.\n"
@@ -459,18 +459,18 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "uint16"
-  strings: "uint32"
   strings: "uint64"
   strings: "uint8"
+  strings: "uint32"
+  strings: "uint16"
   type: STRINGS
 }
 attribute {
   name: "Y-types"
-  strings: "uint16"
-  strings: "uint32"
   strings: "uint64"
   strings: "uint8"
+  strings: "uint32"
+  strings: "uint16"
   type: STRINGS
 }
 doc_string: "\nBitwise shift operator performs element-wise operation. For each input element, if the\n attribute \"direction\" is \"RIGHT\", this operator moves its binary representation toward\n the right side so that the input value is effectively decreased. If the attribute \"direction\"\n is \"LEFT\", bits of binary representation moves toward the left side, which results the\n increase of its actual value. The input X is the tensor to be shifted and another input\n Y specifies the amounts of shifting. For example, if \"direction\" is \"Right\", X is [1, 4],\n and S is [1, 1], the corresponding output Z would be [0, 2]. If \"direction\" is \"LEFT\" with\n X=[1, 2] and S=[1, 2], the corresponding output Y would be [2, 8].\n \n Because this operator supports Numpy-style broadcasting, X\'s and Y\'s shapes are\n not necessarily identical.\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md)."
@@ -486,19 +486,19 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
-  strings: "int64"
-  strings: "string"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
   strings: "float"
   strings: "double"
-  strings: "uint32"
-  strings: "uint64"
+  strings: "bool"
   strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
+  strings: "int64"
+  strings: "string"
   type: STRINGS
 }
 doc_string: "\nThe operator casts the elements of a given input tensor to a data type\nspecified by the \'to\' argument and returns an output tensor of the same size in\nthe converted type. The \'to\' argument must be one of the data types specified\nin the \'DataType\' enum field in the TensorProto message.\n\nCasting from string tensor in plain (e.g., \"3.14\" and \"1000\") and scientific numeric representations\n(e.g., \"1e-5\" and \"1E8\") to float types is supported. For example, converting string \"100.5\" to an integer may\nresult 100. There are some string literals reserved for special floating-point values;\n\"+INF\" (and \"INF\"), \"-INF\", and \"NaN\" are positive infinity, negative infinity, and not-a-number, respectively.\nAny string which can exactly match \"+INF\" in a case-insensitive way would be mapped to positive infinite. Similarly,\nthis case-insensitive rule is applied to \"INF\" and \"NaN\". When casting from numeric tensors\nto string tensors, plain floating-point representation (such as \"314.15926\") would be used. \nConverting non-numerical-literal string such as \"Hello World!\" is an undefined behavior. Cases \nof converting string representing floating-point arithmetic value, such as \"2.718\", to INT is an undefined behavior.\n\nConversion from a numerical type to any numerical type is always allowed.\nUser must be aware of precision loss and value change caused by range difference between two types.\nFor example, a 64-bit float 3.1415926459 may be round to a 32-bit float 3.141592. Similarly, converting\nan integer 36 to Boolean may produce 1 because we truncate bits which can\'t be stored in the targeted type.\n"
@@ -524,8 +524,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "map(int64,float"
   strings: "map(int64,string"
+  strings: "map(int64,float"
   type: STRINGS
 }
 doc_string: "\n    Converts a map to a tensor.<br>The map key must be an int64 and the values will be ordered\n    in ascending order based on this key.<br>The operator supports dense packing or sparse packing.\n    If using sparse packing, the key cannot exceed the max_map-1 value.\n"
@@ -568,8 +568,8 @@ name: "Ceil"
 op_type: "Ceil"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -599,47 +599,47 @@ name: "Clip"
 op_type: "Clip"
 attribute {
   name: "input-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "min-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "max-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nClip operator limits the given input within an interval. The interval is\nspecified by the inputs \'min\' and \'max\'. They default to\nnumeric_limits::lowest() and numeric_limits::max(), respectively.\n"
@@ -656,21 +656,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -691,21 +691,21 @@ attribute {
 }
 attribute {
   name: "inputs-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "Concatenate a list of tensors into a single tensor. All input tensors must have the same shape, except for the dimension size of the axis to concatenate on."
@@ -726,21 +726,21 @@ attribute {
 }
 attribute {
   name: "input_sequence-types"
-  strings: "seq(float"
-  strings: "seq(uint32"
-  strings: "seq(string"
-  strings: "seq(int64"
-  strings: "seq(double"
-  strings: "seq(int8"
-  strings: "seq(float16"
-  strings: "seq(bool"
-  strings: "seq(complex128"
   strings: "seq(uint64"
-  strings: "seq(int16"
+  strings: "seq(double"
+  strings: "seq(string"
+  strings: "seq(complex64"
+  strings: "seq(uint32"
   strings: "seq(int32"
   strings: "seq(uint16"
-  strings: "seq(complex64"
+  strings: "seq(int8"
   strings: "seq(uint8"
+  strings: "seq(float"
+  strings: "seq(bool"
+  strings: "seq(complex128"
+  strings: "seq(int64"
+  strings: "seq(float16"
+  strings: "seq(int16"
   type: STRINGS
 }
 doc_string: "\nConcatenate a sequence of tensors into a single tensor.\nAll input tensors must have the same shape, except for the dimension size of the axis to concatenate on.\nBy default \'new_axis\' is 0, the behavior is similar to numpy.concatenate.\nWhen \'new_axis\' is 1, the behavior is similar to numpy.stack.\n"
@@ -844,22 +844,22 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "W-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -904,26 +904,26 @@ attribute {
 }
 attribute {
   name: "x-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "w-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "x_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "w_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 doc_string: "\nThe integer convolution operator consumes an input tensor, its zero-point, a filter, and its zero-point,\nand computes the output. The production MUST never overflow. The accumulation may overflow if and only if in 32 bits.\n"
@@ -976,22 +976,22 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "W-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1003,8 +1003,8 @@ name: "Cos"
 op_type: "Cos"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1016,8 +1016,8 @@ name: "Cosh"
 op_type: "Cosh"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1040,12 +1040,12 @@ attribute {
 }
 attribute {
   name: "x-types"
-  strings: "int64"
-  strings: "double"
   strings: "uint32"
-  strings: "float"
   strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
@@ -1072,21 +1072,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "DepthToSpace rearranges (permutes) data from depth into blocks of spatial data.\nThis is the reverse transformation of SpaceToDepth. More specifically, this op outputs a copy of\nthe input tensor where values from the depth dimension are moved in spatial blocks to the height\nand width dimensions. By default, `mode` = `DCR`.\nIn the DCR mode, elements along the depth dimension from the input tensor are rearranged in the\nfollowing order: depth, column, and then row. The output y is computed from the input x as below:\n\nb, c, h, w = x.shape\n\ntmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])\n\ntmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])\n\ny = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize])\n\n\nIn the CRD mode, elements along the depth dimension from the input tensor are rearranged in the\nfollowing order: column, row, and the depth. The output y is computed from the input x as below:\n\nb, c, h, w = x.shape\n\ntmp = np.reshape(x, [b, c // (blocksize ** 2), blocksize, blocksize, h, w])\n\ntmp = np.transpose(tmp, [0, 1, 4, 2, 5, 3])\n\ny = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])\n\n"
@@ -1099,9 +1099,9 @@ name: "DequantizeLinear"
 op_type: "DequantizeLinear"
 attribute {
   name: "x-types"
+  strings: "uint8"
   strings: "int32"
   strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -1111,9 +1111,9 @@ attribute {
 }
 attribute {
   name: "x_zero_point-types"
+  strings: "uint8"
   strings: "int32"
   strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nThe linear dequantization operator. It consumes a quantized tensor, a scale, a zero point to compute the full precision tensor.\nThe dequantization formula is y = (x - x_zero_point) * x_scale. \'x_scale\' and \'x_zero_point\' must have same shape.\n\'x_zero_point\' and \'x\' must have same type. \'x\' and \'y\' must have same shape. In the case of dequantizing int32,\nthere\'s no zero point (zero point is supposed to be 0).\n"
@@ -1124,8 +1124,8 @@ name: "Det"
 op_type: "Det"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1147,12 +1147,12 @@ attribute {
 }
 attribute {
   name: "X-types"
+  strings: "map(int64,string"
   strings: "map(string,double"
-  strings: "map(int64,double"
+  strings: "map(string,int64"
   strings: "map(string,float"
   strings: "map(int64,float"
-  strings: "map(int64,string"
-  strings: "map(string,int64"
+  strings: "map(int64,double"
   type: STRINGS
 }
 doc_string: "\n    Uses an index mapping to convert a dictionary to an array.<br>\n    Given a dictionary, each key is looked up in the vocabulary attribute corresponding to\n    the key type. The index into the vocabulary array at which the key is found is then\n    used to index the output 1-D tensor \'Y\' and insert into it the value found in the dictionary \'X\'.<br>\n    The key type of the input map must correspond to the element type of the defined vocabulary attribute.\n    Therefore, the output array will be equal in length to the index mapping vector parameter.\n    All keys in the input dictionary must be present in the index mapping vector.\n    For each item in the input dictionary, insert its value in the output array.\n    Any keys not present in the input dictionary, will be zero in the output array.<br>\n    For example: if the ``string_vocabulary`` parameter is set to ``[\"a\", \"c\", \"b\", \"z\"]``,\n    then an input of ``{\"a\": 4, \"c\": 8}`` will produce an output of ``[4, 8, 0, 0]``.\n    "
@@ -1164,24 +1164,24 @@ name: "Div"
 op_type: "Div"
 attribute {
   name: "A-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nPerforms element-wise binary division (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -1200,15 +1200,15 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "ratio-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1243,17 +1243,17 @@ attribute {
 }
 attribute {
   name: "Inputs-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nAn einsum of the form ```term1, term2 -> output-term``` produces an output tensor using the following equation\n\n```output[output-term] = reduce-sum( input1[term1] * input2[term] )```\n\nwhere the reduce-sum performs a summation over all the indices occurring in in the input terms (term1, term2)\nthat do not occur in the output-term.\n\nThe Einsum operator evaluates algebraic tensor operations on a sequence of tensors, using the Einstein summation\nconvention. The equation string contains a comma-separated sequence of lower case letters. Each term corresponds to\nan operand tensor, and the characters within the terms correspond to operands dimensions.\n\nThis sequence may be followed by \"->\" to separate the left and right hand side of the equation.\nIf the equation contains \"->\" followed by the right-hand side, the explicit (not classical) form of the Einstein\nsummation is performed, and the right-hand side indices indicate output tensor dimensions. In other cases,\noutput indices are (implicitly) set to the alphabetically sorted sequence of indices appearing exactly once in the\nequation.\n\nWhen a dimension character is repeated in the left-hand side, it represents summation along the dimension.\n\nThe equation may contain ellipsis (\"...\") to enable broadcasting. Ellipsis must indicate a fixed number of dimensions.\nSpecifically, every occurrence of ellipsis in the equation must represent the same number of dimensions.\nThe right-hand side may contain exactly one ellipsis. In implicit mode, the ellipsis dimensions are set to the\nbeginning of the output. The equation string may contain space (U+0020) character.\n"
@@ -1269,8 +1269,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1283,34 +1283,34 @@ name: "Equal"
 op_type: "Equal"
 attribute {
   name: "A-types"
-  strings: "bool"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "bool"
+  strings: "int16"
+  strings: "double"
+  strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "bool"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "bool"
+  strings: "int16"
+  strings: "double"
+  strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nReturns the tensor resulted from performing the `equal` logical operation\nelementwise on the input tensors `A` and `B` (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -1321,17 +1321,17 @@ name: "Erf"
 op_type: "Erf"
 attribute {
   name: "input-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the error function of the given input tensor element-wise.\n"
@@ -1342,8 +1342,8 @@ name: "Exp"
 op_type: "Exp"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1356,21 +1356,21 @@ name: "Expand"
 op_type: "Expand"
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -1396,18 +1396,18 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
-  strings: "int64"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
   strings: "float"
   strings: "double"
-  strings: "uint32"
-  strings: "uint64"
+  strings: "bool"
   strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nGenerate a 2D tensor (matrix) with ones on the diagonal and zeros everywhere else. Only 2D\ntensors are supported, i.e. input T1 must be of rank 2. The shape of the output tensor is the\nsame as the input tensor. The data type can be specified by the \'dtype\' argument. If\n\'dtype\' is not specified, then the type of input tensor is used. By default, the main diagonal\nis populated with ones, but attribute \'k\' can be used to populate upper or lower diagonals.\nThe \'dtype\' argument must be one of the data types specified in the \'DataType\' enum field in the\nTensorProto message and be valid as an output type.\n"
@@ -1423,10 +1423,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Concatenates input tensors into one continuous output.<br>\n    All input shapes are 2-D and are concatenated along the second dimention. 1-D tensors are treated as [1,C].\n    Inputs are copied to the output maintaining the order of the input arguments.<br>\n    All inputs must be integers or floats, while the output will be all floating point values.\n"
@@ -1442,21 +1442,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nFlattens the input tensor into a 2D matrix. If input tensor has shape\n(d_0, d_1, ... d_n) then the output will have shape\n(d_0 X d_1 ... d_(axis-1), d_axis X d_(axis+1) ... X dn).\n"
@@ -1467,8 +1467,8 @@ name: "Floor"
 op_type: "Floor"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1521,29 +1521,29 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "W-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "R-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1554,8 +1554,8 @@ attribute {
 }
 attribute {
   name: "initial_h-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1573,21 +1573,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -1610,21 +1610,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -1647,21 +1647,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -1699,35 +1699,35 @@ attribute {
 }
 attribute {
   name: "A-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "C-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "General Matrix multiplication:\nhttps://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_3\n\nA\' = transpose(A) if transA else A\n\nB\' = transpose(B) if transB else B\n\nCompute Y = alpha * A\' * B\' + beta * C, where input tensor A has shape (M, K) or (K, M),\ninput tensor B has shape (K, N) or (N, K), input tensor C is broadcastable to shape (M, N),\nand output tensor Y has shape (M, N). A will be transposed before doing the\ncomputation if attribute transA is non-zero, same for B and transB.\nThis operator supports **unidirectional broadcasting** (tensor C should be unidirectional broadcastable to tensor A * B); for more details please check [the doc](Broadcasting.md).\nThis operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument\'s name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.\n"
@@ -1738,8 +1738,8 @@ name: "GlobalAveragePool"
 op_type: "GlobalAveragePool"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1756,8 +1756,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1769,8 +1769,8 @@ name: "GlobalMaxPool"
 op_type: "GlobalMaxPool"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1797,21 +1797,21 @@ attribute {
 }
 attribute {
   name: "Inputs-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nGradient operator computes the partial derivatives of a specific tensor w.r.t.\nsome other tensors. This operator is widely used in gradient-based training\nalgorithms. To illustrate its use, let\'s consider a computation graph,\n\n```\nX -----.\n       |\n       v\nW --> Conv --> H --> Gemm --> Y\n                      ^\n                      |\n                      Z\n```\n\n, where W and Z are trainable tensors. Note that operators\' attributes are\nomitted for the sake of simplicity. Let dY/dW (dY/dZ) be the gradient of\nY with respect to W (Z). The user can compute gradient by inserting Gradient\noperator to form another graph shown below.\n\n```\nW --> Conv --> H --> Gemm --> Y\n|      ^              ^\n|      |              |\n|      X              Z\n|      |              |\n|      |   .----------\'\n|      |   |  (W/Z/X is the 1st/2nd/3rd input of Gradient as shown in\n|      |   |   \"xs\" followed by \"zs\")\n|      v   v\n\'---> Gradient(xs=[\"W\", \"Z\"], zs=[\"X\"], y=\"Y\")\n       |   |\n       |   \'-----------------------------------> dY/dW (1st output of Gradient)\n       |\n       \'---------------------------------------> dY/dZ (2nd output of Gradient)\n```\n\nBy definition, the tensor \"y\" is a function of independent variables in \"xs\"\nand \"zs\". Since we only compute the gradient of \"y\" w.r.t. the differentiable\nvariables in \"xs\", this Gradient only outputs dY/dW and dY/dZ. Note that \"H\"\ncannot appear in \"xs\" and \"zs\". The reason is that \"H\" can be determined by\ntensors \"W\" and \"X\" and therefore \"H\" is not an independent variable.\n\nAll outputs are optional. If needed, for example, user can assign an empty\nstring to the 1st output name of that Gradient to skip the generation of dY/dW.\nNote that the concept of optional outputs can also be found in ONNX\'s RNN, GRU,\nand LSTM.\n\nGradient operator can compute derivative against intermediate tensors. For\nexample, the gradient of Y with respect to H can be done via\n\n```\nW --> Conv --> H --> Gemm --> Y\n       ^       |      ^\n       |       |      |\n       X       |      Z\n       .-------\'      |\n       |   .----------\'\n       |   | (H/Z is the 1st/2nd input of Gradient as shown in \"xs\")\n       v   v\n      Gradient(xs=[\"H\", \"Z\"], y=\"Y\")\n       |   |\n       |   \'-----------------------------------> dY/dH (1st output of Gradient)\n       |\n       \'---------------------------------------> dY/dZ (2nd output of Gradient)\n```\n\nIt is possible to represent high-order differentiation using Gradient operators.\nFor example, given the following linear model:\n\n```\nW --> Gemm --> Y --> Loss --> O\n       ^              ^\n       |              |\n       X              L\n```\n\nTo compute the 2nd order derivative of O with respect to W (denoted by\nd^2O/dW^2), one can do\n\n```\nW --> Gemm --> Y --> Loss --> O\n|      ^              ^\n|      |              |\n|      X .------------L\n|      | |            |\n|      | |            v\n+------+-+> Gradient(xs=[\"X\", \"W\"], zs=[\"L\"], y=\"O\") ---> dO/dX (1st output of Gradient)\n|      | |    |\n|      | |    \'---> dO/dW (2nd output of Gradient)\n|      v v\n\'---> Gradient(xs=[\"X\", \"W\"], zs=[\"L\"], y=\"dO/dW\") ---> d(dO/dW)dX (1st output of\n       |                                                  Gradient)\n       |\n       |\n       \'---> d^2O/dW^2 (2nd output of Gradient)\n```\n\nThe tensors named in attributes \"xs\", \"zs\", and \"y\" define the differentiated\ncomputation graph, and the inputs to Gradient node define the values at\nwhich the gradient is computed. We can feed different tensors to the identified\ngraph. For example, one can compute the gradient of Y with respect to H at \na specific value of H, H_1, by providing that value as an input to the Gradient\nnode.\n\n```\nW --> Conv --> H --> Gemm --> Y\n       ^              ^\n       |              |\n       X              Z\n\n          Z_1 (2nd input of Gradient)\n           |\n           v\nH_1 --> Gradient(xs=[\"H\", \"Z\"], y=\"Y\") ---> dY/dH when H = H_1 and Y = Y_1.\n           |\n           \'------------------------------> dY/dZ (2nd output of Gradient)\n```\n\nWhen the inputs of Gradient are the tensors named in \"xs\" and \"zs\", the\ncomputation can be optimized. More specifically, intermediate variables in\nforward pass can be reused if the gradient is computed via reverse-mode\nauto-differentiation.\n\n"
@@ -1827,21 +1827,21 @@ attribute {
 }
 attribute {
   name: "Inputs-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nThe GraphCall operator invokes a graph inside TrainingInfoProto\'s\nalgorithm field. The GraphCall inputs and outputs are bound to those of\ninvoked graph by position. If a graph input has an initializer, that input\nis considered optional. All graph outputs are optional.\n\nBelow Python syntax is used for describing dictionary and list.\n\nAssume that ModelProto\'s graph field has\n- name: \"MyInferenceGraph\"\n- input: [\"X\", \"W\", \"Z\"]\n- initializer: [W]\n- output: [\"Y\"]\n\nas visualized below for inference.\n\n```\nX -----.\n       |\n       v\nW --> Conv --> H --> Gemm --> Y\n                      ^\n                      |\n                      Z\n```\n\nAssume that the training algorithm contains\n\n- inputs: [\"X_1\", \"Z_1\", \"C\"]\n- initializer: [T]\n- outputs: [\"W_new\"]\n\nwith a dictionary\n\n- update_binding: {\"W\": \"W_new\", \"T\": \"T_new\"}\n\nInside the training algorithm graph, one can invoke the inference\ngraph via adding a GraphCall node with\n\n- inputs: [\"X_1\", \"W\", Z_1\"]\n- outputs: [\"Y_1\"]\n- an attribute graph_name=\"MyInferenceGraph\",\n\nThe initializers, \"W\" and \"T\" in this case, in update_binding\nare considered globally-visible and mutable variables, which\ncan be used as inputs of operators in the training graph.\n\nAn example training algorithm graph may look like\n\n```\n.-------- W (a global and mutable variable from\n|         |  the inference graph)\n|         |\n|   .-----\'-----------.\n|   |                 |\n|   |                 v\n|   | .-- X_1 --> GraphCall(graph_name=\"MyInferenceGraph\")\n|   | |            |  |\n|   | |            |  |\n|   | |   Z_1 -----\'  |\n|   | |    |          V\n|   | |    |         Y_1 ---> Loss ---> O\n|   | |    |                    ^\n|   | |    |                    |\n|   | `--. |                    C\n|   |    | |                    |\n|   |    | |   .----------------\'\n|   |    | |   |\n|   |    v v   v\n|   `--> Gradient(xs=[\"W\"], zs=[\"X_1\", \"Z_1\", \"C\"], y=\"O\")\n|        |\n|        v\n|      dO_dW (gradient of W)      1 (a scalar one)\n|        |                        |\n|        V                        v\n|       Div <--- T ------------> Add ---> T_new\n|        |    (T is the number of training iterations.\n|        |     T is also globally visible and mutable.)\n|        v\n`-----> Sub ----> W_new\n```\n\nwhere Loss is a dummy node which computes the minimized objective function.\n\nThe variable \"W\" is an optional input in the called graph.\nIf the user omits it, the input list of GraphCall becomes [\"X_1\", \"\", \"Z_1\"].\nIn this case, from the view of computation graph, the Conv operator invoked by\nGraphCall\'s may be still connected the global \"W\" variable and therefore the\nstructure of the computation graph is unchanged.\n"
@@ -1853,32 +1853,32 @@ name: "Greater"
 op_type: "Greater"
 attribute {
   name: "A-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nReturns the tensor resulted from performing the `greater` logical operation\nelementwise on the input tensors `A` and `B` (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -1890,32 +1890,32 @@ name: "GreaterOrEqual"
 op_type: "GreaterOrEqual"
 attribute {
   name: "A-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nReturns the tensor resulted from performing the `greater_equal` logical operation\nelementwise on the input tensors `A` and `B` (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -1936,8 +1936,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1954,8 +1954,8 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -1967,21 +1967,21 @@ name: "Identity"
 op_type: "Identity"
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "Identity operator"
@@ -2033,10 +2033,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Replaces inputs that equal one value with another, leaving all other elements alone.<br>\n    This operator is typically used to replace missing values in situations where they have a canonical\n    representation, such as -1, 0, NaN, or some extreme value.<br>\n    One and only one of imputed_value_floats or imputed_value_int64s should be defined -- floats if the input tensor\n    holds floats, integers if the input tensor holds integers. The imputed values must all fit within the\n    width of the tensor element type. One and only one of the replaced_value_float or replaced_value_int64 should be defined,\n    which one depends on whether floats or integers are being processed.<br>\n    The imputed_value attribute length can be 1 element, or it can have one element per input feature.<br>In other words, if the input tensor has the shape [*,F], then the length of the attribute array may be 1 or F. If it is 1, then it is broadcast along the last dimension and applied to each feature.\n"
@@ -2054,22 +2054,22 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "scale-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2091,8 +2091,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 doc_string: "Map infinity to true and other values to false."
@@ -2103,8 +2103,8 @@ name: "IsNaN"
 op_type: "IsNaN"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2136,8 +2136,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2193,29 +2193,29 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "W-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "R-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2226,22 +2226,22 @@ attribute {
 }
 attribute {
   name: "initial_h-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "initial_c-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "P-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2298,9 +2298,9 @@ attribute {
 }
 attribute {
   name: "X-types"
+  strings: "float"
   strings: "int64"
   strings: "string"
-  strings: "float"
   type: STRINGS
 }
 doc_string: "\n    Maps each element in the input tensor to another value.<br>\n    The mapping is determined by the two parallel attributes, \'keys_*\' and\n    \'values_*\' attribute. The i-th value in the specified \'keys_*\' attribute\n    would be mapped to the i-th value in the specified \'values_*\' attribute. It\n    implies that input\'s element type and the element type of the specified\n    \'keys_*\' should be identical while the output type is identical to the\n    specified \'values_*\' attribute. If an input element can not be found in the\n    specified \'keys_*\' attribute, the \'default_*\' that matches the specified\n    \'values_*\' attribute may be used as its output value.<br>\n    Let\'s consider an example which maps a string tensor to an integer tensor.\n    Assume and \'keys_strings\' is [\"Amy\", \"Sally\"], \'values_int64s\' is [5, 6],\n    and \'default_int64\' is \'-1\'.  The input [\"Dori\", \"Amy\", \"Amy\", \"Sally\",\n    \"Sally\"] would be mapped to [-1, 5, 5, 6, 6].<br>\n    Since this operator is an one-to-one mapping, its input and output shapes\n    are the same. Notice that only one of \'keys_*\'/\'values_*\' can be set.<br>\n    For key look-up, bit-wise comparison is used so even a float NaN can be\n    mapped to a value in \'values_*\' attribute.<br>\n"
@@ -2316,8 +2316,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2330,32 +2330,32 @@ name: "Less"
 op_type: "Less"
 attribute {
   name: "A-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nReturns the tensor resulted from performing the `less` logical operation\nelementwise on the input tensors `A` and `B` (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -2367,32 +2367,32 @@ name: "LessOrEqual"
 op_type: "LessOrEqual"
 attribute {
   name: "A-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nReturns the tensor resulted from performing the `less_equal` logical operation\nelementwise on the input tensors `A` and `B` (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -2434,10 +2434,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Linear classifier\n"
@@ -2468,10 +2468,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Generalized linear regression evaluation.<br>\n    If targets is set to 1 (default) then univariate regression is performed.<br>\n    If targets is set to M then M sets of coefficients must be passed in as a sequence\n    and M results will be output for each input n in N.<br>\n    The coefficients array is of length n, and the coefficients for each target are contiguous.\n    Intercepts are optional but if provided must match the number of targets.\n"
@@ -2482,8 +2482,8 @@ name: "Log"
 op_type: "Log"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2500,8 +2500,8 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2530,21 +2530,21 @@ attribute {
 }
 attribute {
   name: "v_initial-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nGeneric Looping construct. This loop has multiple termination conditions:\n\n1) Trip count. Iteration count specified at runtime. Set by\n   specifying the input M. Optional. Set to empty string to omit.\n   Note that a static trip count (specified at graph construction time) can be\n   specified by passing in a constant node for input M.\n2) Loop termination condition. This is an input to the op that determines\n   whether to run the first iteration and also a loop-carried dependency for\n   the body graph. The body graph must yield a value for the condition variable,\n   whether this input is provided or not.\n\nThis table summarizes the operating modes of this operator with equivalent\nC-style code:\n\n    Operator inputs defined as (max_trip_count, condition_var).\n\n    input (\"\", \"\"):\n        for (int i=0; ; ++i) {\n          cond = ... // Note this value is ignored, but is required in the body\n        }\n\n    input (\"\", cond) // Note this is analogous to a while loop\n        bool cond = ...;\n        for (int i=0; cond; ++i) {\n          cond = ...;\n        }\n\n    input (\"\", 1) // Note this is analogous to a do-while loop\n        bool cond = true\n        for (int i=0; cond; ++i) {\n          cond = ...;\n        }\n\n    input (trip_count, \"\") // Note this is analogous to a for loop\n        int trip_count = ...\n        for (int i=0; i < trip_count; ++i) {\n          cond = ...; // ignored\n        }\n\n    input (trip_count, cond)\n        int trip_count = ...;\n        bool cond = ...;\n        for (int i=0; i < trip_count && cond; ++i) {\n          cond = ...;\n        }\n\n\n*Sample usage - cond as well as trip count*\n\n    graph predict-net {\n      %a = Constant[value = <Scalar Tensor [3]>]()\n      %b = Constant[value = <Scalar Tensor [6]>]()\n      %keepgoing = Constant[value = <Scalar Tensor [1]>]()\n      %max_trip_count = Constant[value = <Scalar Tensor [10]>]()\n      %keepgoing_out, %b_out, %user_defined_vals = Loop[body = <graph body-net>](%max_trip_count, %keepgoing, %b)\n      return\n    }\n\n    graph body-net (\n      %i[INT32, scalar]           // iteration number\n      %keepgoing_in[BOOL, scalar] // incoming loop-termination-condition; not used\n      %b_in[INT32, scalar]        // incoming value of loop-carried-dependency b\n    ) {\n      %my_local = Add(%a, %b_in)\n      %b_out = Sub(%a, %b_in) // outgoing value of loop-carried-dependency b\n      %keepgoing_out = Greater(%my_local, %b_out) // outgoing loop-termination-condition\n      %user_defined_val = Add(%b_in, %b_in) // scan-output value to be accumulated\n      return %keepgoing_out, %b_out, %user_defined_val\n    }\n\n*Sample equivalent C code*\n\n    {\n      /* User-defined code (enclosing scope) */\n      int a = 3, b = 6;\n      bool keepgoing = true; // Analogous to input cond\n      /* End user-defined code */\n\n      /* Implicitly-defined code */\n      const int max_trip_count = 10; // Analogous to input M\n      int user_defined_vals[]; // Imagine this is resizable\n      /* End implicitly-defined code */\n      /* initialize loop-carried variables and scan-output variables */\n      bool keepgoing_out = keepgoing\n      int b_out = b\n\n      for (int i=0; i < max_trip_count && keepgoing_out; ++i) {\n        /* Implicitly-defined code: bind actual parameter values\n           to formal parameter variables of loop-body */\n        bool keepgoing_in = keepgoing_out; \n        bool b_in = b_out;\n\n        /* User-defined code (loop body) */\n        int my_local = a + b_in; // Reading value \"a\" from the enclosing scope is fine\n        b_out = a - b_in;\n        keepgoing_out = my_local > b_out; \n        user_defined_val = b_in + b_in; // b_in and b_out are different variables\n        /* End user-defined code */\n\n        /* Implicitly defined-code */\n        user_defined_vals[i] = user_defined_val // accumulate scan-output values\n      }\n      // int t = my_local; // Can\'t do this. my_local is not accessible here.\n\n      // The values below are bound to the output variables of the loop and therefore accessible\n      // b_out; user_defined_vals; keepgoing_out;\n    }\n\nThere are several things of note in this code snippet:\n\n1) Values from the enclosing scope (i.e. variable \"a\" here) are in scope and can\n   be referenced in the inputs of the loop.\n2) Any values computed in the loop body that needs to be used in a subsequent\n   iteration or after the loop are modelled using a pair of variables in the loop-body,\n   consisting of an input variable (eg., b_in) and an output variable (eg., b_out).\n   These are referred to as loop-carried dependences. The loop operation node\n   supplies the input value of the input variable for the first iteration, and\n   returns the output value of the output variable produced by the final\n   iteration.\n3) Scan_output variables are used to implicitly concatenate values computed across\n   all the iterations. In the above example, the value of user_defined_val computed\n   over all iterations are concatenated and returned as the value of user_defined_vals\n   after the loop.\n4) Values created in the body cannot be accessed in the enclosing scope,\n   except using the mechanism described above.\n\nNote that the semantics of this op support \"diagonal\" or \"wavefront\" execution.\n(See Step 3 here for an example:\nhttps://devblogs.nvidia.com/optimizing-recurrent-neural-networks-cudnn-5/).\nFrontends should emit multi-layer RNNs as a series of While operators (with\ntime being the inner looping dimension), with each successive layer consuming\nthe scan_outputs from the previous layer, possibly going through several\npoint-wise operators (e.g. dropout, residual connections, linear layer).\n"
@@ -2565,8 +2565,8 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2603,8 +2603,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2617,24 +2617,24 @@ name: "MatMul"
 op_type: "MatMul"
 attribute {
   name: "A-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nMatrix product that behaves like numpy.matmul: https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.matmul.html\n"
@@ -2648,26 +2648,26 @@ name: "MatMulInteger"
 op_type: "MatMulInteger"
 attribute {
   name: "A-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "a_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "b_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 doc_string: "\nMatrix product that behaves like numpy.matmul: https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.matmul.html.\nThe production MUST never overflow. The accumulation may overflow if and only if in 32 bits.\n"
@@ -2678,17 +2678,17 @@ name: "Max"
 op_type: "Max"
 attribute {
   name: "data_0-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nElement-wise max of each of the input tensors (with Numpy-style broadcasting support).\nAll inputs and outputs must have the same data type.\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -2735,11 +2735,11 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
-  strings: "float"
-  strings: "float16"
   strings: "int8"
+  strings: "float16"
   strings: "uint8"
+  strings: "float"
+  strings: "double"
   type: STRINGS
 }
 doc_string: "\n MaxPool consumes an input tensor X and applies max pooling across\n the tensor according to kernel sizes, stride sizes, and pad lengths.\n max pooling consisting of computing the max on all values of a\n subset of the input tensor according to the kernel size and downsampling the\n data into the output tensor Y for further processing. The output spatial shape will be following:\n ```\n output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)\n ```\n or\n ```\n output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)\n ```\n if ceil_mode is enabled\n\n ```\n * pad_shape[i] is sum of pads along axis i\n ```\n\n `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following:\n ```\n VALID: output_spatial_shape[i] = ceil((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) + 1) / strides_spatial_shape[i])\n SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = ceil(input_spatial_shape[i] / strides_spatial_shape[i])\n ```\n And pad shape will be following if `SAME_UPPER` or `SAME_LOWER`:\n ```\n pad_shape[i] = (output_spatial_shape[i] - 1) * strides_spatial_shape[i] + ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) - input_spatial_shape[i]\n ```\n The output of each pooling window is maximum number of elements exclude pad. \n "
@@ -2761,15 +2761,15 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "rois-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2798,8 +2798,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2821,8 +2821,8 @@ name: "Mean"
 op_type: "Mean"
 attribute {
   name: "data_0-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2841,8 +2841,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -2854,17 +2854,17 @@ name: "Min"
 op_type: "Min"
 attribute {
   name: "data_0-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nElement-wise min of each of the input tensors (with Numpy-style broadcasting support).\nAll inputs and outputs must have the same data type.\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -2881,32 +2881,32 @@ attribute {
 }
 attribute {
   name: "A-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n  Performs element-wise binary modulus (with Numpy-style broadcasting support). \n    The sign of the remainder is the same as that of the Divisor.\n  \n    Mod operator can also behave like C fmod() or numpy.fmod. In this case, the sign of the remainder however, will be the same as the Dividend \n    (in contrast to integer mod). To force a behavior like numpy.fmod() an \'fmod\' Attribute is provided.\n    This attribute is set to 0 by default causing the behavior to be like integer mod. \n    Setting this attribute to 1 causes the remainder to be calculated similar to that of numpy.fmod().\n\n    If the input type is floating point, then `fmod` attribute must be set to 1.\n  \n    In case of dividend being zero, the results will be platform dependent.\n\n  This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -2939,8 +2939,8 @@ attribute {
 }
 attribute {
   name: "R-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 attribute {
@@ -2950,8 +2950,8 @@ attribute {
 }
 attribute {
   name: "inputs-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   type: STRINGS
 }
 doc_string: "\n    Compute one iteration of stochastic gradient update with momentum.\n    This operator can conduct the optimization of multiple tensor variables.\n\n    Let\'s define the behavior of this operator. As you can imagine, SG with momentum requires\n    several parameters:\n     \n     - The learning-rate \"R\".\n     - The update count \"T\". That is, the number of conducted training iterations. It should\n       be zero in the first training iteration.\n     - A L2-norm regularization coefficient \"norm_coefficient\".\n     - A decay coefficient of previous accumulated gradient (i.e., momentum) \"alpha\".\n     - The scaling coefficient of current gradient \"beta\".\n     - An attribute to choose either standard momentum or Nesterov\'s momentum \"mode\" should\n       be used.\n\n    For the sake of simplicity, assume that there is only one tensor (called \"X\") to be optimized.\n    Other necessary inputs are \"X\"\'s gradient (called \"G\") and \"X\"\'s momentum (called \"V\"). This\n    Momentum operator maps all these inputs to the new value of \"X\" (called \"X_new\") and its new\n    momentum (called \"V_new\").\n    \n    This operator supports two different momentum algorithms. Set the attribute \"mode\" to\n    \"nesterov\" if Nesterov\'s momentum is desired. Otherwise, set the attribute \"model\" to\n    \"standard\" to use standard momentum. Computation details are described subsequently.\n\n    Let \"+\", \"-\", \"*\", and \"/\" are all element-wise operations with numpy-style broadcasting.\n\n    Pseudo code for SG with standard momentum:\n\n      // Add gradient of 0.5 * norm_coefficient * ||X||^2, where ||X|| is the sum of squared\n      // values of all elements in X.\n      G_regularized = norm_coefficient * X + G\n\n      // In the first training iteration, beta should always be 1.\n      beta_adjusted = T > 0 ? beta : 1\n\n      // Compute the current momentum based on previous momentum and the current gradient.\n      V_new = alpha * V + beta_adjusted * G_regularized\n\n      // Update X.\n      X_new = X - R * V_new\n\n    Pseudo code for SG with Nesterov\'s momentum:\n\n      // Add gradient of 0.5 * norm_coefficient * ||X||^2, where ||X|| is the sum of squared\n      // values of all elements in X.\n      G_regularized = norm_coefficient * X + G;\n\n      // In the first training iteration, beta should always be 1.\n      beta_adjusted = T > 0 ? beta : 1\n\n      // Compute the current momentum based on previous momentum and the current gradient.\n      V_new = alpha * V + beta_adjusted * G_regularized;\n\n      // Compute final update direction and then update X.\n      X_new = X - R * (G_regularized + alpha * V_new)\n\n    If one assign this operators to optimize multiple inputs, for example, \"X_1\" and \"X_2\". The same\n    pseudo code would be extended to handle all tensors jointly. More specifically, we can view \"X\" as a\n    concatenation of \"X_1\" and \"X_2\" (of course, their gradient and accumulate gradient should\n    be concatenated too) and then our pseudo code becomes applicable.\n"
@@ -2963,24 +2963,24 @@ name: "Mul"
 op_type: "Mul"
 attribute {
   name: "A-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nPerforms element-wise binary multiplication (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -3006,8 +3006,8 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -3019,13 +3019,13 @@ name: "Neg"
 op_type: "Neg"
 attribute {
   name: "X-types"
-  strings: "int64"
+  strings: "int8"
+  strings: "float16"
+  strings: "int32"
   strings: "float"
   strings: "double"
   strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nNeg takes one input data (Tensor<T>) and produces one output data\n(Tensor<T>) where each element flipped sign, y = -x, is applied to\nthe tensor elementwise.\n"
@@ -3048,8 +3048,8 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -3061,8 +3061,8 @@ attribute {
 }
 attribute {
   name: "weight-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -3114,21 +3114,21 @@ name: "NonZero"
 op_type: "NonZero"
 attribute {
   name: "X-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\n    Returns the indices of the elements that are non-zero\n    (in row-major order - by dimension).\n    NonZero behaves similar to numpy.nonzero:\n    https://docs.scipy.org/doc/numpy/reference/generated/numpy.nonzero.html\n"
@@ -3144,10 +3144,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Normalize the input.  There are three normalization modes, which have the corresponding formulas,\n    defined using element-wise infix operators \'/\' and \'^\' and tensor-wide functions \'max\' and \'sum\':<br>\n<br>\n    Max: Y = X / max(X)<br>\n    L1:  Y = X / sum(X)<br>\n    L2:  Y = sqrt(X^2 / sum(X^2)}<br>\n    In all modes, if the divisor is zero, Y == X.\n<br>\n    For batches, that is, [N,C] tensors, normalization is done along the C axis. In other words, each row\n    of the batch is normalized independently.\n"
@@ -3176,51 +3176,51 @@ attribute {
 }
 attribute {
   name: "indices-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "depth-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "values-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\n    Produces a one-hot tensor based on inputs.\n    The locations represented by the index values in the \'indices\' input tensor will have \'on_value\'\n    and the other locations will have \'off_value\' in the output tensor, where \'on_value\' and \'off_value\'\n    are specified as part of required input argument \'values\', which is a two-element tensor of format\n    [off_value, on_value]. The rank of the output tensor will be one greater than the rank of the\n    input tensor. The additional dimension is for one-hot representation. The additional dimension will\n    be inserted at the position specified by \'axis\'. If \'axis\' is not specified then then additional\n    dimension will be inserted as the innermost dimension, i.e. axis=-1. The size of the additional\n    dimension is specified by required scalar input \'depth\'. The type of the output tensor is the same\n    as the type of the \'values\' input. Any entries in the \'indices\' input tensor with values outside\n    the range [-depth, depth-1] will result in one-hot representation with all \'off_value\' values in the\n    output tensor.\n\n    when axis = 0:\n    output[input[i, j, k], i, j, k] = 1 for all i, j, k and 0 otherwise.\n\n    when axis = -1:\n    output[i, j, k, input[i, j, k]] = 1 for all i, j, k and 0 otherwise.\n\n"
@@ -3246,11 +3246,11 @@ attribute {
 }
 attribute {
   name: "X-types"
+  strings: "float"
+  strings: "double"
+  strings: "int32"
   strings: "int64"
   strings: "string"
-  strings: "double"
-  strings: "float"
-  strings: "int32"
   type: STRINGS
 }
 doc_string: "\n    Replace each input element with an array of ones and zeros, where a single\n    one is placed at the index of the category that was passed in. The total category count \n    will determine the size of the extra dimension of the output array Y.<br>\n    For example, if we pass a tensor with a single value of 4, and a category count of 8, \n    the output will be a tensor with ``[0,0,0,0,1,0,0,0]``.<br>\n    This operator assumes every input feature is from the same set of categories.<br>\n    If the input is a tensor of float, int32, or double, the data will be cast\n    to integers and the cats_int64s category list will be used for the lookups.\n"
@@ -3279,24 +3279,24 @@ name: "PRelu"
 op_type: "PRelu"
 attribute {
   name: "X-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "slope-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nPRelu takes input data (Tensor<T>) and slope tensor as input, and produces one\noutput data (Tensor<T>) where the function `f(x) = slope * x for x < 0`,\n`f(x) = x for x >= 0`., is applied to the data tensor elementwise.\nThis operator supports **unidirectional broadcasting** (tensor slope should be unidirectional broadcastable to input tensor X); for more details please check [the doc](Broadcasting.md)."
@@ -3314,17 +3314,17 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
@@ -3334,17 +3334,17 @@ attribute {
 }
 attribute {
   name: "constant_value-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nGiven a tensor containing the data to be padded (`data`), a tensor containing the number of start and end pad values for axis (`pads`), (optionally) a `mode`, and (optionally) `constant_value`, \na padded tensor (`output`) is generated.\n\nThe three supported `modes` are (similar to corresponding modes supported by `numpy.pad`):\n\n1) `constant`(default) - pads with a given constant value as specified by `constant_value` (which defaults to 0)\n\n2) `reflect` - pads with the reflection of the vector mirrored on the first and last values of the vector along each axis\n\n3) `edge` - pads with the edge values of array\n\n\nExample 1 (`constant` mode):\n  Insert 0 pads to the beginning of the second dimension.\n\n  data = \n  [\n      [1.0, 1.2],\n      [2.3, 3.4],\n      [4.5, 5.7],\n  ] \n\n  pads = [0, 2, 0, 0]\n\n  mode = \'constant\'\n\n  constant_value = 0.0\n\n  output = \n  [\n      [\n          [0.0, 0.0, 1.0, 1.2],\n          [0.0, 0.0, 2.3, 3.4],\n          [0.0, 0.0, 4.5, 5.7],\n      ],\n  ]\n\n\nExample 2 (`reflect` mode):\n  data = \n  [\n      [1.0, 1.2],\n      [2.3, 3.4],\n      [4.5, 5.7],\n  ] \n\n  pads = [0, 2, 0, 0]\n\n  mode = \'reflect\'\n\n  output = \n  [\n      [\n          [1.0, 1.2, 1.0, 1.2],\n          [2.3, 3.4, 2.3, 3.4],\n          [4.5, 5.7, 4.5, 5.7],\n      ],\n  ]\n\n\nExample 3 (`edge` mode):\n  data = \n  [\n      [1.0, 1.2],\n      [2.3, 3.4],\n      [4.5, 5.7],\n  ] \n\n  pads = [0, 2, 0, 0]\n\n  mode = \'edge\'\n\n  output = \n  [\n      [\n          [1.0, 1.0, 1.0, 1.2],\n          [2.3, 2.3, 2.3, 3.4],\n          [4.5, 4.5, 4.5, 5.7],\n      ],\n  ]\n\n"
@@ -3356,26 +3356,26 @@ name: "Pow"
 op_type: "Pow"
 attribute {
   name: "X-types"
-  strings: "int64"
-  strings: "double"
-  strings: "float"
   strings: "float16"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "Y-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nPow takes input data (Tensor<T>) and exponent Tensor, and\nproduces one output data (Tensor<T>) where the function `f(x) = x^exponent`,\nis applied to the data tensor elementwise.\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md)."
@@ -3424,8 +3424,8 @@ attribute {
 }
 attribute {
   name: "x-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3435,14 +3435,14 @@ attribute {
 }
 attribute {
   name: "x_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "w-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3452,8 +3452,8 @@ attribute {
 }
 attribute {
   name: "w_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3463,8 +3463,8 @@ attribute {
 }
 attribute {
   name: "y_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3487,8 +3487,8 @@ name: "QLinearMatMul"
 op_type: "QLinearMatMul"
 attribute {
   name: "a-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3498,14 +3498,14 @@ attribute {
 }
 attribute {
   name: "a_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
   name: "b-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3515,8 +3515,8 @@ attribute {
 }
 attribute {
   name: "b_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 attribute {
@@ -3526,8 +3526,8 @@ attribute {
 }
 attribute {
   name: "y_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 doc_string: "\nMatrix product that behaves like numpy.matmul: https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.matmul.html.\nIt consumes two quantized input tensors, their scales and zero points, scale and zero point of output, and computes the quantized output.\nThe quantization formula is y = saturate((x / y_scale) + y_zero_point). For (x / y_scale), it is rounding to nearest ties to even.\nRefer to https://en.wikipedia.org/wiki/Rounding for details. Scale and zero point must have same shape.\nThey must be either scalar (per tensor) or 1-D tensor (per row for \'a\' and per column for \'b\'). If scale and zero point are 1-D tensor,\nthe number of elements of scale and zero point tensor of input \'a\' and output \'y\' should be equal to the number of rows of input \'a\',\nand the number of elements of scale and zero point tensor of input \'b\' should be equal to the number of columns of input \'b\'.\nProduction must never overflow, and accumulation may overflow if and only if in 32 bits.\n"
@@ -3540,8 +3540,8 @@ name: "QuantizeLinear"
 op_type: "QuantizeLinear"
 attribute {
   name: "x-types"
-  strings: "int32"
   strings: "float"
+  strings: "int32"
   type: STRINGS
 }
 attribute {
@@ -3551,8 +3551,8 @@ attribute {
 }
 attribute {
   name: "y_zero_point-types"
-  strings: "int8"
   strings: "uint8"
+  strings: "int8"
   type: STRINGS
 }
 doc_string: "\nThe linear per-tensor/layer quantization operator. It consumes a high precision tensor, a scale, a zero point to compute the low precision / quantized tensor.\nThe quantization formula is y = saturate ((x / y_scale) + y_zero_point). For saturation, it saturates to [0, 255] if it\'s uint8, or [-128, 127] if it\'s int8.\nFor (x / y_scale), it\'s rounding to nearest ties to even. Refer to https://en.wikipedia.org/wiki/Rounding for details. \'y_zero_point\' and \'y\' must have same type.\n"
@@ -3600,29 +3600,29 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "W-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "R-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -3633,8 +3633,8 @@ attribute {
 }
 attribute {
   name: "initial_h-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -3696,21 +3696,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nGenerate a tensor with random values drawn from a normal distribution.\nThe shape of the output tensor is copied from the shape of the input tensor,\nand the parameters of the normal distribution are specified by `mean` and `scale`.\n\nThe data type is specified by the \'dtype\' argument, or copied from the input tensor if not provided.\nThe \'dtype\' argument must be one of the data types specified in the \'DataType\' enum field in the\nTensorProto message, and be valid as an output type.\n"
@@ -3771,21 +3771,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nGenerate a tensor with random values drawn from a uniform distribution.\nThe shape of the output tensor is copied from the shape of the input tensor,\nand the parameters of the uniform distribution are specified by `low` and `high`.\n\nThe data type is specified by the \'dtype\' argument, or copied from the input tensor if not provided.\nThe \'dtype\' argument must be one of the data types specified in the \'DataType\' enum field in the\nTensorProto message and be valid as an output type.\n"
@@ -3798,29 +3798,29 @@ name: "Range"
 op_type: "Range"
 attribute {
   name: "start-types"
-  strings: "int64"
-  strings: "double"
-  strings: "float"
-  strings: "int16"
   strings: "int32"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "limit-types"
-  strings: "int64"
-  strings: "double"
-  strings: "float"
-  strings: "int16"
   strings: "int32"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "delta-types"
-  strings: "int64"
-  strings: "double"
-  strings: "float"
-  strings: "int16"
   strings: "int32"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nGenerate a tensor containing a sequence of numbers that begin at `start` and extends by increments of `delta`\nup to `limit` (exclusive).\n\nThe number of elements in the output of range is computed as below-\n\n`number_of_elements = max( ceil( (limit - start) / delta ) , 0 )`\n\nThe pseudocode determining the contents of the output is shown below-\n\n`for(int i=0; i<number_of_elements; ++i)`\n\n`{`\n\n`    output[i] =  start + (i * delta);  `\n\n`}`\n\n`Example 1`\nInputs: start = 3, limit = 9, delta = 3\nOutput: [3, 6]\n\n`Example 2`\nInputs: start = 10, limit = 4, delta = -2\nOutput: [10, 8, 6]\n\n"
@@ -3831,8 +3831,8 @@ name: "Reciprocal"
 op_type: "Reciprocal"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -3854,13 +3854,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the L1 norm of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -3881,13 +3881,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the L2 norm of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -3908,13 +3908,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the log sum of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -3935,13 +3935,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the log sum exponent of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -3962,15 +3962,15 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the max of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -3991,13 +3991,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the mean of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -4018,15 +4018,15 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the min of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -4047,13 +4047,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the product of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -4074,13 +4074,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the sum of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -4101,13 +4101,13 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nComputes the sum square of the input tensor\'s element along the provided axes. The resulted\ntensor has the same rank as the input if keepdims equal 1. If keepdims equal 0, then\nthe resulted tensor have the reduced dimension pruned.\n\nThe above behavior is similar to numpy, with the exception that numpy default keepdims to\nFalse instead of True."
@@ -4118,8 +4118,8 @@ name: "Relu"
 op_type: "Relu"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -4132,21 +4132,21 @@ name: "Reshape"
 op_type: "Reshape"
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -4195,27 +4195,27 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
   name: "roi-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -4248,21 +4248,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -4305,15 +4305,15 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
 attribute {
   name: "rois-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -4330,8 +4330,8 @@ name: "Round"
 op_type: "Round"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -4399,10 +4399,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Support Vector Machine classifier\n"
@@ -4453,10 +4453,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Support Vector Machine regression prediction and one-class SVM anomaly detection.\n"
@@ -4477,10 +4477,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Rescale input data, for example to standardize features by removing the mean and scaling to unit variance.\n"
@@ -4521,21 +4521,21 @@ attribute {
 }
 attribute {
   name: "initial_state_and_scan_inputs-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nScan can be used to iterate over one or more scan_input tensors,\nconstructing zero or more scan_output tensors. It combines ideas from general recurrences,\nfunctional programming constructs such as scan, fold, map, and zip and is intended to enable\ngeneralizations of RNN-like constructs for sequence-to-sequence processing.\nOther tensors (referred to as state_variables here) can be used to carry a state\nwhen iterating from one element to another (similar to hidden-state in RNNs, also referred\nto as loop-carried dependences in the context of loops).\nMany common usages involve a single scan_input tensor (where functionality\nsimilar to scan, fold and map can be obtained). When more than one scan_input is used,\na behavior similar to zip is obtained.\n\nThe attribute body must be a graph, specifying the computation to be performed in\nevery iteration. It takes as input the current values of the state_variables and\nthe current iterated element of the scan_inputs. It must return the (updated) values\nof the state_variables and zero or more scan_output_element tensors. The values of the\nscan_output_element tensors are concatenated over all the iterations to produce the\nscan_output values of the scan construct (similar to the concatenated intermediate\nhidden-state values of RNN-like constructs). All the output tensors (state_variables as\nwell as scan_output_element tensors) are required to have the same shape in each iteration\nof the loop (a restriction imposed to enable efficient memory allocation).\n\nNote that the iterated element passed to the body subgraph does not have a sequence\naxis. It will have a rank one less than the rank of the corresponding scan_input.\n\nThe scan operation returns the final values of the state_variables as well as the\nscan_outputs.\n\nThe optional attribute scan_input_directions specifies the direction (forward or backward)\nfor each scan input. If this attribute is omitted, all sequences are scanned in the forward\ndirection. A bidirectional scan may be performed by specifying the same tensor input twice\nin the scan_inputs, once with a forward direction, and once with a backward direction.\n\nThe scan_output of the operation is produced by concatenating the scan_output_element\nvalues produced by the body in each iteration.  The optional attribute scan_output_directions\nspecifies the direction in which scan_output is constructed (by appending or prepending the\nscan_output_element to scan_output in each iteration) for each scan_output. If this attribute\nis omitted, the scan_output_element is appended to the scan_output in each iteration.\n\nThe optional attribute scan_input_axes specifies the axis to be scanned for each scan_input.\nIf omitted, every scan_input will be scanned in axis 0. For example, if axis 0 is the\nbatch axis and axis 1 is the time axis (to be scanned), specify an axis value of 1.\nNote that scanning a non-zero axis may be less efficient than scanning axis zero.\n\nThe optional attribute scan_output_axes specifies the axis along which the scan_outputs\nare accumulated for each scan_output. For example, if axis 1 is the time axis (to be\nscanned) for both inputs and outputs, specify a scan_input axis and scan_output axis\nvalue of 1.\n\nNote that because of the ONNX restriction that only the last parameter of an operator can\nbe variadic, the initial-states and scan-inputs are listed together as one input parameter.\nSimilarly, the final-states and scan-outputs are listed together as one output parameter.\nThe attribute num_scan_inputs indicates the number M of scan-inputs.\n\nThe behavior of\n\n    Scan <\n        num_scan_inputs = m,\n        body = loop-body,\n        scan_input_axes = [axis_1, ..., axis_m]\n    > (init_1, ..., init_n, scan_1, ..., scan_m)\n\nis equivalent to the following pseudo-code:\n\n    // scan_i.shape[axis_i] denotes the (max) sequence-length of scan_i\n    // scan_i.shape[axis_i] is required to be equal to scan_j.shape[axis_j] for all i,j.\n    sequence_length = scan_1.shape[axis_1];\n\n    // initialize state-variables\n    st_1 = init_1; ... st_n = init_n;\n    // initialize scan-output variables: [] denotes an empty tensor\n    scan_out_1 = []; ...; scan_out_k = [];\n    // identify number of iterations:\n\n    // execute loop\n    for (int t = 0; t < sequence_length; ++t) {\n        // generate the scan-input elements: the notation T<axis=k>[t] indicates the sub-tensor\n        // of rank one less than T obtained by indexing T at position t along axis k.\n        si_1 = scan_1<axis=axis_1>[t];\n        ... ;\n        si_m = scan_m<axis=axis_m>[t];\n        // execute loop-body\n        st_1, ..., st_n, so_1, ..., so_k = loop-body(st_1, ..., st_n, si_1, ..., si_m)\n        // accumulate the scan-output elements\n        scan_out_1 = Concat<axis=0>(scan_out_1, so_1); ... ; scan_out_k = Concat<axis=0>(scan_out_k, so_k);\n    }\n\n    return st_1, ..., st_n, scan_out_1, ..., scan_out_k;\n\n*Sample usage: Encoding RNN using a Scan*\n\nThe following example shows how a simple RNN over an input tensor %X, with weight tensor %Wi,\nrecurrence weight tensor %Ri, bias tensors %Wbi and %Rbi, and initial hidden-state %H_0 can\nbe encoded as a ScanLoop. Note that the loop-body is a nested graph, and it directly computes\n%Wi, %Ri, %Wbi, and %Rbi (typically constants or initializers in the body graph). If these\nvalues are computed in the outer graph, they need to be passed in as extra state_variables.\n\n    graph rnn-encoding {\n      %H_0 = ... \n      %X = ...\n      %Y_h, %Y = Scan[body = <graph rnn-cell-1>, num_scan_inputs=1](%H_0, %X)\n      return %Y, %Y_h\n    }\n\n    graph rnn-cell-1 (\n      %H_tminus1[FLOAT, tensor]\n      %X_t[FLOAT, tensor]\n    ) {\n      %Wi = ...\n      %Ri = ...\n      %Wbi = ...\n      %Rbi = ...\n      %t1 = X_t * (Wi^T)\n      %t2 = H_tminus1*(Ri^T)\n      %t3 = Add(%t1, %t2)\n      %t4 = Add(%t3, %Wbi)\n      %t5 = Add(%t4, %Rbi)\n      %Ht = Tanh(%t5)\n      %Accumulate = Identity(%Ht)\n      return %Ht, %Accumulate\n    }\n\n"
@@ -4553,21 +4553,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -4578,21 +4578,21 @@ attribute {
 }
 attribute {
   name: "updates-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nThis operator is deprecated. Please use ScatterElements, which provides the same functionality.\n\nScatter takes three inputs `data`, `updates`, and `indices` of the same\nrank r >= 1 and an optional attribute axis that identifies an axis of `data`\n(by default, the outer-most axis, that is axis 0). The output of the operation\nis produced by creating a copy of the input `data`, and then updating its value\nto values specified by `updates` at specific index positions specified by\n`indices`. Its output shape is the same as the shape of `data`.\n\nFor each entry in `updates`, the target index in `data` is obtained by combining\nthe corresponding entry in `indices` with the index of the entry itself: the\nindex-value for dimension = axis is obtained from the value of the corresponding\nentry in `indices` and the index-value for dimension != axis is obtained from the\nindex of the entry itself.\n\nFor instance, in a 2-D tensor case, the update corresponding to the [i][j] entry\nis performed as below:\n```\n  output[indices[i][j]][j] = updates[i][j] if axis = 0, \n  output[i][indices[i][j]] = updates[i][j] if axis = 1,\n```\n\nThis operator is the inverse of GatherElements. It is similar to Torch\'s Scatter operation.\n\nExample 1:\n```\n  data = [\n      [0.0, 0.0, 0.0],\n      [0.0, 0.0, 0.0],\n      [0.0, 0.0, 0.0],\n  ]\n  indices = [\n      [1, 0, 2],\n      [0, 2, 1],\n  ]\n  updates = [\n      [1.0, 1.1, 1.2],\n      [2.0, 2.1, 2.2],\n  ]\n  output = [\n      [2.0, 1.1, 0.0]\n      [1.0, 0.0, 2.2]\n      [0.0, 2.1, 1.2]\n  ]\n```\nExample 2:\n```\n  data = [[1.0, 2.0, 3.0, 4.0, 5.0]]\n  indices = [[1, 3]]\n  updates = [[1.1, 2.1]]\n  axis = 1\n  output = [[1.0, 1.1, 3.0, 2.1, 5.0]]\n```\n"
@@ -4610,21 +4610,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -4635,21 +4635,21 @@ attribute {
 }
 attribute {
   name: "updates-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nScatterElements takes three inputs `data`, `updates`, and `indices` of the same\nrank r >= 1 and an optional attribute axis that identifies an axis of `data`\n(by default, the outer-most axis, that is axis 0). The output of the operation\nis produced by creating a copy of the input `data`, and then updating its value\nto values specified by `updates` at specific index positions specified by\n`indices`. Its output shape is the same as the shape of `data`.\n\nFor each entry in `updates`, the target index in `data` is obtained by combining\nthe corresponding entry in `indices` with the index of the entry itself: the\nindex-value for dimension = axis is obtained from the value of the corresponding\nentry in `indices` and the index-value for dimension != axis is obtained from the\nindex of the entry itself.\n\nFor instance, in a 2-D tensor case, the update corresponding to the [i][j] entry\nis performed as below:\n```\n  output[indices[i][j]][j] = updates[i][j] if axis = 0, \n  output[i][indices[i][j]] = updates[i][j] if axis = 1,\n```\n\nThis operator is the inverse of GatherElements. It is similar to Torch\'s Scatter operation.\n\nExample 1:\n```\n  data = [\n      [0.0, 0.0, 0.0],\n      [0.0, 0.0, 0.0],\n      [0.0, 0.0, 0.0],\n  ]\n  indices = [\n      [1, 0, 2],\n      [0, 2, 1],\n  ]\n  updates = [\n      [1.0, 1.1, 1.2],\n      [2.0, 2.1, 2.2],\n  ]\n  output = [\n      [2.0, 1.1, 0.0]\n      [1.0, 0.0, 2.2]\n      [0.0, 2.1, 1.2]\n  ]\n```\nExample 2:\n```\n  data = [[1.0, 2.0, 3.0, 4.0, 5.0]]\n  indices = [[1, 3]]\n  updates = [[1.1, 2.1]]\n  axis = 1\n  output = [[1.0, 1.1, 3.0, 2.1, 5.0]]\n```\n"
@@ -4662,21 +4662,21 @@ name: "ScatterND"
 op_type: "ScatterND"
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -4686,21 +4686,21 @@ attribute {
 }
 attribute {
   name: "updates-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1,\nand `updates` tensor of rank q + r - indices.shape[-1] - 1. The output of the operation\nis produced by creating a copy of the input `data`, and then updating its value to values\nspecified by `updates` at specific index positions specified by `indices`. Its output shape\nis the same as the shape of `data`. Note that `indices` should not have duplicate entries.\nThat is, two or more `updates` for the same index-location is not supported.\n\n`indices` is an integer tensor. Let k denote indices.shape[-1], the last dimension in the shape of `indices`.\n `indices` is treated as a (q-1)-dimensional tensor of k-tuples, where each k-tuple is a partial-index into `data`.\nHence, k can be a value at most the rank of `data`. When k equals rank(data), each update entry specifies an\nupdate to a single element of the tensor. When k is less than rank(data) each update entry specifies an\nupdate to a slice of the tensor.\n\n`updates` is treated as a (q-1)-dimensional tensor of replacement-slice-values. Thus, the\nfirst (q-1) dimensions of updates.shape must match the first (q-1) dimensions of indices.shape.\nThe remaining dimensions of `updates` correspond to the dimensions of the\nreplacement-slice-values. Each replacement-slice-value is a (r-k) dimensional tensor,\ncorresponding to the trailing (r-k) dimensions of `data`.  Thus, the shape of `updates`\nmust equal indices.shape[0:q-1] ++ data.shape[k:r-1], where ++ denotes the concatenation\nof shapes.\n\nThe `output` is calculated via the following equation:\n\n    output = np.copy(data)\n    update_indices = indices.shape[:-1]\n    for idx in np.ndindex(update_indices):\n        output[indices[idx]] = updates[idx]\n\nThe order of iteration in the above loop is not specified.\nIn particular, indices should not have duplicate entries: that is, if idx1 != idx2, then indices[idx1] != indices[idx2].\nThis ensures that the output value does not depend on the iteration order.\n\nThis operator is the inverse of GatherND.\n\nExample 1:\n```\n  data    = [1, 2, 3, 4, 5, 6, 7, 8]\n  indices = [[4], [3], [1], [7]]\n  updates = [9, 10, 11, 12]\n  output  = [1, 11, 3, 10, 9, 6, 7, 12]\n```\n\nExample 2:\n```\n  data    = [[[1, 2, 3, 4], [5, 6, 7, 8], [8, 7, 6, 5], [4, 3, 2, 1]],\n             [[1, 2, 3, 4], [5, 6, 7, 8], [8, 7, 6, 5], [4, 3, 2, 1]],\n             [[8, 7, 6, 5], [4, 3, 2, 1], [1, 2, 3, 4], [5, 6, 7, 8]],\n             [[8, 7, 6, 5], [4, 3, 2, 1], [1, 2, 3, 4], [5, 6, 7, 8]]]\n  indices = [[0], [2]]\n  updates = [[[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],\n             [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4, 4]]]\n  output  = [[[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],\n             [[1, 2, 3, 4], [5, 6, 7, 8], [8, 7, 6, 5], [4, 3, 2, 1]],\n             [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4, 4]],\n             [[8, 7, 6, 5], [4, 3, 2, 1], [1, 2, 3, 4], [5, 6, 7, 8]]]\n```\n"
@@ -4721,8 +4721,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -4735,21 +4735,21 @@ name: "SequenceAt"
 op_type: "SequenceAt"
 attribute {
   name: "input_sequence-types"
-  strings: "seq(float"
-  strings: "seq(uint32"
-  strings: "seq(string"
-  strings: "seq(int64"
-  strings: "seq(double"
-  strings: "seq(int8"
-  strings: "seq(float16"
-  strings: "seq(bool"
-  strings: "seq(complex128"
   strings: "seq(uint64"
-  strings: "seq(int16"
+  strings: "seq(double"
+  strings: "seq(string"
+  strings: "seq(complex64"
+  strings: "seq(uint32"
   strings: "seq(int32"
   strings: "seq(uint16"
-  strings: "seq(complex64"
+  strings: "seq(int8"
   strings: "seq(uint8"
+  strings: "seq(float"
+  strings: "seq(bool"
+  strings: "seq(complex128"
+  strings: "seq(int64"
+  strings: "seq(float16"
+  strings: "seq(int16"
   type: STRINGS
 }
 attribute {
@@ -4766,21 +4766,21 @@ name: "SequenceConstruct"
 op_type: "SequenceConstruct"
 attribute {
   name: "inputs-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nConstruct a tensor sequence containing \'inputs\' tensors.\nAll tensors in \'inputs\' must have the same data type.\n"
@@ -4802,21 +4802,21 @@ name: "SequenceErase"
 op_type: "SequenceErase"
 attribute {
   name: "input_sequence-types"
-  strings: "seq(float"
-  strings: "seq(uint32"
-  strings: "seq(string"
-  strings: "seq(int64"
-  strings: "seq(double"
-  strings: "seq(int8"
-  strings: "seq(float16"
-  strings: "seq(bool"
-  strings: "seq(complex128"
   strings: "seq(uint64"
-  strings: "seq(int16"
+  strings: "seq(double"
+  strings: "seq(string"
+  strings: "seq(complex64"
+  strings: "seq(uint32"
   strings: "seq(int32"
   strings: "seq(uint16"
-  strings: "seq(complex64"
+  strings: "seq(int8"
   strings: "seq(uint8"
+  strings: "seq(float"
+  strings: "seq(bool"
+  strings: "seq(complex128"
+  strings: "seq(int64"
+  strings: "seq(float16"
+  strings: "seq(int16"
   type: STRINGS
 }
 attribute {
@@ -4835,40 +4835,40 @@ name: "SequenceInsert"
 op_type: "SequenceInsert"
 attribute {
   name: "input_sequence-types"
-  strings: "seq(float"
-  strings: "seq(uint32"
-  strings: "seq(string"
-  strings: "seq(int64"
-  strings: "seq(double"
-  strings: "seq(int8"
-  strings: "seq(float16"
-  strings: "seq(bool"
-  strings: "seq(complex128"
   strings: "seq(uint64"
-  strings: "seq(int16"
+  strings: "seq(double"
+  strings: "seq(string"
+  strings: "seq(complex64"
+  strings: "seq(uint32"
   strings: "seq(int32"
   strings: "seq(uint16"
-  strings: "seq(complex64"
+  strings: "seq(int8"
   strings: "seq(uint8"
+  strings: "seq(float"
+  strings: "seq(bool"
+  strings: "seq(complex128"
+  strings: "seq(int64"
+  strings: "seq(float16"
+  strings: "seq(int16"
   type: STRINGS
 }
 attribute {
   name: "tensor-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -4885,21 +4885,21 @@ name: "SequenceLength"
 op_type: "SequenceLength"
 attribute {
   name: "input_sequence-types"
-  strings: "seq(float"
-  strings: "seq(uint32"
-  strings: "seq(string"
-  strings: "seq(int64"
-  strings: "seq(double"
-  strings: "seq(int8"
-  strings: "seq(float16"
-  strings: "seq(bool"
-  strings: "seq(complex128"
   strings: "seq(uint64"
-  strings: "seq(int16"
+  strings: "seq(double"
+  strings: "seq(string"
+  strings: "seq(complex64"
+  strings: "seq(uint32"
   strings: "seq(int32"
   strings: "seq(uint16"
-  strings: "seq(complex64"
+  strings: "seq(int8"
   strings: "seq(uint8"
+  strings: "seq(float"
+  strings: "seq(bool"
+  strings: "seq(complex128"
+  strings: "seq(int64"
+  strings: "seq(float16"
+  strings: "seq(int16"
   type: STRINGS
 }
 doc_string: "\nProduces a scalar(tensor of empty shape) containing the number of tensors in \'input_sequence\'.\n"
@@ -4910,21 +4910,21 @@ name: "Shape"
 op_type: "Shape"
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nTakes a tensor as input and outputs an 1D int64 tensor containing the shape of the input tensor.\n"
@@ -4945,17 +4945,17 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nShrink takes one input data (Tensor<numeric>) and produces one Tensor output,\nhaving same datatype and shape with input. It has two attributes, lambd and\nbias. The formula of this operator is: If x < -lambd, y = x + bias;\nIf x > lambd, y = x - bias; Otherwise, y = 0.\n"
@@ -4966,8 +4966,8 @@ name: "Sigmoid"
 op_type: "Sigmoid"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -4979,17 +4979,17 @@ name: "Sign"
 op_type: "Sign"
 attribute {
   name: "input-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nCalculate the sign of the given input tensor element-wise.\nIf input > 0, output 1. if input < 0, output -1. if input == 0, output 0.\n"
@@ -5000,8 +5000,8 @@ name: "Sin"
 op_type: "Sin"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5013,8 +5013,8 @@ name: "Sinh"
 op_type: "Sinh"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5026,21 +5026,21 @@ name: "Size"
 op_type: "Size"
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nTakes a tensor as input and outputs a int64 scalar that equals to the total number of elements of the input tensor.\n"
@@ -5055,21 +5055,21 @@ name: "Slice"
 op_type: "Slice"
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -5109,8 +5109,8 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5135,8 +5135,8 @@ attribute {
 }
 attribute {
   name: "scores-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5148,8 +5148,8 @@ attribute {
 }
 attribute {
   name: "weights-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5161,8 +5161,8 @@ name: "Softplus"
 op_type: "Softplus"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5174,8 +5174,8 @@ name: "Softsign"
 op_type: "Softsign"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5192,21 +5192,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "SpaceToDepth rearranges blocks of spatial data into depth. More specifically,\nthis op outputs a copy of the input tensor where values from the height and width dimensions\nare moved to the depth dimension.\n"
@@ -5227,21 +5227,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "Split a tensor into a list of tensors, along the specified\n\'axis\'. Lengths of the parts can be specified using argument \'split\'.\nOtherwise, the tensor is split to equal sized parts.\n"
@@ -5263,21 +5263,21 @@ attribute {
 }
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -5294,8 +5294,8 @@ name: "Sqrt"
 op_type: "Sqrt"
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5312,21 +5312,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nRemove single-dimensional entries from the shape of a tensor.\nTakes a  parameter `axes` with a list of axes to squeeze.\nIf `axes` is not provided, all the single dimensions will be removed from\nthe shape. If an axis is selected with shape entry not equal to one, an error is raised.\n"
@@ -5369,24 +5369,24 @@ name: "Sub"
 op_type: "Sub"
 attribute {
   name: "A-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
   name: "B-types"
-  strings: "int64"
-  strings: "double"
-  strings: "uint32"
-  strings: "float"
-  strings: "uint64"
   strings: "float16"
+  strings: "uint32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
   strings: "int32"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\nPerforms element-wise binary subtraction (with Numpy-style broadcasting support).\n\nThis operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).\n"
@@ -5397,8 +5397,8 @@ name: "Sum"
 op_type: "Sum"
 attribute {
   name: "data_0-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5410,8 +5410,8 @@ name: "Tan"
 op_type: "Tan"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5423,8 +5423,8 @@ name: "Tanh"
 op_type: "Tanh"
 attribute {
   name: "input-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5499,8 +5499,8 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "double"
   strings: "float"
+  strings: "double"
   strings: "float16"
   type: STRINGS
 }
@@ -5513,21 +5513,21 @@ name: "Tile"
 op_type: "Tile"
 attribute {
   name: "input-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -5560,17 +5560,17 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "uint16"
-  strings: "int64"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
   strings: "int8"
+  strings: "float16"
+  strings: "uint16"
   strings: "uint8"
+  strings: "uint32"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "int16"
+  strings: "int64"
   type: STRINGS
 }
 attribute {
@@ -5591,21 +5591,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nTranspose the input tensor similar to numpy.transpose. For example, when\nperm=(1, 0, 2), given an input tensor of shape (1, 2, 3), the output shape\nwill be (2, 1, 3).\n"
@@ -5702,10 +5702,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Tree Ensemble classifier.  Returns the top class for each of N inputs.<br>\n    The attributes named \'nodes_X\' form a sequence of tuples, associated by \n    index into the sequences, which must all be of equal length. These tuples\n    define the nodes.<br>\n    Similarly, all fields prefixed with \'class_\' are tuples of votes at the leaves.\n    A leaf may have multiple votes, where each vote is weighted by\n    the associated class_weights index.<br>\n    One and only one of classlabels_strings or classlabels_int64s\n    will be defined. The class_ids are indices into this list.\n"
@@ -5801,10 +5801,10 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "int32"
-  strings: "int64"
-  strings: "double"
   strings: "float"
+  strings: "int32"
+  strings: "double"
+  strings: "int64"
   type: STRINGS
 }
 doc_string: "\n    Tree Ensemble regressor.  Returns the regressed values for each input in N.<br>\n    All args with nodes_ are fields of a tuple of tree nodes, and\n    it is assumed they are the same length, and an index i will decode the\n    tuple across these inputs.  Each node id can appear only once\n    for each tree id.<br>\n    All fields prefixed with target_ are tuples of votes at the leaves.<br>\n    A leaf may have multiple votes, where each vote is weighted by\n    the associated target_weights index.<br>\n    All trees must have their node ids start at 0 and increment by 1.<br>\n    Mode enum is BRANCH_LEQ, BRANCH_LT, BRANCH_GTE, BRANCH_GT, BRANCH_EQ, BRANCH_NEQ, LEAF\n"
@@ -5828,21 +5828,21 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nFind the unique elements of a tensor. When an optional attribute \'axis\' is provided, unique subtensors sliced along the \'axis\' are returned. \nOtherwise the input tensor is flattened and unique values of the flattened tensor are returned. \n\nThis operator returns the unique values or sliced unique subtensors of the input tensor and three optional outputs. \nThe first output tensor \'Y\' contains all unique values or subtensors of the input. \nThe second optional output tensor \'indices\' contains indices of \'Y\' elements\' first occurance in \'X\'.. \nThe third optional output tensor \'inverse_indices\' contains, for elements of \'X\', its corresponding indices in \'Y\'. \". \nThe fourth optional output tensor \'counts\' contains the count of each element of \'Y\' in the input. \n\nOutputs are either sorted in ascending order or optionally in the order of the first occurrence of the values in the input. \n\nhttps://docs.scipy.org/doc/numpy/reference/generated/numpy.unique.html\n\nExample 1:\n  input_X = [2, 1, 1, 3, 4, 3]\n  attribute_sorted = 0\n  attribute_axis = None\n  output_Y = [2, 1, 3, 4]\n  output_indices = [0, 1, 3, 4]\n  output_inverse_indices = [0, 1, 1, 2, 3, 2]\n  output_counts = [1, 2, 2, 1]\n\nExample 2:\n  input_X = [[1, 3], [2, 3]]\n  attribute_sorted = 1\n  attribute_axis = None\n  output_Y = [1, 2, 3]\n  output_indices = [0, 2, 1]\n  output_inverse_indices = [0, 2, 1, 2]\n  output_counts = [1, 1, 2]\n\nExample 3:\n  input_X = [[1, 0, 0], [1, 0, 0], [2, 3, 4]]\n  attribute_sorted = 1\n  attribute_axis = 0\n  output_Y = [[1, 0, 0], [2, 3, 4]]\n  output_indices = [0, 2]\n  output_inverse_indices = [0, 0, 1]\n  output_counts = [2, 1]\n\nExample 4:\n  input_x = [[[1., 1.], [0., 1.], [2., 1.], [0., 1.]], \n             [[1., 1.], [0., 1.], [2., 1.], [0., 1.]]]\n  attribute_sorted = 1\n  attribute_axis = 1\n\n  intermediate data are presented below for better understanding: \n  \n  there are 4 subtensors sliced along axis 1 of input_x (shape = (2, 4, 2)):\n  A: [[1, 1], [1, 1]], \n     [[0, 1], [0, 1]], \n     [[2, 1], [2, 1]], \n     [[0, 1], [0, 1]].\n  \n  there are 3 unique subtensors: \n  [[1, 1], [1, 1]], \n  [[0, 1], [0, 1]], \n  [[2, 1], [2, 1]].\n  \n  sorted unique subtensors:\n  B: [[0, 1], [0, 1]], \n     [[1, 1], [1, 1]], \n     [[2, 1], [2, 1]].\n  \n  output_Y is constructed from B:\n  [[[0. 1.], [1. 1.], [2. 1.]], \n   [[0. 1.], [1. 1.], [2. 1.]]]\n\n  output_indices is to map from B to A:\n  [1, 0, 2]\n  \n  output_inverse_indices is to map from A to B:\n  [1, 0, 2, 0]\n\n  output_counts = [2 1 1]\n"
@@ -5858,21 +5858,21 @@ attribute {
 }
 attribute {
   name: "data-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\nInsert single-dimensional entries to the shape of an input tensor (`data`).\nTakes one required argument `axes` - which contains a list of dimension indices and this operator will insert a dimension of value `1` into the corresponding index of the output tensor (`expanded`).\n\nFor example:\n  Given an input tensor (`data`) of shape [3, 4, 5], then\n  Unsqueeze(data, axes=[0, 4]) outputs a tensor (`expanded`) containing same data as `data` but with shape [1, 3, 4, 5, 1].\n\nThe attribute `axes` should not contain any duplicate entries. It is an error if it contains duplicates.\nThe rank of the output tensor (`output_rank`) is the rank of the input tensor (`data`) plus the number of values in `axes`.\nEach value in `axes` should be within the (inclusive) range [-output_rank , output_rank - 1]. \nThe order of values in `axes` does not matter and can come in any order. \n\n"
@@ -5889,21 +5889,21 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
@@ -5926,40 +5926,40 @@ attribute {
 }
 attribute {
   name: "X-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 attribute {
   name: "Y-types"
-  strings: "bool"
+  strings: "int8"
+  strings: "float16"
   strings: "uint16"
+  strings: "uint8"
+  strings: "uint32"
+  strings: "complex128"
+  strings: "int32"
+  strings: "uint64"
+  strings: "float"
+  strings: "double"
+  strings: "bool"
+  strings: "int16"
+  strings: "complex64"
   strings: "int64"
   strings: "string"
-  strings: "float"
-  strings: "uint32"
-  strings: "double"
-  strings: "complex64"
-  strings: "complex128"
-  strings: "uint64"
-  strings: "int16"
-  strings: "float16"
-  strings: "int32"
-  strings: "int8"
-  strings: "uint8"
   type: STRINGS
 }
 doc_string: "\n    Return elements, either from X or Y, depending on condition\n    (with Numpy-style broadcasting support).\n    Where behaves like numpy.where with three parameters:\n    https://docs.scipy.org/doc/numpy/reference/generated/numpy.where.html\n"
