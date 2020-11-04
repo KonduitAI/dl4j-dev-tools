@@ -5,6 +5,7 @@ import org.nd4j.codegen.ir.*
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
+import org.nd4j.linalg.api.ndarray.INDArray
 import org.tensorflow.framework.*
 import org.tensorflow.framework.OpDef.AttrDef
 import kotlin.collections.HashMap
@@ -108,6 +109,10 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, DataType> {
         return tensor
     }
 
+    override fun toNd4jNDArray(): INDArray {
+        TODO("Not yet implemented")
+    }
+
 
 }
 
@@ -139,12 +144,33 @@ class TensorflowIRDataType(inputDataType: DataType): IRDataType<DataType> {
         return IRDataTypeValue.DT_INVALID
     }
 
+
+
     override fun dataType(): IRDataTypeValue {
         return convertToDataType(this.dataType)
     }
 
     override fun internalValue(): DataType {
         return this.dataType
+    }
+
+    override fun nd4jDataType(): org.nd4j.linalg.api.buffer.DataType {
+        when(this.dataType) {
+            DataType.DT_BOOL -> return org.nd4j.linalg.api.buffer.DataType.BOOL
+            DataType.DT_FLOAT -> return org.nd4j.linalg.api.buffer.DataType.FLOAT
+            DataType.DT_STRING -> return org.nd4j.linalg.api.buffer.DataType.UTF8
+            DataType.DT_BFLOAT16 -> return org.nd4j.linalg.api.buffer.DataType.BFLOAT16
+            DataType.DT_INT64 -> return org.nd4j.linalg.api.buffer.DataType.INT64
+            DataType.DT_HALF -> return org.nd4j.linalg.api.buffer.DataType.FLOAT16
+            DataType.DT_INT16 -> return org.nd4j.linalg.api.buffer.DataType.INT16
+            DataType.DT_INT32 -> return org.nd4j.linalg.api.buffer.DataType.INT32
+            DataType.DT_DOUBLE -> return org.nd4j.linalg.api.buffer.DataType.DOUBLE
+            DataType.DT_UINT16 -> return org.nd4j.linalg.api.buffer.DataType.UINT16
+            DataType.DT_UINT32 -> return org.nd4j.linalg.api.buffer.DataType.UINT32
+            DataType.DT_UINT64 -> return org.nd4j.linalg.api.buffer.DataType.UINT64
+        }
+
+        return org.nd4j.linalg.api.buffer.DataType.UNKNOWN
     }
 
 }
@@ -595,6 +621,20 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
         return TensorflowIRTensor(graphNode.getAttrOrThrow("value").tensor)
     }
 
+    override fun opName(): String {
+        return node.op
+    }
+
+    override fun nodeName(): String {
+        return node.name
+    }
+
+    override fun nd4jDataTypeFor(input: IRTensor<TensorProto, DataType>): org.nd4j.linalg.api.buffer.DataType {
+        return input.dataType().nd4jDataType()
+    }
+
 }
+
+
 
 

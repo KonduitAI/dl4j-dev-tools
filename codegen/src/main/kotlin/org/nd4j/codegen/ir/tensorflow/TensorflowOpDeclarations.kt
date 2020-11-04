@@ -10,7 +10,7 @@ val tensorflowOpRegistry = OpMappingRegistry<NodeDef,OpDef, TensorProto,DataType
 class AbsMappingProcess: TensorflowMappingProcess(
         opName = "abs",
         inputFrameworkOpName = "Abs", tensorMappingRules =  listOf(NDArrayMappingRule(
-        mappingNamesToPerform = mapOf("x" to "x", "y" to "y"))),
+        mappingNamesToPerform = mutableMapOf("x" to "x", "y" to "y"))),
         opMappingRegistry = tensorflowOpRegistry)
 
 
@@ -20,7 +20,7 @@ class Conv2DMappingProcess: TensorflowMappingProcess(
         inputFramework = "tensorflow",
         inputFrameworkOpName = "Conv2D",
         opName = "conv2d",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mapOf(
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
                 "input" to "input","filter" to "weights"))),
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),

@@ -4,6 +4,8 @@ import onnx.Onnx
 import org.nd4j.codegen.ir.*
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.TensorNamespace
+import org.nd4j.linalg.api.buffer.DataType
+import org.nd4j.linalg.api.ndarray.INDArray
 
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
@@ -92,6 +94,10 @@ class OnnxIRTensor(input: Onnx.TensorProto): IRTensor<Onnx.TensorProto, Onnx.Ten
         return tensor
     }
 
+    override fun toNd4jNDArray(): INDArray {
+        TODO("Not yet implemented")
+    }
+
 
 }
 
@@ -126,6 +132,26 @@ class OnnxIRDataType(inputDataType: Onnx.TensorProto.DataType): IRDataType<Onnx.
 
     override fun internalValue(): Onnx.TensorProto.DataType {
         return this.dataType
+    }
+
+    override fun nd4jDataType(): DataType {
+        when(this.dataType) {
+            Onnx.TensorProto.DataType.UINT64 ->  return  return org.nd4j.linalg.api.buffer.DataType.INT64
+            Onnx.TensorProto.DataType.UINT32 ->  return return org.nd4j.linalg.api.buffer.DataType.INT32
+            Onnx.TensorProto.DataType.UINT16 ->  return return org.nd4j.linalg.api.buffer.DataType.INT16
+            Onnx.TensorProto.DataType.FLOAT16 -> return   return org.nd4j.linalg.api.buffer.DataType.FLOAT16
+            Onnx.TensorProto.DataType.STRING -> return  return org.nd4j.linalg.api.buffer.DataType.UTF8
+            Onnx.TensorProto.DataType.FLOAT ->  return  return org.nd4j.linalg.api.buffer.DataType.FLOAT
+            Onnx.TensorProto.DataType.DOUBLE -> return  return org.nd4j.linalg.api.buffer.DataType.DOUBLE
+            Onnx.TensorProto.DataType.BOOL -> return  return org.nd4j.linalg.api.buffer.DataType.BOOL
+            Onnx.TensorProto.DataType.INT64 -> return  return org.nd4j.linalg.api.buffer.DataType.INT64
+            Onnx.TensorProto.DataType.INT32 ->  return  return org.nd4j.linalg.api.buffer.DataType.INT32
+            Onnx.TensorProto.DataType.INT16 -> return  return org.nd4j.linalg.api.buffer.DataType.INT16
+
+        }
+
+        return  return org.nd4j.linalg.api.buffer.DataType.UNKNOWN
+
     }
 
 }
@@ -411,6 +437,18 @@ IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
         graphDef.initializerList.filter { it.name == name }
         //value nodes are the values of attributes that are input nodes in a frozen graph
         return OnnxIRTensor(graphDef.initializerList.first { it.name == name })
+    }
+
+    override fun opName(): String {
+        return opDef.opType
+    }
+
+    override fun nodeName(): String {
+        return opDef.name
+    }
+
+    override fun nd4jDataTypeFor(input: IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType>): DataType {
+        return input.dataType().nd4jDataType()
     }
 
 }

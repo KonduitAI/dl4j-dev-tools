@@ -1,5 +1,7 @@
 package org.nd4j.codegen.ir
 
+import io.github.classgraph.ClassGraph
+import io.github.classgraph.ClassInfoList
 import org.apache.commons.io.IOUtils
 import org.nd4j.autodiff.functions.DifferentialFunction
 import org.nd4j.autodiff.samediff.SDVariable
@@ -8,6 +10,7 @@ import org.nd4j.autodiff.samediff.VariableType
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
+import org.nd4j.common.io.ReflectionUtils
 import org.nd4j.gen.OpDeclarationDescriptor
 import org.nd4j.graph.VarType
 import org.nd4j.ir.MapperNamespace
@@ -17,9 +20,11 @@ import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.api.ops.CustomOp
 import org.nd4j.linalg.api.ops.DynamicCustomOp
+import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.nd4j.shade.protobuf.TextFormat
+import org.tensorflow.framework.GraphDef
 import org.tensorflow.framework.TensorProto
 import java.nio.charset.Charset
 
@@ -39,10 +44,33 @@ fun loadNd4jOpDescriptors(): OpNamespace.OpDescriptorList {
     return newResultBuilder.build()
 }
 
+fun nd4jDifferentialFunctions(): List<Class<out DifferentialFunction>> {
+    return ClassGraph().enableAllInfo()
+            .scan().getSubclasses("org.nd4j.autodiff.functions.DifferentialFunction").filter {
+                clazz-> clazz.isAbstract || clazz.isAnnotation || clazz.isInterface
+            }.map { clazz -> Class.forName(clazz.name) as Class<out DifferentialFunction> }
+}
+
+val differentialFunctionClasses = nd4jDifferentialFunctions()
+
+fun cachedOpInstances2(): List<DifferentialFunction> {
+    return differentialFunctionClasses.map { clazz -> clazz.newInstance() as DifferentialFunction}
+}
+
+val cachedOpInstances = cachedOpInstances2()
+
+
+fun createDifferentialFunctionInstanceForName(name: String): DifferentialFunction {
+    return cachedOpInstances.first { op -> op.opName() == name }.javaClass.newInstance()
+}
+
+
 
 val nd4jOpDescriptors = loadNd4jOpDescriptors()
 
-
+fun OpNamespace.OpDescriptorList.findOp(opName: String): OpNamespace.OpDescriptor {
+    return this.opListList.first { it.name == opName }
+}
 
 interface IR<NODE_TYPE : GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3, DATA_TYPE,ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,OP_LIST_TYPE: GeneratedMessageV3>
         where  DATA_TYPE: ProtocolMessageEnum {
@@ -73,7 +101,6 @@ interface IR<NODE_TYPE : GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3, DAT
 
 }
 
-annotation class OpMappingProcess(val inputFrameworkName: String,val inputFrameworkOpName: String)
 
 interface IRTensor<TENSOR_TYPE: GeneratedMessageV3, DATA_TYPE>
         where  DATA_TYPE: ProtocolMessageEnum {
@@ -82,6 +109,7 @@ interface IRTensor<TENSOR_TYPE: GeneratedMessageV3, DATA_TYPE>
     fun dataType(): IRDataType<DATA_TYPE>
     fun toArgTensor(): TensorNamespace.TensorProto
     fun rawValue(): TENSOR_TYPE
+    fun toNd4jNDArray(): INDArray
 
 }
 
@@ -230,6 +258,8 @@ interface MappingContext<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMes
 
     fun tensorInputFor(name: String): IRTensor<TENSOR_TYPE,DATA_TYPE>
 
+    fun nd4jDataTypeFor(input: IRTensor<TENSOR_TYPE,DATA_TYPE>): DataType
+
     fun irAttributeValueForNode(valueName: String): IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
 
     fun graph(): IRGraph<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
@@ -258,6 +288,8 @@ abstract class AbstractMappingContext<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE:
     override fun graph(): IRGraph<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE> {
         return graph
     }
+
+
 
 }
 
@@ -372,6 +404,7 @@ interface IRDataType<DATA_TYPE> where DATA_TYPE: ProtocolMessageEnum {
 
     fun internalValue(): DATA_TYPE
 
+    fun nd4jDataType(): DataType
 }
 
 
@@ -535,19 +568,85 @@ abstract class AbstractImportProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_TYPE: 
 
     override fun runImportProcess(mappingProcesses: List<MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>>, mappingContext: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>) {
         val sameDiff = SameDiff.create()
-
         mappingProcesses.map {
             it.applyProcess(mappingContext)
         }.forEach {
-            it.argDescriptorList.filter {
-                descriptor -> descriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
-            }.map {
-                argDescriptor -> SDVariable(varName = argDescriptor.name,
-                    sameDiff = sameDiff,varType = VarType.VARIABLE,shape = LongArray(),dataType = DataType.DOUBLE)
+            val variables2 = ArrayList<SDVariable>()
+
+            when(it.opDeclarationType) {
+                OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ -> {
+                    val createdOp = createDifferentialFunctionInstanceForName(it.name)
+                    it.argDescriptorList.forEach {
+                        argDescriptor ->
+                        val field = createdOp.javaClass.getDeclaredField(argDescriptor.name)
+                        when(argDescriptor.name) {
+                            "x","y","z" ->  {
+                                val createdNDArray = mappingContext.tensorInputFor(argDescriptor.name).toNd4jNDArray()
+                                ReflectionUtils.setField(field,createdOp,createdNDArray)
+                                val variable = createVariable(varName = argDescriptor.name, shape = createdNDArray.shape().toList(),dataType = createdNDArray.dataType(),sameDiff = sameDiff,varType = VariableType.ARRAY)
+                                variables2.add(variable)
+                            }
+                            "keepDims" ->  ReflectionUtils.setField(field,createdOp, argDescriptor.boolValue)
+                            else -> { }
+                        }
+
+                    }
+
+                    sameDiff.addArgsFor(variables2.toTypedArray(),createdOp)
+
+                }
+                
+                OpNamespace.OpDescriptor.OpDeclarationType.CUSTOM_OP_IMPL -> {
+                    val dynamicCustomOp = DynamicCustomOp.builder(it.name)
+                    it.argDescriptorList.forEach {
+                        argDescriptor ->
+                        when(argDescriptor.argType) {
+                            OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
+                                val arr = mappingContext.tensorInputFor(argDescriptor.name)
+                                val nd4jDataType = mappingContext.nd4jDataTypeFor(arr)
+                                val variable = createVariable(varName = argDescriptor.name, shape = arr.shape(),dataType = nd4jDataType,sameDiff = sameDiff,varType = VariableType.ARRAY)
+                                variables2.add(variable)
+                                dynamicCustomOp.addInputs(arr.toNd4jNDArray())
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR -> {
+
+                            }
+
+                            OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                                dynamicCustomOp.addIntegerArguments(argDescriptor.int32Value)
+                            }
+
+                            OpNamespace.ArgDescriptor.ArgType.INT64 -> {
+                                dynamicCustomOp.addIntegerArguments(argDescriptor.int64Value)
+                            }
+
+                            OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
+                                dynamicCustomOp.addFloatingPointArguments(argDescriptor.floatValue.toDouble())
+                            }
+
+                            OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
+                                dynamicCustomOp.addFloatingPointArguments(argDescriptor.doubleValue)
+                            }
+
+                            OpNamespace.ArgDescriptor.ArgType.STRING -> {
+
+                            }
+
+                        }
+                    }
+
+                    sameDiff.addArgsFor(variables2.toTypedArray(),dynamicCustomOp.build())
+                }
             }
+
 
         }
 
     }
 }
 
+
+
+fun createVariable(varName: String,varType: VariableType,sameDiff: SameDiff,shape: List<Long>,dataType: DataType): SDVariable {
+    return SDVariable(varName,varType, sameDiff, shape.toLongArray(), dataType)
+}

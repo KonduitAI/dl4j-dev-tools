@@ -425,6 +425,7 @@ public class ParseOpFile {
                         }
 
                         OpDeclarationDescriptor.OpDeclarationDescriptorBuilder opDescriptor2 = descriptorMap.get(aliasFor).toBuilder();
+
                         opDescriptor2.name(newKey);
                         OpDeclarationDescriptor newDescriptor = opDescriptor2.build();
                         opDeclarationDescriptors.add(newDescriptor);
@@ -446,6 +447,7 @@ public class ParseOpFile {
         for(OpDeclarationDescriptor declarationDescriptor : opDeclarationDescriptors) {
             Map<String, OpNamespace.ArgDescriptor.ArgType> stringArgTypeMap = declarationDescriptor.argsByType();
             OpNamespace.OpDescriptor.Builder opDescriptorBuilder = OpNamespace.OpDescriptor.newBuilder();
+            opDescriptorBuilder.setOpDeclarationType(OpNamespace.OpDescriptor.OpDeclarationType.values()[declarationDescriptor.getOpDeclarationType().ordinal()]);
             for(Map.Entry<String, OpNamespace.ArgDescriptor.ArgType> argTypeEntry : stringArgTypeMap.entrySet()) {
                 OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
                         .setArgType(argTypeEntry.getValue())
@@ -517,6 +519,7 @@ public class ParseOpFile {
 
                     OpNamespace.OpDescriptor.Builder opDescriptor = OpNamespace.OpDescriptor.newBuilder();
                     opDescriptor.setName(differentialFunction.opName());
+                    opDescriptor.setOpDeclarationType(OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ);
                     for(Field field : validFields) {
                         if(Boolean.class.isAssignableFrom(field.getType()) || boolean.class.isAssignableFrom(field.getType())) {
                             opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
