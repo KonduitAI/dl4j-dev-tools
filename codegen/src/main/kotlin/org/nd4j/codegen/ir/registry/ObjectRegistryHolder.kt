@@ -1,5 +1,6 @@
 package org.nd4j.codegen.ir.registry
 
+import onnx.Onnx
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap
 import org.nd4j.codegen.ir.MappingProcess
 import org.nd4j.shade.protobuf.GeneratedMessageV3
@@ -10,6 +11,10 @@ object OpRegistryHolder {
 
     private val registeredOps = HashSetValuedHashMap<String, OpMappingRegistry<out GeneratedMessageV3, out GeneratedMessageV3, out GeneratedMessageV3, out ProtocolMessageEnum, out GeneratedMessageV3, out GeneratedMessageV3>>()
 
+
+    fun onnx(): OpMappingRegistry<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.TensorProto.DataType,Onnx.AttributeProto,Onnx.AttributeProto> {
+        return registeredOps["onnx"].first() as OpMappingRegistry<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.TensorProto.DataType, Onnx.AttributeProto, Onnx.AttributeProto>
+    }
 
     fun tensorflow(): OpMappingRegistry<NodeDef,OpDef,TensorProto, DataType,OpDef.AttrDef, AttrValue> {
         return registeredOps["tensorflow"].first() as OpMappingRegistry<NodeDef, OpDef, TensorProto, DataType, OpDef.AttrDef, AttrValue>

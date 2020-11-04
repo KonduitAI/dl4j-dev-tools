@@ -6,8 +6,10 @@ import org.nd4j.autodiff.samediff.SDVariable
 import org.nd4j.autodiff.samediff.SameDiff
 import org.nd4j.autodiff.samediff.VariableType
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
+import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.gen.OpDeclarationDescriptor
+import org.nd4j.graph.VarType
 import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
@@ -219,6 +221,10 @@ interface MappingContext<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMes
     fun node(): NODE_TYPE
 
     fun opDef(): OP_DEF_TYPE
+
+    fun opName(): String
+
+    fun nodeName(): String
 
     fun attrDef(name: String): ATTRIBUTE_TYPE
 
@@ -484,3 +490,64 @@ abstract  class AbstractMappingProcess<
 fun ArgDescriptor(block: OpNamespace.ArgDescriptor .Builder.() -> Unit): OpNamespace.ArgDescriptor {
     return OpNamespace.ArgDescriptor.newBuilder().apply(block).build()
 }
+
+interface ImportProcess<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3,
+        DATA_TYPE: ProtocolMessageEnum> {
+
+    fun createMappingProcesses(graph: IRGraph<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
+            : List<MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>>
+
+    fun createMappingContext(graph:
+                             IRGraph<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,
+                                     DATA_TYPE>,node: NODE_TYPE): MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+
+    fun runImportProcess(mappingProcesses: List<MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>>,
+                         mappingContext: MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
+
+}
+
+abstract class AbstractImportProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_TYPE: GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE: GeneratedMessageV3,ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,DATA_TYPE: ProtocolMessageEnum>
+(inputFramework: String):
+        ImportProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
+
+    val inputFramework = inputFramework
+
+
+    override fun createMappingProcesses(graph: IRGraph<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): List<MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>> {
+        return graph.nodeList().map {
+            val mappingContext = createMappingContext(graph = graph, node = it)
+            val opName = mappingContext.opName()
+            OpRegistryHolder.lookupOpMappingProcess<
+                    NODE_TYPE,
+                    OP_DEF_TYPE,
+                    TENSOR_TYPE,
+                    DATA_TYPE,
+                    ATTRIBUTE_TYPE,
+                    ATTRIBUTE_VALUE_TYPE>(inputFrameworkOpName = opName, inputFrameworkName = inputFramework)
+        }
+    }
+
+
+    override fun runImportProcess(mappingProcesses: List<MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>>, mappingContext: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>) {
+        val sameDiff = SameDiff.create()
+
+        mappingProcesses.map {
+            it.applyProcess(mappingContext)
+        }.forEach {
+            it.argDescriptorList.filter {
+                descriptor -> descriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
+            }.map {
+                argDescriptor -> SDVariable(varName = argDescriptor.name,
+                    sameDiff = sameDiff,varType = VarType.VARIABLE,shape = LongArray(),dataType = DataType.DOUBLE)
+            }
+
+        }
+
+    }
+}
+

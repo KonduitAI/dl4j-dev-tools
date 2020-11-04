@@ -1,28 +1,16 @@
 package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
-import org.apache.commons.io.IOUtils
 import org.nd4j.codegen.ir.*
 import org.nd4j.common.io.ClassPathResource
-import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.shade.protobuf.TextFormat
-import java.nio.charset.Charset
 
 fun loadOnnxOps(): List<Onnx.NodeProto> {
-    val string = IOUtils.toString(ClassPathResource("onnx.pbtxt").inputStream, Charset.defaultCharset())
-    val split = string.split("--\n".toRegex())
-    val nodeList = ArrayList<Onnx.NodeProto>()
-    split.forEach {
-        val nodeProtoBuilder = Onnx.NodeProto.newBuilder()
-        TextFormat.merge(it,nodeProtoBuilder)
-        nodeList.add(nodeProtoBuilder.build())
-    }
-
-    return nodeList
+    val graphProto = Onnx.GraphProto.parseFrom(ClassPathResource("onnx-op-defs.pb").inputStream)
+    return graphProto.nodeList
 }
 
 val onnxops = loadOnnxOps()
@@ -356,34 +344,16 @@ class OnnxIRNode(inputNode: Onnx.NodeProto, inputOpDef: Onnx.NodeProto): IRNode<
 
 }
 
-class NDArrayMappingRule(mappingNamesToPerform: Map<String,String>,
-                         transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
-        BaseNDArrayMappingRule<Onnx.NodeProto,Onnx.NodeProto,Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
-
-
-
-    override fun createTensorProto(input: Onnx.TensorProto): TensorNamespace.TensorProto {
-        return OnnxIRTensor(input).toArgTensor()
-    }
-}
-
-fun mappingNDArrayInputs(inputs: Map<String,String>) : NDArrayMappingRule {
-    return NDArrayMappingRule(
-            mappingNamesToPerform = inputs)
-}
-
-
-
-
 
 fun Onnx.GraphProto.nodeByName(name: String): Onnx.NodeProto {
     return this.nodeList.first { it.name == name }!!
 }
 
-class OnnxIRGraph(graphDef: Onnx.GraphProto, opDef: List<Onnx.NodeProto>): IRGraph<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.AttributeProto,Onnx.AttributeProto,org.tensorflow.framework.DataType> {
+class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<Onnx.NodeProto,
+        Onnx.NodeProto,Onnx.TensorProto,Onnx.AttributeProto,Onnx.AttributeProto,Onnx.TensorProto.DataType> {
 
     val graphDef = graphDef
-    val opList = opDef
+    val opList = graphDef.nodeList
     override fun nodeByName(input: String): Onnx.NodeProto {
         return graphDef.nodeByName(input)
     }
@@ -403,128 +373,10 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto, opDef: List<Onnx.NodeProto>): IRGra
 }
 
 
-
-class OnnxConditionalFieldValueIntIndexArrayRule
-(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        ConditionalFieldValueIntIndexArrayRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>
-        (mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
-        return OnnxIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
-                                           inputFrameworkAttributeName: String,
-                                           targetValue: String,
-                                           trueIndex: Int,
-                                           falseIndex: Int): OnnxConditionalFieldValueIntIndexArrayRule {
-    return OnnxConditionalFieldValueIntIndexArrayRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = "targetValue"
-                stringValue = targetValue
-            }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
-                        name = "trueIndex"
-                        int32Value = trueIndex
-                    }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
-                        name = "falseIndex"
-                        int32Value = falseIndex
-                    }.build()))
-    )
-}
-
-
-class OnnxNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto):
-            IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto,Onnx.TensorProto.DataType> {
-        return OnnxIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun sizeAtRule(dimensionIndex: Int,outputAttributeName: String,inputFrameworkAttributeName: String): OnnxNDArraySizeAt {
-    return OnnxNDArraySizeAt(
-            mappingNamesToPerform = mapOf(outputAttributeName to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttributeName to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                int32Value = dimensionIndex
-            }.build()))
-    )
-}
-
-
-
-class OnnxStringEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringEqualsAdapterRule<Onnx.NodeProto,Onnx.NodeProto,Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto,Onnx.TensorProto.DataType>
-        ( mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto,Onnx.TensorProto.DataType> {
-        return OnnxIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>):
-            List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun stringEqualsRule(outputAttribute: String,inputFrameworkAttributeName: String,valueToTest: String): OnnxStringEqualsAdapterRule {
-    return  OnnxStringEqualsAdapterRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(ArgDescriptor {
-                name = inputFrameworkAttributeName
-                stringValue = valueToTest
-            })))
-}
-
-
-class OnnxSizeThresholdIntArrayIntIndexRule(mappingNamesToPerform: Map<String, String>,
-                                            transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : SizeThresholdIntArrayIntIndexRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
-        return OnnxIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun sizeThreshold(outputAttribute: String,inputFrameworkAttributeName: String,sizeThreshold: Long,index: Long,fallbackIndex: Long): OnnxSizeThresholdIntArrayIntIndexRule {
-    return OnnxSizeThresholdIntArrayIntIndexRule(mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(
-                    ArgDescriptor {
-                        name = "index"
-                        int64Value = index
-                    },
-                    ArgDescriptor {
-                        name = "sizeThreshold"
-                        int64Value = sizeThreshold
-                    },
-                    ArgDescriptor {
-                        name = "fallbackIndex"
-                        int64Value = fallbackIndex
-                    })))
-}
-
-
-class OnnxMappingContext(opDef: Onnx.NodeProto, node: Onnx.NodeProto, graph: IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>) :
+class OnnxMappingContext(opDef: Onnx.NodeProto, node: Onnx.NodeProto, graph:
+IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
+        Onnx.AttributeProto,
+        Onnx.AttributeProto, Onnx.TensorProto.DataType>) :
         AbstractMappingContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(opDef, node, graph) {
 
     override fun attrDef(name: String): Onnx.AttributeProto {
@@ -562,5 +414,24 @@ class OnnxMappingContext(opDef: Onnx.NodeProto, node: Onnx.NodeProto, graph: IRG
     }
 
 }
+
+fun NodeProto(block: Onnx.NodeProto.Builder.() -> Unit): Onnx.NodeProto {
+    return Onnx.NodeProto.newBuilder().apply(block).build()
+}
+
+
+fun Onnx.NodeProto.Builder.Input(inputName: String) {
+    this.addInput(inputName)
+}
+
+fun GraphProto(block: Onnx.GraphProto.Builder.() -> Unit): Onnx.GraphProto {
+    return Onnx.GraphProto.newBuilder().apply(block).build()
+}
+
+fun Onnx.GraphProto.Builder.Node(inputNode: Onnx.NodeProto) {
+    this.addNode(inputNode)
+}
+
+
 
 

@@ -361,7 +361,7 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
 
 }
 
-class NDArrayMappingRule(mappingNamesToPerform: Map<String,String>,
+class NDArrayMappingRule(mappingNamesToPerform: MutableMap<String,String>,
                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
         BaseNDArrayMappingRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
 
@@ -372,7 +372,7 @@ class NDArrayMappingRule(mappingNamesToPerform: Map<String,String>,
     }
 }
 
-fun mappingNDArrayInputs(inputs: Map<String,String>) : NDArrayMappingRule {
+fun mappingNDArrayInputs(inputs: MutableMap<String,String>) : NDArrayMappingRule {
     return NDArrayMappingRule(
             mappingNamesToPerform = inputs)
 }

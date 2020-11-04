@@ -125,6 +125,7 @@ abstract class SizeThresholdIntArrayIntIndexRule<OP_DEF_TYPE: GeneratedMessageV3
         (name = "sizethresholdarrayint", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) where DATA_TYPE: ProtocolMessageEnum {
 
 
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor> {
         val ret = ArrayList<OpNamespace.ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -230,7 +231,7 @@ abstract class NDArraySizeAtRule<
 abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
         ,NODE_DEF_TYPE: GeneratedMessageV3,ATTR_DEF : GeneratedMessageV3,
         ATTR_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3,
-        DATA_TYPE>(mappingNamesToPerform: Map<String, String> = emptyMap(),
+        DATA_TYPE>(mappingNamesToPerform: MutableMap<String, String> = mutableMapOf(),
                    transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
         TensorMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
@@ -247,7 +248,9 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
     }
 
 
-
+    operator  fun set(outputAttribute: String,inputAttribute: String) {
+        mappingNamesToPerform[outputAttribute] = inputAttribute
+    }
 
     override fun name(): String {
         return "ndarraymapping"

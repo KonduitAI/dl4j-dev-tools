@@ -7,6 +7,7 @@ import org.nd4j.linalg.api.ops.CustomOpDescriptor
 
 class Interpreter {
 
+
     fun buildGraph(opDescriptorList: List<OpDeclarationDescriptor>): SameDiff {
         val sameDiff = SameDiff.create()
         opDescriptorList.forEach {

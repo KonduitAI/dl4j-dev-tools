@@ -1,7 +1,8 @@
 from onnx.defs import get_all_schemas
-from onnx import NodeProto
+from onnx import NodeProto,GraphProto
 from google.protobuf import text_format
 import onnx.helper
+
 
 nodes = []
 schemas = get_all_schemas()
@@ -100,12 +101,15 @@ def create_node_from_schema(schema):
 nodes = [create_node_from_schema(schema) for schema
          in sorted(schemas, key=lambda s: s.name)]
 
-with open('onnx.pbtxt', 'w+') as f:
-    for node in nodes:
-        message_to_string = text_format.MessageToString(node, as_utf8=True)
-        node_2 = load_node(message_to_string)
-        f.write(message_to_string + '--\n')
+with open('onnx-op-defs.pb', 'wb') as f:
+    graph_proto = GraphProto()
+    graph_proto.node.extend(nodes)
+    f.write(graph_proto.SerializeToString())
+    # for node in nodes:
+    #     message_to_string = text_format.MessageToString(node, as_utf8=True)
+    #     node_2 = load_node(message_to_string)
+    #     f.write(message_to_string + '----f\n')
 
-with open('onnx.pbtxt','r') as f:
-    nodes = [load_node(node_str) for node_str in f.read().split('--\n')]
-    print(nodes)
+# with open('onnx.pbtxt','r') as f:
+#     nodes = [load_node(node_str) for node_str in f.read().split('----f\n')]
+#     print(nodes)

@@ -28,7 +28,7 @@ class TestTensorflowIR {
 
         val tensorflowNode = TensorflowIRNode(nodeDef, opDef)
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val absMappingProcess = OpRegistryHolder.lookupOpMappingProcess<NodeDef,OpDef,TensorProto,DataType, OpDef.AttrDef,AttrValue>(inputFrameworkName = "tensorflow",inputFrameworkOpName = "Abs")
+        val absMappingProcess = OpRegistryHolder.tensorflow().lookupOpMappingProcess(inputFrameworkOpName = "Abs")
 
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = nodeDef,graph = tfGraph)
         val input = absMappingProcess.applyProcess(mappingContext)
