@@ -2,7 +2,9 @@ package org.nd4j.codegen.ir.tensorflow
 
 import org.apache.commons.io.IOUtils
 import org.nd4j.codegen.ir.*
+import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
+import org.nd4j.imports.graphmapper.tf.tensors.TFTensorMappers
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.ndarray.INDArray
@@ -110,10 +112,8 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, DataType> {
     }
 
     override fun toNd4jNDArray(): INDArray {
-        TODO("Not yet implemented")
+        return TFTensorMappers.newMapper(tensor).toNDArray()
     }
-
-
 }
 
 class TensorflowIRDataType(inputDataType: DataType): IRDataType<DataType> {
@@ -440,6 +440,57 @@ fun TensorProto(block: TensorProto.Builder.() -> Unit): TensorProto {
     return TensorProto.newBuilder().apply(block).build()
 }
 
+fun TensorProto.Builder.RawData(byteArray: ByteArray) {
+    this.tensorContent = ByteString.copyFrom(byteArray)
+}
+
+fun TensorProto.Builder.Shape(block: TensorProto.Builder.() -> Unit,shape: List<Long>): TensorShapeProto {
+    return      TensorShapeProto {
+        Dims(shape)
+    }
+}
+
+
+
+fun TensorProto.Builder.DataType(value: DataType) {
+    this.dtype = value
+}
+
+fun TensorProto.Builder.String(value: String) {
+    this.addStringVal(ByteString.copyFrom(value.toByteArray(Charset.defaultCharset())))
+}
+
+fun TensorProto.Builder.StringData(value: List<String>) {
+    this.addAllStringVal(value.map { value -> ByteString.copyFrom(value.toByteArray(Charset.defaultCharset())) })
+}
+
+fun TensorProto.Builder.Boolean(value: Boolean) {
+    this.addBoolVal(value)
+}
+
+fun TensorProto.Builder.BooleanData(value: List<Boolean>) {
+    this.addAllBoolVal(value)
+}
+
+
+fun TensorProto.Builder.Double(value: Double) {
+    this.addDoubleVal(value)
+}
+
+fun TensorProto.Builder.DoubleData(value: List<Double>) {
+    this.addAllDoubleVal(value)
+}
+
+
+fun TensorProto.Builder.Float(value: Float) {
+    this.addFloatVal(value)
+}
+
+fun TensorProto.Builder.FloatData(value: List<Float>) {
+    this.addAllFloatVal(value)
+}
+
+
 fun TensorShapeProto.Builder.Dim(name: String,size: Long) {
     this.addDim(TensorShapeProto.Dim.newBuilder().setName(name).setSize(size).build())
 }
@@ -447,6 +498,17 @@ fun TensorShapeProto.Builder.Dim(name: String,size: Long) {
 fun Dim(block: TensorShapeProto.Dim.Builder.() -> Unit): TensorShapeProto.Dim {
     return TensorShapeProto.Dim.newBuilder().apply(block).build()
 }
+
+fun TensorShapeProto.Builder.Dims(shape : List<Long>) {
+    shape.forEachIndexed  {index,value ->  this.addDim(
+            Dim {
+                name = index.toString()
+                size = value
+            })
+    }
+}
+
+
 
 fun TensorShapeProto(block: TensorShapeProto.Builder.() -> Unit): TensorShapeProto {
     return TensorShapeProto.newBuilder().apply(block).build()
@@ -487,103 +549,27 @@ fun OpList.findOp(name: String): OpDef {
 }
 
 
-
-
-class TensorflowConditionalFieldValueIntIndexArrayRule
-(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        ConditionalFieldValueIntIndexArrayRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>
-        (mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef,attributeValueType)
+class TensorflowImportProcess(inputFramework: String = "tensorflow") : AbstractImportProcess<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>(inputFramework) {
+    override fun createMappingContext(graph: IRGraph<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>, node: NodeDef): MappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
+        val opDef = tensorflowOps.findOp(node.op)
+        return TensorflowMappingContext(graph = graph,node = node,opDef = opDef)
     }
 
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
+    override fun createImportContext(mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>, mappingContext: MappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>):
+            ImportContext<OpDef,NodeDef,TensorProto,AttrDef,AttrValue,DataType> {
+        return TensorflowImportContext(mappingContext =  mappingContext,process = mappingProcess)
     }
 
 }
 
-fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
-                                           inputFrameworkAttributeName: String,
-                                           targetValue: String,
-                                           trueIndex: Int,
-                                           falseIndex: Int): TensorflowConditionalFieldValueIntIndexArrayRule {
-    return TensorflowConditionalFieldValueIntIndexArrayRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = "targetValue"
-                stringValue = targetValue
-            }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
-                        name = "trueIndex"
-                        int32Value = trueIndex
-                    }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
-                        name = "falseIndex"
-                        int32Value = falseIndex
-                    }.build()))
-    )
-}
+class TensorflowImportContext(process: MappingProcess<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>, mappingContext: MappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>) : AbstractImportContext<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>(process, mappingContext) {
 
-
-class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef,attributeValueType)
+    override fun process(): MappingProcess<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
+        return process
     }
 
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun sizeAtRule(dimensionIndex: Int,outputAttributeName: String,inputFrameworkAttributeName: String): TensorflowNDArraySizeAt {
-    return TensorflowNDArraySizeAt(
-            mappingNamesToPerform = mapOf(outputAttributeName to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttributeName to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                int32Value = dimensionIndex
-            }.build()))
-    )
-}
-
-
-
-class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                        transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringEqualsAdapterRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, DataType>
-        ( mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun stringEqualsRule(outputAttribute: String,inputFrameworkAttributeName: String,valueToTest: String): TensorflowStringEqualsAdapterRule {
-    return  TensorflowStringEqualsAdapterRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                stringValue = valueToTest
-            }.build())))
-}
-
-
-class TensorflowSizeThresholdIntArrayIntIndexRule(mappingNamesToPerform: Map<String, String>,
-                                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : SizeThresholdIntArrayIntIndexRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
-    override fun createIRAttribute(name: String, attrDef: AttrDef, attributeValueType: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
+    override fun mappingContext(): MappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
+        return mappingContext
     }
 
 }
@@ -604,7 +590,7 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
     }
 
     override fun tensorInputFor(name: String): IRTensor<TensorProto,DataType> {
-       var foundIndex = -1
+        var foundIndex = -1
         /**
          * Use op definition name as 1 unified reference name in rules for static purposes, but
          * look up via index for specific node mappings.
@@ -612,7 +598,9 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
          * This is equivalent to the tf input position attribute value in the previous tensorflow import.
          */
         opDef.inputArgList.forEachIndexed {
-           index,argDef -> if(argDef.name == name) foundIndex = index
+            index,argDef ->
+            if(argDef.name == name)
+                foundIndex = index
         }
 
         val targetName = opDef.getInputArg(foundIndex).name

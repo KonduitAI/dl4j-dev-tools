@@ -500,7 +500,7 @@ public class ParseOpFile {
             try {
                 DifferentialFunction differentialFunction = clazz.newInstance();
                 String name = differentialFunction.opName();
-                if(differences.contains(name)) {
+                if(name != null && differences.contains(name)) {
                     List<Field> validFields = new ArrayList<>();
                     List<Field> allFields = getAllFields(clazz);
                     for(Field field : allFields) {

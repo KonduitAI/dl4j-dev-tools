@@ -243,7 +243,7 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
 
 
     override fun initWithMappingProcess(mappingProcess: MappingProcess<OP_DEF_TYPE, NODE_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>) {
-        opDescriptor = nd4jOpDescriptors.opListList.filter { input -> input.name ==  mappingProcess.opName() }[0]
+        opDescriptor = nd4jOpDescriptors.opListList.first { input -> input.name ==  mappingProcess.opName() }
         this.mappingProcess = mappingProcess
     }
 

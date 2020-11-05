@@ -1,7 +1,6 @@
 package org.nd4j.codegen.ir
 
 import io.github.classgraph.ClassGraph
-import io.github.classgraph.ClassInfoList
 import org.apache.commons.io.IOUtils
 import org.nd4j.autodiff.functions.DifferentialFunction
 import org.nd4j.autodiff.samediff.SDVariable
@@ -12,20 +11,15 @@ import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.common.io.ReflectionUtils
 import org.nd4j.gen.OpDeclarationDescriptor
-import org.nd4j.graph.VarType
 import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.api.ops.CustomOp
 import org.nd4j.linalg.api.ops.DynamicCustomOp
-import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.nd4j.shade.protobuf.TextFormat
-import org.tensorflow.framework.GraphDef
-import org.tensorflow.framework.TensorProto
 import java.nio.charset.Charset
 
 
@@ -47,14 +41,16 @@ fun loadNd4jOpDescriptors(): OpNamespace.OpDescriptorList {
 fun nd4jDifferentialFunctions(): List<Class<out DifferentialFunction>> {
     return ClassGraph().enableAllInfo()
             .scan().getSubclasses("org.nd4j.autodiff.functions.DifferentialFunction").filter {
-                clazz-> clazz.isAbstract || clazz.isAnnotation || clazz.isInterface
+                clazz-> !clazz.isAbstract && !clazz.isAnnotation && !clazz.isInterface
             }.map { clazz -> Class.forName(clazz.name) as Class<out DifferentialFunction> }
 }
 
 val differentialFunctionClasses = nd4jDifferentialFunctions()
 
 fun cachedOpInstances2(): List<DifferentialFunction> {
-    return differentialFunctionClasses.map { clazz -> clazz.newInstance() as DifferentialFunction}
+    return differentialFunctionClasses.map { clazz -> clazz.newInstance() as DifferentialFunction}.filter {
+        it.opName() != null
+    }
 }
 
 val cachedOpInstances = cachedOpInstances2()
@@ -183,7 +179,7 @@ interface MappingProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Generate
 
     fun tensorMappingRules():  List<TensorMappingRule<OP_DEF_TYPE,NODE_DEF_TYPE,ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
 
-    fun applyProcess(mappingCtx: MappingContext<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): OpNamespace.OpDescriptor
+    fun applyProcess(mappingCtx: MappingContext<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): Pair<MappingContext<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>, OpNamespace.OpDescriptor>
 
     fun applyProcessReverse(input: OpDeclarationDescriptor): IRNode<NODE_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>
 
@@ -483,7 +479,7 @@ abstract  class AbstractMappingProcess<
         return inputFramework
     }
 
-    override fun applyProcess(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): OpNamespace.OpDescriptor {
+    override fun applyProcess(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): Pair<MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>, OpNamespace.OpDescriptor> {
         val descriptorBuilder = OpNamespace.OpDescriptor.newBuilder()
         descriptorBuilder.name = opName()
         tensorMappingRules.forEach {
@@ -499,7 +495,10 @@ abstract  class AbstractMappingProcess<
             }
         }
 
-        return descriptorBuilder.build()
+        val fullDescriptor = nd4jOpDescriptors.findOp(opName())
+        descriptorBuilder.opDeclarationType = fullDescriptor.opDeclarationType
+
+        return Pair(mappingCtx,descriptorBuilder.build())
     }
 
     override fun serialize(): MapperNamespace.MapperDeclaration {
@@ -524,6 +523,42 @@ fun ArgDescriptor(block: OpNamespace.ArgDescriptor .Builder.() -> Unit): OpNames
     return OpNamespace.ArgDescriptor.newBuilder().apply(block).build()
 }
 
+
+interface ImportContext<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3,
+        DATA_TYPE: ProtocolMessageEnum> {
+
+    fun process(): MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>
+
+    fun mappingContext(): MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+
+}
+
+abstract class AbstractImportContext<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3,
+        DATA_TYPE: ProtocolMessageEnum>
+(process: MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>,
+ mappingContext: MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): ImportContext<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+{
+    val process = process
+    val mappingContext = mappingContext
+
+    override fun process(): MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE> {
+        return process
+    }
+
+    override fun mappingContext(): MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE> {
+        return mappingContext
+    }
+}
 interface ImportProcess<
         OP_DEF_TYPE: GeneratedMessageV3,
         NODE_TYPE : GeneratedMessageV3,
@@ -539,8 +574,11 @@ interface ImportProcess<
                              IRGraph<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,
                                      DATA_TYPE>,node: NODE_TYPE): MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
 
-    fun runImportProcess(mappingProcesses: List<MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>>,
-                         mappingContext: MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
+
+    fun createImportContext(mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>,mappingContext: MappingContext<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>)
+            : ImportContext<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+
+    fun runImportProcess(mappingProcesses: List<ImportContext<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>>): SameDiff
 
 }
 
@@ -566,24 +604,30 @@ abstract class AbstractImportProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_TYPE: 
     }
 
 
-    override fun runImportProcess(mappingProcesses: List<MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>>, mappingContext: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>) {
+    override fun runImportProcess(importContexts: List<ImportContext<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>>): SameDiff {
         val sameDiff = SameDiff.create()
-        mappingProcesses.map {
-            it.applyProcess(mappingContext)
+        importContexts.map {
+            it.process().applyProcess(it.mappingContext())
         }.forEach {
+            pair ->
             val variables2 = ArrayList<SDVariable>()
-
-            when(it.opDeclarationType) {
+            val opDescriptor = pair.second
+            val mappingContext = pair.first
+            when(opDescriptor.opDeclarationType) {
                 OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ -> {
-                    val createdOp = createDifferentialFunctionInstanceForName(it.name)
-                    it.argDescriptorList.forEach {
+                    val createdOp = createDifferentialFunctionInstanceForName(opDescriptor.name)
+                    opDescriptor.argDescriptorList.forEach {
                         argDescriptor ->
-                        val field = createdOp.javaClass.getDeclaredField(argDescriptor.name)
+                        val field = ReflectionUtils.findField(createdOp.javaClass,argDescriptor.name)
+                        field.isAccessible = true
                         when(argDescriptor.name) {
                             "x","y","z" ->  {
                                 val createdNDArray = mappingContext.tensorInputFor(argDescriptor.name).toNd4jNDArray()
+
                                 ReflectionUtils.setField(field,createdOp,createdNDArray)
                                 val variable = createVariable(varName = argDescriptor.name, shape = createdNDArray.shape().toList(),dataType = createdNDArray.dataType(),sameDiff = sameDiff,varType = VariableType.ARRAY)
+                                //add var to graph
+                                sameDiff.`var`(variable)
                                 variables2.add(variable)
                             }
                             "keepDims" ->  ReflectionUtils.setField(field,createdOp, argDescriptor.boolValue)
@@ -595,10 +639,10 @@ abstract class AbstractImportProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_TYPE: 
                     sameDiff.addArgsFor(variables2.toTypedArray(),createdOp)
 
                 }
-                
+
                 OpNamespace.OpDescriptor.OpDeclarationType.CUSTOM_OP_IMPL -> {
-                    val dynamicCustomOp = DynamicCustomOp.builder(it.name)
-                    it.argDescriptorList.forEach {
+                    val dynamicCustomOp = DynamicCustomOp.builder(opDescriptor.name)
+                    opDescriptor.argDescriptorList.forEach {
                         argDescriptor ->
                         when(argDescriptor.argType) {
                             OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
@@ -641,6 +685,8 @@ abstract class AbstractImportProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_TYPE: 
 
 
         }
+
+        return sameDiff
 
     }
 }

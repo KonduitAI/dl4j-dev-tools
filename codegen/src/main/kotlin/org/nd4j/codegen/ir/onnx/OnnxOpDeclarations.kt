@@ -5,14 +5,17 @@ import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 
 val onnxOpRegistry = OpMappingRegistry<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.TensorProto.DataType,Onnx.AttributeProto,Onnx.AttributeProto>("onnx")
-//val listOfRules =  listOf(NDArrayMappingRule("abs",mapOf("x" to "x", "y" to "y"))
-val tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mapOf("x" to "X", "y" to "Y")))
 class AbsMappingProcess: OnnxMappingProcess(
-        opName = "abs", tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mapOf("x" to "x", "y" to "y"))),
+        opName = "abs", tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("x" to "x"))),
         inputFrameworkOpName = "Abs",
         inputFramework = "onnx",
         opMappingRegistry = onnxOpRegistry)
 
+class ConstMappingProcess: OnnxMappingProcess(
+        opName = "identity",
+        inputFrameworkOpName = "Constant",
+        opMappingRegistry = onnxOpRegistry
+)
 
 
 
@@ -20,7 +23,7 @@ class Conv2DMappingProcess: OnnxMappingProcess(
         inputFramework = "onnx",
         inputFrameworkOpName = "Conv",
         opName = "conv2d",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mapOf(
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
                 "input" to "input","filter" to "weights"))),
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
@@ -40,6 +43,7 @@ object OnnxOpDeclarations {
                 OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)
                 AbsMappingProcess()
                 Conv2DMappingProcess()
+                ConstMappingProcess()
         }
 }
 

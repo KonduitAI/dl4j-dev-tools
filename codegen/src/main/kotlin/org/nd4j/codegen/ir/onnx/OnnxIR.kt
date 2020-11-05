@@ -2,6 +2,10 @@ package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
 import org.nd4j.codegen.ir.*
+import org.nd4j.codegen.ir.tensorflow.TensorflowImportContext
+import org.nd4j.codegen.ir.tensorflow.TensorflowMappingContext
+import org.nd4j.codegen.ir.tensorflow.findOp
+import org.nd4j.codegen.ir.tensorflow.tensorflowOps
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
@@ -9,6 +13,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
+import org.tensorflow.framework.*
 
 fun loadOnnxOps(): List<Onnx.NodeProto> {
     val graphProto = Onnx.GraphProto.parseFrom(ClassPathResource("onnx-op-defs.pb").inputStream)
@@ -452,6 +457,31 @@ IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
     }
 
 }
+
+class OnnxImportContext(process: MappingProcess<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, mappingContext: MappingContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): AbstractImportContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(process, mappingContext) {
+
+}
+
+class OnnxImportProcess(inputFramework: String = "onnx") : AbstractImportProcess<Onnx.NodeProto, Onnx.NodeProto,
+        Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(inputFramework) {
+
+    override fun createMappingContext(graph: IRGraph<Onnx.NodeProto, Onnx.NodeProto,
+            Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, node: Onnx.NodeProto): MappingContext<Onnx.NodeProto,
+            Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+        val opDef = onnxops.first{ it.opType == node.opType  }
+        return OnnxMappingContext(graph = graph,node = node,opDef = opDef)
+    }
+
+    override fun createImportContext(mappingProcess: MappingProcess<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
+            Onnx.AttributeProto, Onnx.AttributeProto,
+            Onnx.TensorProto.DataType>, mappingContext: MappingContext<Onnx.NodeProto,
+            Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>):
+            ImportContext<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto, Onnx.AttributeProto,Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+        return OnnxImportContext(mappingContext =  mappingContext,process = mappingProcess)
+    }
+
+}
+
 
 fun NodeProto(block: Onnx.NodeProto.Builder.() -> Unit): Onnx.NodeProto {
     return Onnx.NodeProto.newBuilder().apply(block).build()

@@ -46,6 +46,52 @@ class TestTensorflowIR {
     }
 
     @Test
+    fun runTfImportProcess() {
+        val importProcess = TensorflowImportProcess()
+        val opDef = tensorflowOps.findOp("Abs")
+        val nodeDef = NodeDef {
+            op = "Abs"
+            Input("x")
+            Input("y")
+            name = "test"
+        }
+
+        val x = NodeDef {
+            op = "Const"
+            name = "x"
+            Attribute(name = "value",value = AttrValue {
+                tensor = TensorProto {
+                    name = "x"
+                    FloatData(listOf(1f))
+                    shape = TensorShapeProto {
+                        Dim(name = "0",size = 1)
+                        Dim(name = "1", size = 1)
+                    }
+
+                    DataType(DataType.DT_FLOAT)
+
+                }
+            })
+        }
+
+        val graphDef = GraphDef {
+            Node(nodeDef)
+            Node(x)
+        }
+
+        val tensorflowNode = TensorflowIRNode(nodeDef, opDef)
+        val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+        val mappingProcesses = importProcess.createMappingProcesses(graph = tfGraph).map {
+            process -> TensorflowImportContext(process = process,mappingContext = importProcess.createMappingContext(graph = tfGraph,node = nodeDef))
+        }
+
+        val samediff = importProcess.runImportProcess(mappingProcesses)
+
+        println(samediff)
+
+    }
+
+    @Test
     fun testRegistry() {
         val registry = OpRegistryHolder.tensorflow()
         val mappingProcess = registry.lookupOpMappingProcess("Conv2D")
