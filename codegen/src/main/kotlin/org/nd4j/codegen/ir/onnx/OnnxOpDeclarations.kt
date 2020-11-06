@@ -38,6 +38,8 @@ class Conv2DMappingProcess: OnnxMappingProcess(
                 sizeThreshold(outputAttribute = "kW",index = 1,sizeThreshold =  2,fallbackIndex = 0,inputFrameworkAttributeName = "kernel_shape")
         ),opMappingRegistry = onnxOpRegistry)
 
+
+
 object OnnxOpDeclarations {
         init {
                 OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)

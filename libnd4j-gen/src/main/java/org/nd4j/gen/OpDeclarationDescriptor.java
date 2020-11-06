@@ -47,6 +47,8 @@ public class OpDeclarationDescriptor implements Serializable  {
     private List<String> iArgNames;
     private List<String> bArgNames;
     private OpDeclarationType opDeclarationType;
+    @Builder.Default
+    private Map<String,Boolean> argOptional = new HashMap<>();
 
 
     public enum OpDeclarationType {

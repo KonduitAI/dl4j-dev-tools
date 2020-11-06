@@ -18,15 +18,19 @@ package org.nd4j.gen;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.samediff.SameDiff;
+import org.nd4j.common.util.LinkedMultiValueMap;
+import org.nd4j.common.util.MultiValueMap;
 import org.nd4j.common.util.SetUtils;
 import org.nd4j.ir.OpNamespace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOpDescriptor;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.shade.protobuf.TextFormat;
 import org.reflections.Reflections;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
@@ -75,12 +79,43 @@ public class ParseOpFile {
     public final static int BROADCASTABLE_OP_IMPL_DEFAULT_NOUT = 1;
 
 
+    /**
+     *     void addTArgument(double... arg);
+     *
+     *     void addIArgument(int... arg);
+     *
+     *     void addIArgument(long... arg);
+     *
+     *     void addBArgument(boolean... arg);
+     *
+     *     void addDArgument(DataType... arg);
+     */
+
+    public final static String ADD_T_ARGUMENT_INVOCATION = "addTArgument";
+    public final static String ADD_I_ARGUMENT_INVOCATION = "addIArgument";
+    public final static String ADD_B_ARGUMENT_INVOCATION = "addBArgument";
+    public final static String ADD_D_ARGUMENT_INVOCATION = "addDArgument";
 
     public static void main(String...args) throws Exception {
         String libnd4jPath = args.length > 0 ? args[0] : DEFAULT_LIBND4J_DIRECTORY;
         String outputFilePath = args.length > 1 ? args[1] : DEFAULT_OUTPUT_FILE;
 
         File libnd4jRootDir = new File(libnd4jPath);
+        StringBuilder nd4jApiSourceDir = new StringBuilder();
+        nd4jApiSourceDir.append("nd4j");
+        nd4jApiSourceDir.append(File.separator);
+        nd4jApiSourceDir.append("nd4j-backends");
+        nd4jApiSourceDir.append(File.separator);
+        nd4jApiSourceDir.append("nd4j-api-parent");
+        nd4jApiSourceDir.append(File.separator);
+        nd4jApiSourceDir.append("nd4j-api");
+        nd4jApiSourceDir.append(File.separator);
+        nd4jApiSourceDir.append("src");
+        nd4jApiSourceDir.append(File.separator);
+        nd4jApiSourceDir.append("main");
+        nd4jApiSourceDir.append(File.separator);
+        nd4jApiSourceDir.append("java");
+        File nd4jOpsRootDir = new File(libnd4jRootDir.getParent(),nd4jApiSourceDir.toString());
         File outputFile = new File(outputFilePath);
         System.out.println("Parsing  libnd4j code base at " + libnd4jRootDir.getAbsolutePath() + " and writing to " + outputFilePath);
         List<OpDeclarationDescriptor> opDeclarationDescriptors = new ArrayList<>();
@@ -468,16 +503,7 @@ public class ParseOpFile {
         Reflections reflections = new Reflections("org.nd4j");
         Set<Class<? extends DifferentialFunction>> subTypesOf = reflections.getSubTypesOf(DifferentialFunction.class);
         Set<String> opNamesForDifferentialFunction = new HashSet<>();
-        for(Class<? extends DifferentialFunction> clazz : subTypesOf) {
-            try {
-                DifferentialFunction differentialFunction = clazz.newInstance();
-                String name = differentialFunction.opName();
-                opNamesForDifferentialFunction.add(name);
-            } catch(Exception e) {
-                System.err.println("Unable to instantiate " + clazz.getName());
-            }
 
-        }
 
 
         OpNamespace.OpDescriptorList build = listBuilder.build();
@@ -495,6 +521,9 @@ public class ParseOpFile {
         fieldNameFilters.add("extraArgs");
         fieldNameFilters.add("extraArgz");
         fieldNameFilters.add("dimensionz");
+
+
+
 
         for(Class<? extends DifferentialFunction> clazz : subTypesOf) {
             try {
@@ -525,6 +554,7 @@ public class ParseOpFile {
                             opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                     .setName(field.getName())
                                     .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                    .setArgOptional(false)
                                     .build());
 
                         } else if(INDArray.class.isAssignableFrom(field.getType())) {
@@ -532,11 +562,13 @@ public class ParseOpFile {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                        .setArgOptional(false)
                                         .build());
                             } else  {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                        .setArgOptional(false)
                                         .build());
                             }
 
@@ -546,10 +578,12 @@ public class ParseOpFile {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                        .setArgOptional(false)
                                         .build());
                             } else if(Float.class.isAssignableFrom(field.getType()) || Double.class.isAssignableFrom(field.getType()) || float.class.isAssignableFrom(field.getType()) || double.class.isAssignableFrom(field.getType())) {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
+                                        .setArgOptional(false)
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
                                         .build());
                             }
@@ -569,6 +603,150 @@ public class ParseOpFile {
 
         }
 
+        OpNamespace.OpDescriptorList ret = listBuilder.build();
+
+        for(Class<? extends DifferentialFunction> clazz : subTypesOf) {
+            if(Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface()) {
+                continue;
+            }
+
+            try {
+                DifferentialFunction differentialFunction = clazz.newInstance();
+                String name = differentialFunction.opName();
+                opNamesForDifferentialFunction.add(name);
+                int opListIdx = 0;
+                OpNamespace.OpDescriptor opDescriptor = null;
+                for(OpNamespace.OpDescriptor opDescriptor1 : ret.getOpListList()) {
+                    if(opDescriptor1.getName().equals(name)) {
+                        opDescriptor = opDescriptor1;
+                        break;
+                    }
+                    opListIdx++;
+                }
+
+                String fileName = clazz.getName().replace(".",File.separator);
+                StringBuilder fileBuilder = new StringBuilder();
+                fileBuilder.append(fileName);
+                fileBuilder.append(".java");
+                File javaFile = new File(nd4jOpsRootDir,fileBuilder.toString());
+                List<String> lines = FileUtils.readLines(javaFile,Charset.defaultCharset());
+                OpDeclarationDescriptor declarationDescriptor = descriptorMap.get(name);
+                MultiValueMap<String,String> typesAndNames = new LinkedMultiValueMap<>();
+                List<String> argsByIIndex = new ArrayList<>();
+                List<String> argsByTIndex = new ArrayList<>();
+                List<String> argsByBIndex = new ArrayList<>();
+                List<String> argsByDIndex = new ArrayList<>();
+
+
+                for(String line : lines) {
+                    /**
+                     *     void addTArgument(double... arg);
+                     *
+                     *     void addIArgument(int... arg);
+                     *
+                     *     void addIArgument(long... arg);
+                     *
+                     *     void addBArgument(boolean... arg);
+                     *
+                     *     void addDArgument(DataType... arg);
+                     */
+
+
+
+                    if(line.contains(ADD_B_ARGUMENT_INVOCATION)) {
+                        line = line.replace("addBArgument(","");
+                        line = line.replace(")","");
+                        line = line.replace(";","");
+                        String[]  addArgs = line.trim().split(",");
+
+                        for(String arg : addArgs) {
+                            if(!argsByBIndex.contains(arg))
+                                argsByBIndex.add(arg);
+                        }
+                    } else if(line.contains(ADD_D_ARGUMENT_INVOCATION)) {
+                        line = line.replace("addDArgument(","");
+                        line = line.replace(")","");
+                        line = line.replace(";","");
+                        String[]  addArgs = line.trim().split(",");
+                        for(String arg : addArgs) {
+                            if(!argsByDIndex.contains(arg))
+                                argsByDIndex.add(arg);
+                        }
+                    } else if(line.contains(ADD_I_ARGUMENT_INVOCATION)) {
+                        line = line.replace("addIArgument(","");
+                        line = line.replace(");","");
+                        line = line.replace(";","");
+                        String[]  addArgs = line.trim().split(",");
+                        for(String arg : addArgs) {
+                            if(!argsByIIndex.contains(arg))
+                                argsByIIndex.add(arg);
+
+                        }
+                    } else if(line.contains(ADD_T_ARGUMENT_INVOCATION)) {
+                        line = line.replace("addTArgument(","");
+                        line = line.replace(")","");
+                        line = line.replace(";","");
+                        String[]  addArgs = line.trim().split(",");
+                        for(String arg : addArgs) {
+                            if(!argsByTIndex.contains(arg))
+                                argsByTIndex.add(arg);
+                        }
+                    }
+                }
+
+                if(argsByTIndex.size() > declarationDescriptor.getTArgNames().size()) {
+                    for(int i = 0; i < argsByTIndex.size(); i++) {
+                        if(i >= declarationDescriptor.getTArgNames().size()) {
+                            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
+                                    .setName(argsByTIndex.get(i))
+                                    //this can happen when there are still missing names from c++
+                                    .setArgOptional(i <= declarationDescriptor.getTArgs() ? false : true)
+                                    .build();
+                            opDescriptor.getArgDescriptorList().add(argDescriptor);
+
+                        }
+                    }
+
+                }
+
+                if(argsByIIndex.size() > declarationDescriptor.getIArgNames().size()) {
+                    for(int i = 0; i < argsByTIndex.size(); i++) {
+                        if(i >= declarationDescriptor.getTArgNames().size()) {
+                            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                    .setName(argsByTIndex.get(i))
+                                    .setArgOptional(i <= declarationDescriptor.getTArgs() ? false : true)
+                                    .build();
+                            opDescriptor.getArgDescriptorList().add(argDescriptor);
+
+
+                        }
+                    }
+                }
+
+                if(argsByBIndex.size() > declarationDescriptor.getBArgNames().size()) {
+                    for(int i = 0; i < argsByTIndex.size(); i++) {
+                        if(i >= declarationDescriptor.getTArgNames().size()) {
+                            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
+                                    .setName(argsByTIndex.get(i))
+                                    .setArgOptional(i <= declarationDescriptor.getTArgs() ? false : true)
+                                    .build();
+                            opDescriptor.getArgDescriptorList().add(argDescriptor);
+
+                        }
+                    }
+                }
+
+
+
+            } catch(Exception e) {
+                System.err.println("Unable to instantiate " + clazz.getName());
+            }
+
+        }
+
 
         if(!differences.isEmpty()) {
             System.out.println("Differences found in declarations vs registered ops " + sorted);
@@ -576,8 +754,8 @@ public class ParseOpFile {
 
         System.out.println("Op differences " + differences.size());
         System.out.println("Super classes " + superClasses);
-
-        FileUtils.writeStringToFile(outputFile,listBuilder.build().toString(), Charset.defaultCharset());
+        String write = TextFormat.printToString(ret);
+        FileUtils.writeStringToFile(outputFile,write, Charset.defaultCharset());
 
         //System.out.println("Number of op descriptors " + opDeclarationDescriptors);
     }

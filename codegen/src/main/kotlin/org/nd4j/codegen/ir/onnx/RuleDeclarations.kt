@@ -2,6 +2,7 @@ package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
 import org.nd4j.codegen.ir.*
+import org.nd4j.codegen.ir.tensorflow.TensorflowIRAttr
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 
@@ -58,6 +59,22 @@ fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
                     }))
     )
 }
+
+class OnnxValueMapping(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ValueMapping<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
+    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        return OnnxIRAttr(attrDef,attributeValueType)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+fun valueMappings(mappings: Map<String,String>): OnnxValueMapping {
+    return OnnxValueMapping(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
+}
+
 
 class OnnxNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
 

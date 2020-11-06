@@ -1,19 +1,145 @@
 package org.nd4j.codegen.ir.tensorflow
 
-import org.bytedeco.tensorflow.Conv2D
-import org.nd4j.codegen.ir.*
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
-import org.nd4j.ir.OpNamespace
 import org.tensorflow.framework.*
 
 val tensorflowOpRegistry = OpMappingRegistry<NodeDef,OpDef, TensorProto,DataType, OpDef.AttrDef,AttrValue>("tensorflow")
 //val listOfRules =  listOf(NDArrayMappingRule("abs",mapOf("x" to "x", "y" to "y"))
-class AbsMappingProcess: TensorflowMappingProcess(
-        opName = "abs",
-        inputFrameworkOpName = "Abs", tensorMappingRules =  listOf(NDArrayMappingRule(
-        mappingNamesToPerform = mutableMapOf("x" to "x"))),
-        opMappingRegistry = tensorflowOpRegistry)
+
+val singleTransformArgs = mapOf(
+        "Abs" to "abs",
+        "Acos" to "acos",
+        "Acosh" to "acosh",
+        "Asin" to "asin",
+        "Asinh" to "asinh",
+        "Atan" to "atan",
+        "Atanh" to "atanh",
+        "Ceil" to "ceil",
+        "Copy" to "copy",
+        "Cos" to "cos",
+        "Cosh" to "cosh",
+        "Erf" to "erf",
+        "Erfc" to "erfc",
+        "Exp" to "exp",
+        "Expm1" to "expm1",
+        "FloorMod" to "fmod",
+        "Floor" to "floor",
+        "HardSigmoid" to "hard_sigmoid",
+        "HardTanh" to "hardtanh",
+        "Log" to "log",
+        "Log1p" to "log1p",
+        "LogSigmoid" to "logsigmoid",
+        "Maximum" to "max_pairwise",
+        "Minimum" to "min_pairwise",
+        "Mish" to "mish",
+        "Neg" to "neg",
+        "RationalTanh" to "rational_tanh",
+        "Reciprocal" to "Reciprocal",
+        "Inv" to "Reciprocal",
+        "Rint" to "rint",
+        "Round" to "round",
+        "Rsqrt" to "rsqrt",
+        "Selu" to "selu",
+        "Sign" to "sign",
+        "Sin" to "sin",
+        "Sinh" to "sinh",
+        "Softplus" to "softplus",
+        "Softsign" to "softsign",
+        "Swish" to "swish",
+        "Square" to "square",
+        "Sqrt" to "sqrt",
+        "Tan" to "tan",
+        "Tanh" to "tanh"
+)
+
+val elementWiseTransformOps = mapOf(
+        "Add" to "add",
+        "AddV2" to "add"
+)
+
+
+val reduceOps = mapOf(
+        "AccumulateNV2" to "mergeadd",
+        "Mean" to "mean"
+)
+
+/*"""
+op {
+  name: "AddN"
+  input_arg {
+    name: "inputs"
+    type_attr: "T"
+    number_attr: "N"
+  }
+  output_arg {
+    name: "sum"
+    type_attr: "T"
+  }
+  attr {
+    name: "N"
+    type: "int"
+    has_minimum: true
+    minimum: 1
+  }
+  attr {
+    name: "T"
+    type: "type"
+    allowed_values {
+      list {
+        type: DT_FLOAT
+        type: DT_DOUBLE
+        type: DT_INT32
+        type: DT_UINT8
+        type: DT_INT16
+        type: DT_INT8
+        type: DT_COMPLEX64
+        type: DT_INT64
+        type: DT_QINT8
+        type: DT_QUINT8
+        type: DT_QINT32
+        type: DT_BFLOAT16
+        type: DT_UINT16
+        type: DT_COMPLEX128
+        type: DT_HALF
+        type: DT_UINT32
+        type: DT_UINT64
+        type: DT_VARIANT
+      }
+    }
+  }
+  is_aggregate: true
+  is_commutative: true
+}"""*/
+
+val addN = TensorflowMappingProcess(
+        inputFrameworkOpName = "AddN",
+        opName = "mergesum",
+
+        opMappingRegistry = tensorflowOpRegistry
+)
+
+val adjustContrastRule = TensorflowMappingProcess(
+        inputFrameworkOpName = "AdjustConstrast",
+        opName = "adjust_contrast_v2",
+        opMappingRegistry = tensorflowOpRegistry,
+        attributeMappingRules = listOf(valueMapping(mapOf()))
+)
+
+//BaseTransformBoolOp
+
+
+
+fun defineSingleTransform(inputOpName: String,inputFrameworkOpName: String): TensorflowMappingProcess {
+    return  TensorflowMappingProcess(
+            opName = inputOpName,
+            inputFrameworkOpName = inputFrameworkOpName, tensorMappingRules =  listOf(NDArrayMappingRule(
+            mappingNamesToPerform = mutableMapOf("x" to "x"))),
+            opMappingRegistry = tensorflowOpRegistry)
+
+}
+
+
 
 
 class ConstMappingProcess: TensorflowMappingProcess(
@@ -43,104 +169,13 @@ class Conv2DMappingProcess: TensorflowMappingProcess(
 object TensorflowOpDeclarations {
     init {
         OpRegistryHolder.registerOpMappingRegistry("tensorflow", tensorflowOpRegistry)
-        AbsMappingProcess()
+        singleTransformArgs.forEach {
+            defineSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
+
+        }
         Conv2DMappingProcess()
         ConstMappingProcess()
     }
 }
 
 
-class TensorflowConditionalFieldValueIntIndexArrayRule
-(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        ConditionalFieldValueIntIndexArrayRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
-        (mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef, attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
-                                           inputFrameworkAttributeName: String,
-                                           targetValue: String,
-                                           trueIndex: Int,
-                                           falseIndex: Int): TensorflowConditionalFieldValueIntIndexArrayRule {
-    return TensorflowConditionalFieldValueIntIndexArrayRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = "targetValue"
-                stringValue = targetValue
-            }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
-                        name = "trueIndex"
-                        int32Value = trueIndex
-                    }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
-                        name = "falseIndex"
-                        int32Value = falseIndex
-                    }.build()))
-    )
-}
-
-class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef, attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun sizeAtRule(dimensionIndex: Int, outputAttributeName: String, inputFrameworkAttributeName: String): TensorflowNDArraySizeAt {
-    return TensorflowNDArraySizeAt(
-            mappingNamesToPerform = mapOf(outputAttributeName to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttributeName to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                int32Value = dimensionIndex
-            }.build()))
-    )
-}
-
-class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                        transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringEqualsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
-        ( mappingNamesToPerform, transformerArgs) {
-
-    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef, attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-fun stringEqualsRule(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowStringEqualsAdapterRule {
-    return TensorflowStringEqualsAdapterRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                stringValue = valueToTest
-            }.build())))
-}
-
-class TensorflowSizeThresholdIntArrayIntIndexRule(mappingNamesToPerform: Map<String, String>,
-                                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : SizeThresholdIntArrayIntIndexRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
-    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
-        return TensorflowIRAttr(attrDef, attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
-        TODO("Not yet implemented")
-    }
-
-}

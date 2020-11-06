@@ -227,6 +227,65 @@ abstract class NDArraySizeAtRule<
 }
 
 
+/**
+ * Need to implement tensor size extraction value at index
+ */
+
+
+abstract class ValueMapping<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE: GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum>(mappingNamesToPerform: Map<String, String>,
+                                                     transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>):
+        BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (name = "valuemapping", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+
+    override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor> {
+        val ret = ArrayList<OpNamespace.ArgDescriptor>()
+        for((k, v) in mappingNamesToPerform()) {
+            val descriptorBuilder = OpNamespace.ArgDescriptor.newBuilder()
+            descriptorBuilder.name = k
+            val irAttribute = mappingCtx.irAttributeValueForNode(v)
+            when(irAttribute.attributeValueType()) {
+                AttributeValueType.INT -> {
+                    descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                    descriptorBuilder.int64Value = irAttribute.intValue()
+                }
+
+                AttributeValueType.FLOAT -> {
+                    descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.FLOAT
+                    descriptorBuilder.floatValue = irAttribute.floatValue()
+                }
+
+                AttributeValueType.BOOL -> {
+                    descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.BOOL
+                    descriptorBuilder.boolValue = irAttribute.boolValue()
+                }
+
+                AttributeValueType.STRING -> {
+                    descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.STRING
+                    descriptorBuilder.stringValue = irAttribute.stringValue()
+
+                }
+
+                else -> {
+                    throw IllegalArgumentException("Unable to map value $k. Please use different rule for list values and tensors.")
+                }
+            }
+
+
+            ret.add(descriptorBuilder.build())
+
+        }
+        return ret
+    }
+}
+
+
+
 
 abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
         ,NODE_DEF_TYPE: GeneratedMessageV3,ATTR_DEF : GeneratedMessageV3,
