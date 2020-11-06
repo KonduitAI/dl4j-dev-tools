@@ -508,7 +508,7 @@ public class ParseOpFile {
 
         OpNamespace.OpDescriptorList build = listBuilder.build();
         String item = build.toString();
-        Set<String> differences = SetUtils.difference(opNamesForDifferentialFunction,opsFoundInDeclarations);
+        Set<String> differences = SetUtils.difference(opsFoundInDeclarations,opNamesForDifferentialFunction);
         differences.remove(null);
         List<String> sorted = new ArrayList<>(differences);
         Collections.sort(sorted);
@@ -529,7 +529,7 @@ public class ParseOpFile {
             try {
                 DifferentialFunction differentialFunction = clazz.newInstance();
                 String name = differentialFunction.opName();
-                if(name != null && differences.contains(name)) {
+                if(name != null && !opsFoundInDeclarations.contains(name)) {
                     List<Field> validFields = new ArrayList<>();
                     List<Field> allFields = getAllFields(clazz);
                     for(Field field : allFields) {
@@ -624,6 +624,10 @@ public class ParseOpFile {
                     opListIdx++;
                 }
 
+                if(opDescriptor == null) {
+                    continue;
+                }
+
                 String fileName = clazz.getName().replace(".",File.separator);
                 StringBuilder fileBuilder = new StringBuilder();
                 fileBuilder.append(fileName);
@@ -694,55 +698,84 @@ public class ParseOpFile {
                     }
                 }
 
-                if(argsByTIndex.size() > declarationDescriptor.getTArgNames().size()) {
+                List<OpNamespace.ArgDescriptor> tArgNames = opDescriptor.getArgDescriptorList().stream()
+                        .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.DOUBLE || input.getArgType() == OpNamespace.ArgDescriptor.ArgType.FLOAT).collect(Collectors.toList());
+
+                List<OpNamespace.ArgDescriptor> iArgNames = opDescriptor.getArgDescriptorList().stream()
+                        .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.INT64 || input.getArgType() == OpNamespace.ArgDescriptor.ArgType.INT32).collect(Collectors.toList());
+
+                List<OpNamespace.ArgDescriptor> bArgNames = opDescriptor.getArgDescriptorList().stream()
+                        .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.BOOL).collect(Collectors.toList());
+
+                if( argsByTIndex.size() > tArgNames.size()) {
+                    List<OpNamespace.ArgDescriptor> copyValues = new ArrayList<>(opDescriptor.getArgDescriptorList());
                     for(int i = 0; i < argsByTIndex.size(); i++) {
-                        if(i >= declarationDescriptor.getTArgNames().size()) {
+                        if(i >= tArgNames.size()) {
                             OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
                                     .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
                                     .setName(argsByTIndex.get(i))
                                     //this can happen when there are still missing names from c++
-                                    .setArgOptional(i <= declarationDescriptor.getTArgs() ? false : true)
+                                    .setArgOptional(declarationDescriptor != null &&  i <= declarationDescriptor.getTArgs() ? false : true)
                                     .build();
-                            opDescriptor.getArgDescriptorList().add(argDescriptor);
+                            copyValues.add(argDescriptor);
 
                         }
                     }
 
+                    OpNamespace.OpDescriptor.Builder builder = opDescriptor.toBuilder();
+                    builder.clearArgDescriptor();
+                    builder.addAllArgDescriptor(copyValues);
+                    opDescriptor = builder.build();
+                    listBuilder.setOpList(opListIdx,opDescriptor);
+
                 }
 
-                if(argsByIIndex.size() > declarationDescriptor.getIArgNames().size()) {
-                    for(int i = 0; i < argsByTIndex.size(); i++) {
-                        if(i >= declarationDescriptor.getTArgNames().size()) {
+                if(argsByIIndex.size() >  iArgNames.size()) {
+                    List<OpNamespace.ArgDescriptor> copyValues = new ArrayList<>(opDescriptor.getArgDescriptorList());
+
+                    for(int i = 0; i < argsByIIndex.size(); i++) {
+                        if(i >= iArgNames.size()) {
                             OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
                                     .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
-                                    .setName(argsByTIndex.get(i))
-                                    .setArgOptional(i <= declarationDescriptor.getTArgs() ? false : true)
+                                    .setName(argsByIIndex.get(i))
+                                    .setArgOptional(declarationDescriptor != null &&  i <= declarationDescriptor.getIArgs() ? false : true)
                                     .build();
-                            opDescriptor.getArgDescriptorList().add(argDescriptor);
-
-
+                            copyValues.add(argDescriptor);
                         }
                     }
+
+                    OpNamespace.OpDescriptor.Builder builder = opDescriptor.toBuilder();
+                    builder.clearArgDescriptor();
+                    builder.addAllArgDescriptor(copyValues);
+                    opDescriptor = builder.build();
+                    listBuilder.setOpList(opListIdx,opDescriptor);
                 }
 
-                if(argsByBIndex.size() > declarationDescriptor.getBArgNames().size()) {
-                    for(int i = 0; i < argsByTIndex.size(); i++) {
-                        if(i >= declarationDescriptor.getTArgNames().size()) {
+                if(argsByBIndex.size() > bArgNames.size()) {
+                    List<OpNamespace.ArgDescriptor> copyValues = new ArrayList<>(opDescriptor.getArgDescriptorList());
+                    for(int i = 0; i < argsByBIndex.size(); i++) {
+                        if(i >= bArgNames.size()) {
                             OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
-                                    .setName(argsByTIndex.get(i))
-                                    .setArgOptional(i <= declarationDescriptor.getTArgs() ? false : true)
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                    .setName(argsByBIndex.get(i))
+                                    .setArgOptional(false)
                                     .build();
-                            opDescriptor.getArgDescriptorList().add(argDescriptor);
 
+                            copyValues.add(argDescriptor);
                         }
                     }
+
+                    OpNamespace.OpDescriptor.Builder builder = opDescriptor.toBuilder();
+                    builder.clearArgDescriptor();
+                    builder.addAllArgDescriptor(copyValues);
+                    opDescriptor = builder.build();
+                    listBuilder.setOpList(opListIdx,opDescriptor);
                 }
 
 
 
             } catch(Exception e) {
-                System.err.println("Unable to instantiate " + clazz.getName());
+                e.printStackTrace();
             }
 
         }
@@ -752,6 +785,7 @@ public class ParseOpFile {
             System.out.println("Differences found in declarations vs registered ops " + sorted);
         }
 
+        ret = listBuilder.build();
         System.out.println("Op differences " + differences.size());
         System.out.println("Super classes " + superClasses);
         String write = TextFormat.printToString(ret);

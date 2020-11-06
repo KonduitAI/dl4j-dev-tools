@@ -184,6 +184,19 @@ opList {
     name: "z"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "alpha"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " beta"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "ArrayUtil.fromBoolean(transposeX)"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "gemm"
@@ -362,6 +375,48 @@ opList {
     name: "axes_1[e]"
     argType: INT64
   }
+  argDescriptor {
+    name: "dimensions[0].length"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "dimensions[0]"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "dimensions[1].length"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "dimensions[1]"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "dimensionsX[0]"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "dimensionsY[0]"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "transposeX"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " transposeY"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " transposeZ"
+    argType: BOOL
+  }
 }
 opList {
   name: "tensormmul_bp"
@@ -427,6 +482,15 @@ opList {
   argDescriptor {
     name: "numResults"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "Doubles.toArray(tArgs"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "Ints.toArray(iArgs)"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -675,6 +739,15 @@ opList {
 }
 opList {
   name: "assign"
+  argDescriptor {
+    name: "public void int... arg) {"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "super.arg"
+    argType: INT64
+    argOptional: true
+  }
   opDeclarationType: BROADCASTABLE_OP_IMPL
 }
 opList {
@@ -878,6 +951,10 @@ opList {
 }
 opList {
   name: "meshgrid"
+  argDescriptor {
+    name: "cartesian ? 1 : 0"
+    argType: INT64
+  }
 }
 opList {
   name: "minimum"
@@ -1314,6 +1391,10 @@ opList {
     name: "encoded"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "boundary.intValue()"
+    argType: INT64
+  }
 }
 opList {
   name: "decode_threshold"
@@ -1369,6 +1450,10 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "FlatBuffersMapper.getDataTypeAsByte(typeDst)"
+    argType: INT64
   }
 }
 opList {
@@ -1557,6 +1642,9 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "factor"
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -1569,6 +1657,13 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "delta"
+  }
+  argDescriptor {
+    name: "factor"
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -1580,6 +1675,9 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "factor"
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -1608,6 +1706,9 @@ opList {
   argDescriptor {
     name: "boxIndexes"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "extrapolationValue"
   }
 }
 opList {
@@ -1699,6 +1800,14 @@ opList {
     name: "method"
     argType: INT64
   }
+  argDescriptor {
+    name: "preserveAspectRatio"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " antialias"
+    argType: BOOL
+  }
 }
 opList {
   name: "resize_area"
@@ -1722,6 +1831,10 @@ opList {
     name: "height"
     argType: INT64
   }
+  argDescriptor {
+    name: "alignCorners"
+    argType: BOOL
+  }
 }
 opList {
   name: "resize_bicubic"
@@ -1736,6 +1849,14 @@ opList {
   argDescriptor {
     name: "size"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "alignCorners"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " alignPixelCenters"
+    argType: BOOL
   }
 }
 opList {
@@ -1766,6 +1887,14 @@ opList {
   argDescriptor {
     name: "image"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "alignCorners"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " halfPixelCenters"
+    argType: BOOL
   }
 }
 opList {
@@ -2015,6 +2144,25 @@ opList {
     name: "*OUTPUT_VARIABLE(0));"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "(double dataType.toInt("
+    argOptional: true
+  }
+  argDescriptor {
+    name: "numRows"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "numCols"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "dim"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "lgamma"
@@ -2065,6 +2213,13 @@ opList {
   argDescriptor {
     name: "z"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "l2_regularizer"
+  }
+  argDescriptor {
+    name: "fast"
+    argType: BOOL
   }
 }
 opList {
@@ -2289,6 +2444,11 @@ opList {
     name: "axisVector"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "axis"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "polygamma"
@@ -2352,6 +2512,10 @@ opList {
     name: "outputR"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "fullMatrices"
+    argType: BOOL
+  }
 }
 opList {
   name: "solve"
@@ -2366,6 +2530,10 @@ opList {
   argDescriptor {
     name: "z"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "adjoint"
+    argType: BOOL
   }
 }
 opList {
@@ -2429,6 +2597,18 @@ opList {
     name: "switchNum"
     argType: INT64
   }
+  argDescriptor {
+    name: "switchNum"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "fullUV"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " computeUV"
+    argType: BOOL
+  }
 }
 opList {
   name: "trace"
@@ -2451,6 +2631,15 @@ opList {
     name: "diag"
     argType: INT64
   }
+  argDescriptor {
+    name: "column"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "diag"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "triangular_solve"
@@ -2465,6 +2654,22 @@ opList {
   argDescriptor {
     name: "z"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "lower"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " adjoint"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "attributesForNode.get(\"lower\".getB("
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "attributesForNode.get(\"adjoint\".getB("
+    argType: BOOL
   }
 }
 opList {
@@ -3450,6 +3655,11 @@ opList {
     name: "labels"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "classesDim"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "softmax_cross_entropy_loss_with_logits_grad"
@@ -3704,6 +3914,10 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "alpha"
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -3719,6 +3933,10 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "alpha"
+    argOptional: true
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -3871,6 +4089,10 @@ opList {
     name: "z"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "alpha"
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -3886,6 +4108,10 @@ opList {
   argDescriptor {
     name: "alpha"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "sharedAxes"
+    argType: INT64
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -3910,6 +4136,10 @@ opList {
   argDescriptor {
     name: "dLdO"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "sharedAxes"
+    argType: INT64
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -3994,6 +4224,9 @@ opList {
   argDescriptor {
     name: "z"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "scalar"
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -4239,6 +4472,9 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "cutoff"
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -4254,6 +4490,9 @@ opList {
   argDescriptor {
     name: "dLdO"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "cutoff"
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -4461,6 +4700,10 @@ opList {
     name: "gradI"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "nchw"
+    argType: BOOL
+  }
 }
 opList {
   name: "BiasAddGrad"
@@ -4525,6 +4768,10 @@ opList {
   }
   argDescriptor {
     name: "padWidth"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "ArrayUtil.fromBoolean(conv2DConfig.isSameMode())"
     argType: INT64
   }
 }
@@ -5661,6 +5908,11 @@ opList {
     name: "z"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "this.dimensions"
+    argType: INT64
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -5882,6 +6134,11 @@ opList {
     name: "isNCHW"
     argType: INT64
   }
+  argDescriptor {
+    name: "scale"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "upsampling"
@@ -5919,6 +6176,16 @@ opList {
   argDescriptor {
     name: "isNCHW"
     argType: INT64
+  }
+  argDescriptor {
+    name: "scaleW"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "nchw ? 1 : 0"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -5961,6 +6228,11 @@ opList {
   argDescriptor {
     name: "factorD"
     argType: INT64
+  }
+  argDescriptor {
+    name: "ncdhw ? 0 : 1"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -6105,6 +6377,15 @@ opList {
     name: "batchMean"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "isNchw ? 1 : 0"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "training ? 1 : 0"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "layer_norm"
@@ -6151,6 +6432,10 @@ opList {
   argDescriptor {
     name: "gain"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "channelsFirst"
+    argType: BOOL
   }
 }
 opList {
@@ -6202,6 +6487,15 @@ opList {
   argDescriptor {
     name: "depth"
     argType: INT64
+  }
+  argDescriptor {
+    name: "config.getBias("
+  }
+  argDescriptor {
+    name: "config.getAlpha("
+  }
+  argDescriptor {
+    name: "config.getBeta("
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -7301,6 +7595,10 @@ opList {
     name: "z"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "config.getKH()"
+    argType: INT64
+  }
 }
 opList {
   name: "pnormpool2d"
@@ -8170,6 +8468,25 @@ opList {
     name: "gateAct"
     argType: INT64
   }
+  argDescriptor {
+    name: "tArgs("
+  }
+  argDescriptor {
+    name: "bArgs(weights"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " maxTSLength"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " yLast"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " cLast"
+    argType: BOOL
+  }
 }
 opList {
   name: "lstmLayer_bp"
@@ -8271,6 +8588,22 @@ opList {
   argDescriptor {
     name: "gateAct"
     argType: INT64
+  }
+  argDescriptor {
+    name: "bArgs(weights"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " maxTSLength"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " yLast"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: " cLast"
+    argType: BOOL
   }
 }
 opList {
@@ -8897,6 +9230,11 @@ opList {
     name: "labels"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "numClasses"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "expose"
@@ -8929,6 +9267,19 @@ opList {
     name: "numBits"
     argType: INT64
   }
+  argDescriptor {
+    name: "numBits"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "narrow"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "narrowRange"
+    argType: BOOL
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -8953,6 +9304,27 @@ opList {
     name: "numBits"
     argType: INT64
   }
+  argDescriptor {
+    name: "min"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " max"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "numBits"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "narrow"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "narrowRange"
+    argType: BOOL
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -8976,6 +9348,19 @@ opList {
   argDescriptor {
     name: "numBits"
     argType: INT64
+  }
+  argDescriptor {
+    name: "numBits"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "narrow"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "narrowRange"
+    argType: BOOL
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -9070,6 +9455,13 @@ opList {
   argDescriptor {
     name: "maxOutputSize"
     argType: INT64
+  }
+  argDescriptor {
+    name: "iouThreshold"
+  }
+  argDescriptor {
+    name: " scoreThreshold"
+    argOptional: true
   }
 }
 opList {
@@ -9196,6 +9588,14 @@ opList {
   argDescriptor {
     name: "on"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "on"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "off"
+    argOptional: true
   }
 }
 opList {
@@ -9426,6 +9826,11 @@ opList {
     name: "maxlen"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "this.maxLen"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "square"
@@ -9480,6 +9885,11 @@ opList {
   argDescriptor {
     name: "k"
     argType: INT64
+  }
+  argDescriptor {
+    name: " k"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -9537,6 +9947,10 @@ opList {
 }
 opList {
   name: "unsorted_segment_max_bp"
+  argDescriptor {
+    name: "numSegments"
+    argType: INT64
+  }
 }
 opList {
   name: "unsorted_segment_mean"
@@ -9559,6 +9973,10 @@ opList {
 }
 opList {
   name: "unsorted_segment_mean_bp"
+  argDescriptor {
+    name: "numSegments"
+    argType: INT64
+  }
 }
 opList {
   name: "unsorted_segment_min"
@@ -9581,6 +9999,10 @@ opList {
 }
 opList {
   name: "unsorted_segment_min_bp"
+  argDescriptor {
+    name: "numSegments"
+    argType: INT64
+  }
 }
 opList {
   name: "unsorted_segment_prod"
@@ -9645,6 +10067,10 @@ opList {
 }
 opList {
   name: "unsorted_segment_sqrt_n_bp"
+  argDescriptor {
+    name: "numSegments"
+    argType: INT64
+  }
 }
 opList {
   name: "unsorted_segment_sum"
@@ -9667,6 +10093,10 @@ opList {
 }
 opList {
   name: "unsorted_segment_sum_bp"
+  argDescriptor {
+    name: "numSegments"
+    argType: INT64
+  }
 }
 opList {
   name: "weighted_cross_entropy_with_logits"
@@ -9701,6 +10131,9 @@ opList {
 }
 opList {
   name: "random_bernoulli"
+  argDescriptor {
+    name: "p"
+  }
 }
 opList {
   name: "dropout"
@@ -9779,6 +10212,10 @@ opList {
     name: "z"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "shape"
+    argType: INT64
+  }
 }
 opList {
   name: "random_gamma"
@@ -9839,6 +10276,12 @@ opList {
     name: "T_ARG(1));"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "0.0"
+  }
+  argDescriptor {
+    name: " 1.0"
+  }
 }
 opList {
   name: "randomnormal"
@@ -9853,6 +10296,14 @@ opList {
   argDescriptor {
     name: "T_ARG(1));"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "mean"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " stdev"
+    argOptional: true
   }
 }
 opList {
@@ -9903,6 +10354,10 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "seeds"
+    argType: INT64
+  }
   opDeclarationType: OP_IMPL
 }
 opList {
@@ -9930,6 +10385,21 @@ opList {
     name: "dtype"
     argType: INT64
   }
+  argDescriptor {
+    name: "0.0"
+  }
+  argDescriptor {
+    name: " 1.0 //TF version is hardcoded 0 to 1"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "min"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " max"
+    argOptional: true
+  }
 }
 opList {
   name: "argamax"
@@ -9940,6 +10410,15 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
   }
 }
 opList {
@@ -9952,6 +10431,15 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
 }
 opList {
   name: "argmax"
@@ -9963,6 +10451,15 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
 }
 opList {
   name: "argmin"
@@ -9973,6 +10470,15 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
   }
 }
 opList {
@@ -10062,6 +10568,9 @@ opList {
     name: "gradI"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "biasCorrected ? 1.0 : 0.0"
+  }
 }
 opList {
   name: "reduce_variance"
@@ -10095,6 +10604,9 @@ opList {
   argDescriptor {
     name: "gradI"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "biasCorrected ? 1.0 : 0.0"
   }
 }
 opList {
@@ -10137,6 +10649,13 @@ opList {
   argDescriptor {
     name: "axisVector"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims ? 1.0 : 0.0"
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
   }
 }
 opList {
@@ -10440,6 +10959,10 @@ opList {
     name: "inputShape"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
 }
 opList {
   name: "expand_dims"
@@ -10450,6 +10973,16 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "this.jaxis"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "axis"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -10484,6 +11017,11 @@ opList {
     name: "z"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "permuteDims"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "rank"
@@ -10505,6 +11043,16 @@ opList {
   argDescriptor {
     name: "z"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "shape"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "this.shape"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -10609,6 +11157,11 @@ opList {
     name: "_a"
     argType: INT64
   }
+  argDescriptor {
+    name: "axis"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "tile_to_shape"
@@ -10664,6 +11217,18 @@ opList {
     name: "OUTPUT_VARIABLE(0)->nullify();"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "(int) order"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "outputType.toInt()"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "initialize"
+    argType: BOOL
+  }
 }
 opList {
   name: "fill"
@@ -10674,6 +11239,10 @@ opList {
   argDescriptor {
     name: "shapeArray"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "value"
+    argOptional: true
   }
 }
 opList {
@@ -10730,6 +11299,17 @@ opList {
     name: "output"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "this.start"
+  }
+  argDescriptor {
+    name: " this.stop"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "elements"
+    argType: INT64
+  }
 }
 opList {
   name: "ones_as"
@@ -10743,6 +11323,18 @@ opList {
   argDescriptor {
     name: "output"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "from"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " to"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " step"
+    argOptional: true
   }
 }
 opList {
@@ -10765,6 +11357,46 @@ opList {
   argDescriptor {
     name: "z"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "beginMask"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "ellipsisMask"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "endMask"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "newAxisMask"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "shrinkAxisMask"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "begin"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "end"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "strides"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -10816,6 +11448,16 @@ opList {
   argDescriptor {
     name: "new_axis_mask"
     argType: INT64
+  }
+  argDescriptor {
+    name: "end"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "strides"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -10965,6 +11607,20 @@ opList {
     name: "crop"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "b"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "crops[e][0]"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: " crops[e][1]"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "clipbyavgnorm"
@@ -10975,6 +11631,13 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "clipValue"
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -11024,6 +11687,13 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "clipValue"
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -11042,6 +11712,10 @@ opList {
   }
   argDescriptor {
     name: "clipNorm"
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
   }
 }
 opList {
@@ -11066,6 +11740,14 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "clipValueMin"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " clipValueMax"
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -11073,6 +11755,14 @@ opList {
   argDescriptor {
     name: "empty\");"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "concatDimension"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "true"
+    argType: BOOL
   }
 }
 opList {
@@ -11102,6 +11792,10 @@ opList {
     name: "axis"
     argType: INT64
   }
+  argDescriptor {
+    name: "true     //Last argument"
+    argType: BOOL
+  }
 }
 opList {
   name: "cumprod"
@@ -11112,6 +11806,18 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "exclusive ? 1 : 0"
+    argType: INT64
+  }
+  argDescriptor {
+    name: " reverse ? 1 : 0"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "a"
+    argType: INT64
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -11166,6 +11872,10 @@ opList {
   }
   argDescriptor {
     name: "reverse"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "jaxis"
     argType: INT64
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
@@ -11314,6 +12024,21 @@ opList {
   argDescriptor {
     name: "indices"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "axis"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "indices"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "indexes"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -11511,6 +12236,10 @@ opList {
     name: "output"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "dataType.toInt()"
+    argType: INT64
+  }
 }
 opList {
   name: "MergeMaxIndex"
@@ -11572,6 +12301,9 @@ opList {
     name: "INT_ARG(0));"
     argType: INT64
   }
+  argDescriptor {
+    name: "padValue"
+  }
 }
 opList {
   name: "parallel_stack"
@@ -11590,6 +12322,11 @@ opList {
     name: "input"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "jaxis"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "reverse"
@@ -11600,6 +12337,16 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "axis"
+    argType: INT64
+    argOptional: true
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -11632,6 +12379,11 @@ opList {
   argDescriptor {
     name: "axis"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -12058,6 +12810,16 @@ opList {
     name: "e"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "begin"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "size"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "slice_bp"
@@ -12080,6 +12842,16 @@ opList {
   argDescriptor {
     name: "epsNext"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "begin"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "size"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -12119,6 +12891,20 @@ opList {
     name: "blockShape"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "b"
+    argType: INT64
+  }
+  argDescriptor {
+    name: "padding[e][0]"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: " padding[e][1]"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "space_to_depth"
@@ -12157,6 +12943,10 @@ opList {
     name: "num_splits"
     argType: INT64
   }
+  argDescriptor {
+    name: "splitDim.getInt(0)"
+    argType: INT64
+  }
 }
 opList {
   name: "split_v"
@@ -12175,6 +12965,11 @@ opList {
   argDescriptor {
     name: "axis"
     argType: INT64
+  }
+  argDescriptor {
+    name: "//numSplits  //libnd4j op doesn\'t used/need it for execution"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -12224,6 +13019,11 @@ opList {
     name: "axis"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -12243,6 +13043,11 @@ opList {
   argDescriptor {
     name: "axis"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "dimensions"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -12266,6 +13071,11 @@ opList {
     name: "reps_vector"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "jaxis"
+    argType: INT64
+    argOptional: true
+  }
 }
 opList {
   name: "tile_bp"
@@ -12284,6 +13094,11 @@ opList {
   argDescriptor {
     name: "reps_vector"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "repeat"
+    argType: INT64
+    argOptional: true
   }
 }
 opList {
@@ -12435,6 +13250,13 @@ opList {
     name: "initStateMsg"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "rho"
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -12454,6 +13276,13 @@ opList {
   argDescriptor {
     name: "stateH"
     argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -12483,6 +13312,25 @@ opList {
     name: "initStateU"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " beta1"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " beta2"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "iteration"
+    argType: INT64
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -12510,6 +13358,25 @@ opList {
   argDescriptor {
     name: "initStateU"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " beta1"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " beta2"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "iteration"
+    argType: INT64
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -12547,6 +13414,25 @@ opList {
     name: "initStateH"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " beta1"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " beta2"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "iteration"
+    argType: INT64
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -12575,6 +13461,25 @@ opList {
     name: "initStateV"
     argType: INPUT_TENSOR
   }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " beta1"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " beta2"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
+  }
+  argDescriptor {
+    name: "iteration"
+    argType: INT64
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -12594,6 +13499,13 @@ opList {
   argDescriptor {
     name: "initState"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " momentum"
+    argOptional: true
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -12615,6 +13527,17 @@ opList {
     name: "stateG"
     argType: OUTPUT_TENSOR
   }
+  argDescriptor {
+    name: "lr"
+  }
+  argDescriptor {
+    name: " decay"
+    argOptional: true
+  }
+  argDescriptor {
+    name: " epsilon"
+    argOptional: true
+  }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
 opList {
@@ -12626,6 +13549,9 @@ opList {
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "lr"
   }
   opDeclarationType: CONFIGURABLE_OP_IMPL
 }
@@ -12654,4 +13580,4577 @@ opList {
     name: "message"
     argType: INPUT_TENSOR
   }
+}
+opList {
+  name: "broadcast_max"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "or"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "gelu"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "leakyreluderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "dropout_inverted"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rational_tanh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "round"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_lognormal"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "cas"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_mishderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "cosh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "RelativeError"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_precise_geluderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "meta_predicate_inverted"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "or_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "remainder"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "somepoolingpool2d"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "config.getKH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getKW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getSH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getSW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getPH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getPW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getDH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getDW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "ArrayUtil.fromBoolean(config.isSameMode())"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "(t == Pooling2DType.AVG) ? config.getDivisor().ordinal() : (int)config.getExtra()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "ArrayUtil.fromBoolean(config.isNHWC())"
+    argType: INT64
+    argOptional: true
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_notequal"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "sign"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "alpha_dropout"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "xor"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastdiv"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "deconv3d_tf"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "config.getKD()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getKH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getKW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getSD()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getSH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getSW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getPD()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getPH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getPW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getDD()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getDH()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getDW()"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "ArrayUtil.fromBoolean(config.isSameMode())"
+    argType: INT64
+    argOptional: true
+  }
+  argDescriptor {
+    name: "config.getDataFormat().equalsIgnoreCase(DeConv3DConfig.NCDHW) ? 0 : 1"
+    argType: INT64
+    argOptional: true
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "match_condition"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "stabilize"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "BinaryRelativeError"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "acosh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "expm1"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastsub"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "savev2"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "restorev2"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "hasinf"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_min"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "log_x"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "softsignderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_lessthan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "set_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_binomial_ex"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "pooling3dpool3dnew_bp"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "BinaryMinimalRelativeError"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "exp"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_geluderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "not_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "logentropy"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "max_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_bernoulli"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "add_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "old_assign"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_gaussian"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "precise_gelu"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "merge"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "equals_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "div_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_tanhderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "countZero"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "min_pairwise"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "asin"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "meta_postulate"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "Reciprocal"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "and"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "meta_reduce"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "lessthan_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "ceil"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "countNonZero"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "sinh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "equals_with_eps"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_powderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "jaccarddistance"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "atan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "next_iteration"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "eps_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "amean"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_binomial"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "probablistic_merge"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastadd"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "mul_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "amax_pairwise"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "neg"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "cosinedistance"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_lessthanorequal"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "choice"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "maxout"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "logsigmoid"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "isinf"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "acos"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "exit"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "first_index"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "hard_sigmoidderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "seluderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "manhattan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "xor_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rational_tanh_derivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_greaterthanorequal"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "sqrt"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "scalar_min"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "eps"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "log"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "pow"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "match_condition_transform"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rdiv_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "mish"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "tanderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_uniform"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "isnan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "all"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "entropy"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rsqrt"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "greaterthanorequal_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "distribution_truncated"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "last_index"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_swishderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "leakyrelu"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "lessthanorequal_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "isfinite"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "shannonentropy"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "setvalorless_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_amax"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "cos"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "std"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "biasCorrected"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "hard_sigmoid"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "applygradientdescent"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "step"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "amin_pairwise"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "max_pairwise"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "erfc"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "hasnan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rectified_tanh_derivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rsub_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "cosinesimilarity"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "atanh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "pow_pairwise"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "and_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "loop_cond"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "bool_not"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "meta_predicate"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "cubederivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "rectified_tanh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_amin"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastrsub"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "somepoolingpool2d_bp"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "var"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "biasCorrected"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "any"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_equalto"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "hammingdistance"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "reduce_normmax"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "hardtanhderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "timesoneminus"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "sin"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "euclidean"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "gradientbackwards"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "amin"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "replace_nans"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "erf"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "not"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "_sigmoidderivative"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "tan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "notequals_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "abs"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "fmod"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "greaterthan_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "fmod_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastcopy"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "asinh"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastmul"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "amax"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcast_greaterthan"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "setrange"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "swish"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "sub_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "remainder_scalar"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "ExternalErrorsFn"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "inplaceCall"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "oneminus"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "asum"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "keepDims"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isComplex"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "isEmptyReduce"
+    argType: BOOL
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "broadcastrdiv"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "car"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "linspace_random"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
+}
+opList {
+  name: "grid_free"
+  argDescriptor {
+    name: "inPlace"
+    argType: BOOL
+  }
+  argDescriptor {
+    name: "scalarValue"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "x"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "y"
+    argType: INPUT_TENSOR
+  }
+  argDescriptor {
+    name: "z"
+    argType: OUTPUT_TENSOR
+  }
+  opDeclarationType: LEGACY_XYZ
 }
