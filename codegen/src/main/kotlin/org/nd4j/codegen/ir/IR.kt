@@ -488,7 +488,8 @@ abstract  class AbstractMappingProcess<
 
 
 fun ArgDescriptor(block: OpNamespace.ArgDescriptor .Builder.() -> Unit): OpNamespace.ArgDescriptor {
-    return OpNamespace.ArgDescriptor.newBuilder().apply(block).build()
+    return OpNamespace.ArgDescriptor.newBuilder()
+            .apply(block).build()
 }
 
 

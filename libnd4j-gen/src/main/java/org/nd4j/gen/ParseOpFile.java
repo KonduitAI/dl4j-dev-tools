@@ -643,20 +643,6 @@ public class ParseOpFile {
 
 
                 for(String line : lines) {
-                    /**
-                     *     void addTArgument(double... arg);
-                     *
-                     *     void addIArgument(int... arg);
-                     *
-                     *     void addIArgument(long... arg);
-                     *
-                     *     void addBArgument(boolean... arg);
-                     *
-                     *     void addDArgument(DataType... arg);
-                     */
-
-
-
                     if(line.contains(ADD_B_ARGUMENT_INVOCATION)) {
                         line = line.replace("addBArgument(","");
                         line = line.replace(")","");
@@ -696,6 +682,9 @@ public class ParseOpFile {
                                 argsByTIndex.add(arg);
                         }
                     }
+
+
+
                 }
 
                 List<OpNamespace.ArgDescriptor> tArgNames = opDescriptor.getArgDescriptorList().stream()
