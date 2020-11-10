@@ -2,10 +2,7 @@ package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
 import org.nd4j.codegen.ir.*
-import org.nd4j.codegen.ir.tensorflow.TensorflowImportContext
-import org.nd4j.codegen.ir.tensorflow.TensorflowMappingContext
-import org.nd4j.codegen.ir.tensorflow.findOp
-import org.nd4j.codegen.ir.tensorflow.tensorflowOps
+import org.nd4j.codegen.ir.tensorflow.*
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
@@ -13,7 +10,9 @@ import org.nd4j.linalg.api.ndarray.INDArray
 
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.shade.protobuf.ByteString
 import org.tensorflow.framework.*
+import org.tensorflow.framework.TensorShapeProto
 
 fun loadOnnxOps(): List<Onnx.NodeProto> {
     val graphProto = Onnx.GraphProto.parseFrom(ClassPathResource("onnx-op-defs.pb").inputStream)
@@ -456,6 +455,17 @@ IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
         return input.dataType().nd4jDataType()
     }
 
+    override fun createIRTensorFromNDArray(ndaray: INDArray): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        val ret = OnnxTensorProto {
+            Shape(ndaray.shape().toList())
+            OnnxRawData(ndaray.data().asBytes())
+            OnnxDataType(convertToOnnxDataType(ndaray.dataType()))
+
+        }
+
+        return OnnxIRTensor(ret)
+    }
+
 }
 
 class OnnxImportContext(process: MappingProcess<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, mappingContext: MappingContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): AbstractImportContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(process, mappingContext) {
@@ -501,5 +511,47 @@ fun Onnx.GraphProto.Builder.Node(inputNode: Onnx.NodeProto) {
 }
 
 
+
+
+
+fun OnnxTensorProto(block: Onnx.TensorProto.Builder.() -> Unit): Onnx.TensorProto {
+    return Onnx.TensorProto.newBuilder().apply { block }.build()
+}
+
+fun convertToOnnxDataType(dataType: org.nd4j.linalg.api.buffer.DataType): Onnx.TensorProto.DataType {
+    return when (dataType) {
+        org.nd4j.linalg.api.buffer.DataType.UINT16 -> Onnx.TensorProto.DataType.UINT16
+        org.nd4j.linalg.api.buffer.DataType.UINT32 ->  Onnx.TensorProto.DataType.UINT32
+        org.nd4j.linalg.api.buffer.DataType.UINT64 ->  Onnx.TensorProto.DataType.UINT64
+        org.nd4j.linalg.api.buffer.DataType.BOOL ->  Onnx.TensorProto.DataType.BOOL
+        org.nd4j.linalg.api.buffer.DataType.BFLOAT16 ->  Onnx.TensorProto.DataType.BFLOAT16
+        org.nd4j.linalg.api.buffer.DataType.FLOAT ->  Onnx.TensorProto.DataType.FLOAT
+        org.nd4j.linalg.api.buffer.DataType.INT ->  Onnx.TensorProto.DataType.INT32
+        org.nd4j.linalg.api.buffer.DataType.LONG ->  Onnx.TensorProto.DataType.INT64
+        org.nd4j.linalg.api.buffer.DataType.BYTE ->  Onnx.TensorProto.DataType.INT8
+        org.nd4j.linalg.api.buffer.DataType.SHORT -> Onnx.TensorProto.DataType.INT16
+        org.nd4j.linalg.api.buffer.DataType.DOUBLE -> Onnx.TensorProto.DataType.DOUBLE
+        org.nd4j.linalg.api.buffer.DataType.UBYTE ->  Onnx.TensorProto.DataType.UINT8
+        org.nd4j.linalg.api.buffer.DataType.HALF ->  Onnx.TensorProto.DataType.FLOAT16
+        org.nd4j.linalg.api.buffer.DataType.UTF8 ->  Onnx.TensorProto.DataType.STRING
+        else -> throw UnsupportedOperationException("Unknown TF data type: [" + dataType.name + "]")
+    }
+}
+
+
+fun Onnx.TensorProto.Builder.OnnxDataType(value: Onnx.TensorProto.DataType) {
+    this.dataType = value.ordinal
+}
+
+
+
+fun Onnx.TensorProto.Builder.OnnxRawData(byteArray: ByteArray) {
+    this.rawData = ByteString.copyFrom(byteArray)
+}
+
+fun Onnx.TensorProto.Builder.Shape(shape: List<Long>) {
+    this.dimsList.clear()
+    this.dimsList.addAll(shape)
+}
 
 

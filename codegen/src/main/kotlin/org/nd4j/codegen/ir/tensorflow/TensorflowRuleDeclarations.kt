@@ -113,6 +113,58 @@ fun stringNotEqualsRule(outputAttribute: String, inputFrameworkAttributeName: St
 }
 
 
+class TensorflowStringContainsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
+                                           transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+        StringNotEqualsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+        ( mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(attrDef, attributeValueType)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+fun stringContainsRule(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowStringContainsAdapterRule {
+    return TensorflowStringContainsAdapterRule(
+            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
+            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
+                name = inputFrameworkAttributeName
+                stringValue = valueToTest
+            }.build())))
+}
+
+
+class TensorflowAttributeScalarNDArrayAttribute(mappingNamesToPerform: Map<String, String> = emptyMap(),
+                                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+        AttributeScalarNDArrayAttribute<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+        ( mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(attrDef, attributeValueType)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+fun attributeScalarToNDArrayInput(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowAttributeScalarNDArrayAttribute {
+    return TensorflowAttributeScalarNDArrayAttribute(
+            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
+            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
+                name = inputFrameworkAttributeName
+                stringValue = valueToTest
+            }.build())))
+}
+
+
+
+
 class TensorflowValueMappingRule(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
         ValueMapping<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
@@ -187,7 +239,7 @@ fun ndarrayStringToIndex(outputAttributeValue: String,inputAttributeValue: Strin
 
 
 
-class TensorflowListIntToListInt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListIntToListInt<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowListNumberToListNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListNumberToListNumber<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -199,8 +251,25 @@ class TensorflowListIntToListInt(mappingNamesToPerform: Map<String, String>, tra
 
 }
 
-fun listIntToListInt(outputAttributeValue: String,inputAttributeValue: String): TensorflowListIntToListInt {
-    return TensorflowListIntToListInt(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = emptyMap())
+fun listNumberToListNumber(outputAttributeValue: String, inputAttributeValue: String): TensorflowListNumberToListNumber {
+    return TensorflowListNumberToListNumber(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = emptyMap())
+}
+
+
+class TensorflowAttributeNumberListNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : AttributeNumberListNDArray<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+fun convertNumberListToInputNDArray(outputAttributeValue: String, inputAttributeValue: String): TensorflowAttributeNumberListNDArray {
+    return TensorflowAttributeNumberListNDArray(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = emptyMap())
 }
 
 
@@ -219,4 +288,21 @@ class TensorflowNDArrayInputToScalarAttribute(mappingNamesToPerform: Map<String,
 
 fun convertNDArrayInputToScalarAttr(mutableMap: MutableMap<String,String>): TensorflowNDArrayInputToScalarAttribute {
     return TensorflowNDArrayInputToScalarAttribute(mappingNamesToPerform = mutableMap,transformerArgs = emptyMap())
+}
+
+
+class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ArgDescriptorConstant<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+fun argDescriptorConstant(mutableMap: MutableMap<String,String>): TensorflowArgDescriptorConstant {
+    return TensorflowArgDescriptorConstant(mappingNamesToPerform = mutableMap,transformerArgs = emptyMap())
 }

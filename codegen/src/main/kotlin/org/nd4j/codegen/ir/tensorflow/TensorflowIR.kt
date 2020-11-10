@@ -2,24 +2,22 @@ package org.nd4j.codegen.ir.tensorflow
 
 import org.apache.commons.io.IOUtils
 import org.nd4j.codegen.ir.*
-import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.imports.graphmapper.tf.tensors.TFTensorMappers
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.tensorflow.framework.*
-import org.tensorflow.framework.OpDef.AttrDef
-import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.shade.protobuf.TextFormat
+import org.tensorflow.framework.*
+import org.tensorflow.framework.OpDef.AttrDef
 import java.nio.charset.Charset
 
 fun loadTensorflowOps(): OpList {
     val string = IOUtils.toString(ClassPathResource("ops.proto").inputStream, Charset.defaultCharset())
     val tfListBuilder = OpList.newBuilder()
-    TextFormat.merge(string,tfListBuilder)
+    TextFormat.merge(string, tfListBuilder)
     return tfListBuilder.build()
 }
 
@@ -39,7 +37,7 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, DataType> {
     }
 
     override fun stride(): List<Long> {
-        return Nd4j.getStrides(shape().toTypedArray().toLongArray(),'c').asList()
+        return Nd4j.getStrides(shape().toTypedArray().toLongArray(), 'c').asList()
     }
 
     override fun dataType(): IRDataType<DataType> {
@@ -60,7 +58,7 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, DataType> {
             DataType.DT_UINT16 -> builder.dataType = TensorNamespace.DataType.UINT16.ordinal
             DataType.DT_HALF -> builder.dataType = TensorNamespace.DataType.FLOAT16.ordinal
             DataType.DT_STRING -> builder.dataType = TensorNamespace.DataType.STRING.ordinal
-            DataType.DT_FLOAT -> builder.dataType  = TensorNamespace.DataType.FLOAT.ordinal
+            DataType.DT_FLOAT -> builder.dataType = TensorNamespace.DataType.FLOAT.ordinal
             DataType.DT_DOUBLE -> builder.dataType = TensorNamespace.DataType.DOUBLE.ordinal
             DataType.DT_BOOL -> builder.dataType = TensorNamespace.DataType.BOOL.ordinal
             DataType.DT_INT64 -> builder.dataType = TensorNamespace.DataType.INT64.ordinal
@@ -179,7 +177,7 @@ fun attrDefaultValue(): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
     return TensorflowIRAttr(AttrDef.getDefaultInstance(), AttrValue.getDefaultInstance())
 }
 
-class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
+class TensorflowIRAttr(inputAttributeDef: AttrDef, inputAttributeValue: AttrValue): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
 
     private val attributeDef = inputAttributeDef
     private val attributeValue = inputAttributeValue
@@ -239,8 +237,7 @@ class TensorflowIRAttr(inputAttributeDef: AttrDef,inputAttributeValue: AttrValue
     }
 
     override fun listTensorValue(): List<IRTensor<TensorProto, DataType>> {
-        return attributeValue.list.tensorList.map {
-            input -> TensorflowIRTensor(input)
+        return attributeValue.list.tensorList.map { input -> TensorflowIRTensor(input)
         }
     }
 
@@ -315,7 +312,7 @@ class TensorflowIROp(input: OpDef): IROpDef<OpDef, TensorProto, OpDef.ArgDef, Da
 
 }
 
-class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
+class TensorflowIRNode(inputNode: NodeDef, inputOpDef: OpDef): IRNode<NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
 
     private val nodeDef = inputNode
     private val opDef = inputOpDef
@@ -326,8 +323,8 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
 
     }
 
-    private fun attrDefsByName(input: List<AttrDef>): Map<String,AttrDef> {
-        val ret = HashMap<String,AttrDef>()
+    private fun attrDefsByName(input: List<AttrDef>): Map<String, AttrDef> {
+        val ret = HashMap<String, AttrDef>()
         input.forEach {
             ret[it.name] = it
         }
@@ -337,7 +334,7 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
     private fun initAttrMapFromNode(input: NodeDef): Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> {
         val ret = HashMap<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>>()
         input.attrMap.forEach { (key, value) ->
-            ret[key] =  TensorflowIRAttr(attrDefsMap.getOrDefault(key, AttrDef.getDefaultInstance()),value)
+            ret[key] =  TensorflowIRAttr(attrDefsMap.getOrDefault(key, AttrDef.getDefaultInstance()), value)
         }
 
         return ret
@@ -387,9 +384,9 @@ class TensorflowIRNode(inputNode: NodeDef,inputOpDef: OpDef): IRNode<NodeDef, Te
 
 }
 
-class NDArrayMappingRule(mappingNamesToPerform: MutableMap<String,String>,
+class NDArrayMappingRule(mappingNamesToPerform: MutableMap<String, String>,
                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
-        BaseNDArrayMappingRule<OpDef,NodeDef,AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+        BaseNDArrayMappingRule<OpDef, NodeDef, AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
 
 
 
@@ -398,7 +395,7 @@ class NDArrayMappingRule(mappingNamesToPerform: MutableMap<String,String>,
     }
 }
 
-fun mappingNDArrayInputs(inputs: MutableMap<String,String>) : NDArrayMappingRule {
+fun mappingNDArrayInputs(inputs: MutableMap<String, String>) : NDArrayMappingRule {
     return NDArrayMappingRule(
             mappingNamesToPerform = inputs)
 }
@@ -411,7 +408,7 @@ fun GraphDef.nodeByName(name: String): NodeDef {
     return this.nodeList.first { it.name == name }!!
 }
 
-class TensorflowIRGraph(graphDef: GraphDef,opDef: OpList): IRGraph<NodeDef,OpDef,TensorProto,AttrDef,AttrValue,DataType> {
+class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
 
     val graphDef = graphDef
     val opList = opDef
@@ -444,8 +441,8 @@ fun TensorProto.Builder.RawData(byteArray: ByteArray) {
     this.tensorContent = ByteString.copyFrom(byteArray)
 }
 
-fun TensorProto.Builder.Shape(block: TensorProto.Builder.() -> Unit,shape: List<Long>): TensorShapeProto {
-    return      TensorShapeProto {
+fun TensorProto.Builder.Shape(shape: List<Long>) {
+    this.tensorShape = TensorShapeProto {
         Dims(shape)
     }
 }
@@ -491,7 +488,7 @@ fun TensorProto.Builder.FloatData(value: List<Float>) {
 }
 
 
-fun TensorShapeProto.Builder.Dim(name: String,size: Long) {
+fun TensorShapeProto.Builder.Dim(name: String, size: Long) {
     this.addDim(TensorShapeProto.Dim.newBuilder().setName(name).setSize(size).build())
 }
 
@@ -499,8 +496,8 @@ fun Dim(block: TensorShapeProto.Dim.Builder.() -> Unit): TensorShapeProto.Dim {
     return TensorShapeProto.Dim.newBuilder().apply(block).build()
 }
 
-fun TensorShapeProto.Builder.Dims(shape : List<Long>) {
-    shape.forEachIndexed  {index,value ->  this.addDim(
+fun TensorShapeProto.Builder.Dims(shape: List<Long>) {
+    shape.forEachIndexed  { index, value ->  this.addDim(
             Dim {
                 name = index.toString()
                 size = value
@@ -540,8 +537,8 @@ fun NodeDef.Builder.Input(name: String) {
     this.addInput(name)
 }
 
-fun NodeDef.Builder.Attribute(name: String,value: AttrValue) {
-    this.putAttr(name,value)
+fun NodeDef.Builder.Attribute(name: String, value: AttrValue) {
+    this.putAttr(name, value)
 }
 
 fun OpList.findOp(name: String): OpDef {
@@ -552,12 +549,12 @@ fun OpList.findOp(name: String): OpDef {
 class TensorflowImportProcess(inputFramework: String = "tensorflow") : AbstractImportProcess<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>(inputFramework) {
     override fun createMappingContext(graph: IRGraph<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>, node: NodeDef): MappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
         val opDef = tensorflowOps.findOp(node.op)
-        return TensorflowMappingContext(graph = graph,node = node,opDef = opDef)
+        return TensorflowMappingContext(graph = graph, node = node, opDef = opDef)
     }
 
     override fun createImportContext(mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>, mappingContext: MappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>):
-            ImportContext<OpDef,NodeDef,TensorProto,AttrDef,AttrValue,DataType> {
-        return TensorflowImportContext(mappingContext =  mappingContext,process = mappingProcess)
+            ImportContext<OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
+        return TensorflowImportContext(mappingContext = mappingContext, process = mappingProcess)
     }
 
 }
@@ -574,6 +571,28 @@ class TensorflowImportContext(process: MappingProcess<OpDef, NodeDef, TensorProt
 
 }
 
+
+fun convertToDataType(dataType: org.nd4j.linalg.api.buffer.DataType): DataType {
+    return when (dataType) {
+        org.nd4j.linalg.api.buffer.DataType.UINT16 -> DataType.DT_UINT16
+        org.nd4j.linalg.api.buffer.DataType.UINT32 -> DataType.DT_UINT32
+        org.nd4j.linalg.api.buffer.DataType.UINT64 -> DataType.DT_UINT64
+        org.nd4j.linalg.api.buffer.DataType.BOOL -> DataType.DT_BOOL
+        org.nd4j.linalg.api.buffer.DataType.BFLOAT16 -> DataType.DT_BFLOAT16
+        org.nd4j.linalg.api.buffer.DataType.FLOAT -> DataType.DT_FLOAT
+        org.nd4j.linalg.api.buffer.DataType.INT -> DataType.DT_INT32
+        org.nd4j.linalg.api.buffer.DataType.LONG -> DataType.DT_INT64
+        org.nd4j.linalg.api.buffer.DataType.BYTE -> DataType.DT_INT8
+        org.nd4j.linalg.api.buffer.DataType.SHORT -> DataType.DT_INT16
+        org.nd4j.linalg.api.buffer.DataType.DOUBLE -> DataType.DT_DOUBLE
+        org.nd4j.linalg.api.buffer.DataType.UBYTE -> DataType.DT_UINT8
+        org.nd4j.linalg.api.buffer.DataType.HALF -> DataType.DT_HALF
+        org.nd4j.linalg.api.buffer.DataType.UTF8 -> DataType.DT_STRING
+        else -> throw UnsupportedOperationException("Unknown TF data type: [" + dataType.name + "]")
+    }
+}
+
+
 class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>) :
         AbstractMappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>(opDef, node, graph) {
 
@@ -585,11 +604,11 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
     override fun irAttributeValueForNode(valueName: String): IRAttribute<AttrDef, AttrValue, TensorProto, DataType> {
         val attrDef = attrDef(valueName)
         val attrValue = node.getAttrOrDefault(valueName, AttrValue.getDefaultInstance())
-        return TensorflowIRAttr(inputAttributeDef = attrDef,inputAttributeValue = attrValue)
+        return TensorflowIRAttr(inputAttributeDef = attrDef, inputAttributeValue = attrValue)
 
     }
 
-    override fun tensorInputFor(name: String): IRTensor<TensorProto,DataType> {
+    override fun tensorInputFor(name: String): IRTensor<TensorProto, DataType> {
         var foundIndex = -1
         /**
          * Use op definition name as 1 unified reference name in rules for static purposes, but
@@ -597,8 +616,7 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
          *
          * This is equivalent to the tf input position attribute value in the previous tensorflow import.
          */
-        opDef.inputArgList.forEachIndexed {
-            index,argDef ->
+        opDef.inputArgList.forEachIndexed { index, argDef ->
             if(argDef.name == name)
                 foundIndex = index
         }
@@ -619,6 +637,16 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
 
     override fun nd4jDataTypeFor(input: IRTensor<TensorProto, DataType>): org.nd4j.linalg.api.buffer.DataType {
         return input.dataType().nd4jDataType()
+    }
+
+    override fun createIRTensorFromNDArray(ndarray: INDArray): IRTensor<TensorProto, DataType> {
+        val tensorProto = TensorProto {
+            RawData(ndarray.data().asBytes())
+            Shape(ndarray.shape().toList())
+            DataType(convertToDataType(ndarray.dataType()))
+        }
+
+        return TensorflowIRTensor(tensorProto)
     }
 
 }

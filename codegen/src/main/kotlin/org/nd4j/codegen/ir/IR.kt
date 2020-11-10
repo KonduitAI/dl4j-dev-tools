@@ -17,9 +17,11 @@ import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.api.ops.DynamicCustomOp
+import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.nd4j.shade.protobuf.TextFormat
+import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 
 
@@ -221,6 +223,8 @@ interface MappingContext<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMes
     fun attrDef(name: String): ATTRIBUTE_TYPE
 
     fun tensorInputFor(name: String): IRTensor<TENSOR_TYPE,DATA_TYPE>
+
+    fun createIRTensorFromNDArray(ndaray:INDArray): IRTensor<TENSOR_TYPE,DATA_TYPE>
 
     fun nd4jDataTypeFor(input: IRTensor<TENSOR_TYPE,DATA_TYPE>): DataType
 
@@ -487,10 +491,59 @@ abstract  class AbstractMappingProcess<
 }
 
 
-fun ArgDescriptor(block: OpNamespace.ArgDescriptor .Builder.() -> Unit): OpNamespace.ArgDescriptor {
+fun ArgDescriptor(block: OpNamespace.ArgDescriptor.Builder.() -> Unit): OpNamespace.ArgDescriptor {
     return OpNamespace.ArgDescriptor.newBuilder()
             .apply(block).build()
 }
+
+fun NameSpaceTensor(block: TensorNamespace.TensorProto.Builder.() -> Unit): TensorNamespace.TensorProto {
+    return TensorNamespace.TensorProto.newBuilder()
+            .apply(block).build()
+}
+
+
+
+fun TensorNamespace.TensorProto.Builder.RawData(rawData: ByteArray) {
+    this.rawData = ByteString.copyFrom(rawData)
+}
+
+fun TensorNamespace.TensorProto.Builder.Dims(shape: List<Long>) {
+    this.dimsList.clear()
+    this.dimsList.addAll(shape)
+}
+
+
+fun convertNameSpaceTensorDataTypeFromNd4jDataType(dataType: DataType): TensorNamespace.DataType {
+    return when(dataType) {
+        DataType.UINT32 ->  return TensorNamespace.DataType.UINT32
+        DataType.INT64,DataType.LONG ->  return TensorNamespace.DataType.INT64
+        DataType.UINT64 ->  return TensorNamespace.DataType.UINT64
+        DataType.DOUBLE ->  return TensorNamespace.DataType.DOUBLE
+        DataType.FLOAT ->  return TensorNamespace.DataType.FLOAT
+        DataType.FLOAT16,DataType.HALF ->  return TensorNamespace.DataType.FLOAT16
+        DataType.HALF -> return  TensorNamespace.DataType.FLOAT16
+        DataType.INT32,DataType.INT ->  return TensorNamespace.DataType.INT32
+        DataType.UTF8 ->  return TensorNamespace.DataType.STRING
+        DataType.BOOL -> return  TensorNamespace.DataType.BOOL
+        DataType.BFLOAT16 -> return  TensorNamespace.DataType.BFLOAT16
+        DataType.SHORT,DataType.INT8 -> return TensorNamespace.DataType.INT8
+        DataType.UINT16 -> return TensorNamespace.DataType.UINT16
+        DataType.BYTE,DataType.UINT8,DataType.UBYTE -> return TensorNamespace.DataType.UINT8
+        else -> {
+            throw IllegalArgumentException("Illegal data type $dataType")
+        }
+    }
+}
+
+fun nameSpaceTensorFromNDarray(ndarray:INDArray): TensorNamespace.TensorProto {
+    return NameSpaceTensor {
+        dataType = convertNameSpaceTensorDataTypeFromNd4jDataType(ndarray.dataType()).ordinal
+        RawData(ndarray.data().asBytes())
+        Dims(ndarray.shape().asList())
+    }
+}
+
+
 
 
 interface ImportContext<

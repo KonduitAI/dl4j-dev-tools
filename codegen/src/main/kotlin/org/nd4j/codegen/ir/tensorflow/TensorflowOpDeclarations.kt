@@ -583,8 +583,8 @@ val dilation2D = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                listIntToListInt(outputAttributeValue = "rates",inputAttributeValue = "rates"),
-                listIntToListInt(outputAttributeValue = "strides",inputAttributeValue = "strides"),
+                listNumberToListNumber(outputAttributeValue = "rates",inputAttributeValue = "rates"),
+                listNumberToListNumber(outputAttributeValue = "strides",inputAttributeValue = "strides"),
                 //NOTE: This is a dynamically resolved attribute at runtime.
                 sizeAtRule(outputAttributeName = "kH",dimensionIndex = 0,inputFrameworkAttributeName = "filter"),
                 sizeAtRule(outputAttributeName = "kW",dimensionIndex = 1,inputFrameworkAttributeName = "filter"))
@@ -824,6 +824,7 @@ val isNan = mapTensorNamesWithOp(inputFrameworkOpName = "IsNan",opName = "isnan"
 val lrn = mapTensorNamesWithOp(inputFrameworkOpName = "LRN",opName = "lrn",tensorNames = mutableMapOf("input" to "input"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("depth" to "depth_radius","alpha" to "alpha","bias" to "bias","beta" to "beta"))))
 
+//TODO: DID NOT PICK UP ALPHA PROPERTY
 val leakyRelu = mapTensorNamesWithOp(inputFrameworkOpName = "LeakyRelu",opName = "leakyrelu",
         attributeMappingRules = listOf(valueMapping(mappings = mutableMapOf("alpha" to "alpha"))),
         tensorNames = mutableMapOf("input" to "x"))
@@ -1123,7 +1124,7 @@ val squeeze = TensorflowMappingProcess(
         opName = "squeeze",
         inputFrameworkOpName = "Squeeze",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(listIntToListInt(outputAttributeValue = "squeezeDims",inputAttributeValue = "squeeze_dims")),
+        attributeMappingRules = listOf(listNumberToListNumber(outputAttributeValue = "squeezeDims",inputAttributeValue = "squeeze_dims")),
         opMappingRegistry = tensorflowOpRegistry
 )
 
