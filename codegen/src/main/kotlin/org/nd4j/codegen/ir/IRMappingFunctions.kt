@@ -419,6 +419,81 @@ abstract class StringToIndex<
     }
 }
 
+
+abstract class ListAttributeValueLookupToIndex<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE: GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum>(mappingNamesToPerform: Map<String, String>,
+                                                                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>):
+        BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (name = "listattributevaluelookuptoindex", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+    override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<OpNamespace.ArgDescriptor> {
+        val ret = ArrayList<OpNamespace.ArgDescriptor>()
+        for((k, v) in mappingNamesToPerform()) {
+            val index = (transformerArgs[v] ?: error(""))[0]!!.int64Value
+            val listOfValues = mappingCtx.irAttributeValueForNode(k)
+            when(listOfValues.attributeValueType()) {
+                AttributeValueType.LIST_FLOAT -> {
+                    val listFloat = listOfValues.listFloatValue()
+                    val argDescriptor = ArgDescriptor {
+                        name = k
+                        floatValue = listFloat[index.toInt()]
+                    }
+
+                    ret.add(argDescriptor)
+                }
+                AttributeValueType.LIST_INT -> {
+                    val listInt = listOfValues.listIntValue()
+                    val argDescriptor = ArgDescriptor {
+                        name = k
+                        int64Value = listInt[index.toInt()]
+                    }
+
+                    ret.add(argDescriptor)
+                }
+
+                AttributeValueType.LIST_STRING -> {
+                    val listString = listOfValues.listStringValue()
+                    val argDescriptor = ArgDescriptor {
+                        name = k
+                        stringValue = listString[index.toInt()]
+                    }
+
+                    ret.add(argDescriptor)
+                }
+
+                AttributeValueType.LIST_TENSOR -> {
+                    val listTensor = listOfValues.listTensorValue()
+                    val argDescriptor = ArgDescriptor {
+                        name = k
+                        inputValue = listTensor[index.toInt()].toArgTensor()
+                    }
+
+                    ret.add(argDescriptor)
+                }
+
+                AttributeValueType.LIST_BOOL -> {
+                    val listBool = listOfValues.listBoolValue()
+                    val argDescriptor = ArgDescriptor {
+                        name = k
+                        boolValue = listBool[index.toInt()]
+                    }
+
+                    ret.add(argDescriptor)
+                }
+
+            }
+
+
+        }
+
+        return ret
+    }
+}
+
+
 abstract class AttributeNumberListNDArray<
         OP_DEF_TYPE: GeneratedMessageV3,
         NODE_TYPE: GeneratedMessageV3,
@@ -636,7 +711,13 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
 
 
     override fun initWithMappingProcess(mappingProcess: MappingProcess<OP_DEF_TYPE, NODE_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>) {
-        opDescriptor = nd4jOpDescriptors.opListList.first { input -> input.name ==  mappingProcess.opName() }
+        val opDescriptorList = nd4jOpDescriptors
+        if(!opDescriptorList.opListList.map { it -> it.name }.contains(mappingProcess.opName())) {
+            throw java.lang.IllegalArgumentException("Op name ${mappingProcess.opName()} not found!")
+        }
+        opDescriptor = opDescriptorList.opListList.first {
+            input -> input.name ==  mappingProcess.opName()
+        } ?: error("")
         this.mappingProcess = mappingProcess
     }
 

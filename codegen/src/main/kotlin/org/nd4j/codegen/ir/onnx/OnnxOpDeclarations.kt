@@ -5,6 +5,8 @@ import org.nd4j.codegen.ir.ArgDescriptor
 import org.nd4j.codegen.ir.AttributeMappingRule
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
+import org.nd4j.codegen.ir.tensorflow.defineSingleTransform
+import org.nd4j.codegen.ir.tensorflow.singleTransformArgs
 
 val onnxOpRegistry = OpMappingRegistry<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.TensorProto.DataType,Onnx.AttributeProto,Onnx.AttributeProto>("onnx")
 val names = mapOf(
@@ -27,7 +29,7 @@ val names = mapOf(
         "Log" to "log",
         "LogSoftmax" to "log_softmax",
         "Mod" to "mod",
-        "Mul" to "mul",
+        "Mul" to "multiply",
         "Neg" to "neg",
         "Not" to "not",
         "Relu" to "relu",
@@ -49,7 +51,7 @@ val names = mapOf(
 val pairWiseNames = mapOf(
         "Add" to "add",
         "And" to "boolean_and",
-        "Div" to "div",
+        "Div" to "divide",
         "Equal" to "equal",
         "Greater" to "greater",
         "GreaterOrEqual" to "greater_equal",
@@ -111,7 +113,6 @@ doc_string: "\n    Select elements of the input tensor based on the indices pass
 
  */
 
-//TODO: AveragePool
 //Note:  weight formats are NCHW in ONNX
 val avgPool = OnnxMappingProcess(
         inputFrameworkOpName = "AveragePool",
@@ -194,7 +195,14 @@ val dropout = OnnxMappingProcess(
 //TODO: EyeLike
 //TODO: FeatureVectorizer
 //TODO: Flatten
-//TODO: GRU
+val gru = OnnxMappingProcess(
+        opMappingRegistry = onnxOpRegistry,
+        inputFrameworkOpName = "GRU",
+        opName = "gruCell",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("x" to "x","ruWeight" to "R","cWeight" to "W","cBias" to "B"))),
+        attributeMappingRules = listOf()
+)
+
 val gather = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         inputFrameworkOpName = "Gather",
@@ -242,7 +250,6 @@ val lrn = OnnxMappingProcess(
 
 )
 
-//TODO: LSTM
 //TODO: Need to figure out how to map LSTMLayerCOnfig DirectionMode to the strings in direction (forward, reverse, or bidirectional)
 //TODO: Need to map gateAct, cellAct, outAct enums to strings in activations. Valid activation functions include:
 /*
@@ -296,6 +303,30 @@ Softplus(x)            - log(1 + e^x)
 //TODO: Use listNumberToListNumber for float activations (alphas/betas) for model import
 //TODO: Note we may *Not* support custom alphas/betas like what onnx does here
 //We support: S
+/**
+ *  const auto gateActHasAlpha = gateAct == 3 || gateAct == 4 || gateAct == 5 || gateAct == 6 || gateAct == 8;
+const auto cellActHasAlpha = cellAct == 3 || cellAct == 4 || cellAct == 5 || cellAct == 6 || cellAct == 8;
+const auto outActHasAlpha  = outAct  == 3 || outAct  == 4 || outAct  == 5 || outAct  == 6 || outAct  == 8;
+const auto gateActHasBeta  = gateAct == 3 || gateAct == 6;
+const auto cellActHasBeta  = cellAct == 3 || cellAct == 6;
+const auto outActHasBeta   = outAct  == 3 || outAct  == 6;
+
+uint count = 1;
+const auto cellClip = T_ARG(0);                                     // cell clipping value, if it = 0 then do not apply clipping
+const auto gateAlpha = gateActHasAlpha ? T_ARG(count++) : 0;
+const auto gateBeta  = gateActHasBeta  ? T_ARG(count++) : 0;
+const auto cellAlpha = cellActHasAlpha ? T_ARG(count++) : 0;
+const auto cellBeta  = cellActHasBeta  ? T_ARG(count++) : 0;
+const auto outAlpha  = outActHasAlpha  ? T_ARG(count++) : 0;
+const auto outBeta   = outActHasBeta   ? T_ARG(count++) : 0;
+ */
+/**
+ *  const auto gateAct       = INT_ARG(2);    // activation for input (i), forget (f) and output (o) gates
+const auto cellAct       = INT_ARG(3);    // activation for cell state (c)
+const auto outAct        = INT_ARG(4);    // activation for output (h)
+
+ */
+
 val lstm = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         inputFrameworkOpName = "LSTM",
@@ -308,7 +339,19 @@ val lstm = OnnxMappingProcess(
                 "maxTSLength" to "sequence_lens",
                 "yLast" to "initial_h",
                 "cLast" to "initial_c"))),
-        attributeMappingRules =  listOf(valueMappings(mapOf("cellClip" to "clip")))
+        attributeMappingRules =  listOf(valueMappings(mapOf("cellClip" to "clip")),
+                stringToIndex(outputAttributeValue = "directionMode",
+                        inputAttributeValue = "direction",
+                        listOfValues = listOf("forward","reverse","bidirectional")),
+                listAttributeValueLookup(outputAttributeValue = "gateAlpha",inputAttributeValue = "activation_alpha",indexValue = 0),
+                listAttributeValueLookup(outputAttributeValue = "cellAlpha",inputAttributeValue = "activation_alpha",indexValue = 1),
+                listAttributeValueLookup(outputAttributeValue = "outAlpha",inputAttributeValue = "acitvation_alpha",indexValue = 2),
+                listAttributeValueLookup(outputAttributeValue = "gateBeta",inputAttributeValue = "activation_beta",indexValue = 0),
+                listAttributeValueLookup(outputAttributeValue = "cellBeta",inputAttributeValue = "activation_beta",indexValue = 1),
+                listAttributeValueLookup(outputAttributeValue = "outBeta",inputAttributeValue = "activation_beta",indexValue = 2),
+                listAttributeValueLookup(outputAttributeValue = "gateAct",inputAttributeValue = "activations",indexValue = 0),
+                listAttributeValueLookup(outputAttributeValue = "cellAct",inputAttributeValue = "activations",indexValue = 1),
+                listAttributeValueLookup(outputAttributeValue = "outAct",inputAttributeValue = "activations",indexValue = 2))
 )
 //TODO: LabelEncoder
 //TODO: DID NOT PICK UP ALPHA PROPERTY
@@ -332,15 +375,45 @@ val matMul = OnnxMappingProcess(
 )
 //TODO: MatMulInteger
 //TODO: Max
-//TODO: MaxPool
+val maxPool = OnnxMappingProcess(
+        inputFrameworkOpName = "MaxPool",
+        opName = "maxpool2d",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
+        attributeMappingRules = listOf(
+                argDescriptorConstant(argDescriptorConstants = listOf(ArgDescriptor {
+                    name = "isNCHW"
+                    boolValue = true
+                })),
+                stringContainsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "auto_pad",valueToTest = "SAME"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pH",inputFrameworkAttributeName = "padding",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pW",inputFrameworkAttributeName = "padding",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "kernel_shape",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "kernel_shape",targetValue = "NCHW",trueIndex = 3,falseIndex = 2)))
+
+
 //TODO: MaxRoiPool
 //TODO: MaxUnpool
 //TODO: name: "MeanVarianceNormalization"
 //todo: Momentum
 //TODO: Multinomial
 //TODO: NegativeLogLikelihoodLoss
-//TODO: NonMaxSuppression
-//TODO: NonZero
+val nonMaxSuppression = OnnxMappingProcess(
+        inputFrameworkOpName = "NonMaxSuppression",
+        opName = "non_max_suppression_v3",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
+                "boxes" to "boxes",
+                "scores" to "scores",
+                "maxOutSize" to "max_output_boxes_per_class",
+                "iouThreshold" to "iou_threshold",
+        "scoreThreshold" to "score_threshold")))
+)
+//TODO: NonZero PRIORITIZE
 //TODO: Normalizer
 //TODO: OneHot
 //TODO: OneHotEncoder
@@ -356,14 +429,13 @@ val pad = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         opName = "pad",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("in" to "data","padding" to "pads"))),
-        attributeMappingRules = listOf(ndarrayStringToIndex(outputAttributeValue = "mode",inputAttributeValue = "mode",listOfValues = listOf("constant","reflect","edge")))
+        attributeMappingRules = listOf(stringToIndex(outputAttributeValue = "mode",inputAttributeValue = "mode",listOfValues = listOf("constant","reflect","edge")))
 )
 
 //TODO: QLinearConv
 //TODO: QLinearMatMul
 //TODO: QuantizeLinear
-//TODO: RNN
-//TODO: RandomNormal
+//TODO: RNN PRIORITIZE
 val randomNormal = OnnxMappingProcess(
         inputFrameworkOpName = "RandomNormal",
         opName = "random_normal",
@@ -374,7 +446,6 @@ val randomNormal = OnnxMappingProcess(
 
 
 //TODO: RandomNormalLike
-//TODO: RandomUniform
 //TODO: Note that the attributes for random unifrom are wrong and needed to be discovered through other means.
 //The combination of a lack of a java class + the c++ calling out to other functions which had the actual parameters
 //names prevented resolution of the real parameter names. May have to look in to values that are passed inline in to functions and look up
@@ -395,10 +466,35 @@ val range = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         attributeMappingRules = listOf(valueMappings(mapOf("from" to "start","to" to "limit","delta" to "delta")))
 )
-//TODO: ReduceL1
-//TODO: ReduceL2
+
+val norm1 = OnnxMappingProcess(
+        inputFrameworkOpName = "ReduceL1",
+        opMappingRegistry = onnxOpRegistry,
+        opName = "reduce_norm1",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
+        attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
+                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes"))
+
+)
+
+val norm2 = OnnxMappingProcess(
+        inputFrameworkOpName = "ReduceL2",
+        opMappingRegistry = onnxOpRegistry,
+        opName = "reduce_norm2",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
+        attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
+                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes"))
+)
+
 //TODO: ReduceLogSum
-//TODO: ReduceLogSumExp
+val reduceLogSumExp = OnnxMappingProcess(
+        inputFrameworkOpName = "ReduceLogSumExp",
+        opName = "reduce_logsumexp",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
+        attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
+                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+        opMappingRegistry = onnxOpRegistry
+)
 val reduceMax = OnnxMappingProcess(
         inputFrameworkOpName = "ReduceMax",
         opName = "reduce_max",
@@ -431,6 +527,7 @@ val reduceProd = OnnxMappingProcess(
                 listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
+
 val reduceSum = OnnxMappingProcess(
         inputFrameworkOpName = "ReduceSum",
         opName = "reduce_sum",
@@ -440,7 +537,7 @@ val reduceSum = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry
 )
 //TODO: ReduceSumSquare
-//TODO: Resize
+//TODO: Resize PRIORITIZE
 //TODO: ReverseSequence
 //TODO: RoiAlign
 //TODO: SVMClassifier
@@ -466,10 +563,30 @@ val scatterNd = OnnxMappingProcess(
 //TODO: SequenceErase
 //TODO: SequenceInsert
 //TODO: SequenceLength
-//TODO: Shape
+val shape = OnnxMappingProcess(
+        opName = "shape_of",
+        inputFrameworkOpName = "Shape",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "data"))))
+)
 //TODO: Shrink
-//TODO: Size
-//TODO: Slice
+val size = OnnxMappingProcess(
+        opName = "size",
+        inputFrameworkOpName = "Size",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "data"))))
+)
+
+//TODO: map axes
+val slice = OnnxMappingProcess(
+        opMappingRegistry = onnxOpRegistry,
+        inputFrameworkOpName = "Slice",
+        opName = "strided_slice",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("begin" to "starts","end" to "ends","strides" to "steps")))
+)
+
+
 //TODO: SoftmaxCrossEntropyLoss
 val spaceToDepth = OnnxMappingProcess(
         opName = "space_to_depth",
@@ -482,9 +599,24 @@ val spaceToDepth = OnnxMappingProcess(
                 }))),
         opMappingRegistry = onnxOpRegistry
 )
-//TODO: Split
+
+val split = OnnxMappingProcess(
+        opName = "split",
+        inputFrameworkOpName = "Split",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("a" to "","b" to "split"))),
+        attributeMappingRules = listOf(valueMappings(mapOf("splitDim" to "axis")))
+)
+
 //TODO: SplitToSequence
-//TODO: Squeeze
+val squeeze = OnnxMappingProcess(
+        opName = "squeeze",
+        inputFrameworkOpName = "Squeeze",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "arg"))),
+        attributeMappingRules = listOf(ndarrayToIntList(ndarrayNameToAttributeName = mutableMapOf("axes" to "squeezeDims")))
+)
+
 //TODO: StringNormalizer
 //TODO: TfIdfVectorizer
 //TODO: ThresholdedRelu
@@ -513,10 +645,10 @@ val transpose = OnnxMappingProcess(
 
 //TODO: TreeEnsembleClassifier
 //TODO: TreeEnsembleRegressor
-//TODO: Unique
-//TODO: Unsqueeze
-//TODO: Upsample
-//TODO: Where
+//TODO: Unique PRIORITIZE
+//TODO: Unsqueeze PRIORITIZE
+//TODO: Upsample PRIORITIZE
+//TODO: Where PRIORITIZE
 //TODO: ZipMap
 fun defOnnxSingleTransform(opName: String, inputFrameworkOpName: String, outputName: String, inputFrameworkInput: String = "input", attributeMappingRules: List<AttributeMappingRule<Onnx.NodeProto,Onnx.NodeProto,Onnx.AttributeProto,Onnx.AttributeProto,Onnx.TensorProto,Onnx.TensorProto.DataType>> = emptyList()): OnnxMappingProcess {
     return OnnxMappingProcess(
@@ -584,15 +716,22 @@ val conv2d = OnnxMappingProcess(
 val elu = defOnnxSingleTransform(opName = "elu",inputFrameworkOpName = "Elu",outputName = "x",inputFrameworkInput = "X",
         attributeMappingRules = listOf(valueMappings(mutableMapOf("alpha" to "alpha"))))
 
-val mean = defOnnxSingleTransform(opName = "mean",inputFrameworkOpName = "Mean",outputName = "x",inputFrameworkInput = "data_0")
-val min = defOnnxSingleTransform(opName = "min",inputFrameworkOpName = "Min",outputName = "x",inputFrameworkInput = "data_0")
+val mean = defOnnxSingleTransform(opName = "reduce_mean",inputFrameworkOpName = "Mean",outputName = "x",inputFrameworkInput = "data_0")
+val min = defOnnxSingleTransform(opName = "reduce_min",inputFrameworkOpName = "Min",outputName = "x",inputFrameworkInput = "data_0")
 val selu = defOnnxSingleTransform(inputFrameworkOpName = "Selu",opName = "selu",inputFrameworkInput = "X",outputName = "x",
         attributeMappingRules = listOf(valueMappings(mutableMapOf("alpha" to "alpha","gamma" to "gamma"))))
-val sum = defOnnxSingleTransform(opName = "sum",inputFrameworkOpName = "Sum",outputName = "x",inputFrameworkInput = "data_0")
+val sum = defOnnxSingleTransform(opName = "reduce_sum",inputFrameworkOpName = "Sum",outputName = "x",inputFrameworkInput = "data_0")
 
 object OnnxOpDeclarations {
     init {
         OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)
+        names.forEach {
+            defineSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
+        }
+
+        pairWiseNames.forEach {
+            definePairwiseTransforms(opName = it.value,inputFrameworkOpName = it.key)
+        }
     }
 }
 

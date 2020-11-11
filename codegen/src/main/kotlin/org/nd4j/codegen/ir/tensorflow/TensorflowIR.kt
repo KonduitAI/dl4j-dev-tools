@@ -12,6 +12,7 @@ import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.shade.protobuf.TextFormat
 import org.tensorflow.framework.*
 import org.tensorflow.framework.OpDef.AttrDef
+import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 
 fun loadTensorflowOps(): OpList {
@@ -597,7 +598,11 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<NodeD
         AbstractMappingContext<NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>(opDef, node, graph) {
 
     override fun attrDef(name: String): AttrDef {
-        val ret =  opDef().attrList.firstOrNull { it.name == name }
+        if(opDef().attrCount < 1) {
+            throw IllegalArgumentException("No attributes found for op def with name ${opDef.name}")
+        }
+
+        val ret =  opDef().attrList.firstOrNull { it.name == name } ?: error("No attribute found with name $name")
         return ret!!
     }
 

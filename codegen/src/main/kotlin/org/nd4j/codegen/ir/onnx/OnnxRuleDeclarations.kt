@@ -142,7 +142,7 @@ fun stringEqualsRule(outputAttribute: String, inputFrameworkAttributeName: Strin
 
 
 class OnnxStringContainsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+                                    transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
         StringEqualsAdapterRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
@@ -169,7 +169,7 @@ fun stringContainsRule(outputAttribute: String, inputFrameworkAttributeName: Str
 
 
 class OnnxStringNotEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                  transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+                                     transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
         StringNotEqualsAdapterRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
@@ -242,7 +242,7 @@ fun sizeThreshold(outputAttribute: String, inputFrameworkAttributeName: String, 
 }
 
 
-class OnnxNdArrayToStringIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : StringToIndex<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
+class OnnxStringToIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : StringToIndex<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
         return OnnxIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -254,15 +254,36 @@ class OnnxNdArrayToStringIndex(mappingNamesToPerform: Map<String, String>, trans
 
 }
 
-fun ndarrayStringToIndex(outputAttributeValue: String,inputAttributeValue: String, listOfValues: List<String>): OnnxNdArrayToStringIndex {
-    return OnnxNdArrayToStringIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = mapOf(outputAttributeValue to listOfValues.map {
+fun stringToIndex(outputAttributeValue: String, inputAttributeValue: String, listOfValues: List<String>): OnnxStringToIndex {
+    return OnnxStringToIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = mapOf(outputAttributeValue to listOfValues.map {
         valueName -> ArgDescriptor {
         name = valueName
         stringValue = valueName
     }
     }))
 }
+//ListAttributeValueLookupToIndex
 
+class OnnxListAttributeValueLookupToIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListAttributeValueLookupToIndex<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        return OnnxIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
+        TODO("Not yet implemented")
+    }
+
+}
+
+fun listAttributeValueLookup(outputAttributeValue: String, inputAttributeValue: String, indexValue: Int): OnnxListAttributeValueLookupToIndex {
+    return OnnxListAttributeValueLookupToIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),
+            transformerArgs = mapOf(outputAttributeValue to listOf(ArgDescriptor {
+                name = inputAttributeValue
+                int32Value = indexValue
+            })
+            ))
+}
 
 class OnnxListNumberToListNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListNumberToListNumber<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
 

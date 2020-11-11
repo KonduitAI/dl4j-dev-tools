@@ -86,8 +86,6 @@ interface IRTensor<TENSOR_TYPE: GeneratedMessageV3, DATA_TYPE>
 enum class AttributeValueType {
     FLOAT,
     LIST_FLOAT,
-    BYTE,
-    LIST_BYTE,
     INT,
     LIST_INT,
     BOOL,

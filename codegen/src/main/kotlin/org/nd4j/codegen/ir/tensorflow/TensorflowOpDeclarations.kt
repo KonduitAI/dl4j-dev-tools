@@ -1,6 +1,8 @@
 package org.nd4j.codegen.ir.tensorflow
 
 import org.nd4j.codegen.ir.AttributeMappingRule
+import org.nd4j.codegen.ir.onnx.definePairwiseTransforms
+import org.nd4j.codegen.ir.onnx.pairWiseNames
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.tensorflow.framework.*
@@ -25,7 +27,7 @@ val singleTransformArgs = mapOf(
         "Cos" to "cos",
         "Cosh" to "cosh",
         "DeepCopy" to "identity",
-        "Div" to "div",
+        "Div" to "divide",
         "DivNoNan" to "divide_no_nan",
         "Elu" to "elu",
         "Erf" to "erf",
@@ -33,7 +35,7 @@ val singleTransformArgs = mapOf(
         "Exp" to "exp",
         "Expm1" to "expm1",
         "FloorMod" to "fmod",
-        "FloorDiv" to "floor_div",
+        "FloorDiv" to "floordiv",
         "Floor" to "floor",
         "Greater" to "greater",
         "GreaterEqual" to "greater_equal",
@@ -59,11 +61,10 @@ val singleTransformArgs = mapOf(
         "BatchMatrixDiagPart" to "matrix_diag_part",
         "MatrixInverse" to "matrix_inverse",
         "BatchMatrixInverse" to "matrix_inverse",
-        "Mean" to "mean",
         "Minimum" to "min_pairwise",
         "Min" to "reduce_min",
         "Mish" to "mish",
-        "Mul" to "mul",
+        "Mul" to "multiply",
         "Neg" to "neg",
         "NotEqual" to "not_equals",
         "RationalTanh" to "rational_tanh",
@@ -92,7 +93,7 @@ val singleTransformArgs = mapOf(
         "Softmax" to "softmax",
         "Swish" to "swish",
         "Square" to "square",
-        "SquaredDifference" to "squared_difference",
+        "SquaredDifference" to "squaredsubtract",
         "Sqrt" to "sqrt",
         "Tan" to "tan",
         "Tanh" to "tanh",
@@ -107,9 +108,9 @@ val elementWiseTransformOps = mapOf(
 
 val reduceOps = mapOf(
         "AccumulateNV2" to "mergeadd",
-        "Mean" to "mean",
-        "Prod" to "prod",
-        "Sum" to "sum"
+        "Mean" to "reduce_mean",
+        "Prod" to "reduce_prod",
+        "Sum" to "reduce_sum"
 )
 
 fun mapSameName(names: List<String>): List<NDArrayMappingRule> {
@@ -191,7 +192,6 @@ op {
 val addN = TensorflowMappingProcess(
         inputFrameworkOpName = "AddN",
         opName = "mergesum",
-
         opMappingRegistry = tensorflowOpRegistry
 )
 
@@ -817,7 +817,7 @@ val inTopKResults = multipleNameMapping(inputFrameworkOpNames = listOf("InTopK",
 //TODO: no inputs found for toggle_bits either
 val invert = mapTensorNamesWithOp(inputFrameworkOpName = "Invert",opName = "toggle_bits",tensorNames = mutableMapOf("input" to "x"))
 val invertPermutation = mapTensorNamesWithOp(inputFrameworkOpName = "InvertPermutation",opName = "invert_permutation",tensorNames = mutableMapOf("input" to "x"))
-val isFinite = mapTensorNamesWithOp(inputFrameworkOpName = "IsFinite",opName = "is_finite",tensorNames = mutableMapOf("input" to "x"))
+val isFinite = mapTensorNamesWithOp(inputFrameworkOpName = "IsFinite",opName = "isfinite",tensorNames = mutableMapOf("input" to "x"))
 val isInf = mapTensorNamesWithOp(inputFrameworkOpName = "IsInf",opName = "isinf",tensorNames = mutableMapOf("input" to "x"))
 val isNan = mapTensorNamesWithOp(inputFrameworkOpName = "IsNan",opName = "isnan",tensorNames = mutableMapOf("input" to "x"))
 //TODO: weird parameter values with config.getBias( and other similar names
@@ -832,7 +832,7 @@ val leakyRelu = mapTensorNamesWithOp(inputFrameworkOpName = "LeakyRelu",opName =
 val leftShift = mapTensorNamesWithOp(inputFrameworkOpName = "LeftShift",opName = "shift_bits",
         tensorNames = mutableMapOf("input" to "x"))
 
-val linspace = mapTensorNamesWithOp(inputFrameworkOpName = "LinSpace",opName = "linspace",tensorNames = mutableMapOf(),
+val linspace = mapTensorNamesWithOp(inputFrameworkOpName = "LinSpace",opName = "lin_space",tensorNames = mutableMapOf(),
         attributeMappingRules = listOf(convertNDArrayInputToScalarAttr(mutableMapOf("start" to "start","stop" to "stop","number" to "num"))))
 
 val listDiff = mapTensorNamesWithOp(inputFrameworkOpName = "ListDiff",opName = "listdiff",tensorNames = mutableMapOf("values" to "x","keep" to "y"))
@@ -935,7 +935,7 @@ val oneHot = mapTensorNamesWithOp(inputFrameworkOpName = "OneHot",opName = "oneh
                 valueMapping(mutableMapOf("axis" to "axis"))))
 
 
-val onesLike = mapTensorNamesWithOp(inputFrameworkOpName = "OnesLike",opName = "ones_like",tensorNames = mutableMapOf("input" to "x"))
+val onesLike = mapTensorNamesWithOp(inputFrameworkOpName = "OnesLike",opName = "ones_as",tensorNames = mutableMapOf("input" to "x"))
 
 val stack = multipleNameMapping(inputFrameworkOpNames = listOf("Pack","Stack"),opName = "stack",
         attributeMappingRules = listOf(valueMapping(mutableMapOf("dim" to "axis"))),
@@ -944,7 +944,7 @@ val stack = multipleNameMapping(inputFrameworkOpNames = listOf("Pack","Stack"),o
 //TODO: Check assignemnt c++ parsing generating INPUT_VARIABLE(2) as an attribute
 val pad = multipleNameMapping(inputFrameworkOpNames = listOf("Pad","PadV2"),opName = "pad",tensorNames = mutableMapOf("input" to "input","paddings" to "paddings"))
 
-val parallelConcat = mapTensorNamesWithOp(inputFrameworkOpName = "ParallelConcat",opName = "parallel_concat",tensorNames = mutableMapOf("input" to "values"))
+val parallelConcat = mapTensorNamesWithOp(inputFrameworkOpName = "ParallelConcat",opName = "ParallelConcat",tensorNames = mutableMapOf("input" to "values"))
 //TODO: map placeholder
 val randomCrop = mapTensorNamesWithOp(inputFrameworkOpName = "RandomCrop",opName = "random_crop",tensorNames = mutableMapOf("input" to "image","shape" to "size"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("seed" to "seed"))))
@@ -1163,9 +1163,9 @@ val tensorArrayGather = multipleNameMapping(inputFrameworkOpNames = listOf("Tens
         opName = "tensorarraygatherv3",
         tensorNames = mutableMapOf("indices" to "indices"))
 //TODO: revisit this, not sure why the ops are off
-val tensorArrayPack = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArrayPack", "TensorArrayPackV2", "TensorArrayPackV3"),
+/*val tensorArrayPack = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArrayPack", "TensorArrayPackV2", "TensorArrayPackV3"),
         opName = "tensorarraypackv3",
-        tensorNames = mutableMapOf("indices" to "indices"))
+        tensorNames = mutableMapOf("indices" to "indices"))*/
 //TODO: revisit this, not sure why the ops are off
 
 val tensorArrayRead = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArrayRead", "TensorArrayReadV2", "TensorArrayReadV3"),
@@ -1240,7 +1240,7 @@ val unsortedSegmentSum = mapTensorNamesWithOp(inputFrameworkOpName = "UnsortedSe
         opName = "unsorted_segment_sum",
         tensorNames = mutableMapOf("input" to "data","idxSegments" to "segment_ids","numOfClasses" to "num_segments"))
 
-val where = mapTensorNamesWithOp(inputFrameworkOpName = "Where",opName = "where",
+val where = mapTensorNamesWithOp(inputFrameworkOpName = "Where",opName = "Where",
         tensorNames = mutableMapOf("condition" to "input")
 )
 
@@ -1261,9 +1261,11 @@ object TensorflowOpDeclarations {
         OpRegistryHolder.registerOpMappingRegistry("tensorflow", tensorflowOpRegistry)
         singleTransformArgs.forEach {
             defineSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
-
         }
-        ConstMappingProcess()
+
+        pairWiseNames.forEach {
+            definePairwiseTransforms(opName = it.value,inputFrameworkOpName = it.key)
+        }
     }
 }
 

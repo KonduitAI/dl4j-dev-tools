@@ -1,5 +1,6 @@
 package org.nd4j.codegen.ir.tensorflow
 
+import junit.framework.Assert.assertEquals
 import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Test
 import org.nd4j.autodiff.samediff.SameDiff
@@ -244,4 +245,32 @@ class TestTensorflowIR {
         println(processOutput)
 
     }
+
+
+    @Test
+    fun testTensorflowMappingContext() {
+        val absOpDef = tensorflowOpRegistry.lookupOpMappingProcess("Abs")
+        val opDef = tensorflowOps.findOp("Abs")
+        val absNodeDef = NodeDef {
+            name = "input"
+            Input("input1")
+            op = "Abs"
+        }
+
+        val graph = GraphDef {
+            Node(absNodeDef)
+        }
+
+        val tfIRGraph = TensorflowIRGraph(graphDef = graph,opDef = tensorflowOps)
+
+        val tfMappingCtx = TensorflowMappingContext(
+                opDef =opDef,
+                node = absNodeDef,
+                graph = tfIRGraph
+        )
+
+        assertEquals(opDef,tfMappingCtx.opDef)
+
+    }
+
 }
