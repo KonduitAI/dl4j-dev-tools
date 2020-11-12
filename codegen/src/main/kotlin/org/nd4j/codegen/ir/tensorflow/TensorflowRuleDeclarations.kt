@@ -20,28 +20,35 @@ class TensorflowConditionalFieldValueIntIndexArrayRule
 }
 
 fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
-                                           inputFrameworkAttributeName: String,
+                                           inputFrameworkStringNameToTest: String,
                                            targetValue: String,
                                            trueIndex: Int,
-                                           falseIndex: Int): TensorflowConditionalFieldValueIntIndexArrayRule {
+                                           falseIndex: Int,
+                                           attributeNameOfListAttribute: String): TensorflowConditionalFieldValueIntIndexArrayRule {
     return TensorflowConditionalFieldValueIntIndexArrayRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = "targetValue"
-                stringValue = targetValue
-            }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
+            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkStringNameToTest),
+            transformerArgs = mapOf(outputAttribute to listOf(
+                    ArgDescriptor {
+                        name = "targetValue"
+                        stringValue = targetValue
+                    },
+                    ArgDescriptor {
                         name = "trueIndex"
                         int32Value = trueIndex
-                    }.build(),
-                    OpNamespace.ArgDescriptor.newBuilder().apply {
+                    },
+                    ArgDescriptor {
                         name = "falseIndex"
                         int32Value = falseIndex
-                    }.build()))
+                    },
+                    ArgDescriptor {
+                        name = "attributeNameOfListAttribute"
+                        stringValue = attributeNameOfListAttribute
+                    }))
     )
 }
 
-class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>): NDArraySizeAtRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>):
+        NDArraySizeAtRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef, attributeValueType)
@@ -53,7 +60,9 @@ class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transf
 
 }
 
-fun sizeAtRule(dimensionIndex: Int, outputAttributeName: String, inputFrameworkAttributeName: String): TensorflowNDArraySizeAt {
+fun sizeAtRule(dimensionIndex: Int,
+               outputAttributeName: String,
+               inputFrameworkAttributeName: String): TensorflowNDArraySizeAt {
     return TensorflowNDArraySizeAt(
             mappingNamesToPerform = mapOf(outputAttributeName to inputFrameworkAttributeName),
             transformerArgs = mapOf(outputAttributeName to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
@@ -78,7 +87,9 @@ class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, Strin
 
 }
 
-fun stringEqualsRule(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowStringEqualsAdapterRule {
+fun stringEqualsRule(outputAttribute: String,
+                     inputFrameworkAttributeName: String,
+                     valueToTest: String): TensorflowStringEqualsAdapterRule {
     return TensorflowStringEqualsAdapterRule(
             mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
             transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
@@ -89,7 +100,7 @@ fun stringEqualsRule(outputAttribute: String, inputFrameworkAttributeName: Strin
 
 
 class TensorflowStringNotEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                        transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+                                           transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
         StringNotEqualsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
@@ -114,8 +125,8 @@ fun stringNotEqualsRule(outputAttribute: String, inputFrameworkAttributeName: St
 
 
 class TensorflowStringContainsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                           transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringNotEqualsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+                                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+        StringContainsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
@@ -139,7 +150,7 @@ fun stringContainsRule(outputAttribute: String, inputFrameworkAttributeName: Str
 
 
 class TensorflowAttributeScalarNDArrayAttribute(mappingNamesToPerform: Map<String, String> = emptyMap(),
-                                          transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
+                                                transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
         AttributeScalarNDArrayAttribute<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
@@ -153,13 +164,9 @@ class TensorflowAttributeScalarNDArrayAttribute(mappingNamesToPerform: Map<Strin
 
 }
 
-fun attributeScalarToNDArrayInput(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowAttributeScalarNDArrayAttribute {
+fun attributeScalarToNDArrayInput(outputAttribute: String, inputFrameworkAttributeName: String): TensorflowAttributeScalarNDArrayAttribute {
     return TensorflowAttributeScalarNDArrayAttribute(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                stringValue = valueToTest
-            }.build())))
+            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName))
 }
 
 

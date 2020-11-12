@@ -727,11 +727,11 @@ object OnnxOpDeclarations {
         OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)
         names.forEach {
             defineSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
-        }
+        } ?: "Error initializing single defined transforms in onnx."
 
         pairWiseNames.forEach {
             definePairwiseTransforms(opName = it.value,inputFrameworkOpName = it.key)
-        }
+        } ?: "Error initializing pair wise transforms"
     }
 }
 

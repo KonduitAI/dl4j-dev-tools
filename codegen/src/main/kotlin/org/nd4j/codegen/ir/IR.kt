@@ -505,11 +505,47 @@ fun TensorNamespace.TensorProto.Builder.RawData(rawData: ByteArray) {
     this.rawData = ByteString.copyFrom(rawData)
 }
 
-fun TensorNamespace.TensorProto.Builder.Dims(shape: List<Long>) {
-    this.dimsList.clear()
-    this.dimsList.addAll(shape)
+fun TensorNamespace.TensorProto.Builder.IntData(intData: List<Int>) {
+    this.addAllInt32Data(intData)
 }
 
+fun TensorNamespace.TensorProto.Builder.FloatData(floatData: List<Float>) {
+    this.addAllFloatData(floatData)
+}
+
+fun TensorNamespace.TensorProto.Builder.DoubleData(doubleData: List<Double>) {
+    this.addAllDoubleData(doubleData)
+}
+
+fun TensorNamespace.TensorProto.Builder.Int64Data(intData: List<Long>) {
+    this.addAllInt64Data(intData)
+}
+
+fun TensorNamespace.TensorProto.Builder.Dims(shape: List<Long>) {
+    shape.forEach { this.addDims(it) }
+}
+
+
+fun convertNd4jDataTypeFromNameSpaceTensorDataType(dataType: TensorNamespace.DataType): DataType {
+    return when(dataType) {
+        TensorNamespace.DataType.UINT32 -> return DataType.UINT32
+        TensorNamespace.DataType.INT64 -> return DataType.INT64
+        TensorNamespace.DataType.UINT64 ->  return DataType.UINT64
+        TensorNamespace.DataType.DOUBLE ->  return DataType.DOUBLE
+        TensorNamespace.DataType.FLOAT ->  return DataType.FLOAT
+        TensorNamespace.DataType.FLOAT16 ->  return DataType.FLOAT16
+        TensorNamespace.DataType.FLOAT16 -> return  DataType.FLOAT16
+        TensorNamespace.DataType.INT32,DataType.INT ->  return DataType.INT32
+        TensorNamespace.DataType.STRING ->  return DataType.UTF8
+        TensorNamespace.DataType.BOOL -> return  DataType.BOOL
+        TensorNamespace.DataType.BFLOAT16 -> return  DataType.BFLOAT16
+        TensorNamespace.DataType.INT8 -> return DataType.INT8
+        TensorNamespace.DataType.UINT16 -> return DataType.UINT16
+        else -> {
+            throw IllegalArgumentException("Illegal data type $dataType")
+        }
+    }
+}
 
 fun convertNameSpaceTensorDataTypeFromNd4jDataType(dataType: DataType): TensorNamespace.DataType {
     return when(dataType) {
@@ -534,11 +570,45 @@ fun convertNameSpaceTensorDataTypeFromNd4jDataType(dataType: DataType): TensorNa
 }
 
 fun nameSpaceTensorFromNDarray(ndarray:INDArray): TensorNamespace.TensorProto {
-    return NameSpaceTensor {
-        dataType = convertNameSpaceTensorDataTypeFromNd4jDataType(ndarray.dataType()).ordinal
-        RawData(ndarray.data().asBytes())
-        Dims(ndarray.shape().asList())
-    }
+  val nameSpaceDataType = convertNameSpaceTensorDataTypeFromNd4jDataType(ndarray.dataType()).ordinal
+   when(ndarray.dataType()) {
+       DataType.INT64 -> {
+           return NameSpaceTensor {
+               dataType = nameSpaceDataType
+               Int64Data(ndarray.data().asLong().toList())
+               Dims(ndarray.shape().asList())
+           }
+       }
+
+       DataType.INT32 -> {
+           return NameSpaceTensor {
+               dataType = nameSpaceDataType
+               IntData(ndarray.data().asInt().toList())
+               Dims(ndarray.shape().asList())
+           }
+       }
+
+       DataType.DOUBLE -> {
+           return NameSpaceTensor {
+               dataType = nameSpaceDataType
+               DoubleData(ndarray.data().asDouble().toList())
+               Dims(ndarray.shape().asList())
+           }
+       }
+
+       DataType.FLOAT -> {
+           return NameSpaceTensor {
+               dataType = nameSpaceDataType
+               FloatData(ndarray.data().asFloat().toList())
+               Dims(ndarray.shape().asList())
+           }
+       }
+
+       else -> {
+           throw IllegalArgumentException("Illegal data type ${ndarray.dataType()}")
+       }
+   }
+
 }
 
 

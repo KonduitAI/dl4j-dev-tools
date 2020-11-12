@@ -143,7 +143,7 @@ fun stringEqualsRule(outputAttribute: String, inputFrameworkAttributeName: Strin
 
 class OnnxStringContainsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
                                     transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringEqualsAdapterRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>
+        StringContainsAdapterRule<Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {

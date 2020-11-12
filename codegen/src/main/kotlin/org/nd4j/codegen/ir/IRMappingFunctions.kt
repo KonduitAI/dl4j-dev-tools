@@ -167,11 +167,13 @@ abstract class StringNotEqualsAdapterRule<
             val descriptorForName = transformerArgs[k]
             val compString = descriptorForName!![0].stringValue
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
-            val descriptorBuilder = OpNamespace.ArgDescriptor.newBuilder()
-            descriptorBuilder.name = v
-            descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.BOOL
-            descriptorBuilder.boolValue = testValue != compString
-            ret.add(descriptorBuilder.build())
+            val argDescriptor = ArgDescriptor {
+                name = v
+                argType = OpNamespace.ArgDescriptor.ArgType.BOOL
+                boolValue = testValue != compString
+            }
+
+            ret.add(argDescriptor)
 
         }
         return ret
@@ -228,22 +230,18 @@ abstract class ConditionalFieldValueIntIndexArrayRule<
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor> {
         val ret = ArrayList<OpNamespace.ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
-            val descriptorForName = transformerArgs[k]
-            val inputArr = mappingCtx.irAttributeValueForNode(v).listIntValue()
-            val trueIndex = descriptorForName!![1].int32Value
-            val falseIndex = descriptorForName!![2].int32Value
-            val targetValueToTest = descriptorForName!![0].stringValue
+            val listOfArgs  = transformerArgs[k]
+            val inputArr = mappingCtx.irAttributeValueForNode(listOfArgs!![3].stringValue).listIntValue()
+            val trueIndex = listOfArgs!![1].int32Value
+            val falseIndex = listOfArgs!![2].int32Value
+            val targetValueToTest = listOfArgs!![0].stringValue
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
-            val descriptorBuilder = OpNamespace.ArgDescriptor.newBuilder()
-            descriptorBuilder.name = v
-            descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.INT64
-            if(testValue == targetValueToTest) {
-                descriptorBuilder.int64Value = inputArr[trueIndex]
-            } else {
-                descriptorBuilder.int64Value = inputArr[falseIndex]
-            }
-
-            ret.add(descriptorBuilder.build())
+            val intValueToSet = if (testValue == targetValueToTest)  inputArr[trueIndex] else inputArr[falseIndex]
+            ret.add(ArgDescriptor {
+                name  = v
+                int64Value = intValueToSet
+                argType = OpNamespace.ArgDescriptor.ArgType.INT64
+            })
 
         }
         return ret
@@ -270,7 +268,7 @@ abstract class NDArraySizeAtRule<
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor> {
         val ret = ArrayList<OpNamespace.ArgDescriptor>()
-        for((k, v) in mappingNamesToPerform()) {
+        mappingNamesToPerform().forEach { (k, v) ->
             val transformArgsForAttribute = transformerArgs[k]
             //note that this finds a value for a named tensor within either the graph or the node
             //some frameworks may have a value node with a value attribute
@@ -278,13 +276,14 @@ abstract class NDArraySizeAtRule<
             val inputArr = mappingCtx.tensorInputFor(v)
             val sizeIndex = transformArgsForAttribute!![0].int32Value
             val sizeAt = inputArr.shape()[sizeIndex]
-            val descriptorBuilder = OpNamespace.ArgDescriptor.newBuilder()
-            descriptorBuilder.name = v
-            descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.INT64
-            descriptorBuilder.int64Value = sizeAt
-            ret.add(descriptorBuilder.build())
-
+            val argDescriptor = ArgDescriptor {
+                name = v
+                argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                int64Value = sizeAt
+            }
+            ret.add(argDescriptor)
         }
+
         return ret
     }
 }
@@ -373,8 +372,8 @@ abstract class BooleanToInt<
 
 
                 AttributeValueType.BOOL -> {
-                    descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.BOOL
-                    descriptorBuilder.boolValue = irAttribute.boolValue()
+                    descriptorBuilder.argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                    descriptorBuilder.int64Value = if (irAttribute.boolValue()) 1 else 0
                 }
 
 
@@ -642,7 +641,7 @@ abstract class AttributeScalarNDArrayAttribute<
                     ret.add(ArgDescriptor {
                         argType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
                         name = k
-                        inputValue = nameSpaceTensorFromNDarray(Nd4j.scalar(irAttribute.floatValue()))
+                        inputValue = nameSpaceTensorFromNDarray(Nd4j.scalar(irAttribute.floatValue()).reshape(1,1))
                     })
                 }
 
@@ -650,8 +649,11 @@ abstract class AttributeScalarNDArrayAttribute<
                     ret.add(ArgDescriptor {
                         argType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
                         name = k
-                        inputValue = nameSpaceTensorFromNDarray(Nd4j.scalar(irAttribute.intValue()))
+                        inputValue = nameSpaceTensorFromNDarray(Nd4j.scalar(irAttribute.intValue()).reshape(1,1))
                     })
+                }
+                else -> {
+                    throw IllegalArgumentException("Attribute $v is not a valid type. Type was ${irAttribute.attributeValueType()}")
                 }
 
             }

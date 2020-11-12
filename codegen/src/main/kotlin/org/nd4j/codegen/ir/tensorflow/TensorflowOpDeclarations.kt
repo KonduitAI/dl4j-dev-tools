@@ -273,10 +273,10 @@ val avgPool = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "ksize",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "ksize",targetValue = "NCHW",trueIndex = 3,falseIndex = 2)
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH", attributeNameOfListAttribute = "ksize", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW", attributeNameOfListAttribute = "ksize", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format")
         )
 )
 
@@ -288,10 +288,10 @@ val avgPool3d = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCDHW",inputFrameworkAttributeName = "data_format",valueToTest = "NDHWC"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5)
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format")
 
         )
 )
@@ -539,10 +539,10 @@ val depthWiseConv2d = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH", attributeNameOfListAttribute = "dilations", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW", attributeNameOfListAttribute = "dilations", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
                 //NOTE: This is a dynamically resolved attribute at runtime.
                 sizeAtRule(outputAttributeName = "kH",dimensionIndex = 0,inputFrameworkAttributeName = "filter"),
                 sizeAtRule(outputAttributeName = "kW",dimensionIndex = 1,inputFrameworkAttributeName = "filter"))
@@ -618,10 +618,10 @@ val conv2d =  TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH", attributeNameOfListAttribute = "dilations", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW", attributeNameOfListAttribute = "dilations", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
                 //NOTE: This is a dynamically resolved attribute at runtime.
                 sizeAtRule(outputAttributeName = "kH",dimensionIndex = 0,inputFrameworkAttributeName = "filter"),
                 sizeAtRule(outputAttributeName = "kW",dimensionIndex = 1,inputFrameworkAttributeName = "filter")
@@ -636,15 +636,15 @@ val conv3d =  TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCDHW",inputFrameworkAttributeName = "data_format",valueToTest = "NDHWC"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sD",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 1,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kD",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 1,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW",inputFrameworkAttributeName = "dilations",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH",inputFrameworkAttributeName = "dilations",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dD",inputFrameworkAttributeName = "dilations",targetValue = "NDHWC",trueIndex = 1,falseIndex = 2)
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sD", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 1, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kD", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 1, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW", attributeNameOfListAttribute = "dilations", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH", attributeNameOfListAttribute = "dilations", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dD", attributeNameOfListAttribute = "dilations", targetValue = "NDHWC", trueIndex = 1, falseIndex = 2,inputFrameworkStringNameToTest = "data_format")
 
 
         ),opMappingRegistry = tensorflowOpRegistry)
@@ -852,10 +852,10 @@ val maxPool = multipleNameMapping(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "ksize",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "ksize",targetValue = "NCHW",trueIndex = 3,falseIndex = 2)
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH", attributeNameOfListAttribute = "ksize", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW", attributeNameOfListAttribute = "ksize", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format")
         )
 )
 
@@ -870,10 +870,10 @@ val maxPool3d = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNCDHW",inputFrameworkAttributeName = "data_format",valueToTest = "NDHWC"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 2,falseIndex = 4),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "ksize",targetValue = "NDHWC",trueIndex = 4,falseIndex = 5)
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 2, falseIndex = 4,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW", attributeNameOfListAttribute = "ksize", targetValue = "NDHWC", trueIndex = 4, falseIndex = 5,inputFrameworkStringNameToTest = "data_format")
 
         )
 )
@@ -885,10 +885,10 @@ val maxPoolWithArgMax = multipleNameMapping(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isNHWC",inputFrameworkAttributeName = "data_format",valueToTest = "NWHC"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "ksize",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW",inputFrameworkAttributeName = "ksize",targetValue = "NCHW",trueIndex = 3,falseIndex = 2)
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW", attributeNameOfListAttribute = "strides", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH", attributeNameOfListAttribute = "ksize", targetValue = "NCHW", trueIndex = 2, falseIndex = 1,inputFrameworkStringNameToTest = "data_format"),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "kW", attributeNameOfListAttribute = "ksize", targetValue = "NCHW", trueIndex = 3, falseIndex = 2,inputFrameworkStringNameToTest = "data_format")
         )
 )
 
