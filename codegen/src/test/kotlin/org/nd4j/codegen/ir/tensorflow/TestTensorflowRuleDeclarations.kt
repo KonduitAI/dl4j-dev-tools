@@ -1,6 +1,7 @@
 package org.nd4j.codegen.ir.tensorflow
 
 import org.junit.jupiter.api.Test
+import org.nd4j.codegen.ir.ArgDescriptor
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.shade.protobuf.ByteString
 import java.nio.charset.Charset
@@ -8,6 +9,155 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TestTensorflowRuleDeclarations {
+
+    @Test
+    fun testArgConstant() {
+        val opDef = tensorflowOps.findOp("Dilation2D")
+        val intItems = listOf(2,1,1,1)
+        val valueNodeDef = NodeDef {
+            op = "Dilation2D"
+            name = "inputs"
+            Attribute(name = "strides",value =  AttrValue {
+                list = ListValue {
+                    IntItems(intItems)
+                }
+            })
+        }
+
+        val shape = listOf(1,1).map { it.toLong() }
+        val valueNodeDef2 = NodeDef {
+            op = "Constant"
+            name = "inputs"
+            Attribute(name = "value",value =  AttrValue {
+                tensor = TensorProto {
+                    Shape(shape)
+                    DoubleData(listOf(1.0))
+                }
+            })
+        }
+
+
+
+        val graphDef = GraphDef {
+            Node(valueNodeDef)
+            Node(valueNodeDef2)
+        }
+
+        val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val convertNumberListToInputNDArrayRule = argDescriptorConstant(listOf(ArgDescriptor {
+            name = "value"
+            int32Value = 1
+        }))
+
+        val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
+
+        assertEquals(1,convertNumberListToInputNDArrayResult.size)
+        assertEquals(1,convertNumberListToInputNDArrayResult[0].int32Value)
+    }
+
+
+
+    @Test
+    fun testConvertNDArrayInputToScalarAttr() {
+        val opDef = tensorflowOps.findOp("Dilation2D")
+        val intItems = listOf(2,1,1,1)
+        val valueNodeDef = NodeDef {
+            op = "Dilation2D"
+            name = "inputs"
+            Attribute(name = "strides",value =  AttrValue {
+                list = ListValue {
+                    IntItems(intItems)
+                }
+            })
+        }
+
+        val shape = listOf(1,1).map { it.toLong() }
+        val valueNodeDef2 = NodeDef {
+            op = "Constant"
+            name = "inputs"
+            Attribute(name = "value",value =  AttrValue {
+                tensor = TensorProto {
+                    Shape(shape)
+                    DoubleData(listOf(1.0))
+                }
+            })
+        }
+
+
+
+        val graphDef = GraphDef {
+            Node(valueNodeDef)
+            Node(valueNodeDef2)
+        }
+
+        val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val convertNumberListToInputNDArrayRule = convertNDArrayInputToScalarAttr(mutableMapOf("output" to "inputs "))
+        val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
+        assertEquals(1,convertNumberListToInputNDArrayResult.size)
+        assertEquals(2,convertNumberListToInputNDArrayResult[0].int64Value)
+    }
+
+    @Test
+    fun testListAttributeValueLookupToIndex() {
+        val opDef = tensorflowOps.findOp("Dilation2D")
+        val intItems = listOf(2,1,1,1)
+        val valueNodeDef = NodeDef {
+            op = "Dilation2D"
+            name = "inputs"
+            Attribute(name = "strides",value =  AttrValue {
+                list = ListValue {
+                    IntItems(intItems)
+                }
+            })
+        }
+
+
+        val graphDef = GraphDef {
+            Node(valueNodeDef)
+        }
+
+        val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val convertNumberListToInputNDArrayRule = listAttributeValueLookupToIndex(outputAttributeValue = "output", inputAttributeValue = "strides", idx = 0)
+        val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
+        assertEquals(1,convertNumberListToInputNDArrayResult.size)
+        assertEquals(2,convertNumberListToInputNDArrayResult[0].int64Value)
+    }
+
+
+    @Test
+    fun testConvertNumberListToInputNDArray() {
+        val opDef = tensorflowOps.findOp("Dilation2D")
+        val intItems = listOf(1,1,1,1)
+        val valueNodeDef = NodeDef {
+            op = "Dilation2D"
+            name = "inputs"
+            Attribute(name = "strides",value =  AttrValue {
+                list = ListValue {
+                    IntItems(intItems)
+                }
+            })
+        }
+
+
+        val graphDef = GraphDef {
+            Node(valueNodeDef)
+        }
+
+        val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val convertNumberListToInputNDArrayRule = convertNumberListToInputNDArray(outputAttributeValue = "output",inputAttributeValue = "strides")
+        val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
+        assertEquals(1,convertNumberListToInputNDArrayResult.size)
+        val inputVal = convertNumberListToInputNDArrayResult[0].inputValue
+        assertEquals(2,inputVal.dimsCount)
+        val testList = inputVal.int64DataList
+        testList.forEach {
+            assertEquals(1,it)
+        }
+    }
 
     @Test
     fun testValueMapping() {

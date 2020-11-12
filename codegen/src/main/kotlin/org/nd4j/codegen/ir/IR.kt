@@ -571,7 +571,7 @@ fun convertNameSpaceTensorDataTypeFromNd4jDataType(dataType: DataType): TensorNa
 
 fun nameSpaceTensorFromNDarray(ndarray:INDArray): TensorNamespace.TensorProto {
   val nameSpaceDataType = convertNameSpaceTensorDataTypeFromNd4jDataType(ndarray.dataType()).ordinal
-   when(ndarray.dataType()) {
+    when(ndarray.dataType()) {
        DataType.INT64 -> {
            return NameSpaceTensor {
                dataType = nameSpaceDataType

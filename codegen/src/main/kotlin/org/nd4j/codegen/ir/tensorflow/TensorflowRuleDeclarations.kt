@@ -292,14 +292,20 @@ class TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform: Map<Strin
 
 }
 
-fun listAttributeValueLookupToIndex(outputAttributeValue: String, inputAttributeValue: String): TensorflowListAttributeValueLookupToIndex {
-    return TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = emptyMap())
+fun listAttributeValueLookupToIndex(outputAttributeValue: String, inputAttributeValue: String, idx: Int): TensorflowListAttributeValueLookupToIndex {
+    return TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),
+            transformerArgs = mapOf(outputAttributeValue to listOf(ArgDescriptor {
+                argType = OpNamespace.ArgDescriptor.ArgType.INT32
+                int32Value = idx
+                name = "index"
+            })))
 }
 
 
 
 
-class TensorflowNDArrayInputToScalarAttribute(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : NDArrayInputToScalarAttribute<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowNDArrayInputToScalarAttribute(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+        NDArrayInputToScalarAttribute<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -316,7 +322,8 @@ fun convertNDArrayInputToScalarAttr(mutableMap: MutableMap<String,String>): Tens
 }
 
 
-class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ArgDescriptorConstant<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>)
+    : ArgDescriptorConstant<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -328,6 +335,6 @@ class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>
 
 }
 
-fun argDescriptorConstant(mutableMap: MutableMap<String,String>): TensorflowArgDescriptorConstant {
-    return TensorflowArgDescriptorConstant(mappingNamesToPerform = mutableMap,transformerArgs = emptyMap())
+fun argDescriptorConstant(argDescriptorConstants: List<OpNamespace.ArgDescriptor>): TensorflowArgDescriptorConstant {
+    return TensorflowArgDescriptorConstant(mappingNamesToPerform = emptyMap(),transformerArgs = mapOf("value" to argDescriptorConstants))
 }

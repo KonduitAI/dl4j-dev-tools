@@ -4,6 +4,7 @@ import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
+import org.nd4j.linalg.api.shape.Shape
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
@@ -431,8 +432,8 @@ abstract class ListAttributeValueLookupToIndex<
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<OpNamespace.ArgDescriptor> {
         val ret = ArrayList<OpNamespace.ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
-            val index = (transformerArgs[v] ?: error(""))[0]!!.int64Value
-            val listOfValues = mappingCtx.irAttributeValueForNode(k)
+            val index = (transformerArgs[k] ?: error(""))[0]!!.int64Value
+            val listOfValues = mappingCtx.irAttributeValueForNode(v)
             when(listOfValues.attributeValueType()) {
                 AttributeValueType.LIST_FLOAT -> {
                     val listFloat = listOfValues.listFloatValue()
@@ -508,18 +509,23 @@ abstract class AttributeNumberListNDArray<
             val irAttribute = mappingCtx.irAttributeValueForNode(v)
             when(irAttribute.attributeValueType()) {
                 AttributeValueType.LIST_FLOAT -> {
+                    val listArr = irAttribute.listFloatValue().toFloatArray()
+                    val ndarray = Nd4j.create(listArr)
                     ret.add(ArgDescriptor {
                         argType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
                         name = k
-                        inputValue = nameSpaceTensorFromNDarray(Nd4j.create(irAttribute.listFloatValue()))
+                        inputValue = nameSpaceTensorFromNDarray(ndarray)
                     })
                 }
 
                 AttributeValueType.LIST_INT -> {
+                    val intArr = irAttribute.listIntValue().toLongArray()
+                    val strides = Nd4j.getStrides(1,4).toList().map { it.toLong() }.toLongArray()
+                    val ndarray = Nd4j.create(intArr,longArrayOf(1,intArr.size.toLong()),strides,'c',DataType.INT64)
                     ret.add(ArgDescriptor {
                         argType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
                         name = k
-                        inputValue = nameSpaceTensorFromNDarray(Nd4j.create(irAttribute.listIntValue()))
+                        inputValue = nameSpaceTensorFromNDarray(ndarray)
                     })
                 }
 
