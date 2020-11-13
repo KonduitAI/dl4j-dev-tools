@@ -497,6 +497,11 @@ fun NodeProto(block: Onnx.NodeProto.Builder.() -> Unit): Onnx.NodeProto {
     return Onnx.NodeProto.newBuilder().apply(block).build()
 }
 
+fun AttributeProto(block: Onnx.AttributeProto.Builder.() -> Unit) : Onnx.AttributeProto {
+    return Onnx.AttributeProto.newBuilder().apply { block }.build()
+}
+
+
 
 fun Onnx.NodeProto.Builder.Input(inputName: String) {
     this.addInput(inputName)

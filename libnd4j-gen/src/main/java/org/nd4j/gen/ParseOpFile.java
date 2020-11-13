@@ -15,28 +15,34 @@
  ******************************************************************************/
 package org.nd4j.gen;
 
+import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.autodiff.functions.DifferentialFunction;
-import org.nd4j.autodiff.samediff.SameDiff;
+import org.nd4j.autodiff.samediff.SDVariable;
+import org.nd4j.common.primitives.Pair;
 import org.nd4j.common.util.LinkedMultiValueMap;
 import org.nd4j.common.util.MultiValueMap;
 import org.nd4j.common.util.SetUtils;
 import org.nd4j.ir.OpNamespace;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.CustomOpDescriptor;
+import org.nd4j.linalg.api.ops.*;
+import org.nd4j.linalg.api.ops.impl.reduce.bp.BaseReductionBp;
+import org.nd4j.linalg.api.ops.impl.reduce3.BaseReduce3Op;
+import org.nd4j.linalg.api.ops.impl.transforms.BaseDynamicTransformOp;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.shade.protobuf.TextFormat;
 import org.reflections.Reflections;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -77,7 +83,7 @@ public class ParseOpFile {
 
     public final static int BROADCASTABLE_OP_IMPL_DEFAULT_NIN = 2;
     public final static int BROADCASTABLE_OP_IMPL_DEFAULT_NOUT = 1;
-
+    public final static Pattern numberPattern = Pattern.compile("[\\d]+");
 
     /**
      *     void addTArgument(double... arg);
@@ -136,10 +142,17 @@ public class ParseOpFile {
                 List<String> tArgNames = new ArrayList<>();
                 List<String> iArgNames = new ArrayList<>();
                 List<String> bArgNames = new ArrayList<>();
+                List<Integer> inArgIndices = new ArrayList<>();
+                List<Integer> outArgIndices = new ArrayList<>();
+                List<Integer> tArgIndices = new ArrayList<>();
+                List<Integer> iArgIndices = new ArrayList<>();
+                List<Integer> bArgIndices = new ArrayList<>();
+
                 OpDeclarationDescriptor opDeclarationDescriptor = null;
                 OpDeclarationDescriptor.OpDeclarationDescriptorBuilder builder = OpDeclarationDescriptor.builder();
                 int currentOpNin = -1,currentOpNout = -1,currentOpIntArgs = -1,currentOutTArgs = -1, currentOpBooleanArgs = -1;
                 boolean hasNin = false,hasNout = false,hasIntArgs = false,hasTArgs = false;
+                String name = null;
                 for (String line : lines) {
                     if(line.isEmpty() || line.trim().startsWith("//"))
                         continue;
@@ -149,7 +162,7 @@ public class ParseOpFile {
                             foundOp = true;
                             line = removeBracesFromDeclarationMacro(line,CUSTOM_OP_IMPL);
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
@@ -184,7 +197,7 @@ public class ParseOpFile {
                             line = removeBracesFromDeclarationMacro(line,BOOLEAN_OP_IMPL);
 
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             // BOOLEAN_OP_IMPL(NAME, NIN, SCALAR)
                             int nIn = Integer.parseInt(split[1].trim());
@@ -202,7 +215,7 @@ public class ParseOpFile {
                             line = removeBracesFromDeclarationMacro(line,LIST_OP_IMPL);
 
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
@@ -231,7 +244,7 @@ public class ParseOpFile {
                             line = removeBracesFromDeclarationMacro(line,LOGIC_OP_IMPL);
 
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             builder.name(name)
                                     .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LOGIC_OP_IMPL);
@@ -242,7 +255,7 @@ public class ParseOpFile {
                             //DIVERGENT_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)
                             line = removeBracesFromDeclarationMacro(line,DIVERGENT_OP_IMPL);
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
@@ -261,7 +274,7 @@ public class ParseOpFile {
                             foundOp = true;
                             line = removeBracesFromDeclarationMacro(line,CONFIGURABLE_OP_IMPL);
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
@@ -288,7 +301,7 @@ public class ParseOpFile {
                             foundOp = true;
                             line = removeBracesFromDeclarationMacro(line,REDUCTION_OP_IMPL);
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
@@ -315,7 +328,7 @@ public class ParseOpFile {
                             line = removeBracesFromDeclarationMacro(line,BROADCASTABLE_OP_IMPL);
 
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int tArgs = Integer.parseInt(split[1].trim());
                             int iArgs = Integer.parseInt(split[2].trim());
@@ -337,7 +350,7 @@ public class ParseOpFile {
                             line = line.replace(")", "");
                             line = line.replace("{", "");
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
 
                             int tArgs = Integer.parseInt(split[1].trim());
                             int iArgs = Integer.parseInt(split[2].trim());
@@ -360,7 +373,7 @@ public class ParseOpFile {
                             foundOp = true;
                             line = removeBracesFromDeclarationMacro(line,OP_IMPL);
                             String[] split = line.trim().split(",");
-                            String name = split[0];
+                            name = split[0];
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
                             currentOpNin = nIn;
@@ -387,6 +400,12 @@ public class ParseOpFile {
                             builder.tArgNames(tArgNames);
                             builder.iArgNames(iArgNames);
                             builder.bArgNames(bArgNames);
+
+                            builder.bArgIndices(bArgIndices);
+                            builder.iArgIndices(iArgIndices);
+                            builder.tArgIndices(tArgIndices);
+                            builder.inArgIndices(inArgIndices);
+                            builder.outArgIndices(outArgIndices);
 
                             opDeclarationDescriptor = builder.build();
                             System.out.println(opDeclarationDescriptor);
@@ -433,19 +452,19 @@ public class ParseOpFile {
                             //ignore
                         } else if (line.contains(INT_ARG) || line.contains(I_ARG)
                                 && hasIntArgs && iArgNames.size() < currentOpIntArgs) {
-                            addNameToList(line, iArgNames);
+                            addNameToList(line, iArgNames, iArgIndices);
                         } else if (line.contains(OUTPUT_NULLIFIED)
                                 || line.contains(OUTPUT_VARIABLE)
                                 && hasNout && currentOpNout > 0) {
-                            addNameToList(line, outArgNames);
+                            addNameToList(line, outArgNames, outArgIndices);
                         } else if (line.contains(T_ARG)
                                 && hasTArgs
                                 && tArgNames.size() < currentOutTArgs) {
-                            addNameToList(line, tArgNames);
+                            addNameToList(line, tArgNames, tArgIndices);
                         } else if (line.contains(INPUT_VARIABLE)  && hasNin && currentOpNin > 0) {
-                            addNameToList(line, inArgNames);
+                            addNameToList(line, inArgNames, inArgIndices);
                         } else if (line.contains(B_ARG) && bArgNames.size() < currentOpBooleanArgs) {
-                            addNameToList(line, bArgNames);
+                            addNameToList(line, bArgNames, bArgIndices);
                         }
                     }
 
@@ -480,12 +499,13 @@ public class ParseOpFile {
 
         OpNamespace.OpDescriptorList.Builder listBuilder = OpNamespace.OpDescriptorList.newBuilder();
         for(OpDeclarationDescriptor declarationDescriptor : opDeclarationDescriptors) {
-            Map<String, OpNamespace.ArgDescriptor.ArgType> stringArgTypeMap = declarationDescriptor.argsByType();
+            Map<String, Pair<Integer, OpNamespace.ArgDescriptor.ArgType>> stringArgTypeMap = declarationDescriptor.argsByType();
             OpNamespace.OpDescriptor.Builder opDescriptorBuilder = OpNamespace.OpDescriptor.newBuilder();
             opDescriptorBuilder.setOpDeclarationType(OpNamespace.OpDescriptor.OpDeclarationType.values()[declarationDescriptor.getOpDeclarationType().ordinal()]);
-            for(Map.Entry<String, OpNamespace.ArgDescriptor.ArgType> argTypeEntry : stringArgTypeMap.entrySet()) {
+            for(Map.Entry<String, Pair<Integer, OpNamespace.ArgDescriptor.ArgType>> argTypeEntry : stringArgTypeMap.entrySet()) {
                 OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
-                        .setArgType(argTypeEntry.getValue())
+                        .setArgType(argTypeEntry.getValue().getValue())
+                        .setArgIndex(argTypeEntry.getValue().getKey())
                         .setName(argTypeEntry.getKey())
                         .build();
                 opDescriptorBuilder.addArgDescriptor(argDescriptor);
@@ -529,7 +549,7 @@ public class ParseOpFile {
             try {
                 DifferentialFunction differentialFunction = clazz.newInstance();
                 String name = differentialFunction.opName();
-                if(name != null && !opsFoundInDeclarations.contains(name)) {
+                if(name != null) {
                     List<Field> validFields = new ArrayList<>();
                     List<Field> allFields = getAllFields(clazz);
                     for(Field field : allFields) {
@@ -545,7 +565,7 @@ public class ParseOpFile {
 
                     System.out.println("Class name " + clazz.getName() + " parent class " + clazz.getSuperclass().getName() + " field names were " + fieldNames);
                     superClasses.add(clazz.getSuperclass().getName());
-
+                    int idx = 0;
                     OpNamespace.OpDescriptor.Builder opDescriptor = OpNamespace.OpDescriptor.newBuilder();
                     opDescriptor.setName(differentialFunction.opName());
                     opDescriptor.setOpDeclarationType(OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ);
@@ -555,21 +575,30 @@ public class ParseOpFile {
                                     .setName(field.getName())
                                     .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
                                     .setArgOptional(false)
+                                    .setArgIndex(idx)
                                     .build());
+                            idx++;
 
-                        } else if(INDArray.class.isAssignableFrom(field.getType())) {
+
+                        } else if(INDArray.class.isAssignableFrom(field.getType()) || SDVariable.class.isAssignableFrom(field.getType())) {
                             if(field.getName().equals("z")) {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
                                         .setArgOptional(false)
+                                        .setArgIndex(idx)
                                         .build());
+                                idx++;
+
                             } else  {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
                                         .setArgOptional(false)
+                                        .setArgIndex(idx)
                                         .build());
+                                idx++;
+
                             }
 
 
@@ -579,16 +608,22 @@ public class ParseOpFile {
                                         .setName(field.getName())
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
                                         .setArgOptional(false)
+                                        .setArgIndex(idx)
                                         .build());
+                                idx++;
+
                             } else if(Float.class.isAssignableFrom(field.getType()) || Double.class.isAssignableFrom(field.getType()) || float.class.isAssignableFrom(field.getType()) || double.class.isAssignableFrom(field.getType())) {
                                 opDescriptor.addArgDescriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setName(field.getName())
                                         .setArgOptional(false)
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
+                                        .setArgIndex(idx)
                                         .build());
+                                idx++;
+
                             }
                         }
-                        System.out.println();
+
                     }
 
                     listBuilder.addOpList(opDescriptor.build());
@@ -613,6 +648,8 @@ public class ParseOpFile {
             try {
                 DifferentialFunction differentialFunction = clazz.newInstance();
                 String name = differentialFunction.opName();
+                if(name == null)
+                    continue;
                 opNamesForDifferentialFunction.add(name);
                 int opListIdx = 0;
                 OpNamespace.OpDescriptor opDescriptor = null;
@@ -635,131 +672,172 @@ public class ParseOpFile {
                 File javaFile = new File(nd4jOpsRootDir,fileBuilder.toString());
                 List<String> lines = FileUtils.readLines(javaFile,Charset.defaultCharset());
                 OpDeclarationDescriptor declarationDescriptor = descriptorMap.get(name);
-                MultiValueMap<String,String> typesAndNames = new LinkedMultiValueMap<>();
                 List<String> argsByIIndex = new ArrayList<>();
                 List<String> argsByTIndex = new ArrayList<>();
                 List<String> argsByBIndex = new ArrayList<>();
                 List<String> argsByDIndex = new ArrayList<>();
+                List<String> pairWiseOps = new ArrayList<>(Arrays.asList("x","y"));
+                List<String> singleOps = Arrays.asList("x");
+                List<String> outputTensor = Arrays.asList("z");
+                List<String> keepDims = Arrays.asList("keepDims");
+                List<String> dims = Arrays.asList("dimensions");
+                List<String> reduceBp = Arrays.asList("origInput","gradAtInput");
+
+                if(differentialFunction instanceof BaseDynamicTransformOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, pairWiseOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseBroadcastBoolOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, pairWiseOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                }else if(differentialFunction instanceof BaseBroadcastOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, pairWiseOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                }
+
+                else if(differentialFunction instanceof BaseReduce3Op) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, pairWiseOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, keepDims, OpNamespace.ArgDescriptor.ArgType.BOOL);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                } else if(differentialFunction instanceof BaseReduceSameOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, keepDims, OpNamespace.ArgDescriptor.ArgType.BOOL);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                } else if(differentialFunction instanceof BaseReduceLongOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, keepDims, OpNamespace.ArgDescriptor.ArgType.BOOL);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                }
+
+                else if(differentialFunction instanceof BaseReductionBp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, reduceBp, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, keepDims, OpNamespace.ArgDescriptor.ArgType.BOOL);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                }
+
+                else if(differentialFunction instanceof BaseReduceFloatOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, keepDims, OpNamespace.ArgDescriptor.ArgType.BOOL);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, dims, OpNamespace.ArgDescriptor.ArgType.INT64);
+
+                }
+                else if(differentialFunction instanceof BaseScalarBoolOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, argsByTIndex, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseScalarOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, argsByTIndex, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseTransformAnyOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseTransformSameOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseTransformBoolOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseTransformStrictOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                } else if(differentialFunction instanceof BaseTransformFloatOp) {
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, singleOps, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, outputTensor, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+
+                }
+                else {
+                    for(String line : lines) {
+                        //skip comments
+                        if(line.startsWith("//")) {
+                            continue;
+                        }
+                        if(line.contains(ADD_B_ARGUMENT_INVOCATION)) {
+                            line = line.replace("addBArgument(","");
+                            line = line.replace(")","");
+                            line = line.replace(";","");
+                            String[]  addArgs = line.trim().split(",");
+
+                            for(String arg : addArgs) {
+                                if(arg.indexOf(' ') >= 0)
+                                    arg = arg.substring(0,arg.indexOf(' '));
+                                if(!argsByBIndex.contains(arg))
+                                    argsByBIndex.add(arg);
+                            }
+                        } else if(line.contains(ADD_D_ARGUMENT_INVOCATION)) {
+                            line = line.replace("addDArgument(","");
+                            line = line.replace(")","");
+                            line = line.replace(";","");
+                            String[]  addArgs = line.trim().split(",");
+                            for(String arg : addArgs) {
+                                if(arg.indexOf(' ') >= 0)
+                                    arg = arg.substring(0,arg.indexOf(' '));
+                                if(!argsByDIndex.contains(arg))
+                                    argsByDIndex.add(arg);
+                            }
+                        } else if(line.contains(ADD_I_ARGUMENT_INVOCATION)) {
+                            line = line.replace("addIArgument(","");
+                            line = line.replace(");","");
+                            line = line.replace(";","");
+                            String[]  addArgs = line.trim().split(",");
+                            for(String arg : addArgs) {
+                                if(arg.indexOf(' ') >= 0)
+                                    arg = arg.substring(0,arg.indexOf(' '));
+                                if(!argsByIIndex.contains(arg))
+                                    argsByIIndex.add(arg);
+
+                            }
+                        } else if(line.contains(ADD_T_ARGUMENT_INVOCATION)) {
+                            line = line.replace("addTArgument(","");
+                            line = line.replace(")","");
+                            line = line.replace(";","");
+                            String[]  addArgs = line.trim().split(",");
+                            for(String arg : addArgs) {
+                                if(arg.indexOf(' ') >= 0)
+                                    arg = arg.substring(0,arg.indexOf(' '));
+                                if(!argsByTIndex.contains(arg))
+                                    argsByTIndex.add(arg);
+                            }
+                        }
 
 
-                for(String line : lines) {
-                    if(line.contains(ADD_B_ARGUMENT_INVOCATION)) {
-                        line = line.replace("addBArgument(","");
-                        line = line.replace(")","");
-                        line = line.replace(";","");
-                        String[]  addArgs = line.trim().split(",");
 
-                        for(String arg : addArgs) {
-                            if(!argsByBIndex.contains(arg))
-                                argsByBIndex.add(arg);
-                        }
-                    } else if(line.contains(ADD_D_ARGUMENT_INVOCATION)) {
-                        line = line.replace("addDArgument(","");
-                        line = line.replace(")","");
-                        line = line.replace(";","");
-                        String[]  addArgs = line.trim().split(",");
-                        for(String arg : addArgs) {
-                            if(!argsByDIndex.contains(arg))
-                                argsByDIndex.add(arg);
-                        }
-                    } else if(line.contains(ADD_I_ARGUMENT_INVOCATION)) {
-                        line = line.replace("addIArgument(","");
-                        line = line.replace(");","");
-                        line = line.replace(";","");
-                        String[]  addArgs = line.trim().split(",");
-                        for(String arg : addArgs) {
-                            if(!argsByIIndex.contains(arg))
-                                argsByIIndex.add(arg);
-
-                        }
-                    } else if(line.contains(ADD_T_ARGUMENT_INVOCATION)) {
-                        line = line.replace("addTArgument(","");
-                        line = line.replace(")","");
-                        line = line.replace(";","");
-                        String[]  addArgs = line.trim().split(",");
-                        for(String arg : addArgs) {
-                            if(!argsByTIndex.contains(arg))
-                                argsByTIndex.add(arg);
-                        }
                     }
 
+                    List<OpNamespace.ArgDescriptor> tArgNames = opDescriptor.getArgDescriptorList().stream()
+                            .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.DOUBLE || input.getArgType() == OpNamespace.ArgDescriptor.ArgType.FLOAT).collect(Collectors.toList());
+
+                    List<OpNamespace.ArgDescriptor> iArgNames = opDescriptor.getArgDescriptorList().stream()
+                            .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.INT64 || input.getArgType() == OpNamespace.ArgDescriptor.ArgType.INT32).collect(Collectors.toList());
+
+                    List<OpNamespace.ArgDescriptor> bArgNames = opDescriptor.getArgDescriptorList().stream()
+                            .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.BOOL).collect(Collectors.toList());
+
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, argsByTIndex, OpNamespace.ArgDescriptor.ArgType.FLOAT);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, argsByIIndex, OpNamespace.ArgDescriptor.ArgType.INT64);
+                    opDescriptor = updateOpDescriptor(listBuilder, opListIdx, opDescriptor, declarationDescriptor, argsByBIndex, OpNamespace.ArgDescriptor.ArgType.BOOL);
 
 
                 }
 
-                List<OpNamespace.ArgDescriptor> tArgNames = opDescriptor.getArgDescriptorList().stream()
-                        .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.DOUBLE || input.getArgType() == OpNamespace.ArgDescriptor.ArgType.FLOAT).collect(Collectors.toList());
 
-                List<OpNamespace.ArgDescriptor> iArgNames = opDescriptor.getArgDescriptorList().stream()
-                        .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.INT64 || input.getArgType() == OpNamespace.ArgDescriptor.ArgType.INT32).collect(Collectors.toList());
-
-                List<OpNamespace.ArgDescriptor> bArgNames = opDescriptor.getArgDescriptorList().stream()
-                        .filter(input -> input.getArgType() == OpNamespace.ArgDescriptor.ArgType.BOOL).collect(Collectors.toList());
-
-                if( argsByTIndex.size() > tArgNames.size()) {
-                    List<OpNamespace.ArgDescriptor> copyValues = new ArrayList<>(opDescriptor.getArgDescriptorList());
-                    for(int i = 0; i < argsByTIndex.size(); i++) {
-                        if(i >= tArgNames.size()) {
-                            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
-                                    .setName(argsByTIndex.get(i))
-                                    //this can happen when there are still missing names from c++
-                                    .setArgOptional(declarationDescriptor != null &&  i <= declarationDescriptor.getTArgs() ? false : true)
-                                    .build();
-                            copyValues.add(argDescriptor);
-
-                        }
-                    }
-
-                    OpNamespace.OpDescriptor.Builder builder = opDescriptor.toBuilder();
-                    builder.clearArgDescriptor();
-                    builder.addAllArgDescriptor(copyValues);
-                    opDescriptor = builder.build();
-                    listBuilder.setOpList(opListIdx,opDescriptor);
-
-                }
-
-                if(argsByIIndex.size() >  iArgNames.size()) {
-                    List<OpNamespace.ArgDescriptor> copyValues = new ArrayList<>(opDescriptor.getArgDescriptorList());
-
-                    for(int i = 0; i < argsByIIndex.size(); i++) {
-                        if(i >= iArgNames.size()) {
-                            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
-                                    .setName(argsByIIndex.get(i))
-                                    .setArgOptional(declarationDescriptor != null &&  i <= declarationDescriptor.getIArgs() ? false : true)
-                                    .build();
-                            copyValues.add(argDescriptor);
-                        }
-                    }
-
-                    OpNamespace.OpDescriptor.Builder builder = opDescriptor.toBuilder();
-                    builder.clearArgDescriptor();
-                    builder.addAllArgDescriptor(copyValues);
-                    opDescriptor = builder.build();
-                    listBuilder.setOpList(opListIdx,opDescriptor);
-                }
-
-                if(argsByBIndex.size() > bArgNames.size()) {
-                    List<OpNamespace.ArgDescriptor> copyValues = new ArrayList<>(opDescriptor.getArgDescriptorList());
-                    for(int i = 0; i < argsByBIndex.size(); i++) {
-                        if(i >= bArgNames.size()) {
-                            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
-                                    .setName(argsByBIndex.get(i))
-                                    .setArgOptional(false)
-                                    .build();
-
-                            copyValues.add(argDescriptor);
-                        }
-                    }
-
-                    OpNamespace.OpDescriptor.Builder builder = opDescriptor.toBuilder();
-                    builder.clearArgDescriptor();
-                    builder.addAllArgDescriptor(copyValues);
-                    opDescriptor = builder.build();
-                    listBuilder.setOpList(opListIdx,opDescriptor);
-                }
 
 
 
@@ -775,12 +853,164 @@ public class ParseOpFile {
         }
 
         ret = listBuilder.build();
+        //merge op descriptors from multiple names
+        OpNamespace.OpDescriptorList.Builder retBuilder = OpNamespace.OpDescriptorList.newBuilder();
+        //build list for sorting before final addition in post processing
+        List<OpNamespace.OpDescriptor> opDescriptorsToSort = new ArrayList<>();
+        Map<String, List<OpNamespace.OpDescriptor>> groupedByName = ret.getOpListList().stream()
+                .collect(Collectors.groupingBy(input -> input.getName()));
+        groupedByName.forEach((k,v) -> {
+            List<OpNamespace.ArgDescriptor> collect = v.stream()
+                    .flatMap(input -> input.getArgDescriptorList().stream())
+                    .collect(Collectors.toList());
+            Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>, OpNamespace.ArgDescriptor> argDescriptorByIndex = new HashMap<>();
+            for(OpNamespace.ArgDescriptor argDescriptor : collect) {
+                if(!argDescriptorByIndex.containsKey(argDescriptor.getArgIndex())) {
+                    argDescriptorByIndex.put(Pair.of(argDescriptor.getArgIndex(),argDescriptor.getArgType()),argDescriptor);
+                }
+                else if(argDescriptorByIndex.containsKey(Pair.of(argDescriptor.getArgIndex(),argDescriptor.getArgType()))) {
+                    //merge old and new in to new one
+                    OpNamespace.ArgDescriptor old = argDescriptorByIndex.get(Pair.of(argDescriptor.getArgIndex(),argDescriptor.getArgType()));
+                    OpNamespace.ArgDescriptor argDescriptor1 = mergeDescriptorsOfSameIndex(argDescriptor, old);
+                    argDescriptorByIndex.put(Pair.of(argDescriptor1.getArgIndex(),argDescriptor1.getArgType()),argDescriptor1);
+                }
+            }
+
+            OpNamespace.OpDescriptor.Builder newBuilder = OpNamespace.OpDescriptor.newBuilder();
+            //ensure name and type are set
+            newBuilder.setName(v.get(0).getName());
+            newBuilder.setOpDeclarationType(v.get(0).getOpDeclarationType());
+            List<OpNamespace.ArgDescriptor> valuesToAdd = new ArrayList<>();
+
+
+            argDescriptorByIndex.entrySet().forEach(entry -> {
+                valuesToAdd.add(entry.getValue());
+            });
+
+            Collections.sort(valuesToAdd,Comparator.comparing(OpNamespace.ArgDescriptor::getArgIndex));
+            valuesToAdd.stream().forEach(input -> {
+                newBuilder.addArgDescriptor(input);
+            });
+
+
+            opDescriptorsToSort.add(newBuilder.build());
+        });
+
+
+        Collections.sort(opDescriptorsToSort, Comparator.comparing(OpNamespace.OpDescriptor::getName));
+        opDescriptorsToSort.forEach(input -> {
+            retBuilder.addOpList(input);
+        });
+
+        ret = retBuilder.build();
+
         System.out.println("Op differences " + differences.size());
         System.out.println("Super classes " + superClasses);
         String write = TextFormat.printToString(ret);
         FileUtils.writeStringToFile(outputFile,write, Charset.defaultCharset());
 
         //System.out.println("Number of op descriptors " + opDeclarationDescriptors);
+    }
+
+    private static OpNamespace.ArgDescriptor mergeDescriptorsOfSameIndex(OpNamespace.ArgDescriptor one, OpNamespace.ArgDescriptor two) {
+        if(one.getArgIndex() != two.getArgIndex()) {
+            throw new IllegalArgumentException("Argument indices for both arg descriptors were not the same. First one was " + one.getArgIndex() + " and second was " + two.getArgIndex());
+        }
+
+        if(one.getArgType() != two.getArgType()) {
+            throw new IllegalArgumentException("Merging two arg descriptors requires both be the same type. First one was " + one.getArgType().name() + " and second one was " + two.getArgType().name());
+        }
+
+        OpNamespace.ArgDescriptor.Builder newDescriptor = OpNamespace.ArgDescriptor.newBuilder();
+        //arg indices will be the same
+        newDescriptor.setArgIndex(one.getArgIndex());
+        newDescriptor.setArgType(one.getArgType());
+        if(!isValidIdentifier(one.getName()) && !isValidIdentifier(two.getName())) {
+            newDescriptor.setName("arg" + newDescriptor.getArgIndex());
+        } else if(!isValidIdentifier(one.getName())) {
+            newDescriptor.setName(two.getName());
+        } else {
+            newDescriptor.setName(one.getName());
+        }
+
+
+        return newDescriptor.build();
+    }
+
+    private static boolean isValidIdentifier(String input) {
+        for(int i = 0; i < input.length(); i++) {
+            if(!Character.isJavaIdentifierPart(input.charAt(i)))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static OpNamespace.OpDescriptor updateOpDescriptor(OpNamespace.OpDescriptorList.Builder listBuilder, int opListIdx, OpNamespace.OpDescriptor opDescriptor, OpDeclarationDescriptor declarationDescriptor, List<String> argsByIIndex, OpNamespace.ArgDescriptor.ArgType int64) {
+        OpNamespace.OpDescriptor.Builder builder;
+        List<OpNamespace.ArgDescriptor> copyValuesInt = addArgDescriptors(opDescriptor, declarationDescriptor, argsByIIndex, int64);
+
+        builder = opDescriptor.toBuilder();
+        builder.clearArgDescriptor();
+        builder.addAllArgDescriptor(copyValuesInt);
+        opDescriptor = builder.build();
+        listBuilder.setOpList(opListIdx, opDescriptor);
+        return opDescriptor;
+    }
+
+    private static List<OpNamespace.ArgDescriptor> addArgDescriptors(OpNamespace.OpDescriptor opDescriptor, OpDeclarationDescriptor declarationDescriptor, List<String> argsByTIndex, OpNamespace.ArgDescriptor.ArgType argType) {
+        List<OpNamespace.ArgDescriptor> copyValuesFloat = new ArrayList<>(opDescriptor.getArgDescriptorList());
+        for(int i = 0; i < argsByTIndex.size(); i++) {
+            OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                    .setArgType(argType)
+                    .setName(argsByTIndex.get(i))
+                    .setArgIndex(i)
+                    //this can happen when there are still missing names from c++
+                    .setArgOptional(declarationDescriptor != null &&  i <= declarationDescriptor.getTArgs() ? false : true)
+                    .build();
+            copyValuesFloat.add(argDescriptor);
+
+        }
+        return copyValuesFloat;
+    }
+
+
+    public static Map<String,Integer> argIndexForCsv(String line) {
+        Map<String,Integer> ret = new HashMap<>();
+        String[] lineSplit = line.split(",");
+        for(int i = 0; i < lineSplit.length; i++) {
+            ret.put(lineSplit[i],i);
+        }
+
+        return ret;
+    }
+
+    public static Integer extractArgFromJava(String line) {
+        Matcher matcher =  numberPattern.matcher(line);
+        if(!matcher.find()) {
+            throw new IllegalArgumentException("No number found for line " + line);
+        }
+
+        return Integer.parseInt(matcher.group());
+    }
+
+    public static Integer extractArgFromCpp(String line) {
+        Matcher matcher =  numberPattern.matcher(line);
+        if(!matcher.find()) {
+            //Generally not resolvable
+            return -1;
+        }
+
+        if(matcher.groupCount() > 1) {
+            throw new IllegalArgumentException("Line contains more than 1 index");
+        }
+
+        try {
+            return Integer.parseInt(matcher.group());
+        } catch(NumberFormatException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
 
@@ -805,13 +1035,17 @@ public class ParseOpFile {
         return line;
     }
 
-    public static void addNameToList(String line,List<String> list) {
+    public static void addNameToList(String line, List<String> list, List<Integer> argIndices) {
         String[] split = line.split(" = ");
         String[] arrSplit = split[0].split(" ");
         //type + name
         String name = arrSplit[arrSplit.length - 1];
         if(!list.contains(name))
             list.add(name);
+
+        Integer index = extractArgFromCpp(line);
+        if(index != null)
+            argIndices.add(index);
     }
 
 }
