@@ -70,7 +70,8 @@ public class OpDeclarationDescriptor implements Serializable  {
         REDUCTION_OP_IMPL,
         BROADCASTABLE_OP_IMPL,
         BROADCASTABLE_BOOL_OP_IMPL,
-        LEGACY_XYZ
+        LEGACY_XYZ,
+        PLATFORM_IMPL
     }
 
 

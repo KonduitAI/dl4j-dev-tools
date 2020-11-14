@@ -17,6 +17,8 @@ package org.nd4j.gen;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.common.primitives.Pair;
@@ -68,6 +70,8 @@ public class ParseOpFile {
     public final static String REDUCTION_OP_IMPL = "REDUCTION_OP_IMPL";
     public final static String BROADCASTABLE_OP_IMPL = "BROADCASTABLE_OP_IMPL";
     public final static String BROADCASTABLE_BOOL_OP_IMPL = "BROADCASTABLE_BOOL_OP_IMPL";
+
+    public final static String PLATFORM_IMPL = "PLATFORM_IMPL";
 
     public final static String RETURN = "return";
     public final static String INT_ARG = "INT_ARG";
@@ -151,7 +155,7 @@ public class ParseOpFile {
                 OpDeclarationDescriptor opDeclarationDescriptor = null;
                 OpDeclarationDescriptor.OpDeclarationDescriptorBuilder builder = OpDeclarationDescriptor.builder();
                 int currentOpNin = -1,currentOpNout = -1,currentOpIntArgs = -1,currentOutTArgs = -1, currentOpBooleanArgs = -1;
-                boolean hasNin = false,hasNout = false,hasIntArgs = false,hasTArgs = false;
+                boolean hasNin = false,hasNout = false,hasIntArgs = false,hasTArgs = false,platformImpl = false;
                 String name = null;
                 for (String line : lines) {
                     if(line.isEmpty() || line.trim().startsWith("//"))
@@ -368,7 +372,21 @@ public class ParseOpFile {
                                     .iArgs(iArgs).tArgs(tArgs);
 
                             inOpBlock = true;
-                        }  else if(line.contains(OP_IMPL)) {
+                        } else if(line.contains(PLATFORM_IMPL)) {
+                            foundOp = true;
+                            line = removeBracesFromDeclarationMacro(line,PLATFORM_IMPL);
+                            String[] split = line.trim().split(",");
+                            name = split[0];
+
+                            builder.name(name)
+                                    .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.PLATFORM_IMPL);
+                            inOpBlock = true;
+                            hasNin = true;
+                            hasNout = true;
+                            platformImpl = true;
+                        }
+
+                        else if(line.contains(OP_IMPL)) {
                             //OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)
                             foundOp = true;
                             line = removeBracesFromDeclarationMacro(line,OP_IMPL);
@@ -445,25 +463,26 @@ public class ParseOpFile {
                         currentOpBooleanArgs = -1;
                         currentOpIntArgs = -1;
                         currentOutTArgs = -1;
+                        platformImpl = false;
                     }
 
                     if (inOpBlock) {
                         if (line.isEmpty()) {
                             //ignore
                         } else if (line.contains(INT_ARG) || line.contains(I_ARG)
-                                && hasIntArgs && iArgNames.size() < currentOpIntArgs) {
+                                && (hasIntArgs && iArgNames.size() < currentOpIntArgs)  || line.contains(I_ARG) && platformImpl) {
                             addNameToList(line, iArgNames, iArgIndices);
                         } else if (line.contains(OUTPUT_NULLIFIED)
                                 || line.contains(OUTPUT_VARIABLE)
-                                && hasNout && currentOpNout > 0) {
+                                && (hasNout && currentOpNout > 0) || line.contains(OUTPUT_VARIABLE) &&  platformImpl) {
                             addNameToList(line, outArgNames, outArgIndices);
                         } else if (line.contains(T_ARG)
-                                && hasTArgs
-                                && tArgNames.size() < currentOutTArgs) {
+                                && (hasTArgs
+                                && tArgNames.size() < currentOutTArgs)  || line.contains(T_ARG) && platformImpl) {
                             addNameToList(line, tArgNames, tArgIndices);
-                        } else if (line.contains(INPUT_VARIABLE)  && hasNin && currentOpNin > 0) {
+                        } else if (line.contains(INPUT_VARIABLE)  && (hasNin && currentOpNin > 0) || line.contains(INPUT_VARIABLE) && platformImpl) {
                             addNameToList(line, inArgNames, inArgIndices);
-                        } else if (line.contains(B_ARG) && bArgNames.size() < currentOpBooleanArgs) {
+                        } else if (line.contains(B_ARG) && (bArgNames.size() < currentOpBooleanArgs)  || line.contains(B_ARG) && platformImpl) {
                             addNameToList(line, bArgNames, bArgIndices);
                         }
                     }
@@ -493,7 +512,6 @@ public class ParseOpFile {
             }
         });
 
-        Set<String> opNamesForCompare = new HashSet<>(customOperations.keySet());
         Set<String> opsFoundInDeclarations = new HashSet<>();
 
 
@@ -876,19 +894,105 @@ public class ParseOpFile {
                 }
             }
 
+            /**
+             * TODO: Handle same name/same type/different indices here.
+             * Example op to look into:  ParallelConcat
+             *
+             * Potentially look in to java and see when indices are different
+             * and prefer the c++ source?
+             *
+             * Could also check if already exists and see which one is verifiable.
+             *
+             * TODO: Look at batchnorm. C++ and java code both generate invalid identifiers.
+             * A few issues:
+             *
+             * 1. Valid parameter names are captured, but then used within method invocations for conversions.
+             * Maybe what we could do is strip out the names from the parameters in post processing.
+             * The same thing seems to happen in c++
+             *
+             * 2. For C++, an int parameter is invoked adding to a collection, maybe we could parse the
+             * variable name of the collection?
+             *
+             * 3. Maybe create a set of merge rules for known variable names to reduce redundancies?
+             * Another thing we could do is get a list of type/name combinations from op constructors
+             * where available to get a hint as to what types things should be and used for clarification?
+             *
+             * 4. Bit of a stretch: Shortest edit  distance based on constructor names to replace
+             * embedded variable names found? Could also replace field names with constructor names?
+             *
+             * 5. Strip out punctuation an invalid identifiers.
+             *
+             * 6. Ensure indices aren't < 0. Validate this when parsing and adding parameters.
+             *
+             * 7. Double check parameter names vs ops in both the tf import and onnx import.
+
+
+             Output tensors use input tensor indexing causing indexing issues
+             when used with the arg descriptor.
+
+             */
+
             OpNamespace.OpDescriptor.Builder newBuilder = OpNamespace.OpDescriptor.newBuilder();
             //ensure name and type are set
             newBuilder.setName(v.get(0).getName());
             newBuilder.setOpDeclarationType(v.get(0).getOpDeclarationType());
-            List<OpNamespace.ArgDescriptor> valuesToAdd = new ArrayList<>();
-
+            final List<OpNamespace.ArgDescriptor> valuesToAdd = new ArrayList<>();
+            Set<Pair<String, OpNamespace.ArgDescriptor.ArgType>> nameTypeSimilarityChecking = new HashSet<>();
 
             argDescriptorByIndex.entrySet().forEach(entry -> {
                 valuesToAdd.add(entry.getValue());
             });
 
             Collections.sort(valuesToAdd,Comparator.comparing(OpNamespace.ArgDescriptor::getArgIndex));
-            valuesToAdd.stream().forEach(input -> {
+            List<OpNamespace.ArgDescriptor> newValuesToAdd = new ArrayList<>(valuesToAdd.size());
+            Set<Pair<OpNamespace.ArgDescriptor.ArgType,String>> argTypeNameCheckSet = new HashSet<>();
+            Map<OpNamespace.ArgDescriptor.ArgType,Integer> typeToIndex = new HashMap<>();
+            //ensure arg indices are consistent after post processing
+            for(int i = 0; i < valuesToAdd.size(); i++) {
+                if(!isValidIdentifier(valuesToAdd.get(i).getName()))
+                    continue;
+                //arg name and type already found, just continue
+                if(argTypeNameCheckSet.contains(Pair.of(valuesToAdd.get(i).getArgType(),valuesToAdd.get(i).getName())))
+                    continue;
+                Integer currTypeIndex = null;
+                if(!typeToIndex.containsKey(valuesToAdd.get(i).getArgType())) {
+                    currTypeIndex = 0;
+                    typeToIndex.put(valuesToAdd.get(i).getArgType(),currTypeIndex);
+                }
+                else {
+                    currTypeIndex = typeToIndex.get(valuesToAdd.get(i).getArgType());
+                }
+
+                OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                        .setName(valuesToAdd.get(i).getName())
+                        .setArgType(valuesToAdd.get(i).getArgType())
+                        .setDataTypeValue(valuesToAdd.get(i).getDataTypeValue())
+                        .setArgIndex(currTypeIndex)
+                        .setArgOptional(false)
+                        .build();
+
+                //update type index for next addition
+                currTypeIndex++;
+                typeToIndex.put(valuesToAdd.get(i).getArgType(),currTypeIndex);
+
+                argTypeNameCheckSet.add(Pair.of(valuesToAdd.get(i).getArgType(),valuesToAdd.get(i).getName()));
+                newValuesToAdd.add(argDescriptor);
+            }
+
+
+
+            List<OpNamespace.ArgDescriptor> postProcessedAdd = new ArrayList<>();
+            for(int i = 0; i < newValuesToAdd.size(); i++) {
+                if(argsListContainsSimilarArg(postProcessedAdd,newValuesToAdd.get(i),5)) {
+                    continue;
+                }
+
+                postProcessedAdd.add(newValuesToAdd.get(i));
+
+            }
+
+            //update values reference and add in final post processed values
+            postProcessedAdd.stream().forEach(input -> {
                 newBuilder.addArgDescriptor(input);
             });
 
@@ -911,6 +1015,18 @@ public class ParseOpFile {
 
         //System.out.println("Number of op descriptors " + opDeclarationDescriptors);
     }
+
+
+    private static boolean argsListContainsSimilarArg(List<OpNamespace.ArgDescriptor> argDescriptors, OpNamespace.ArgDescriptor to,int threshold) {
+        for(OpNamespace.ArgDescriptor argDescriptor : argDescriptors) {
+            if(argDescriptor.getArgType() == to.getArgType() && LevenshteinDistance.getDefaultInstance().apply(argDescriptor.getName().toLowerCase(),to.getName().toLowerCase()) <= threshold) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     private static OpNamespace.ArgDescriptor mergeDescriptorsOfSameIndex(OpNamespace.ArgDescriptor one, OpNamespace.ArgDescriptor two) {
         if(one.getArgIndex() != two.getArgIndex()) {
