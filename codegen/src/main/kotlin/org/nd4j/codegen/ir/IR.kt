@@ -321,11 +321,11 @@ interface IRArgDef<T : GeneratedMessageV3, DATA_TYPE>
     fun indexOf(): Integer
 }
 
-interface IROpDef<T : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ARG_DEF_TYPE : GeneratedMessageV3, DATA_TYPE, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3>
+interface IROpDef<OP_DEF_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ARG_DEF_TYPE : GeneratedMessageV3, DATA_TYPE, ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3>
         where DATA_TYPE: ProtocolMessageEnum {
     fun opName(): String
 
-    fun internalValue(): T
+    fun internalValue(): OP_DEF_TYPE
 
     fun inputArgs(): List<IRArgDef<ARG_DEF_TYPE, DATA_TYPE>>
 
@@ -413,6 +413,8 @@ abstract  class AbstractMappingProcess<
                 inputFrameworkOpName = inputFrameworkOpName,
                 processToRegister = this
         )
+
+
     }
 
     override fun inputOpDef(graphDef: IRGraph<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): OP_DEF_TYPE {

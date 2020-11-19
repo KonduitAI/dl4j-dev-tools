@@ -3,10 +3,12 @@ package org.nd4j.codegen.ir.onnx
 import onnx.Onnx
 import org.nd4j.codegen.ir.ArgDescriptor
 import org.nd4j.codegen.ir.AttributeMappingRule
+import org.nd4j.codegen.ir.nd4jOpDescriptors
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
-import org.nd4j.codegen.ir.tensorflow.defineSingleTransform
-import org.nd4j.codegen.ir.tensorflow.singleTransformArgs
+import org.nd4j.codegen.ir.tensorflow.TensorflowMappingProcess
+import org.nd4j.codegen.ir.tensorflow.defineTensorflowSingleTransform
+import org.nd4j.codegen.ir.tensorflow.tensorflowOpRegistry
 
 val onnxOpRegistry = OpMappingRegistry<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.TensorProto.DataType,Onnx.AttributeProto,Onnx.AttributeProto>("onnx")
 val names = mapOf(
@@ -52,14 +54,14 @@ val pairWiseNames = mapOf(
         "Add" to "add",
         "And" to "boolean_and",
         "Div" to "divide",
-        "Equal" to "equal",
+        "Equal" to "equals",
         "Greater" to "greater",
         "GreaterOrEqual" to "greater_equal",
         "Less" to "less",
         "LessOrEqual" to "less_equal",
         "Or" to "or",
         "Pow" to "pow",
-        "Sub" to "sub",
+        "Sub" to "subtract",
         "Xor" to "xor"
 )
 
@@ -661,10 +663,10 @@ fun defOnnxSingleTransform(opName: String, inputFrameworkOpName: String, outputN
             opMappingRegistry = onnxOpRegistry)
 }
 
-fun definePairwiseTransforms(opName: String, inputFrameworkOpName: String,
-                             firstOutputName: String = "x",
-                             secondOutputName: String = "y",
-                             firstInput: String = "A",secondInput: String = "B") : OnnxMappingProcess {
+fun defineOnnxPairwiseTransforms(opName: String, inputFrameworkOpName: String,
+                                 firstOutputName: String = "input",
+                                 secondOutputName: String = "y",
+                                 firstInput: String = "A", secondInput: String = "B") : OnnxMappingProcess {
     return OnnxMappingProcess(
             opName = opName,
             tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf(
@@ -675,6 +677,14 @@ fun definePairwiseTransforms(opName: String, inputFrameworkOpName: String,
             opMappingRegistry = onnxOpRegistry)
 }
 
+fun defineOnnxSingleTransform(inputOpName: String, inputFrameworkOpName: String): OnnxMappingProcess {
+    return  OnnxMappingProcess(
+            opName = inputOpName,
+            inputFrameworkOpName = inputFrameworkOpName, tensorMappingRules =  listOf(NDArrayMappingRule(
+            mappingNamesToPerform = mutableMapOf("input" to "x"))),
+            opMappingRegistry = onnxOpRegistry)
+
+}
 
 
 
@@ -726,12 +736,20 @@ object OnnxOpDeclarations {
     init {
         OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)
         names.forEach {
-            defineSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
+            defineOnnxSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
         } ?: "Error initializing single defined transforms in onnx."
 
         pairWiseNames.forEach {
-            definePairwiseTransforms(opName = it.value,inputFrameworkOpName = it.key)
+            defineOnnxPairwiseTransforms(opName = it.value,inputFrameworkOpName = it.key)
         } ?: "Error initializing pair wise transforms"
+
+        onnxops.forEach {
+            onnxOpRegistry.registerInputFrameworkOpDef(it.name,it)
+        }
+
+        nd4jOpDescriptors.opListList.forEach {
+            onnxOpRegistry.registerNd4jOpDef(it.name,it)
+        }
     }
 }
 

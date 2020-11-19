@@ -1,14 +1,17 @@
 package org.nd4j.codegen.ir.tensorflow
 
 import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertTrue
 import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Test
 import org.nd4j.autodiff.samediff.SameDiff
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
+import org.nd4j.ir.OpNamespace
 import org.nd4j.shade.protobuf.ByteString
 import org.tensorflow.framework.*
 import java.nio.charset.Charset
+import kotlin.test.assertTrue
 
 class TestTensorflowIR {
     val declarations = TensorflowOpDeclarations
@@ -271,6 +274,58 @@ class TestTensorflowIR {
 
         assertEquals(opDef,tfMappingCtx.opDef)
 
+    }
+
+    @Test
+    fun testInputOutputNames() {
+        val tensorflowOpNames = tensorflowOpRegistry.inputFrameworkOpNames()
+        val nd4jOpNames = tensorflowOpRegistry.nd4jOpNames()
+        tensorflowOpRegistry.mappingProcessNames().map {
+            tensorflowOpRegistry.lookupOpMappingProcess(it)
+        }.forEach {
+            println("Beginning processing of op ${it.inputFrameworkOpName()} and nd4j op ${it.opName()}")
+            assertTrue(tensorflowOpNames.contains(it.inputFrameworkOpName()))
+            assertTrue(nd4jOpNames.contains(it.opName()))
+            val nd4jOpDef = tensorflowOpRegistry.lookupNd4jOpDef(it.opName())
+            val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(it.inputFrameworkOpName())
+            val inputNameArgDefs = nd4jOpDef.argDescriptorList.filter {
+                argDef -> argDef.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
+            }.map { argDef -> argDef.name }
+
+            val inputFrameworkOpDefNames = tensorflowOpDef.inputArgList.map { tfOpDef -> tfOpDef.name}
+
+            val nd4jArgDefNames = nd4jOpDef.argDescriptorList.map { nd4jArgDef -> nd4jArgDef.name }
+            val tfAttrNames = tensorflowOpDef.attrList.map { tfAttr -> tfAttr.name }
+            it.tensorMappingRules().forEach { tensorRules ->
+                println("Running tensor mapping rule ${tensorRules.name()} for op ${it.inputFrameworkOpName()} and nd4j op name ${it.opName()}")
+                run {
+                    tensorRules.mappingNamesToPerform().forEach { tensorRule ->
+                        run {
+                            println("Testing assertion for nd4j name ${tensorRule.key} and input name ${tensorRule.value}")
+                            assertTrue(inputNameArgDefs.contains(tensorRule.key)) ?: error("Failed on inputArgName ${tensorRule.key}")
+                            assertTrue(inputFrameworkOpDefNames.contains(tensorRule.value)) ?: error("Failed on inputArgName ${tensorRule.value}")
+                        }
+
+                    }
+                }
+
+            }
+
+            println("Running attribute mapping rules for ${it.opName()} and input op name ${it.inputFrameworkOpName()}")
+            it.attributeMappingRules().forEach { attrRule ->
+                run {
+                    attrRule.mappingNamesToPerform().forEach { attrMapping ->
+                        run {
+                            println("Testing nd4j name  ${attrMapping.key} and input framework name ${attrMapping.value}")
+                            assertTrue(nd4jArgDefNames.contains(attrMapping.key) || inputNameArgDefs.contains(attrMapping.key))
+                            assertTrue(tfAttrNames.contains(attrMapping.value)  || inputFrameworkOpDefNames.contains(attrMapping.value))
+                        }
+
+                    }
+                }
+            }
+
+        }
     }
 
 }
