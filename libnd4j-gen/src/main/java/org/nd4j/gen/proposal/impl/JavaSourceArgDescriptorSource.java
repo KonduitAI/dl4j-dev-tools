@@ -6,6 +6,8 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
@@ -18,6 +20,8 @@ import com.github.javaparser.utils.SourceRoot;
 import lombok.Builder;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.samediff.SDVariable;
+import org.nd4j.common.primitives.Counter;
+import org.nd4j.common.primitives.CounterMap;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.gen.OpDeclarationDescriptor;
 import org.nd4j.gen.proposal.ArgDescriptorProposal;
@@ -35,9 +39,12 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.nd4j.gen.proposal.utils.ArgDescriptorParserUtils.*;
 
 public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
 
@@ -45,6 +52,25 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
     private  SourceRoot sourceRoot;
     private File nd4jOpsRootDir;
     private double weight;
+
+    /**
+     *     void addTArgument(double... arg);
+     *
+     *     void addIArgument(int... arg);
+     *
+     *     void addIArgument(long... arg);
+     *
+     *     void addBArgument(boolean... arg);
+     *
+     *     void addDArgument(DataType... arg);
+     */
+
+    public final static String ADD_T_ARGUMENT_INVOCATION = "addTArgument";
+    public final static String ADD_I_ARGUMENT_INVOCATION = "addIArgument";
+    public final static String ADD_B_ARGUMENT_INVOCATION = "addBArgument";
+    public final static String ADD_D_ARGUMENT_INVOCATION = "addDArgument";
+    public final static String ADD_INPUT_ARGUMENT = "addInputArgument";
+    public final static String ADD_OUTPUT_ARGUMENT = "addOutputArgument";
     private Map<String, OpNamespace.OpDescriptor.OpDeclarationType> opTypes;
     static {
         Log.setAdapter(new Log.StandardOutStandardErrorAdapter());
@@ -92,11 +118,65 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                 StringBuilder fileBuilder = new StringBuilder();
                 fileBuilder.append(fileName);
                 fileBuilder.append(".java");
+                CounterMap<Pair<String, OpNamespace.ArgDescriptor.ArgType>,Integer> paramIndicesCount = new CounterMap<>();
 
                 // Our sample is in the root of this directory, so no package name.
                 CompilationUnit cu = sourceRoot.parse(clazz.getPackage().getName(), clazz.getSimpleName() + ".java");
+                cu.findAll(MethodCallExpr.class).forEach(method -> {
+                            String methodInvoked = method.getNameAsString();
+                            final AtomicInteger indexed = new AtomicInteger(0);
+                            //need to figure out how to consolidate multiple method calls
+                            //as well as the right indices
+                            //typical patterns in the code base will reflect adding arguments all at once
+                            //one thing we can just check for is if more than 1 argument is passed in and
+                            //treat that as a complete list of arguments
+                            if(methodInvoked.equals(ADD_T_ARGUMENT_INVOCATION)) {
+                                method.getArguments().forEach(argument -> {
+                                    if(argument.isNameExpr())
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.FLOAT),indexed.get(),100.0);
+                                    indexed.incrementAndGet();
+                                });
+                            } else if(methodInvoked.equals(ADD_B_ARGUMENT_INVOCATION)) {
+                                method.getArguments().forEach(argument -> {
+                                    if(argument.isNameExpr())
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.BOOL),indexed.get(),100.0);
+                                    indexed.incrementAndGet();
+                                });
+                            } else if(methodInvoked.equals(ADD_I_ARGUMENT_INVOCATION)) {
+                                method.getArguments().forEach(argument -> {
+                                    if(argument.isNameExpr())
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.INT64),indexed.get(),100.0);
+                                    indexed.incrementAndGet();
+                                });
+                            } else if(methodInvoked.equals(ADD_D_ARGUMENT_INVOCATION)) {
+                                method.getArguments().forEach(argument -> {
+                                    if(argument.isNameExpr())
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.DATA_TYPE),indexed.get(),100.0);
+                                    indexed.incrementAndGet();
+                                });
+                            } else if(methodInvoked.equals(ADD_INPUT_ARGUMENT)) {
+                                method.getArguments().forEach(argument -> {
+                                    if(argument.isNameExpr())
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR),indexed.get(),100.0);
+                                    indexed.incrementAndGet();
+                                });
+                            } else if(methodInvoked.equals(ADD_OUTPUT_ARGUMENT)) {
+                                method.getArguments().forEach(argument -> {
+                                    if(argument.isNameExpr())
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR),indexed.get(),100.0);
+                                    indexed.incrementAndGet();
+                                });
+                            }
+
+                        }
+                );
+
+
+
+
                 List<ResolvedConstructorDeclaration> collect = cu.findAll(ConstructorDeclaration.class).stream()
                         .map(input -> input.resolve())
+                        .filter(constructor -> constructor.getNumberOfParams() > 0)
                         .distinct()
                         .collect(Collectors.toList());
                 List<ArgDescriptorProposal> argDescriptorProposals = ret.get(name);
@@ -105,188 +185,235 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                     ret.put(name,argDescriptorProposals);
                 }
 
-                Set<ResolvedParameterDeclaration> parameters = new HashSet<>();
+                Set<ResolvedParameterDeclaration> parameters = new LinkedHashSet<>();
+
+                int floatIdx = 0;
+                int inputIdx = 0;
+                int outputIdx = 0;
+                int intIdx = 0;
+                int boolIdx = 0;
+
                 for(ResolvedConstructorDeclaration parameterDeclaration : collect) {
+                    floatIdx = 0;
+                    inputIdx = 0;
+                    outputIdx = 0;
+                    intIdx = 0;
+                    boolIdx = 0;
                     for(int i = 0; i < parameterDeclaration.getNumberOfParams(); i++) {
                         ResolvedParameterDeclaration param = parameterDeclaration.getParam(i);
-                        parameters.add(param);
+                        OpNamespace.ArgDescriptor.ArgType argType = argTypeForParam(param);
+                        if(isValidParam(param)) {
+                            parameters.add(param);
+                            switch(argType) {
+                                case INPUT_TENSOR:
+                                    paramIndicesCount.incrementCount(Pair.of(param.getName(),argType), inputIdx, 100.0);
+                                    inputIdx++;
+                                    break;
+                                case INT64:
+                                case INT32:
+                                    paramIndicesCount.incrementCount(Pair.of(param.getName(), OpNamespace.ArgDescriptor.ArgType.INT64), intIdx, 100.0);
+                                    intIdx++;
+                                    break;
+                                case DOUBLE:
+                                case FLOAT:
+                                    paramIndicesCount.incrementCount(Pair.of(param.getName(), OpNamespace.ArgDescriptor.ArgType.FLOAT), floatIdx, 100.0);
+                                    paramIndicesCount.incrementCount(Pair.of(param.getName(), OpNamespace.ArgDescriptor.ArgType.DOUBLE), floatIdx, 100.0);
+                                    floatIdx++;
+                                    break;
+                                case BOOL:
+                                    paramIndicesCount.incrementCount(Pair.of(param.getName(),argType), boolIdx, 100.0);
+                                    boolIdx++;
+                                    break;
+                                case OUTPUT_TENSOR:
+                                    paramIndicesCount.incrementCount(Pair.of(param.getName(),argType), outputIdx, 100.0);
+                                    outputIdx++;
+                                    break;
+                                case UNRECOGNIZED:
+                                    continue;
+
+                            }
+
+                        }
                     }
                 }
 
-
-                int currIntIdx = 0;
-                int currFloatIdx = 0;
-                int currInputIdx = 0;
-                int currOutputIdx = 0;
-                Set<Pair<String, String>> typesAndParams = parameters.stream().map(collectedParam ->
+                floatIdx = 0;
+                inputIdx = 0;
+                outputIdx = 0;
+                intIdx = 0;
+                boolIdx = 0;
+                Set<List<Pair<String, String>>> typesAndParams = parameters.stream().map(collectedParam ->
                         Pair.of(collectedParam.describeType(), collectedParam.getName()))
-                        .collect(Collectors.groupingBy(input -> input.getSecond()))
-                        .entrySet().stream().map(nameToListOfTypes -> Pair.of(nameToListOfTypes.getKey(),nameToListOfTypes.getValue().get(0)))
-                        .map(inputPair -> inputPair.getSecond())
+                        .collect(Collectors.groupingBy(input -> input.getSecond())).entrySet()
+                        .stream()
+                        .map(inputPair -> inputPair.getValue())
                         .collect(Collectors.toSet());
 
 
-                for(Pair<String,String> parameter : typesAndParams) {
-                    if(parameter.getFirst().equals(SDVariable.class.getName())
-                            || parameter.getFirst().equals(INDArray.class.getName())
-                            || parameter.getFirst().equals(INDArray.class.getName() + "[]")
-                            || parameter.getFirst().equals(SDVariable.class.getName() + "[]")) {
-                        if(parameter.getSecond().equals("output") || parameter.getSecond().equals("z") || parameter.getSecond().equals("outputs")) {
-                            argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                    .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                            .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
-                                            .setName(parameter.getSecond())
-                                            .setArgIndex(currOutputIdx)
-                                            .build()).build());
-                            currOutputIdx++;
+                Set<String> constructorNamesEncountered =new HashSet<>();
+                List<ArgDescriptorProposal> finalArgDescriptorProposals = argDescriptorProposals;
+                typesAndParams.forEach(listOfTypesAndNames -> {
 
-                        } else {
-                            argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                    .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                            .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
-                                            .setName(parameter.getSecond())
-                                            .setArgIndex(currInputIdx)
-                                            .build()).build());
-                            currInputIdx++;
+                    listOfTypesAndNames.forEach(parameter -> {
+                        if(typeNameOrArrayOfTypeNameMatches(parameter.getFirst(),SDVariable.class.getName(),INDArray.class.getName())) {
+                            constructorNamesEncountered.add(parameter.getValue());
+                            if(outputNames.contains(parameter.getValue())) {
+                                Counter<Integer> counter = paramIndicesCount.getCounter(Pair.of(parameter.getSecond(), OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR));
+                                if(counter != null)
+                                    finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                            .proposalWeight(99.0 * (counter == null ? 1 : counter.size()))
+                                            .sourceOfProposal("java")
+                                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                                    .setName(parameter.getSecond())
+                                                    .setIsArray(parameter.getFirst().contains("[]") || parameter.getFirst().contains("..."))
+                                                    .setArgIndex(counter.argMax())
+                                                    .build()).build());
+
+                            } else {
+                                Counter<Integer> counter = paramIndicesCount.getCounter(Pair.of(parameter.getSecond(), OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR));
+                                if(counter != null)
+                                    finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                            .proposalWeight(99.0 * (counter == null ? 1 : counter.size()))
+                                            .sourceOfProposal("java")
+                                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                    .setName(parameter.getSecond())
+                                                    .setIsArray(parameter.getFirst().contains("[]") || parameter.getFirst().contains("..."))
+                                                    .setArgIndex(counter.argMax())
+                                                    .build()).build());
+                            }
+                        } else if(typeNameOrArrayOfTypeNameMatches(parameter.getFirst(),int.class.getName(),long.class.getName(),Integer.class.getName(),Long.class.getName())) {
+                            constructorNamesEncountered.add(parameter.getValue());
+
+                            Counter<Integer> counter = paramIndicesCount.getCounter(Pair.of(parameter.getSecond(), OpNamespace.ArgDescriptor.ArgType.INT64));
+                            if(counter != null)
+                                finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("java")
+                                        .proposalWeight(99.0 * (counter == null ? 1 : counter.size()))
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName(parameter.getSecond())
+                                                .setIsArray(parameter.getFirst().contains("[]") || parameter.getFirst().contains("..."))
+                                                .setArgIndex(counter.argMax())
+                                                .build()).build());
+                        } else if(typeNameOrArrayOfTypeNameMatches(parameter.getFirst(),float.class.getName(),double.class.getName(),Float.class.getName(),Double.class.getName())) {
+                            constructorNamesEncountered.add(parameter.getValue());
+                            Counter<Integer> counter = paramIndicesCount.getCounter(Pair.of(parameter.getSecond(), OpNamespace.ArgDescriptor.ArgType.FLOAT));
+                            if(counter != null)
+                                finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("java")
+                                        .proposalWeight(99.0 * (counter == null ? 1 :(counter == null ? 1 : counter.size()) ))
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
+                                                .setName(parameter.getSecond())
+                                                .setIsArray(parameter.getFirst().contains("[]"))
+                                                .setArgIndex(counter.argMax())
+                                                .build()).build());
+                        } else if(typeNameOrArrayOfTypeNameMatches(parameter.getFirst(),boolean.class.getName(),Boolean.class.getName())) {
+                            constructorNamesEncountered.add(parameter.getValue());
+                            Counter<Integer> counter = paramIndicesCount.getCounter(Pair.of(parameter.getSecond(), OpNamespace.ArgDescriptor.ArgType.BOOL));
+                            if(counter != null)
+                                finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("java")
+                                        .proposalWeight(99.0 * (counter == null ? 1 :(counter == null ? 1 : counter.size()) ))
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                                .setName(parameter.getSecond())
+                                                .setIsArray(parameter.getFirst().contains("[]"))
+                                                .setArgIndex(counter.argMax())
+                                                .build()).build());
                         }
-                    } else if(parameter.getFirst().equals(int.class.getName()) ||
-                            parameter.getFirst().equals("int...")
-                            || parameter.getFirst().equals(long.class.getName()) ||
-                            parameter.getFirst().equals("long...")
-                            || parameter.getFirst().equals(boolean.class.getName())) {
-                        argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
-                                        .setName(parameter.getSecond())
-                                        .setArgIndex(currIntIdx)
-                                        .build()).build());
-                        currIntIdx++;
-                    } else if(parameter.getFirst().equals(double.class.getName()) || parameter.getFirst().equals(float.class.getName())) {
-                        argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
-                                        .setName(parameter.getSecond())
-                                        .setArgIndex(currFloatIdx)
-                                        .build()).build());
-                        currFloatIdx++;
-                    }
-                }
+                    });
+                });
 
 
-                currIntIdx = 0;
-                currFloatIdx = 0;
-                currInputIdx = 0;
-                currOutputIdx = 0;
+
+
                 List<ResolvedFieldDeclaration> fields = cu.findAll(FieldDeclaration.class).stream()
-                        .map(input -> input.resolve()).collect(Collectors.toList());
+                        .map(input -> getResolve(input))
+                        .filter(input -> input != null)
+                        .collect(Collectors.toList());
+                floatIdx = 0;
+                inputIdx = 0;
+                outputIdx = 0;
+                intIdx = 0;
+                boolIdx = 0;
+
                 for(ResolvedFieldDeclaration field : fields) {
-                    if(field.getType().describe().equals(SDVariable.class.getName())
-                            || field.getType().describe().equals(INDArray.class.getName())
-                            || field.getType().describe().equals(INDArray.class.getName() + "[]")
-                            || field.getType().describe().equals(SDVariable.class.getName() + "[]")) {
-                        if(field.getName().equals("output") || field.getName().equals("z")  || field.getName().equals("outputs")) {
+                    if(!constructorNamesEncountered.contains(field.getName()) && typeNameOrArrayOfTypeNameMatches(field.getType().describe(),SDVariable.class.getName(),INDArray.class.getName())) {
+                        if(outputNames.contains(field.getName())) {
                             argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                    .sourceOfProposal("java")
+                                    .proposalWeight(99.0)
                                     .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                             .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
                                             .setName(field.getName())
-                                            .setArgIndex(currOutputIdx)
+                                            .setIsArray(field.getType().describe().contains("[]"))
+                                            .setArgIndex(outputIdx)
                                             .build()).build());
-                            currOutputIdx++;
-                        } else {
+                            outputIdx++;
+                        } else if(!constructorNamesEncountered.contains(field.getName())){
                             argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                    .sourceOfProposal("java")
+                                    .proposalWeight(99.0)
                                     .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                             .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
                                             .setName(field.getName())
-                                            .setArgIndex(currInputIdx)
+                                            .setIsArray(field.getType().describe().contains("[]"))
+                                            .setArgIndex(inputIdx)
                                             .build()).build());
-                            currInputIdx++;
+                            inputIdx++;
                         }
-                    } else if(field.getType().describe().equals(int.class.getName()) ||
-                            field.getType().describe().equals("int...") ||
-                            field.getType().describe().equals("int[]")
-                            || field.getType().describe().equals(long.class.getName()) ||
-                            field.getType().describe().equals("long...") ||
-                            field.getType().describe().equals("long[]") ||
-                            field.getType().describe().equals("boolean[]")
-                            || field.getType().describe().equals(boolean.class.getName())) {
+                    } else if(!constructorNamesEncountered.contains(field.getName()) && typeNameOrArrayOfTypeNameMatches(field.getType().describe(),int.class.getName(),long.class.getName(),Long.class.getName(),Integer.class.getName())) {
                         argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                .sourceOfProposal("java")
+                                .proposalWeight(99.0)
                                 .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
                                         .setName(field.getName())
-                                        .setArgIndex(currIntIdx)
+                                        .setIsArray(field.getType().describe().contains("[]"))
+                                        .setArgIndex(intIdx)
                                         .build()).build());
-                        currIntIdx++;
-                    } else if(field.getType().describe().equals(double.class.getName()) || field.getType().toString().equals(float.class.getName())) {
+                        intIdx++;
+                    } else if(!constructorNamesEncountered.contains(field.getName()) && typeNameOrArrayOfTypeNameMatches(field.getType().describe(),double.class.getName(),float.class.getName(),Double.class.getName(),Float.class.getName())) {
                         argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                .sourceOfProposal("java")
+                                .proposalWeight(99.0)
                                 .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                         .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
                                         .setName(field.getName())
-                                        .setArgIndex(currFloatIdx)
+                                        .setIsArray(field.getType().describe().contains("[]"))
+                                        .setArgIndex(floatIdx)
                                         .build()).build());
-                        currFloatIdx++;
-                    }
-                }
-
-                if(differentialFunction instanceof BaseReduceOp) {
-                    int idx = 0;
-                    //set to max possible index to avoid clashes
-                    for(ArgDescriptorProposal argDescriptorProposal : argDescriptorProposals) {
-                        OpNamespace.ArgDescriptor.ArgType argType = argDescriptorProposal.getDescriptor().getArgType();
-                        if(argType == OpNamespace.ArgDescriptor.ArgType.BOOL || argType == OpNamespace.ArgDescriptor.ArgType.INT64) {
-                            idx = Math.max(idx,argDescriptorProposal.getDescriptor().getArgIndex());
-                        }
-                    }
-
-
-                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                    .setName("input")
-                                    .setArgIndex(0)
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
-                                    .build())
-                            .proposalWeight(999.0)
-                            .build());
-
-                    if(differentialFunction instanceof BaseReduce3Op)
+                        floatIdx++;
+                    } else if(!constructorNamesEncountered.contains(field.getName()) && typeNameOrArrayOfTypeNameMatches(field.getType().describe(),Boolean.class.getName(),boolean.class.getName())) {
                         argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                .sourceOfProposal("java")
+                                .proposalWeight(99.0)
                                 .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                        .setName("y")
-                                        .setArgIndex(1)
-                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
-                                        .build())
-                                .proposalWeight(2999.0)
-                                .build());
-
-                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                    .setName("z")
-                                    .setArgIndex(0)
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
-                                    .build())
-                            .proposalWeight(2999.0)
-                            .build());
-
-                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                    .setName("dimensions")
-                                    .setArgIndex(0)
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
-                                    .build())
-                            .proposalWeight(2999.0)
-                            .build());
-
-                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                    .setConvertBoolToInt(false)
-                                    .setName("keepDims")
-                                    .setArgIndex(0)
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
-                                    .build())
-                            .proposalWeight(2999.0)
-                            .build());
+                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                        .setName(field.getName())
+                                        .setIsArray(field.getType().describe().contains("[]"))
+                                        .setArgIndex(boolIdx)
+                                        .build()).build());
+                        boolIdx++;
+                    }
                 }
 
-
+                if(differentialFunction instanceof BaseReduceOp || differentialFunction instanceof BaseReduceBoolOp) {
+                    if(!containsProposalWithDescriptorName("keepDims",argDescriptorProposals)) {
+                        argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                .sourceOfProposal("java")
+                                .proposalWeight(9999.0)
+                                .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                        .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                        .setName("keepDims")
+                                        .setIsArray(false)
+                                        .setArgIndex(boolIdx)
+                                        .build()).build());
+                    }
+                }
 
             } catch(Exception e) {
                 e.printStackTrace();
@@ -295,6 +422,25 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
         }
 
         return ret;
+    }
+
+
+    private static boolean containsProposalWithDescriptorName(String name,Collection<ArgDescriptorProposal> proposals) {
+        for(ArgDescriptorProposal proposal : proposals) {
+            if(proposal.getDescriptor().getName().equals(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static ResolvedFieldDeclaration getResolve(FieldDeclaration input) {
+        try {
+            return input.resolve();
+        }catch(Exception e) {
+            return null;
+        }
     }
 
 

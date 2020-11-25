@@ -17,6 +17,7 @@ package org.nd4j.gen;
 
 import org.apache.commons.io.FileUtils;
 import org.nd4j.autodiff.functions.DifferentialFunction;
+import org.nd4j.common.base.Preconditions;
 import org.nd4j.common.primitives.Counter;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.common.util.SetUtils;
@@ -26,8 +27,10 @@ import org.nd4j.gen.proposal.impl.JavaSourceArgDescriptorSource;
 import org.nd4j.gen.proposal.impl.Libnd4jArgDescriptorSource;
 import org.nd4j.gen.proposal.utils.ArgDescriptorParserUtils;
 import org.nd4j.ir.OpNamespace;
+import org.nd4j.shade.protobuf.Message;
 import org.nd4j.shade.protobuf.TextFormat;
 import org.reflections.Reflections;
+import org.tensorflow.framework.OpList;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -110,11 +113,20 @@ public class ParseOpFile {
         for(ArgDescriptorSource argDescriptorSource : new ArgDescriptorSource[] {libnd4jArgDescriptorSource,javaSourceArgDescriptorSource}) {
             Map<String, List<ArgDescriptorProposal>> currProposals = argDescriptorSource.getProposals();
             for(Map.Entry<String,List<ArgDescriptorProposal>> entry : currProposals.entrySet()) {
+                Preconditions.checkState(!entry.getKey().isEmpty());
+                Set<String> seenNames = new HashSet<>();
                 if(proposals.containsKey(entry.getKey())) {
                     List<ArgDescriptorProposal> currProposalsList = proposals.get(entry.getKey());
-                    currProposalsList.addAll(entry.getValue());
+                    currProposalsList.addAll(entry.getValue().stream().filter(proposal -> {
+                        Preconditions.checkState(!proposal.getDescriptor().getName().isEmpty());
+                        boolean ret =  proposal.getDescriptor().getArgIndex() >= 0 &&  !seenNames.contains(proposal.getDescriptor().getName());
+                        seenNames.add(proposal.getDescriptor().getName());
+                        return ret;
+                    }).collect(Collectors.toList()));
+
                 }
                 else {
+                    Preconditions.checkState(!entry.getKey().isEmpty());
                     proposals.put(entry.getKey(),entry.getValue());
                 }
             }
@@ -122,6 +134,7 @@ public class ParseOpFile {
 
         OpNamespace.OpDescriptorList.Builder listBuilder = OpNamespace.OpDescriptorList.newBuilder();
         for(Map.Entry<String,List<ArgDescriptorProposal>> proposal : proposals.entrySet()) {
+            Preconditions.checkState(!proposal.getKey().isEmpty());
             Map<String, List<ArgDescriptorProposal>> collect = proposal.getValue().stream()
                     .collect(Collectors.groupingBy(input -> input.getDescriptor().getName()));
             //merge boolean and int64
@@ -142,8 +155,47 @@ public class ParseOpFile {
 
         }
 
+        OpNamespace.OpDescriptorList.Builder sortedListBuilder = OpNamespace.OpDescriptorList.newBuilder();
+        for(int i = 0; i < listBuilder.getOpListCount(); i++) {
+            OpNamespace.OpDescriptor opList = listBuilder.getOpList(i);
+            OpNamespace.OpDescriptor.Builder sortedOpBuilder = OpNamespace.OpDescriptor.newBuilder();
+            Map<OpNamespace.ArgDescriptor.ArgType, List<OpNamespace.ArgDescriptor>> sortedByType = opList.getArgDescriptorList().stream().collect(Collectors.groupingBy(input -> input.getArgType()));
+            Set<String> namesEncountered = new HashSet<>();
+            sortedByType.entrySet().forEach(entry -> {
+                Collections.sort(entry.getValue(),Comparator.comparing(inputArg -> inputArg.getArgIndex()));
+                for(int j = 0; j < entry.getValue().size(); j++) {
+                    OpNamespace.ArgDescriptor currDescriptor = entry.getValue().get(j);
+                    boolean isArrayArg = false;
+                    String finalName = currDescriptor.getName();
+                    if(currDescriptor.getName().contains("[")) {
+                        isArrayArg = true;
+                        finalName = finalName.replaceAll("\\[.*\\]","").replace("*","");
+                    }
 
-        String write = TextFormat.printToString(listBuilder.build());
+                    OpNamespace.ArgDescriptor.Builder newDescriptor = OpNamespace.ArgDescriptor.newBuilder()
+                            .setName(finalName)
+                            .setArgIndex(currDescriptor.getArgIndex())
+                            .setIsArray(isArrayArg)
+                            .setArgType(currDescriptor.getArgType())
+                            .setConvertBoolToInt(currDescriptor.getConvertBoolToInt());
+
+                    sortedOpBuilder.addArgDescriptor(newDescriptor.build());
+
+
+                    namesEncountered.add(currDescriptor.getName());
+
+                }
+            });
+
+            sortedOpBuilder.setOpDeclarationType(opList.getOpDeclarationType());
+            sortedOpBuilder.setName(opList.getName());
+
+
+            sortedListBuilder.addOpList(sortedOpBuilder.build());
+        }
+
+
+        String write = TextFormat.printToString(sortedListBuilder.build());
         FileUtils.writeStringToFile(new File(outputFilePath),write, Charset.defaultCharset());
 
 

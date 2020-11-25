@@ -27,7 +27,7 @@ import java.nio.charset.Charset
 
 
 fun loadNd4jOpDescriptors(): OpNamespace.OpDescriptorList {
-    val nd4jOpDescriptorResourceStream = ClassPathResource("op-ir.proto").inputStream
+    val nd4jOpDescriptorResourceStream = ClassPathResource("nd4j-op-defs-2.proto").inputStream
     val resourceString = IOUtils.toString(nd4jOpDescriptorResourceStream, Charset.defaultCharset())
     val descriptorListBuilder = OpNamespace.OpDescriptorList.newBuilder()
     TextFormat.merge(resourceString,descriptorListBuilder)

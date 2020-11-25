@@ -14,4 +14,5 @@ public class ArgDescriptorProposal {
 
     private double proposalWeight;
 
+    private String sourceOfProposal;
 }
