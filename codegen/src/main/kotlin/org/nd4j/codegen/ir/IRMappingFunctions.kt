@@ -750,7 +750,7 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
         val mappingsToPerform = inputArgumentMappings()
         for(i in 0 until opDescriptor!!.argDescriptorCount) {
             if(mappingsToPerform.containsKey(opDescriptor!!.getArgDescriptor(i).name)) {
-                val outputName = mappingsToPerform[mappingsToPerform[opDescriptor!!.getArgDescriptor(i).name]]
+                val outputName = mappingsToPerform[opDescriptor!!.getArgDescriptor(i).name]
                 val builder = OpNamespace.ArgDescriptor.newBuilder()
                 builder.argType = opDescriptor!!.argDescriptorList[i].argType
                 builder.name = outputName

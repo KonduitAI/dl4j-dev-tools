@@ -12,34 +12,24 @@ import org.nd4j.codegen.ir.tensorflow.tensorflowOpRegistry
 
 val onnxOpRegistry = OpMappingRegistry<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.TensorProto.DataType,Onnx.AttributeProto,Onnx.AttributeProto>("onnx")
 val names = mapOf(
-        "Abs" to "abs",
         "Acos" to "acos",
         "Acosh" to "acosh",
         "Asin" to "asin",
         "Asinh" to "asinh",
         "Atan" to "atan",
         "Atanh" to "atanh",
-        "Ceil" to "ceil",
         "Cos" to "cos",
         "Cosh" to "cosh",
         "Erf" to "erf",
         "Exp" to "exp",
-        "Floor" to "floor",
         "Identity" to "identity",
-        "IsNaN" to "isnan",
         "Log" to "log",
         "LogSoftmax" to "log_softmax",
-        "Mod" to "mod",
-        "Neg" to "neg",
-        "Relu" to "relu",
-        "Round" to "round",
-        "Sigmoid" to "sigmoid",
         "Sign" to "sign",
         "Sin" to "sin",
         "Sinh" to "sinh",
         "Softmax" to "softmax",
         "Softsign" to "softsign",
-        "Sqrt" to "sqrt",
         "Tan" to "tan",
         "Tanh" to "tanh"
 
@@ -55,7 +45,6 @@ val pairWiseNames = mapOf(
         "Less" to "less",
         "LessOrEqual" to "less_equal",
         "Mul" to "multiply",
-        "Not" to "not",
         "Or" to "or",
         "Sub" to "subtract",
         "Xor" to "xor"
@@ -116,17 +105,15 @@ val avgPool = OnnxMappingProcess(
         inputFrameworkOpName = "AveragePool",
         opName = "avgpool2d",
         opMappingRegistry = onnxOpRegistry,
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
         attributeMappingRules = listOf(
                 argDescriptorConstant(argDescriptorConstants = listOf(ArgDescriptor {
                     name = "isNCHW"
                     boolValue = true
                 })),
                 stringContainsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "auto_pad",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dH",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "dW",inputFrameworkAttributeName = "dilations",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pH",inputFrameworkAttributeName = "padding",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pW",inputFrameworkAttributeName = "padding",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pH",inputFrameworkAttributeName = "pads",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pW",inputFrameworkAttributeName = "pads",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
                 conditionalFieldValueIntIndexArrayRule(outputAttribute = "sH",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
                 conditionalFieldValueIntIndexArrayRule(outputAttribute = "sW",inputFrameworkAttributeName = "strides",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
                 conditionalFieldValueIntIndexArrayRule(outputAttribute = "kH",inputFrameworkAttributeName = "kernel_shape",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
@@ -165,15 +152,14 @@ val cumSum = OnnxMappingProcess(
         inputFrameworkOpName = "CumSum",
         opMappingRegistry = onnxOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x"))),
-        attributeMappingRules = listOf(valueMappings(mapOf("exclusive" to "exclusive","reverse" to "reverse")), ndarrayToIntList(ndarrayNameToAttributeName = mutableMapOf("axis" to "axis")))
+        attributeMappingRules = listOf(valueMappings(mapOf("exclusive" to "exclusive","reverse" to "reverse")), ndarrayToIntList(ndarrayNameToAttributeName = mutableMapOf("dimensions" to "axis")))
 )
 
 val depthToSpace = OnnxMappingProcess(
         opName = "depth_to_space",
         inputFrameworkOpName = "DepthToSpace",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMappings(mapOf("block_size" to "block_size")),
-                stringEqualsRule("isNWHC", inputFrameworkAttributeName = "data_format", valueToTest = "NWHC")),
+        attributeMappingRules = listOf(valueMappings(mapOf("block_size" to "blocksize"))),
         opMappingRegistry = onnxOpRegistry
 )
 
@@ -187,6 +173,37 @@ val dropout = OnnxMappingProcess(
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         opMappingRegistry = onnxOpRegistry
 )
+
+
+val floor = OnnxMappingProcess(
+        opName = "floor",
+        inputFrameworkOpName = "Floor",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
+        opMappingRegistry = onnxOpRegistry
+)
+
+val round = OnnxMappingProcess(
+        opName = "round",
+        inputFrameworkOpName = "Round",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
+        opMappingRegistry = onnxOpRegistry
+)
+
+val mod = OnnxMappingProcess(
+        opName = "mod",
+        inputFrameworkOpName = "Mod",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        opMappingRegistry = onnxOpRegistry
+)
+
+
+val sigmoid = OnnxMappingProcess(
+        opName = "sigmoid",
+        inputFrameworkOpName = "Sigmoid",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
+        opMappingRegistry = onnxOpRegistry
+)
+
 //TODO: DynamicQuantizeLinear
 //TODO: Einsum
 //TODO: Expand
@@ -197,7 +214,7 @@ val gru = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         inputFrameworkOpName = "GRU",
         opName = "gruCell",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("x" to "x","ruWeight" to "R","cWeight" to "W","cBias" to "B"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X","Wru" to "R","Wc" to "W","bc" to "B"))),
         attributeMappingRules = listOf()
 )
 
@@ -233,7 +250,7 @@ val hardSigmoid = OnnxMappingProcess(
         opName =  "hard_sigmoid",
         inputFrameworkOpName = "HardSigmoid",
         opMappingRegistry = onnxOpRegistry,
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("x" to "X")))
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X")))
 )
 
 
@@ -342,20 +359,20 @@ val lstm = OnnxMappingProcess(
         inputFrameworkOpName = "LSTM",
         opName = "lstmLayer",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
-                "x" to "x",
-                "W" to "iWeights",
-                "iRWeights" to "R",
-                "iBias" to "B",
-                "maxTSLength" to "sequence_lens",
-                "yLast" to "initial_h",
-                "cLast" to "initial_c"))),
+                "input" to "X",
+                "Wx" to "W",
+                "Wr" to "R",
+                "b" to "B",
+                "seqLen" to "sequence_lens",
+                "hI" to "initial_h",
+                "cI" to "initial_c"))),
         attributeMappingRules =  listOf(valueMappings(mapOf("cellClip" to "clip")),
                 stringToIndex(outputAttributeValue = "directionMode",
                         inputAttributeValue = "direction",
                         listOfValues = listOf("forward","reverse","bidirectional")),
                 listAttributeValueLookup(outputAttributeValue = "gateAlpha",inputAttributeValue = "activation_alpha",indexValue = 0),
                 listAttributeValueLookup(outputAttributeValue = "cellAlpha",inputAttributeValue = "activation_alpha",indexValue = 1),
-                listAttributeValueLookup(outputAttributeValue = "outAlpha",inputAttributeValue = "acitvation_alpha",indexValue = 2),
+                listAttributeValueLookup(outputAttributeValue = "outAlpha",inputAttributeValue = "activation_alpha",indexValue = 2),
                 listAttributeValueLookup(outputAttributeValue = "gateBeta",inputAttributeValue = "activation_beta",indexValue = 0),
                 listAttributeValueLookup(outputAttributeValue = "cellBeta",inputAttributeValue = "activation_beta",indexValue = 1),
                 listAttributeValueLookup(outputAttributeValue = "outBeta",inputAttributeValue = "activation_beta",indexValue = 2),
@@ -368,7 +385,7 @@ val lstm = OnnxMappingProcess(
 val leakyRelu = OnnxMappingProcess(
         inputFrameworkOpName = "LeakyRelu",
         opName = "leakyrelu",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("x" to "x"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
         attributeMappingRules = listOf(valueMappings(mapOf("alpha" to "alpha"))),
         opMappingRegistry = onnxOpRegistry
 )
@@ -383,6 +400,8 @@ val matMul = OnnxMappingProcess(
         opName = "mmul",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B")))
 )
+
+
 //TODO: MatMulInteger
 //TODO: Max
 val maxPool = OnnxMappingProcess(
@@ -418,10 +437,10 @@ val nonMaxSuppression = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
                 "boxes" to "boxes",
-                "scores" to "scores",
+                "scales" to "scores",
                 "maxOutSize" to "max_output_boxes_per_class",
                 "iouThreshold" to "iou_threshold",
-        "scoreThreshold" to "score_threshold")))
+                "scoreThreshold" to "score_threshold")))
 )
 //TODO: NonZero PRIORITIZE
 //TODO: Normalizer
@@ -430,7 +449,7 @@ val nonMaxSuppression = OnnxMappingProcess(
 val pRelu = OnnxMappingProcess(
         inputFrameworkOpName = "PRelu",
         opName = "prelu",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X","slope" to "alpha"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X","alpha" to "slope"))),
         opMappingRegistry = onnxOpRegistry
 )
 
@@ -438,7 +457,7 @@ val pad = OnnxMappingProcess(
         inputFrameworkOpName = "Pad",
         opMappingRegistry = onnxOpRegistry,
         opName = "pad",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("in" to "data","padding" to "pads"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data","paddings" to "pads"))),
         attributeMappingRules = listOf(stringToIndex(outputAttributeValue = "mode",inputAttributeValue = "mode",listOfValues = listOf("constant","reflect","edge")))
 )
 
@@ -450,8 +469,7 @@ val randomNormal = OnnxMappingProcess(
         inputFrameworkOpName = "RandomNormal",
         opName = "random_normal",
         opMappingRegistry = onnxOpRegistry,
-        attributeMappingRules = listOf(valueMappings(mapOf("mean" to "mean","stdev" to "scale")),
-                convertNumberListToInputNDArray(outputAttributeValue = "shape",inputAttributeValue = "shape"))
+        attributeMappingRules = listOf(convertNumberListToInputNDArray(outputAttributeValue = "input",inputAttributeValue = "shape"))
 )
 
 
@@ -463,9 +481,9 @@ val randomNormal = OnnxMappingProcess(
 
 val randomUniform = OnnxMappingProcess(
         inputFrameworkOpName = "RandomUniform",
-        opName = "random_uniform",
+        opName = "randomuniform",
         opMappingRegistry = onnxOpRegistry,
-        attributeMappingRules = listOf(valueMappings(mapOf("mean" to "mean","stdev" to "scale")),
+        attributeMappingRules = listOf(valueMappings(mapOf("min" to "low","max" to "high")),
                 convertNumberListToInputNDArray(outputAttributeValue = "shape",inputAttributeValue = "shape"))
 )
 
@@ -477,13 +495,21 @@ val range = OnnxMappingProcess(
         attributeMappingRules = listOf(valueMappings(mapOf("s" to "start","to" to "limit","d" to "delta")))
 )
 
+val neg = OnnxMappingProcess(
+        opName = "neg",
+        inputFrameworkOpName = "Neg",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X")))
+)
+
+
 val norm1 = OnnxMappingProcess(
         inputFrameworkOpName = "ReduceL1",
         opMappingRegistry = onnxOpRegistry,
         opName = "reduce_norm1",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes"))
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes"))
 
 )
 
@@ -502,7 +528,7 @@ val reduceLogSumExp = OnnxMappingProcess(
         opName = "reduce_logsumexp",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
 val reduceMax = OnnxMappingProcess(
@@ -510,7 +536,7 @@ val reduceMax = OnnxMappingProcess(
         opName = "reduce_max",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
 val reduceMean = OnnxMappingProcess(
@@ -518,7 +544,7 @@ val reduceMean = OnnxMappingProcess(
         opName = "reduce_mean",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
 val reduceMin = OnnxMappingProcess(
@@ -526,7 +552,7 @@ val reduceMin = OnnxMappingProcess(
         opName = "reduce_min",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
 val reduceProd = OnnxMappingProcess(
@@ -534,7 +560,7 @@ val reduceProd = OnnxMappingProcess(
         opName = "reduce_prod",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
 
@@ -543,7 +569,7 @@ val reduceSum = OnnxMappingProcess(
         opName = "reduce_sum",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(valueMappings(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue =  "axesVector",inputAttributeValue = "axes")),
+                listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
 //TODO: ReduceSumSquare
@@ -557,16 +583,19 @@ val reduceSum = OnnxMappingProcess(
 val scatter = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         inputFrameworkOpName = "ScatterElements",
-        opName = "scatter_upd",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("ref" to "data","indices" to "indices","updates" to "updates")))
+        opName = "scatter_update",
+        attributeMappingRules =   listOf(ndarrayToIntList(ndarrayNameToAttributeName = mutableMapOf("indices" to "indices"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("operand" to "data","updates" to "updates")))
 )
 
+/*
 val scatterNd = OnnxMappingProcess(
         opName = "scatter_nd_update",
         inputFrameworkOpName = "ScatterNd",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data","indices" to "indices","updates" to "updates"))),
         opMappingRegistry = onnxOpRegistry
 )
+*/
 
 //TODO: SequenceAt
 //TODO: SequenceConstruct
@@ -583,9 +612,9 @@ val shape = OnnxMappingProcess(
 
 val not = OnnxMappingProcess(
         opName = "not",
-        inputFrameworkOpName = "not",
+        inputFrameworkOpName = "Not",
         opMappingRegistry = onnxOpRegistry,
-        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X","y" to "Y"))))
+        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X"))))
 )
 
 
@@ -593,7 +622,8 @@ val pow = OnnxMappingProcess(
         opName = "pow",
         inputFrameworkOpName = "Pow",
         opMappingRegistry = onnxOpRegistry,
-        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X","y" to "Y"))))
+        attributeMappingRules = listOf(convertNDArrayInputToScalarAttr(outputAttributeValue = "pow",inputAttributeValue = "Y")),
+        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X"))))
 )
 
 val size = OnnxMappingProcess(
@@ -609,7 +639,7 @@ val slice = OnnxMappingProcess(
         inputFrameworkOpName = "Slice",
         opName = "strided_slice",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("begin" to "starts","end" to "ends","strides" to "steps")))
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("v_begin" to "starts","v_end" to "ends","v_stride" to "steps")))
 )
 
 
@@ -618,7 +648,7 @@ val spaceToDepth = OnnxMappingProcess(
         opName = "space_to_depth",
         inputFrameworkOpName = "SpaceToDepth",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMappings(mapOf("block_size" to "block_size")),
+        attributeMappingRules = listOf(valueMappings(mapOf("block_size" to "blocksize")),
                 argDescriptorConstant(listOf(ArgDescriptor {
                     name = "isNCHW"
                     boolValue = true
@@ -630,8 +660,15 @@ val split = OnnxMappingProcess(
         opName = "split",
         inputFrameworkOpName = "Split",
         opMappingRegistry = onnxOpRegistry,
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("a" to "","b" to "split"))),
-        attributeMappingRules = listOf(valueMappings(mapOf("splitDim" to "axis")))
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("a" to "input"))),
+        attributeMappingRules = listOf(valueMappings(mapOf("dimensions" to "axis")))
+)
+
+val sqrt = OnnxMappingProcess(
+        opName = "sqrt",
+        inputFrameworkOpName = "Sqrt",
+        opMappingRegistry = onnxOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X"))))
 )
 
 val softplus = OnnxMappingProcess(
@@ -647,7 +684,7 @@ val squeeze = OnnxMappingProcess(
         inputFrameworkOpName = "Squeeze",
         opMappingRegistry = onnxOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
-        attributeMappingRules = listOf(ndarrayToIntList(ndarrayNameToAttributeName = mutableMapOf("squeezeDims" to "axes")))
+        attributeMappingRules = listOf(ndarrayToIntList(ndarrayNameToAttributeName = mutableMapOf("a" to "axes")))
 )
 
 //TODO: StringNormalizer
@@ -720,7 +757,7 @@ fun defineOnnxSingleTransform(inputOpName: String, inputFrameworkOpName: String)
 
 
 val abs = OnnxMappingProcess(
-        opName = "abs", tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("x" to "x"))),
+        opName = "abs", tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("input" to "X"))),
         inputFrameworkOpName = "Abs",
         inputFramework = "onnx",
         opMappingRegistry = onnxOpRegistry)
@@ -731,7 +768,7 @@ val const = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry
 )
 
-val ceil = defOnnxSingleTransform(inputFrameworkOpName = "Ceil",opName = "ceil",inputFrameworkInput = "X",outputName = "x")
+val ceil = defOnnxSingleTransform(inputFrameworkOpName = "Ceil",opName = "ceil",inputFrameworkInput = "X",outputName = "input")
 
 
 
@@ -740,12 +777,12 @@ val conv2d = OnnxMappingProcess(
         inputFrameworkOpName = "Conv",
         opName = "conv2d",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
-                "input" to "input","filter" to "weights"))),
+                "input" to "X","weights" to "W","bias" to "B"))),
         attributeMappingRules = listOf(
-                stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
+                //stringEqualsRule(outputAttribute = "isNCHW",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "auto_pad",valueToTest = "SAME"),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pH",inputFrameworkAttributeName = "padding",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
-                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pW",inputFrameworkAttributeName = "padding",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pH",inputFrameworkAttributeName = "pads",targetValue = "NCHW",trueIndex = 2,falseIndex = 1),
+                conditionalFieldValueIntIndexArrayRule(outputAttribute = "pW",inputFrameworkAttributeName = "pads",targetValue = "NCHW",trueIndex = 3,falseIndex = 2),
                 sizeThreshold(outputAttribute = "dH",index = 0,sizeThreshold =  2,fallbackIndex = 0,inputFrameworkAttributeName = "dilations"),
                 sizeThreshold(outputAttribute = "dW",index = 1,sizeThreshold =  2,fallbackIndex = 0,inputFrameworkAttributeName = "dilations"),
                 sizeThreshold(outputAttribute = "sH",index = 0,sizeThreshold =  2,fallbackIndex = 0,inputFrameworkAttributeName = "strides"),
@@ -759,8 +796,12 @@ val elu = defOnnxSingleTransform(opName = "elu",inputFrameworkOpName = "Elu",out
 
 val mean = defOnnxSingleTransform(opName = "reduce_mean",inputFrameworkOpName = "Mean",outputName = "input",inputFrameworkInput = "data_0")
 val min = defOnnxSingleTransform(opName = "reduce_min",inputFrameworkOpName = "Min",outputName = "input",inputFrameworkInput = "data_0")
-val selu = defOnnxSingleTransform(inputFrameworkOpName = "Selu",opName = "selu",inputFrameworkInput = "input",outputName = "x",
-        attributeMappingRules = listOf(valueMappings(mutableMapOf("alpha" to "alpha","gamma" to "gamma"))))
+val relu = defOnnxSingleTransform(inputFrameworkOpName = "Relu",opName = "relu",inputFrameworkInput = "X",outputName = "input")
+
+val isNan = defOnnxSingleTransform(inputFrameworkOpName = "IsNaN",opName = "isnan",inputFrameworkInput = "X",outputName = "input")
+
+
+val selu = defOnnxSingleTransform(inputFrameworkOpName = "Selu",opName = "selu",inputFrameworkInput = "X",outputName = "input")
 val sum = defOnnxSingleTransform(opName = "reduce_sum",inputFrameworkOpName = "Sum",outputName = "input",inputFrameworkInput = "data_0")
 
 object OnnxOpDeclarations {

@@ -612,7 +612,7 @@ val dynamicPartition = TensorflowMappingProcess(
  */
 val dynamicStitch = TensorflowMappingProcess(
         opName = "dynamic_stitch",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("index" to "data","indices" to "indices"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("index" to "data","input" to "indices"))),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("numPartitions" to "N"))),
         inputFrameworkOpName = "DynamicStitch",
         opMappingRegistry = tensorflowOpRegistry
@@ -620,7 +620,7 @@ val dynamicStitch = TensorflowMappingProcess(
 
 val empty = TensorflowMappingProcess(
         opName = "create",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("shape" to "shape"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "shape"))),
         inputFrameworkOpName = "Empty",
         attributeMappingRules = listOf(valueMapping(mapOf("init" to "init"))),
         opMappingRegistry = tensorflowOpRegistry
@@ -671,7 +671,7 @@ val extractImagesPatches = TensorflowMappingProcess(
                 listAttributeValueLookupToIndex(outputAttributeValue = "kstrideCols",inputAttributeValue = "strides",idx =  1),
                 listAttributeValueLookupToIndex(outputAttributeValue = "krateRows",inputAttributeValue = "rates",idx =  1),
                 listAttributeValueLookupToIndex(outputAttributeValue = "krateCols",inputAttributeValue = "rates",idx =  1),
-                stringEqualsRule(outputAttribute = "sameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"))
+                stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"))
 )
 
 
@@ -870,6 +870,11 @@ val oneHot = mapTensorNamesWithOp(inputFrameworkOpName = "OneHot",opName = "oneh
 
 val onesLike = mapTensorNamesWithOp(inputFrameworkOpName = "OnesLike",opName = "ones_as",tensorNames = mutableMapOf("input" to "x"))
 
+val pow = mapTensorNamesWithOp(inputFrameworkOpName = "Pow",opName = "pow",
+        attributeMappingRules = listOf(convertNDArrayInputToScalarAttr(mutableMapOf("pow" to "y"))),
+        tensorNames = mutableMapOf("input" to "x")
+)
+
 val rank = mapTensorNamesWithOp(inputFrameworkOpName = "Rank", opName = "rank",tensorNames = mutableMapOf("input" to "input"))
 
 val relu6 = multipleNameMapping(inputFrameworkOpNames = listOf("Relu6"),opName = "relu6",
@@ -1037,6 +1042,8 @@ val softMax = mapTensorNamesWithOp(inputFrameworkOpName = "Softmax",opName = "so
 val softmaxCrossEntryLossWithLogits = mapTensorNamesWithOp(inputFrameworkOpName = "SoftmaxCrossEntropyWithLogits",opName = "softmax_cross_entropy_loss_with_logits",
         tensorNames = mutableMapOf("logits" to "features","labels" to "labels"))
 
+
+
 val spaceToBatch = TensorflowMappingProcess(
         opName = "space_to_batch",
         inputFrameworkOpName = "SpaceToBatch",
@@ -1065,7 +1072,7 @@ val spaceToDepth = TensorflowMappingProcess(
 val split = TensorflowMappingProcess(
         opName = "split",
         inputFrameworkOpName = "Split",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("a" to "value"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("b" to "value"))),
         attributeMappingRules = listOf(valueMapping(mapOf("num_splits" to "num_split","dimensions" to "split_dim"))),
         opMappingRegistry = tensorflowOpRegistry
 )
@@ -1083,7 +1090,7 @@ val squeeze = TensorflowMappingProcess(
         opName = "squeeze",
         inputFrameworkOpName = "Squeeze",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(listNumberToListNumber(outputAttributeValue = "squeezeDims",inputAttributeValue = "squeeze_dims")),
+        attributeMappingRules = listOf(listNumberToListNumber(outputAttributeValue = "a",inputAttributeValue = "squeeze_dims")),
         opMappingRegistry = tensorflowOpRegistry
 )
 
@@ -1191,7 +1198,7 @@ val tensorArrayRead = multipleNameMapping(inputFrameworkOpNames = listOf("Tensor
 
 val tensorArrayScatter = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArrayScatter", "TensorArrayScatterV2", "TensorArrayScatterV3"),
         opName = "scatter_list",
-        tensorNames = mutableMapOf("list" to "indices","array" to "value"))
+        tensorNames = mutableMapOf("list" to "value","indices" to "indices"))
 
 //TODO: revisit this, not sure why the ops are off
 

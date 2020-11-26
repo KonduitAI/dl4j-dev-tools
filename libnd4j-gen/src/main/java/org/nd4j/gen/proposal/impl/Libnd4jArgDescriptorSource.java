@@ -6,7 +6,6 @@ import org.nd4j.common.base.Preconditions;
 import org.nd4j.gen.OpDeclarationDescriptor;
 import org.nd4j.gen.proposal.ArgDescriptorProposal;
 import org.nd4j.gen.proposal.ArgDescriptorSource;
-import org.nd4j.gen.proposal.utils.ArgDescriptorParserUtils;
 import org.nd4j.ir.OpNamespace;
 
 import java.io.File;
@@ -19,7 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.nd4j.gen.proposal.utils.ArgDescriptorParserUtils.*;
+import static org.nd4j.gen.proposal.impl.ArgDescriptorParserUtils.*;
+
 
 public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
@@ -114,7 +114,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         if (line.contains(CUSTOM_OP_IMPL)) {
                             // CUSTOM_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS)
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, CUSTOM_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, CUSTOM_OP_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.CUSTOM_OP_IMPL);
@@ -151,7 +151,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                 oneLineOp = true;
                             }
 
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, BOOLEAN_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, BOOLEAN_OP_IMPL);
 
                             String[] split = line.trim().split(",");
                             name = split[0];
@@ -170,7 +170,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         } else if(line.contains(LIST_OP_IMPL)) {
                             // LIST_OP_IMPL(NAME, NIN, NOUT, TARGS, IARGS)
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, LIST_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, LIST_OP_IMPL);
 
                             String[] split = line.trim().split(",");
                             name = split[0];
@@ -202,7 +202,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             foundOp = true;
                             if(line.contains(");"))
                                 oneLineOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, LOGIC_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, LOGIC_OP_IMPL);
 
                             String[] split = line.trim().split(",");
                             name = split[0];
@@ -217,7 +217,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         } else if(line.contains(DIVERGENT_OP_IMPL)) {
                             foundOp = true;
                             //DIVERGENT_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, DIVERGENT_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, DIVERGENT_OP_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.DIVERGENT_OP_IMPL);
@@ -239,7 +239,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         } else if(line.contains(CONFIGURABLE_OP_IMPL)) {
                             // CONFIGURABLE_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS)
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, CONFIGURABLE_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, CONFIGURABLE_OP_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.CONFIGURABLE_OP_IMPL);
@@ -269,7 +269,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         } else if(line.contains(REDUCTION_OP_IMPL)) {
                             //REDUCTION_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE, TARGS, IARGS)
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, REDUCTION_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, REDUCTION_OP_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.REDUCTION_OP_IMPL);
@@ -299,7 +299,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         } else if(line.contains(BROADCASTABLE_OP_IMPL)) {
                             //BROADCASTABLE_OP_IMPL(NAME, TARGS, IARGS)
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, BROADCASTABLE_OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, BROADCASTABLE_OP_IMPL);
 
                             String[] split = line.trim().split(",");
                             name = split[0];
@@ -350,7 +350,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             inOpBlock = true;
                         } else if(line.contains(PLATFORM_IMPL)) {
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, PLATFORM_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, PLATFORM_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.PLATFORM_IMPL);
@@ -366,7 +366,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         else if(line.contains(OP_IMPL)) {
                             //OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)
                             foundOp = true;
-                            line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, OP_IMPL);
+                            line = removeBracesFromDeclarationMacro(line, OP_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.OP_IMPL);
@@ -466,7 +466,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                              * Need to add case for array matching.
                              */
                         } else if (matchesArgDeclaration(INT_ARG,line)) {
-                            processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
+                             processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
 
                         } else if (matchesArgDeclaration(OUTPUT_NULLIFIED,line)
                                 || matchesArgDeclaration(OUTPUT_VARIABLE,line)) {
@@ -476,7 +476,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             processLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.FLOAT);
                         } else if (matchesArgDeclaration(INPUT_VARIABLE,line) || matchesArgDeclaration(INPUT_LIST,line)) {
                             processLine(inArgNames,inArgIndices,argDescriptorProposals,line, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
-                        } else if (matchesArgDeclaration(B_ARG,line)) {
+                         } else if (matchesArgDeclaration(B_ARG,line)) {
                             processLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL);
                         } else if(matchesArrayArgDeclaration(line.trim())) {
                             if(line.contains(INT_ARG))
@@ -494,7 +494,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
                     //add alias descriptors
                     if (line.contains(DECLARE_SYN)) {
-                        line = ArgDescriptorParserUtils.removeBracesFromDeclarationMacro(line, DECLARE_SYN);
+                        line = removeBracesFromDeclarationMacro(line, DECLARE_SYN);
                         String[] args2 = line.split(",");
                         String aliasFor = args2[1].trim();
                         String newKey = args2[0].trim();
@@ -586,7 +586,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
     private void processLine(List<String> iArgNames, List<Integer> iArgIndices,
                              List<ArgDescriptorProposal> argDescriptorProposals,
                              String line, OpNamespace.ArgDescriptor.ArgType argType) {
-        boolean matchesPureDeclaration = Pattern.matches(ARG_DECLARATION,line) || Pattern.matches(ARG_BOOL_EQUALS_DECLARATION,line) || Pattern.matches(ARRAY_ASSIGNMENT,line);
+         boolean matchesPureDeclaration = Pattern.matches(ARG_DECLARATION,line) || Pattern.matches(ARG_BOOL_EQUALS_DECLARATION,line) || Pattern.matches(ARRAY_ASSIGNMENT,line);
         String[] split = line.split(" = ");
         if(split.length == 1) {
             //invalid line
@@ -596,6 +596,10 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
         String[] arrSplit = split[0].split(" ");
         //type + name
         Integer index = extractArgFromCpp(line);
+        //guess index based on current number of indices already added
+        if(index < 0) {
+            index = iArgIndices.size();
+        }
         ArgDescriptorParserUtils.addNameToList(line, iArgNames, iArgIndices);
         //note sometimes we have individual array entries for names, we need to strip out index indicators like [i]
         String argName = arrSplit[arrSplit.length - 1].replaceAll("\\[.*\\]","");

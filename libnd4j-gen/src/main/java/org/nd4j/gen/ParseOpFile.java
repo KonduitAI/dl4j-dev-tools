@@ -16,21 +16,15 @@
 package org.nd4j.gen;
 
 import org.apache.commons.io.FileUtils;
-import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.common.base.Preconditions;
-import org.nd4j.common.primitives.Counter;
 import org.nd4j.common.primitives.Pair;
-import org.nd4j.common.util.SetUtils;
 import org.nd4j.gen.proposal.ArgDescriptorProposal;
 import org.nd4j.gen.proposal.ArgDescriptorSource;
 import org.nd4j.gen.proposal.impl.JavaSourceArgDescriptorSource;
 import org.nd4j.gen.proposal.impl.Libnd4jArgDescriptorSource;
-import org.nd4j.gen.proposal.utils.ArgDescriptorParserUtils;
+import org.nd4j.gen.proposal.impl.ArgDescriptorParserUtils;
 import org.nd4j.ir.OpNamespace;
-import org.nd4j.shade.protobuf.Message;
 import org.nd4j.shade.protobuf.TextFormat;
-import org.reflections.Reflections;
-import org.tensorflow.framework.OpList;
 
 import java.io.File;
 import java.nio.charset.Charset;

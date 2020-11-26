@@ -1,6 +1,9 @@
-package org.nd4j.gen.proposal.utils;
+package org.nd4j.gen.proposal.impl;
 
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.nd4j.autodiff.samediff.SDVariable;
@@ -130,6 +133,13 @@ public class ArgDescriptorParserUtils {
 
     public static OpNamespace.ArgDescriptor.ArgType argTypeForParam(ResolvedParameterDeclaration parameterDeclaration) {
         String type = parameterDeclaration.describeType();
+        boolean isEnum = false;
+        try {
+            isEnum =  Class.forName(parameterDeclaration.asParameter().describeType()).isEnum();
+        } catch(ClassNotFoundException e) {
+
+        }
+
         if(type.contains(INDArray.class.getName()) || type.contains(SDVariable.class.getName())) {
             if(!outputNames.contains(parameterDeclaration.getName())) {
                 return OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR;
@@ -137,7 +147,8 @@ public class ArgDescriptorParserUtils {
             else return OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR;
         } else if(type.contains(double.class.getName()) || type.contains(float.class.getName()) || type.contains(Float.class.getName()) || type.contains(Double.class.getName())) {
             return OpNamespace.ArgDescriptor.ArgType.DOUBLE;
-        } else if(type.contains(int.class.getName()) || type.contains(long.class.getName()) || type.contains(Integer.class.getName()) || type.contains(Long.class.getName())) {
+        } else if(type.contains(int.class.getName()) || type.contains(long.class.getName()) ||
+                type.contains(Integer.class.getName()) || type.contains(Long.class.getName()) || isEnum) {
             return OpNamespace.ArgDescriptor.ArgType.INT64;
         } else if(type.contains(boolean.class.getName()) || type.contains(Boolean.class.getName())) {
             return OpNamespace.ArgDescriptor.ArgType.BOOL;
@@ -146,8 +157,24 @@ public class ArgDescriptorParserUtils {
         }
     }
 
+
+    public static boolean paramIsEnum(String paramType) {
+        try {
+            return  Class.forName(paramType).isEnum();
+        } catch(ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+
+    public static boolean paramIsEnum(ResolvedParameterDeclaration param) {
+        return paramIsEnum(param.describeType());
+    }
+
+
     public static boolean isValidParam(ResolvedParameterDeclaration param) {
-        return param.describeType().contains(INDArray.class.getName()) ||
+        boolean describedClassIsEnum = false;
+        boolean ret = param.describeType().contains(INDArray.class.getName()) ||
                 param.describeType().contains(boolean.class.getName()) ||
                 param.describeType().contains(Boolean.class.getName()) ||
                 param.describeType().contains(SDVariable.class.getName()) ||
@@ -159,6 +186,21 @@ public class ArgDescriptorParserUtils {
                 param.describeType().contains(Float.class.getName()) ||
                 param.describeType().contains(Long.class.getName()) ||
                 param.describeType().contains(long.class.getName());
+        try {
+            describedClassIsEnum =  Class.forName(param.asParameter().describeType()).isEnum();
+        } catch(ClassNotFoundException e) {
+
+        }
+        return ret || describedClassIsEnum;
+    }
+
+    public static ResolvedMethodDeclaration tryResolve(MethodCallExpr methodCallExpr) {
+        try {
+            return methodCallExpr.resolve();
+        }catch(Exception e) {
+
+        }
+        return null;
     }
 
     public static boolean typeNameOrArrayOfTypeNameMatches(String typeName,String...types) {
