@@ -4,6 +4,7 @@ import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
 import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.nd4j.autodiff.samediff.SameDiff
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
@@ -11,6 +12,7 @@ import org.nd4j.ir.OpNamespace
 import org.nd4j.shade.protobuf.ByteString
 import org.tensorflow.framework.*
 import java.nio.charset.Charset
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertTrue
 
 class TestTensorflowIR {
@@ -274,6 +276,107 @@ class TestTensorflowIR {
 
         assertEquals(opDef,tfMappingCtx.opDef)
 
+    }
+
+    @Test
+    fun testOpsMapped() {
+        val tensorflowOpNames = tensorflowOpRegistry.inputFrameworkOpNames().filter { tensorflowOpRegistry.registeredOps.containsKey(it) }
+        val nd4jOpNames = tensorflowOpRegistry.nd4jOpNames()
+        /**
+         * TODO: Assert each op is mapped.
+         *
+         * Assert all attributes in nd4j are mapped.
+         * If not, let's document what isn't and why for each op.
+         *
+         * Create an op generation tool that allows random generation of test cases
+         * based on existing mapped ops between nd4j and tensorflow.
+         */
+        tensorflowOpNames.map {tensorflowOpName -> tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpName)}
+                .forEach {
+                    val tensorflowNamesMapped = HashSet<String>()
+                    val nd4jNamesMapped = HashSet<String>()
+                    //we can ignore dtype for now
+                    nd4jNamesMapped.add("dtype")
+                    val opDef = tensorflowOpRegistry.lookupNd4jOpDef(it.opName())
+                    val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(it.inputFrameworkOpName())
+                    val tensorflowAssertionNames = HashSet<String>()
+                    tensorflowAssertionNames.addAll(tensorflowOpDef.inputArgList.map { arg -> arg.name })
+                    tensorflowAssertionNames.addAll(tensorflowOpDef.attrList.map { attr -> attr.name })
+                    val nd4jOpDefAssertions = HashSet<String>()
+                    nd4jOpDefAssertions.addAll(opDef.argDescriptorList.map { argDescriptor -> argDescriptor.name })
+                    val numRequiredInputsTf = tensorflowOpDef.inputArgCount
+                    val nd4jInputs = opDef.argDescriptorList.filter { arg -> arg.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }.count()
+                    /**
+                     * TODO: Grab total collection of mapped nd4j names
+                     * as outputs and mapped tensorflow names as inputs.
+                     * Compare the mapped names to the op definitions
+                     * in nd4j and tensorflow respectively.
+                     */
+                    it.tensorMappingRules().forEach { mappingRule ->
+                        mappingRule.mappingNamesToPerform().forEach {  mappingName ->
+                            tensorflowNamesMapped.add(mappingName.value)
+                            nd4jNamesMapped.add(mappingName.key)
+                        }
+                    }
+
+                    it.attributeMappingRules().forEach { mappingRule ->
+                        mappingRule.mappingNamesToPerform().forEach { mappingName ->
+                            tensorflowNamesMapped.add(mappingName.value)
+                            nd4jNamesMapped.add(mappingName.key)
+                        }
+
+                        mappingRule.mappingTransformerArgs().forEach {transformerArg ->
+                            run {
+                                transformerArg.value.forEach { argValue ->
+                                    nd4jNamesMapped.add(argValue.name)
+
+                                }
+                            }
+                        }
+
+                    }
+
+
+                    tensorflowOpDef.inputArgList.map {input -> input.name}.forEach { inputName ->
+                        assertTrue(tensorflowAssertionNames.contains(inputName))
+                    }
+
+                    tensorflowOpDef.attrList.filter { attrDef -> attrDef.type != "type" }.map {attrDef -> attrDef.name }.forEach { attrName ->
+                        assertTrue(tensorflowAssertionNames.contains(attrName))
+                    }
+
+
+
+                    opDef.argDescriptorList.forEach {  argDef ->
+                        //only require it when the
+
+                        when(argDef.argType) {
+                            OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
+                                /**
+                                 * Nd4j typically has many optional inputs that can also double as attributes
+                                 * We need to allow for a bit of flexibility in how we handle op definitions. If they're not mapped 1 to 1,
+                                 * we just log a warning for unmapped inputs. Otherwise we can do an assertion.
+                                 */
+                                if(numRequiredInputsTf == nd4jInputs)
+                                    assertTrue("Nd4j op name ${opDef.name} with tensorflow mapping ${tensorflowOpDef.name} has missing mapping ${argDef.name}",nd4jNamesMapped.contains(argDef.name))
+                                else if(!nd4jNamesMapped.contains(argDef.name)) {
+                                    println("Warning: Nd4j op name ${opDef.name} with tensorflow mapping ${tensorflowOpDef.name} has missing mapping ${argDef.name}")
+                                }
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.INT32,OpNamespace.ArgDescriptor.ArgType.INT64 -> {
+                                assertTrue("Nd4j op name ${opDef.name} with tensorflow mapping ${tensorflowOpDef.name}  has missing mapping ${argDef.name}",nd4jNamesMapped.contains(argDef.name))
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.DOUBLE, OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
+                                assertTrue("Nd4j op name ${opDef.name} with tensorflow mapping ${tensorflowOpDef.name}  has missing mapping ${argDef.name}",nd4jNamesMapped.contains(argDef.name))
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.BOOL -> {
+                                assertTrue("Nd4j op name ${opDef.name} with tensorflow mapping ${tensorflowOpDef.name}  has missing mapping ${argDef.name}",nd4jNamesMapped.contains(argDef.name))
+                            }
+                        }
+
+                    }
+
+                }
     }
 
     @Test

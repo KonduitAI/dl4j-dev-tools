@@ -48,11 +48,6 @@ public class OpDeclarationDescriptor implements Serializable  {
     private List<String> iArgNames;
     private List<String> bArgNames;
 
-    private List<Integer> inArgIndices;
-    private List<Integer> outArgIndices;
-    private List<Integer> iArgIndices;
-    private List<Integer> tArgIndices;
-    private List<Integer> bArgIndices;
 
     private OpDeclarationType opDeclarationType;
     @Builder.Default
@@ -74,34 +69,6 @@ public class OpDeclarationDescriptor implements Serializable  {
         PLATFORM_IMPL
     }
 
-
-
-
-    /**
-     * Get all the arguments names of this descriptor
-     * by {@link OpNamespace.ArgDescriptor.ArgType}
-     * @return the map of arg type
-     */
-    public Map<String, Pair<Integer,OpNamespace.ArgDescriptor.ArgType>> argsByType() {
-        Map<String,Pair<Integer,OpNamespace.ArgDescriptor.ArgType>> argsByType = new HashMap<>();
-        for(String s : inArgNames) {
-            argsByType.put(s,Pair.of(inArgIndices.get(inArgNames.indexOf(s)),OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR));
-        }
-        for(String s : outArgNames) {
-            argsByType.put(s,Pair.of(outArgIndices.get(outArgNames.indexOf(s)),OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR));
-        }
-        for(String s : iArgNames) {
-            argsByType.put(s,Pair.of(iArgIndices.get(iArgNames.indexOf(s)),OpNamespace.ArgDescriptor.ArgType.INT64));
-        }
-        for(String s : tArgNames) {
-            argsByType.put(s,Pair.of(tArgIndices.get(tArgNames.indexOf(s)),OpNamespace.ArgDescriptor.ArgType.FLOAT));
-        }
-        for(String s : bArgNames) {
-            argsByType.put(s,Pair.of(bArgIndices.get(bArgNames.indexOf(s)),OpNamespace.ArgDescriptor.ArgType.BOOL));
-        }
-
-        return argsByType;
-    }
 
 
     public void validate() {

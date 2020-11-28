@@ -754,8 +754,10 @@ public class ArgDescriptorParserUtils {
         boolean ret =  matcher.find();
         boolean argOnlyResult = argOnly.find();
         return ret || testLine.contains("?") && argOnlyResult || testLine.contains("static_cast") && argOnlyResult ||
-                testLine.contains("))") && argOnlyResult || testLine.contains("==") && argOnlyResult
-                || testLine.contains("->") && argOnlyResult;
+                (testLine.contains("))") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE")) ||
+                (testLine.contains("==") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE"))
+                || (testLine.contains("(" + argType) && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE"))
+                ||  (testLine.contains("->") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE"));
     }
 
 }

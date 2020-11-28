@@ -72,6 +72,7 @@ class TestOnnxIR {
                             println("Testing nd4j name  ${attrMapping.key} and input framework name ${attrMapping.value}")
                             assertTrue(nd4jArgDefNames.contains(attrMapping.key) || inputNameArgDefs.contains(attrMapping.key))
                             assertTrue(onnxAttrNames.contains(attrMapping.value) || inputFrameworkOpDefNames.contains(attrMapping.value))
+
                         }
 
                     }

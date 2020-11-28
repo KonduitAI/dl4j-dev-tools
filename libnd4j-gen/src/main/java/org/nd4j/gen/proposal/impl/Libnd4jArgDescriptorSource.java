@@ -2,6 +2,7 @@ package org.nd4j.gen.proposal.impl;
 
 import lombok.Builder;
 import lombok.SneakyThrows;
+import lombok.val;
 import org.nd4j.common.base.Preconditions;
 import org.nd4j.gen.OpDeclarationDescriptor;
 import org.nd4j.gen.proposal.ArgDescriptorProposal;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.nd4j.gen.proposal.impl.ArgDescriptorParserUtils.*;
 
@@ -392,7 +394,6 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
                     //reset just in case we encounter another op in the file
                     //TODO: End of block needs to detect short circuits
-                    // resize_nearest_neighbor is broke
                     if (inOpBlock && line.contains(RETURN) && endOfBlock(currLineIdx,lines) || oneLineOp) {
                         //reset op after 1 is found and current code block ends
                         if (foundOp) {
@@ -401,12 +402,6 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             builder.tArgNames(tArgNames);
                             builder.iArgNames(iArgNames);
                             builder.bArgNames(bArgNames);
-
-                            builder.bArgIndices(bArgIndices);
-                            builder.iArgIndices(iArgIndices);
-                            builder.tArgIndices(tArgIndices);
-                            builder.inArgIndices(inArgIndices);
-                            builder.outArgIndices(outArgIndices);
 
                             opDeclarationDescriptor = builder.build();
                             System.out.println(opDeclarationDescriptor);
@@ -458,7 +453,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                     }
 
                     if (inOpBlock) {
-                         if(argDescriptorProposals == null)
+                        if(argDescriptorProposals == null)
                             argDescriptorProposals = new ArrayList<>();
                         if (line.isEmpty()) {
                             //ignore
@@ -466,7 +461,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                              * Need to add case for array matching.
                              */
                         } else if (matchesArgDeclaration(INT_ARG,line)) {
-                             processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
+                            processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
 
                         } else if (matchesArgDeclaration(OUTPUT_NULLIFIED,line)
                                 || matchesArgDeclaration(OUTPUT_VARIABLE,line)) {
@@ -476,7 +471,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             processLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.FLOAT);
                         } else if (matchesArgDeclaration(INPUT_VARIABLE,line) || matchesArgDeclaration(INPUT_LIST,line)) {
                             processLine(inArgNames,inArgIndices,argDescriptorProposals,line, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
-                         } else if (matchesArgDeclaration(B_ARG,line)) {
+                        } else if (matchesArgDeclaration(B_ARG,line)) {
                             processLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL);
                         } else if(matchesArrayArgDeclaration(line.trim())) {
                             if(line.contains(INT_ARG))
@@ -529,7 +524,9 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
         if(lineIndex < lines.size() - 2) {
             for(int i = lineIndex; i < lines.size() - 2; i++) {
                 //could be last brace
-                if(lines.get(i + 1).trim().equals("}") || lines.get(i + 1).trim().equals("};") || lines.get(i + 1).isEmpty() || lines.get(i + 1).trim().isEmpty()) {
+                if(lines.get(i + 1).trim().equals("}")
+                        || lines.get(i + 1).trim().equals("};")
+                        || lines.get(i + 1).isEmpty() || lines.get(i + 1).trim().isEmpty()) {
                     continue;
                 }
                 if(lines.get(i + 1).contains("DECLARE_TYPES") ||
@@ -537,9 +534,13 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         lines.get(i + 1).contains("DECLARE_SYN") ||
                         lines.get(i).contains("DECLARE_TYPES") ||
                         lines.get(i).contains("DECLARE_SHAPE_FN")||
-                        lines.get(i).contains("DECLARE_SYN")) {
+                        lines.get(i).contains("DECLARE_SYN") ||
+                        lines.get(i + 1).contains("OP_")) {
                     return true;
-                } else if(!lines.get(i + 1).contains("DECLARE_TYPES") || !lines.get(i + 1).contains("DECLARE_SHAPE_FN") || !lines.get(i + 1).contains("DECLARE_SYN")) {
+                } else if(!lines.get(i + 1).contains("DECLARE_TYPES")
+                        || !lines.get(i + 1).contains("DECLARE_SHAPE_FN")
+                        || !lines.get(i + 1).contains("DECLARE_SYN")
+                        || !lines.get(i + 1).contains("OP_")) {
                     return false;
                 }
             }
@@ -586,8 +587,8 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
     private void processLine(List<String> iArgNames, List<Integer> iArgIndices,
                              List<ArgDescriptorProposal> argDescriptorProposals,
                              String line, OpNamespace.ArgDescriptor.ArgType argType) {
-         boolean matchesPureDeclaration = Pattern.matches(ARG_DECLARATION,line) || Pattern.matches(ARG_BOOL_EQUALS_DECLARATION,line) || Pattern.matches(ARRAY_ASSIGNMENT,line);
-        String[] split = line.split(" = ");
+        boolean matchesPureDeclaration = Pattern.matches(ARG_DECLARATION,line) || Pattern.matches(ARG_BOOL_EQUALS_DECLARATION,line) || Pattern.matches(ARRAY_ASSIGNMENT,line);
+        String[] split = line.split("\\s*=\\s*");
         if(split.length == 1) {
             //invalid line
             return;
@@ -630,6 +631,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
         if(line.contains("->")) {
             weightToIncrementBy -= 100000;
         }
+
         ArgDescriptorProposal argDescriptorProposal = ArgDescriptorProposal.builder()
                 .descriptor(argDescriptor)
                 .sourceOfProposal("cpp")
@@ -638,6 +640,26 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                 .build();
         argDescriptorProposals.add(argDescriptorProposal);
 
+        //remove duplicate proposals and only take the max index ensuring all parameters are accounted for
+        val groupedByName = argDescriptorProposals.stream().collect(Collectors.groupingBy(proposal -> proposal.getDescriptor().getName()));
+        List<ArgDescriptorProposal> toRemove = new ArrayList<>();
+        for(Map.Entry<String,List<ArgDescriptorProposal>> proposals : groupedByName.entrySet()) {
+            if(proposals.getValue().size() > 1) {
+                ArgDescriptorProposal max = null;
+                for(ArgDescriptorProposal proposal : proposals.getValue()) {
+                    if(max == null)
+                        max = proposal;
+                    else if(max.getDescriptor().getArgIndex() < proposal.getDescriptor().getArgIndex()) {
+                        //slate for removal and set new max
+                        toRemove.add(max);
+                        max = proposal;
+                    }
+                }
+
+            }
+        }
+
+        argDescriptorProposals.removeAll(toRemove);
 
     }
 

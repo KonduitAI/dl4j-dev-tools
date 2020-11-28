@@ -150,6 +150,7 @@ public class ParseOpFile {
         }
 
         OpNamespace.OpDescriptorList.Builder sortedListBuilder = OpNamespace.OpDescriptorList.newBuilder();
+        List<OpNamespace.OpDescriptor> sortedDescriptors = new ArrayList<>();
         for(int i = 0; i < listBuilder.getOpListCount(); i++) {
             OpNamespace.OpDescriptor opList = listBuilder.getOpList(i);
             OpNamespace.OpDescriptor.Builder sortedOpBuilder = OpNamespace.OpDescriptor.newBuilder();
@@ -175,7 +176,6 @@ public class ParseOpFile {
 
                     sortedOpBuilder.addArgDescriptor(newDescriptor.build());
 
-
                     namesEncountered.add(currDescriptor.getName());
 
                 }
@@ -183,11 +183,16 @@ public class ParseOpFile {
 
             sortedOpBuilder.setOpDeclarationType(opList.getOpDeclarationType());
             sortedOpBuilder.setName(opList.getName());
+            sortedDescriptors.add(sortedOpBuilder.build());
 
-
-            sortedListBuilder.addOpList(sortedOpBuilder.build());
         }
 
+
+        //sort alphabetically
+        Collections.sort(sortedDescriptors,Comparator.comparing(opDescriptor -> opDescriptor.getName()));
+        sortedDescriptors.forEach(input -> {
+            sortedListBuilder.addOpList(input);
+        });
 
         String write = TextFormat.printToString(sortedListBuilder.build());
         FileUtils.writeStringToFile(new File(outputFilePath),write, Charset.defaultCharset());

@@ -380,7 +380,8 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
 
             List<ResolvedFieldDeclaration> fields = cu.findAll(FieldDeclaration.class).stream()
                     .map(input -> getResolve(input))
-                    .filter(input -> input != null)
+                    //filter fields
+                    .filter(input -> input != null && !input.isStatic())
                     .collect(Collectors.toList());
             floatIdx = 0;
             inputIdx = 0;

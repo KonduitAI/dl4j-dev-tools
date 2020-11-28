@@ -9,6 +9,7 @@ import org.nd4j.codegen.ir.MappingProcess
 import org.nd4j.codegen.ir.findOp
 import org.nd4j.codegen.ir.nd4jOpDescriptors
 import org.nd4j.ir.OpNamespace
+import java.lang.IllegalArgumentException
 
 
 class OpMappingRegistry<NODE_TYPE : GeneratedMessageV3,OP_DEF_TYPE: GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum,ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3>(inputFrameworkName: String) {
@@ -50,7 +51,10 @@ class OpMappingRegistry<NODE_TYPE : GeneratedMessageV3,OP_DEF_TYPE: GeneratedMes
     }
 
     fun  lookupOpMappingProcess(inputFrameworkOpName: String): MappingProcess<OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
-        return registeredOps[inputFrameworkOpName].first()
+        if(!registeredOps.containsKey(inputFrameworkOpName)) {
+            throw IllegalArgumentException("No import process defined for $inputFrameworkOpName")
+        }
+        return registeredOps[inputFrameworkOpName]!!.first()
     }
 
     fun opTypeForName(nd4jOpName: String): OpNamespace.OpDescriptor.OpDeclarationType {
