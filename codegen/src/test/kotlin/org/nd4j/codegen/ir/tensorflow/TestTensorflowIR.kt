@@ -48,7 +48,8 @@ class TestTensorflowIR {
         val inputs = listOf("input_0", "input_1")
         val content = IOUtils.toByteArray(ClassPathResource("lenet_frozen.pb").inputStream)
         val graphDef = GraphDef.parseFrom(content)
-        println(graphDef)
+        val importedModel = importGraph(tfGraph = graphDef,importOverride = null,opFilter = null)
+        println(importedModel)
     }
 
     @Test

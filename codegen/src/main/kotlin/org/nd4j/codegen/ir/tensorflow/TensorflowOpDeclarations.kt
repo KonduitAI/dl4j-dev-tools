@@ -77,6 +77,44 @@ val reduceOps = mapOf(
 
 )
 
+//TODO: optional argument resolution not working
+/**
+ *   if (block.getTArguments()->size() > 0)
+overlapThreshold = T_ARG(0);
+if (block.getTArguments()->size() > 1)
+scoreThreshold = T_ARG(1);
+
+was not captured in parser.
+ */
+
+fun booleanConstant(inputName: String, constantValue: Boolean): List<TensorflowArgDescriptorConstant> {
+    return listOf(argDescriptorConstant(listOf(
+            ArgDescriptor {
+                name = inputName
+                boolValue = constantValue
+            }
+    )))
+}
+
+fun doubleConstant(inputName: String, constantValue: Double): List<TensorflowArgDescriptorConstant> {
+    return listOf(argDescriptorConstant(listOf(
+            ArgDescriptor {
+                name = inputName
+                doubleValue = constantValue
+            }
+    )))
+}
+
+fun intConstant(inputName: String, constantValue: Integer): List<TensorflowArgDescriptorConstant> {
+    return listOf(argDescriptorConstant(listOf(
+            ArgDescriptor {
+                name = inputName
+                int64Value = constantValue.toLong()
+            }
+    )))
+}
+
+
 fun mapSameName(names: List<String>): List<NDArrayMappingRule> {
     return listOf(mappingNDArrayInputs(names.map { name -> Pair(name,name) }.toMap().toMutableMap()))
 }
@@ -104,7 +142,6 @@ fun multipleNameMapping(inputFrameworkOpNames: List<String>,
 }
 
 
-
 val addN = TensorflowMappingProcess(
         inputFrameworkOpName = "AddN",
         opName = "mergesum",
@@ -113,14 +150,17 @@ val addN = TensorflowMappingProcess(
 )
 
 
+val assert = mapTensorNamesWithOp(inputFrameworkOpName = "Assert",opName = "Assert",tensorNames = mutableMapOf("input" to "condition"))
+
 
 val allRule = TensorflowMappingProcess(
         inputFrameworkOpName = "All",
         opName = "all",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMapping((mapOf("keepDims" to "keep_dims","dimensions" to "reduction_indices"))))
-)
+        attributeMappingRules = listOf(valueMapping((mapOf("keepDims" to "keep_dims"))),
+                ndarrayToIntList(mutableMapOf("dimensions" to "reduction_indices"))))
+
 
 val anyRule = TensorflowMappingProcess(
         inputFrameworkOpName = "Any",
@@ -153,7 +193,7 @@ val argMaxRule = TensorflowMappingProcess(
         opName = "argmax",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMapping(mapOf("dimensions" to "dimension")),
+        attributeMappingRules = listOf(
                 ndarrayToIntList(mutableMapOf("dimensions" to "dimension")), booleanConstant(inputName = "keepDims",constantValue = false)[0])
 
 )
@@ -163,8 +203,7 @@ val argMinRule = TensorflowMappingProcess(
         opName = "argmin",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMapping(mapOf("dimensions" to "dimension")),
-                ndarrayToIntList(mutableMapOf("dimensions" to "dimension")),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("dimensions" to "dimension")),
                 booleanConstant(inputName = "keepDims",constantValue = false)[0])
 
 )
@@ -260,9 +299,9 @@ val batchToSpaceND = TensorflowMappingProcess(
         opName = "batch_to_space_nd",
         inputFrameworkOpName = "BatchToSpaceND",
         opMappingRegistry = tensorflowOpRegistry,
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("blockShape" to "block_shape")),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("blocks" to "block_shape")),
                 booleanConstant(inputName = "inPlace",constantValue = false)[0]),
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input","crop" to "crops","blocks" to "block_shape")))
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input","crop" to "crops","blockShape" to "block_shape")))
 )
 
 val betaInc = TensorflowMappingProcess(
@@ -410,7 +449,7 @@ val clipByValue = TensorflowMappingProcess(
         inputFrameworkOpName = "ClipByValue",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "t"))),
         attributeMappingRules = listOf(
-                valueMapping(mutableMapOf("clipValueMin" to "clip_value_min","clipValueMax" to "clip_value_max")),
+                convertNDArrayInputToNumericalAttr(mutableMapOf("clipValueMin" to "clip_value_min","clipValueMax" to "clip_value_max")),
                 booleanConstant(inputName = "inPlace",constantValue = false)[0])
 )
 
@@ -419,7 +458,7 @@ val compareAndBitPack = TensorflowMappingProcess(
         opName = "compare_and_bitpack",
         opMappingRegistry = tensorflowOpRegistry,
         inputFrameworkOpName = "CompareAndBitpack",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("threshold" to "threshold"))),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("threshold" to "threshold"))),
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input","y" to "threshold")))
 )
 
@@ -429,7 +468,7 @@ val concat = TensorflowMappingProcess(
         opName = "concat",
         inputFrameworkOpName = "Concat",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("arrays" to "values","input" to "values"))),
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("concatDimension" to "concat_dim")),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("concatDimension" to "concat_dim")),
                 booleanConstant(inputName = "isDynamicAxis",constantValue = false)[0])
 )
 
@@ -438,7 +477,7 @@ val concatv2 = TensorflowMappingProcess(
         opName = "concat",
         inputFrameworkOpName = "ConcatV2",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("arrays" to "values","input" to "values"))),
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("concatDimension" to "axis")),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("concatDimension" to "axis")),
                 booleanConstant(inputName = "isDynamicAxis",constantValue = false)[0]))
 
 
@@ -576,9 +615,10 @@ val dilation2D = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 stringEqualsRule(outputAttribute = "isSameShape",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
                 stringEqualsRule(outputAttribute = "isSameMode",inputFrameworkAttributeName = "padding",valueToTest = "SAME"),
-                ndarrayToIntList(mutableMapOf("rates" to "rates")),
+                listNumberToListNumber(outputAttributeValue = "rates",inputAttributeValue = "rates"),
                 booleanConstant(inputName = "inPlace",constantValue = false)[0],
-                listNumberToListNumber(outputAttributeValue = "strides",inputAttributeValue = "strides"))
+                listNumberToListNumber(outputAttributeValue = "strides",
+                        inputAttributeValue = "strides"))
 )
 
 
@@ -705,7 +745,7 @@ val dynamicStitch = TensorflowMappingProcess(
 
 val empty = TensorflowMappingProcess(
         opName = "create",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "shape","shape" to "shape"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("shape" to "shape"))),
         inputFrameworkOpName = "Empty",
         attributeMappingRules = listOf(valueMapping(mapOf("init" to "init")),
                 intConstant(inputName = "dataType",constantValue = 0 as Integer)[0]),
@@ -723,13 +763,13 @@ val elu = mapTensorNamesWithOp(inputFrameworkOpName = "Elu",opName = "elu",tenso
                 )
         )))
 
-/*val enter = TensorflowMappingProcess(
+val enter = TensorflowMappingProcess(
         opName = "enter",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "shape"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         inputFrameworkOpName = "Enter",
         attributeMappingRules = listOf(valueMapping(mapOf("isConstant" to "is_constant"))),
         opMappingRegistry = tensorflowOpRegistry
-)*/
+)
 
 val equal = TensorflowMappingProcess(
         opName = "equals",
@@ -792,8 +832,8 @@ val fusedBatchnorm = TensorflowMappingProcess(
 
 val gather = TensorflowMappingProcess(
         opName = "gather",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "params"))),
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("indices" to "indices")),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "params","indices" to "indices"))),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf()),
                 booleanConstant(inputName = "inPlace",constantValue = false)[0],
                 intConstant(inputName = "dimensions",constantValue = 0 as Integer)[0]),
         inputFrameworkOpName = "Gather",
@@ -827,18 +867,24 @@ val identityN = TensorflowMappingProcess(
         tensorMappingRules =  listOf(mappingNDArrayInputs(mutableMapOf("input" to "input")))
 )
 
-/*val ifOp = TensorflowMappingProcess(
-        opName = "if",
+val ifOp = TensorflowMappingProcess(
+        opName = "Switch",
         inputFrameworkOpName = "If",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input","condition" to "cond")))
-)*/
+)
 
-//TODO: java names mapped only, check c++ parsing. No ops seem to be found in descriptor.
-val inTopKResults = multipleNameMapping(inputFrameworkOpNames = listOf("InTopK","InTopKV2"),
+val inTopKResults = multipleNameMapping(inputFrameworkOpNames = listOf("InTopK"),
         opName = "in_top_k",
         tensorNames = mutableMapOf("target" to "targets","predictions" to "predictions"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("k" to "k")),
+                booleanConstant(inputName = "sorted",constantValue = true)[0]))
+
+
+val inTopKResults2 = multipleNameMapping(inputFrameworkOpNames = listOf("InTopKV2"),
+        opName = "in_top_k",
+        tensorNames = mutableMapOf("target" to "targets","predictions" to "predictions"),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("k" to "k")),
                 booleanConstant(inputName = "sorted",constantValue = true)[0]))
 //TODO: no inputs found for toggle_bits either
 val invert = mapTensorNamesWithOp(inputFrameworkOpName = "Invert",opName = "toggle_bits",tensorNames = mutableMapOf("input" to "x"))
@@ -869,13 +915,12 @@ val leftShift = mapTensorNamesWithOp(inputFrameworkOpName = "LeftShift",opName =
         tensorNames = mutableMapOf("input" to "x","y" to "y"))
 
 val linspace = mapTensorNamesWithOp(inputFrameworkOpName = "LinSpace",opName = "lin_space",
-        tensorNames = mutableMapOf("start" to "start","to" to "stop","length" to "length"),
+        tensorNames = mutableMapOf("from" to "start","to" to "stop","length" to "num"),
         attributeMappingRules = listOf(
-                convertNDArrayInputToScalarAttr(mutableMapOf(
-                        "from" to "start",
+                convertNDArrayInputToNumericalAttr(mutableMapOf(
+                        "start" to "start",
                         "stop" to "stop",
-                        "length" to "num")),
-                valueMapping(mutableMapOf("number" to "length")),
+                        "number" to "num")),
                 intConstant(inputName = "dataType",constantValue = 0 as Integer)[0]))
 
 val listDiff = mapTensorNamesWithOp(inputFrameworkOpName = "ListDiff",opName = "listdiff",tensorNames = mutableMapOf("values" to "x","keep" to "y"))
@@ -980,69 +1025,61 @@ val maxPoolWithArgMax = multipleNameMapping(
 )*/
 
 //TODO: Not likely correct. Need to figure out true mapping. Likely an implicit control flow op?
-val merge = mapTensorNamesWithOp(inputFrameworkOpName = "Merge",opName = "merge",tensorNames = mutableMapOf("input" to "inputs"))
+val loopCond = mapTensorNamesWithOp(inputFrameworkOpName = "LoopCond",opName = "loop_cond",tensorNames = mutableMapOf())
+val merge = mapTensorNamesWithOp(inputFrameworkOpName = "Merge",opName = "merge",tensorNames = mutableMapOf("input" to "inputs","b" to "inputs"))
 
 val mirrorPadding = mapTensorNamesWithOp(inputFrameworkOpName = "MirrorPad",opName = "mirror_pad",
         tensorNames = mutableMapOf("input" to "input","paddings" to "paddings"),
-        attributeMappingRules = listOf(stringNotEqualsRule(outputAttribute = "mode",inputFrameworkAttributeName = "mode",valueToTest = "REFLECT"),
+        attributeMappingRules = listOf(stringNotEqualsRule(outputAttribute = "mode",
+                inputFrameworkAttributeName = "mode",valueToTest = "REFLECT"),
                 booleanConstant(inputName = "isSymmetric",constantValue = true)[0]))
 
-val nonMaxSuppression = multipleNameMapping(inputFrameworkOpNames = listOf("NonMaxSuppression","NonMaxSuppressionV2"),
+/**
+ * TODO: Need to add a constant mapping or something for NonMaxSuppression
+ * v1 and 2 which do not have a scoreThreshold to map. V3 does.
+ */
+
+val nonMaxSuppressionV1 = multipleNameMapping(inputFrameworkOpNames = listOf("NonMaxSuppression"),
         opName = "non_max_suppression",
-        tensorNames = mutableMapOf("boxes" to "boxes","scales" to "scores","scoreThreshold" to "score_threshold"),
+        tensorNames = mutableMapOf("boxes" to "boxes","scales" to "scores"),
         attributeMappingRules = listOf(
+                argDescriptorConstant(listOf(
+                        ArgDescriptor {
+                            doubleValue = 0.5
+                            name = "scoreThreshold"
+                        }
+                )),
                 valueMapping(mutableMapOf("overlayThreshold" to "iou_threshold")),
-                convertNDArrayInputToScalarAttr(mutableMapOf("maxOutputSize" to "max_output_size"))))
+                attributeScalarToNDArrayInput(outputAttribute = "iouThreshold",inputFrameworkAttributeName = "iou_threshold"),
+                convertNDArrayInputToNumericalAttr(mutableMapOf("maxOutputSize" to "max_output_size"))))
+
+
+
+val nonMaxSuppressionV2 = multipleNameMapping(inputFrameworkOpNames = listOf("NonMaxSuppressionV2"),
+        opName = "non_max_suppression",
+        tensorNames = mutableMapOf("boxes" to "boxes","scales" to "scores","iouThreshold" to "iou_threshold"),
+        attributeMappingRules = listOf(
+                argDescriptorConstant(listOf(
+                        ArgDescriptor {
+                            doubleValue = 0.5
+                            name = "scoreThreshold"
+                        }
+                )),
+                convertNDArrayInputToNumericalAttr(mutableMapOf("maxOutputSize" to "max_output_size",
+                        "overlayThreshold" to "iou_threshold"))))
 
 
 val nonMaxSuppressionV3 = multipleNameMapping(inputFrameworkOpNames = listOf("NonMaxSuppressionV3","NonMaxSuppressionV4"),
         opName = "non_max_suppression_v3",
         tensorNames = mutableMapOf("boxes" to "boxes","scales" to "scores",
-                "maxOutSize" to "max_output_size"),
+                "maxOutSize" to "max_output_size",
+                "iouThreshold" to "iou_threshold"),
         attributeMappingRules = listOf(
-                valueMapping(mutableMapOf("iouThreshold" to "iou_threshold")),
-
-                convertNDArrayInputToScalarAttr(mutableMapOf(
-                        "maxOutputSize" to "max_output_size","overlayThreshold" to "iou_threshold",
-                        "maxOutSize" to "max_output_size",
+                convertNDArrayInputToNumericalAttr(mutableMapOf(
+                        "overlayThreshold" to "iou_threshold",
+                        "maxOutputSize" to "max_output_size",
                         "scoreThreshold" to "score_threshold"))))
 
-//TODO: optional argument resolution not working
-/**
- *   if (block.getTArguments()->size() > 0)
-overlapThreshold = T_ARG(0);
-if (block.getTArguments()->size() > 1)
-scoreThreshold = T_ARG(1);
-
-was not captured in parser.
- */
-
-fun booleanConstant(inputName: String, constantValue: Boolean): List<TensorflowArgDescriptorConstant> {
-    return listOf(argDescriptorConstant(listOf(
-            ArgDescriptor {
-                name = inputName
-                boolValue = constantValue
-            }
-    )))
-}
-
-fun doubleConstant(inputName: String, constantValue: Double): List<TensorflowArgDescriptorConstant> {
-    return listOf(argDescriptorConstant(listOf(
-            ArgDescriptor {
-                name = inputName
-                doubleValue = constantValue
-            }
-    )))
-}
-
-fun intConstant(inputName: String, constantValue: Integer): List<TensorflowArgDescriptorConstant> {
-    return listOf(argDescriptorConstant(listOf(
-            ArgDescriptor {
-                name = inputName
-                int64Value = constantValue.toLong()
-            }
-    )))
-}
 
 val matrixInverse = multipleNameMapping(inputFrameworkOpNames = listOf("MatrixInverse","BatchMatrixInverse"),opName = "matrix_inverse",
         attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = true),
@@ -1052,14 +1089,16 @@ val nonMaxSuppressionOverlaps = multipleNameMapping(inputFrameworkOpNames = list
         opName = "non_max_suppression_overlaps",
         tensorNames = mutableMapOf("scales" to "scores"),
         attributeMappingRules = listOf(
-                convertNDArrayInputToScalarAttr(mutableMapOf("maxOutputSize" to "max_output_size","overlapThreshold" to "overlap_threshold","scoreThreshold" to "score_threshold"))))
+                convertNDArrayInputToNumericalAttr(mutableMapOf("maxOutputSize" to "max_output_size","overlapThreshold" to "overlap_threshold","scoreThreshold" to "score_threshold"))))
 
-val nthElement = mapTensorNamesWithOp(inputFrameworkOpName = "NthElement",opName = "nth_element",tensorNames = mutableMapOf("n" to "n","input" to "input"),
-        attributeMappingRules = listOf(booleanToInt(mapOf("reverse" to "reverse"))))
+val nthElement = mapTensorNamesWithOp(inputFrameworkOpName = "NthElement",opName = "nth_element",
+        tensorNames = mutableMapOf("n" to "n","input" to "input"),
+        attributeMappingRules = listOf(valueMapping(mapOf("reverse" to "reverse"))))
 
-val oneHot = mapTensorNamesWithOp(inputFrameworkOpName = "OneHot",opName = "onehot",tensorNames = mutableMapOf("input" to "indices"),
-        attributeMappingRules = listOf(convertNDArrayInputToScalarAttr(mutableMapOf("depth" to "depth"
-                ,"on" to "on_value","off" to "off_value")),
+val oneHot = mapTensorNamesWithOp(inputFrameworkOpName = "OneHot",opName = "onehot",tensorNames = mutableMapOf("input" to "indices","depth" to "depth"),
+        attributeMappingRules = listOf(
+                convertNDArrayInputToNumericalAttr(mutableMapOf("on" to "on_value","off" to "off_value")),
+
                 valueMapping(mutableMapOf("dimensions" to "axis")),
                 intConstant(inputName = "dataType",constantValue = 0 as Integer)[0]))
 
@@ -1074,8 +1113,10 @@ val onesLike = mapTensorNamesWithOp(inputFrameworkOpName = "OnesLike",
         attributeMappingRules = intConstant(inputName = "dataType",constantValue = 0 as Integer),
         tensorNames = mutableMapOf("input" to "x"))
 
+
+
 val pow = mapTensorNamesWithOp(inputFrameworkOpName = "Pow",opName = "pow",
-        attributeMappingRules = listOf(convertNDArrayInputToScalarAttr(mutableMapOf("pow" to "y")),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("pow" to "y")),
                 booleanConstant(inputName = "inPlace",constantValue = false)[0]),
         tensorNames = mutableMapOf("input" to "x")
 )
@@ -1182,13 +1223,13 @@ val randomUniformInt = TensorflowMappingProcess(
         inputFrameworkOpName = "RandomUniformInt",
         opName = "randomuniform",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("shape" to "shape"))),
-        attributeMappingRules =  listOf(valueMapping(mutableMapOf("min" to "min","max" to "max"))),
+        attributeMappingRules =  listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("min" to "minval","max" to "maxval"))),
         opMappingRegistry = tensorflowOpRegistry
 )
 
 
 val range = multipleNameMapping(inputFrameworkOpNames = listOf("Range"),opName = "range",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("s" to "start","to" to "limit","d" to "delta"))),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("s" to "start","to" to "limit","d" to "delta"))),
         tensorNames = mutableMapOf())
 
 val relu = mapTensorNamesWithOp(inputFrameworkOpName = "Relu",opName = "relu",tensorNames = mutableMapOf("input" to "features"),
@@ -1225,11 +1266,11 @@ val reverse = multipleNameMapping(inputFrameworkOpNames = listOf("ReverseV2"),op
         tensorNames = mutableMapOf("input" to "tensor"))
 
 val reverseSequence = multipleNameMapping(inputFrameworkOpNames = listOf("ReverseSequence"),opName = "reverse_sequence",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("seqLengths" to "seq_lengths","batchDim" to "batch_dim","seqDim" to "seq_dim"))),
+        attributeMappingRules = listOf(valueMapping(mutableMapOf("batchDim" to "batch_dim","seqDim" to "seq_dim"))),
         tensorNames = mutableMapOf("input" to "input","seqLengths" to "seq_lengths"))
 
 val roll = multipleNameMapping(inputFrameworkOpNames = listOf("Roll"),opName = "roll",
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("dimensions" to "axis","shift" to "shift"))),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("shift" to "shift"))),
         tensorNames = mutableMapOf("input" to "input","dimensions" to "axis","shiftsI" to "shift"))
 
 //TODO: verify usingLocking property, it's not showing up in descriptors
@@ -1260,7 +1301,9 @@ val scatterMul = multipleNameMapping(inputFrameworkOpNames = listOf("ScatterMul"
         tensorNames = mutableMapOf("input" to "ref","indices" to "indices","updates" to "updates"))
 
 val scatterNd = multipleNameMapping(inputFrameworkOpNames = listOf("ScatterNd"),opName = "scatter_nd",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("lock" to "use_locking")),booleanConstant(inputName = "checkIndices",constantValue = true)[0]),
+        attributeMappingRules = listOf(
+                booleanConstant(inputName = "checkIndices",constantValue = true)[0],
+                booleanConstant(inputName = "lock",constantValue = true)[0]),
         tensorNames = mutableMapOf("indices" to "indices","updates" to "updates","shape" to "shape"))
 
 val scatterNdAdd = multipleNameMapping(inputFrameworkOpNames = listOf("ScatterNdAdd"),opName = "scatter_nd_add",
@@ -1304,8 +1347,9 @@ val scatterSub = multipleNameMapping(inputFrameworkOpNames = listOf("ScatterSub"
 
 //TODO: note: TF expects indices, we don't support them?
 val scatterUpdate = multipleNameMapping(inputFrameworkOpNames = listOf("ScatterUpdate"),opName = "scatter_update",
-        attributeMappingRules = intConstant(inputName = "dimension",constantValue = 0 as Integer),
-        tensorNames = mutableMapOf("operand" to "ref","updates" to "updates","indices" to "indices"))
+        attributeMappingRules = listOf(intConstant(inputName = "dimension",constantValue = 0 as Integer)[0],
+                ndarrayToIntList(mutableMapOf("indices" to "indices"))),
+        tensorNames = mutableMapOf("operand" to "ref","updates" to "updates"))
 
 val select = mapTensorNamesWithOp(inputFrameworkOpName = "Select",opName = "select",tensorNames = mutableMapOf("cond" to "condition","input" to "t","y" to "e"),
         attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false))
@@ -1334,8 +1378,10 @@ val size = TensorflowMappingProcess(
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input")))
 )
 
-val slice = mapTensorNamesWithOp(inputFrameworkOpName = "Slice",opName = "slice",tensorNames = mutableMapOf("input" to "input","begin" to "begin","e" to "size"),
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("b" to "begin","size" to "size"))))
+val slice = mapTensorNamesWithOp(inputFrameworkOpName = "Slice",opName = "slice",
+        tensorNames = mutableMapOf("input" to "input","b" to "begin","e" to "size"),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("size" to "size"))))
+
 val selu = mapTensorNamesWithOp(inputFrameworkOpName = "Selu",opName = "selu",tensorNames = mutableMapOf("input" to "features"),
         attributeMappingRules =
         booleanConstant(inputName = "inPlace",constantValue = true))
@@ -1379,8 +1425,8 @@ val spaceToBatch = TensorflowMappingProcess(
                 booleanConstant(inputName = "inPlace", constantValue = false)[0],
                 valueMapping(mapOf("blockSize" to "block_size")),
                 ndarrayToIntList(mutableMapOf(
-                        "paddingTop" to "padding",
-                        "paddingBottom" to "padding"))),
+                        "paddingTop" to "paddings",
+                        "paddingBottom" to "paddings"))),
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input","padding" to "paddings")))
 )
 
@@ -1388,9 +1434,8 @@ val spaceToBatchNd = TensorflowMappingProcess(
         opName = "space_to_batch_nd",
         inputFrameworkOpName = "SpaceToBatchND",
         opMappingRegistry = tensorflowOpRegistry,
-        attributeMappingRules = listOf(valueMapping(mapOf(
-                "blockShape" to "block_shape"
-                ,"blocks" to "block_shape")),
+        attributeMappingRules = listOf(
+                ndarrayToIntList(mutableMapOf("blocks" to "block_shape")),
                 argDescriptorConstant(listOf(
                         ArgDescriptor {
                             name = "inPlace"
@@ -1422,10 +1467,13 @@ val split = TensorflowMappingProcess(
 val splitV = TensorflowMappingProcess(
         opName = "split_v",
         inputFrameworkOpName = "SplitV",
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "value","sizes" to "size_splits",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf(
+                "input" to "value",
+                "sizes" to "size_splits",
                 "_a"  to "split_dim"))),
-        attributeMappingRules = listOf(valueMapping(mapOf("splitDim" to "split_dim")),
-                ndarrayToIntList(mutableMapOf("dimensions" to "splitDim"))),
+        attributeMappingRules = listOf(
+                convertNDArrayInputToNumericalAttr(mutableMapOf("splitDim" to "split_dim")),
+                ndarrayToIntList(mutableMapOf("dimensions" to "split_dim"))),
         opMappingRegistry = tensorflowOpRegistry
 )
 
@@ -1433,7 +1481,9 @@ val squeeze = TensorflowMappingProcess(
         opName = "squeeze",
         inputFrameworkOpName = "Squeeze",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(listNumberToListNumber(outputAttributeValue = "a",inputAttributeValue = "squeeze_dims"), valueMapping(mutableMapOf("_a" to "squeeze_dims"))),
+        attributeMappingRules = listOf(
+                listNumberToNDarray(mutableMapOf("a" to "squeeze_dims")),
+                listNumberToListNumber(outputAttributeValue = "_a",inputAttributeValue = "squeeze_dims")),
         opMappingRegistry = tensorflowOpRegistry
 )
 
@@ -1441,10 +1491,10 @@ val stridedSlice = TensorflowMappingProcess(
         opName = "stridedslice",
         inputFrameworkOpName = "StridedSlice",
         opMappingRegistry = tensorflowOpRegistry,
-        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input","strides" to "strides"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
         attributeMappingRules = listOf(
+                ndarrayToIntList(mutableMapOf("begin" to "begin","end" to "end","strides" to "strides")),
                 valueMapping(mutableMapOf("beginMask" to "begin_mask","endMask" to "end_mask",
-                        "begin" to "begin","end"  to "end",
                         "ellipsisMask" to "ellipsis_mask","newAxisMask" to "new_axis_mask",
                         "shrinkAxisMask" to "shrink_axis_mask")))
 )
@@ -1538,8 +1588,8 @@ val tensorArrayGather = multipleNameMapping(inputFrameworkOpNames = listOf("Tens
 
 val tensorArrayRead = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArrayRead", "TensorArrayReadV2", "TensorArrayReadV3"),
         opName = "read_list",
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("index" to "index","list" to "flow_in"))),
-        tensorNames = mutableMapOf("vec" to "flow_in"))
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("index" to "index"))),
+        tensorNames = mutableMapOf("list" to "flow_in"))
 //TODO: revisit this, not sure why the ops are off
 
 val tensorArrayScatter = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArrayScatter", "TensorArrayScatterV2", "TensorArrayScatterV3"),
@@ -1563,9 +1613,14 @@ val tile = mapTensorNamesWithOp(inputFrameworkOpName = "Tile",opName = "tile",
                 booleanConstant(inputName = "is_static_reps",constantValue = true)[0]),
         tensorNames = mutableMapOf("input" to "input","reps_vector" to "multiples"))
 
-val topk = multipleNameMapping(inputFrameworkOpNames = listOf("TopK","TopKV2"),opName = "top_k",
+val topk = multipleNameMapping(inputFrameworkOpNames = listOf("TopK"),opName = "top_k",
         tensorNames = mutableMapOf("input" to "input"),
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("k" to "k","needSort" to "sorted"))))
+        attributeMappingRules = listOf(valueMapping(mutableMapOf("needSort" to "sorted","k" to "k"))))
+
+val topkV2 = multipleNameMapping(inputFrameworkOpNames = listOf("TopKV2"),opName = "top_k",
+        tensorNames = mutableMapOf("input" to "input"),
+        attributeMappingRules = listOf(valueMapping(mutableMapOf("needSort" to "sorted")),
+                convertNDArrayInputToNumericalAttr(mutableMapOf("k" to "k"))))
 
 val transpose = mapTensorNamesWithOp(
         inputFrameworkOpName = "Transpose",
@@ -1599,24 +1654,32 @@ val unpack = multipleNameMapping(inputFrameworkOpNames = listOf("Unpack"),
 
 val unsortedSegmentMax = mapTensorNamesWithOp(inputFrameworkOpName = "UnsortedSegmentMax",
         opName = "unsorted_segment_max",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("numOfClasses" to "num_segments","numSegments" to "num_segments"))),
+        attributeMappingRules = listOf(
+                convertNDArrayInputToNumericalAttr(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
         tensorNames = mutableMapOf("input" to "data","idxSegments" to "segment_ids"))
 
 val unsortedSegmentMin = mapTensorNamesWithOp(inputFrameworkOpName = "UnsortedSegmentMin",
         opName = "unsorted_segment_min",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
         tensorNames = mutableMapOf("input" to "data","idxSegments" to "segment_ids"))
 
 val unsortedSegmentProd = mapTensorNamesWithOp(inputFrameworkOpName = "UnsortedSegmentProd",
         opName = "unsorted_segment_prod",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
+        attributeMappingRules = listOf(
+                convertNDArrayInputToNumericalAttr(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
         tensorNames = mutableMapOf("input" to "data","idxSegments" to "segment_ids"))
 
 
 val unsortedSegmentSum = mapTensorNamesWithOp(inputFrameworkOpName = "UnsortedSegmentSum",
         opName = "unsorted_segment_sum",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("numSegments" to "num_segments","numOfClasses" to "num_segments"))),
         tensorNames = mutableMapOf("input" to "data","idxSegments" to "segment_ids"))
+
+
+val nextIteration = mapTensorNamesWithOp(inputFrameworkOpName = "NextIteration",opName = "next_iteration",
+        tensorNames = mutableMapOf("input" to "data"))
+
+val noOp = mapTensorNamesWithOp(inputFrameworkOpName = "NoOp",opName = "noop",tensorNames = mutableMapOf())
 
 val where = mapTensorNamesWithOp(inputFrameworkOpName = "Where",opName = "Where",
         attributeMappingRules =  listOf(argDescriptorConstant(
@@ -1628,8 +1691,7 @@ val where = mapTensorNamesWithOp(inputFrameworkOpName = "Where",opName = "Where"
         tensorNames = mutableMapOf("condition" to "input")
 )
 
-/*
-val whileOp = mapTensorNamesWithOp(inputFrameworkOpName = "While",opName = "While",
+/*val whileOp = mapTensorNamesWithOp(inputFrameworkOpName = "While",opName = "While",
         tensorNames = mutableMapOf("condition" to "input")
 )*/
 

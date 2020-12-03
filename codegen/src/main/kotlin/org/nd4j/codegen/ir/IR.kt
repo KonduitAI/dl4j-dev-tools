@@ -10,6 +10,7 @@ import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.common.io.ReflectionUtils
+import org.nd4j.common.util.ArrayUtil
 import org.nd4j.gen.OpDeclarationDescriptor
 import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
@@ -17,11 +18,13 @@ import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.api.ops.DynamicCustomOp
+import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.nd4j.shade.protobuf.TextFormat
 import java.lang.IllegalArgumentException
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 
@@ -62,7 +65,22 @@ fun createDifferentialFunctionInstanceForName(name: String): DifferentialFunctio
     return cachedOpInstances.first { op -> op.opName() == name }.javaClass.newInstance()
 }
 
+fun isOutputFrameworkAttributeName(name: String,opDescriptor: OpNamespace.OpDescriptor): Boolean {
+    return opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType != OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
+            && argDescriptor.argType != OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR }
+            .map { inputArg -> inputArg.name }.contains(name)
+}
 
+fun isNd4jTensorName(name: String,opDescriptor: OpNamespace.OpDescriptor): Boolean {
+    return opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }
+            .map { inputArg -> inputArg.name }
+            .contains(name)
+}
+
+
+fun argDescriptorType(name: String, opDescriptor: OpNamespace.OpDescriptor): OpNamespace.ArgDescriptor.ArgType {
+    return opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.name == name }[0].argType
+}
 
 val nd4jOpDescriptors = loadNd4jOpDescriptors()
 
@@ -160,7 +178,8 @@ interface MappingProcess<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Generate
 }
 
 
-interface TensorMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE : GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>
+interface TensorMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE : GeneratedMessageV3,
+        ATTRIBUTE_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>
         where DATA_TYPE: ProtocolMessageEnum {
 
 
@@ -178,14 +197,16 @@ interface TensorMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Gener
     /**
      * Convert 1 or more attributes in to a list of {@link ArgDescriptor}
      */
-    fun convertInput(): List<OpNamespace.ArgDescriptor>
+    fun convertInput(mappingContext: MappingContext<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>): List<OpNamespace.ArgDescriptor>
 
 
     fun inputArgumentMappings(): Map<String, String>
 
     fun convertInputsReverse(toReverse: List<OpNamespace.ArgDescriptor>): List<TENSOR_TYPE>
 
+    fun isInputTensorName(inputName: String): Boolean
 
+    fun isOutputTensorName(outputName: String): Boolean
 
 }
 
@@ -206,6 +227,25 @@ interface AttributeMappingRule<OP_DEF_TYPE: GeneratedMessageV3,NODE_DEF_TYPE: Ge
     fun convertAttributes(mappingCtx: MappingContext<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor>
 
     fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>>
+
+
+    fun isInputFrameworkTensorName(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): Boolean
+
+    fun isNd4jTensorName(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): Boolean
+
+    fun isInputFrameworkAttributeName(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): Boolean
+
+    fun isOutputFrameworkAttributeName(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): Boolean
+
+    fun argDescriptorType(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): OpNamespace.ArgDescriptor.ArgType
+
+    fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean
+
+    fun outputsType(argDescriptorType: OpNamespace.ArgDescriptor.ArgType): Boolean
+
+    fun attributeValueTypeFor(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): AttributeValueType
+
+    fun argDescriptorTypeForOutputName(name: String,mappingProcess: MappingProcess<OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): OpNamespace.ArgDescriptor.ArgType
 }
 
 
@@ -227,6 +267,8 @@ interface MappingContext<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMes
     fun nd4jDataTypeFor(input: IRTensor<TENSOR_TYPE,DATA_TYPE>): DataType
 
     fun irAttributeValueForNode(valueName: String): IRAttribute<ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,TENSOR_TYPE,DATA_TYPE>
+
+    fun argDescriptorTypeForName(nd4jName: String): OpNamespace.ArgDescriptor.ArgType
 
     fun graph(): IRGraph<NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
 
@@ -255,8 +297,10 @@ abstract class AbstractMappingContext<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE:
         return graph
     }
 
-
-
+    override fun argDescriptorTypeForName(nd4jName: String): OpNamespace.ArgDescriptor.ArgType {
+        val opDescriptor = nd4jOpDescriptors.findOp(opName())
+        return opDescriptor.argDescriptorList.first { argDescriptor -> argDescriptor.name == nd4jName }!!.argType
+    }
 }
 
 interface IRGraph<NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE: GeneratedMessageV3,ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,DATA_TYPE>
@@ -400,12 +444,36 @@ abstract  class AbstractMappingProcess<
     protected val opMappingRegistry = opMappingRegistry
 
     init {
-        tensorMappingRules.forEach {
-            it.initWithMappingProcess(this)
+        tensorMappingRules.forEach { tensorMappingRule ->
+            tensorMappingRule.initWithMappingProcess(this)
+            tensorMappingRule.mappingNamesToPerform().forEach { (nd4jName, inputFrameworkName) ->
+                if(!tensorMappingRule.isInputTensorName(inputFrameworkName)) {
+                    throw IllegalArgumentException("Found invalid input tensor named ${inputFrameworkName} for rule ${tensorMappingRule.name()} and mapping process for op ${opName} and input framework name ${inputFrameworkOpName}")
+                }
+
+                if(!tensorMappingRule.isOutputTensorName(nd4jName)) {
+                    throw IllegalArgumentException("Found invalid output tensor named ${nd4jName} for rule ${tensorMappingRule.name()} and mapping process for op ${opName} and input framework name ${inputFrameworkOpName}")
+
+                }
+            }
         }
 
         attributeMappingRules.forEach {
             it.initWithMappingProcess(this)
+            attributeMappingRules.forEach { attributeMappingRule ->
+                attributeMappingRule.mappingNamesToPerform().forEach { (nd4jName, inputFrameworkName) ->
+                    val inputType = attributeMappingRule.attributeValueTypeFor(inputFrameworkName,this)
+                    if(!attributeMappingRule.acceptsInputType(inputType)) {
+                        throw IllegalArgumentException("Rule ${attributeMappingRule.name()} for framework $inputFramework does not accept input type ${inputType} for attribute name ${inputFrameworkName} and mapping process for op ${opName} and input framework name ${inputFrameworkOpName}")
+                    }
+
+                    val outputType = attributeMappingRule.argDescriptorTypeForOutputName(nd4jName,this)
+                    if(!attributeMappingRule.outputsType(outputType)) {
+                        throw IllegalArgumentException("Rule ${attributeMappingRule.name()} for framework $inputFramework does not accept output type ${outputType} for attribute name ${nd4jName} and mapping process for op ${opName}")
+                    }
+
+                }
+            }
         }
 
 
@@ -455,7 +523,7 @@ abstract  class AbstractMappingProcess<
         val descriptorBuilder = OpNamespace.OpDescriptor.newBuilder()
         descriptorBuilder.name = opName()
         tensorMappingRules.forEach {
-            it.convertInput().forEach { descriptor ->
+            it.convertInput(mappingCtx).forEach { descriptor ->
                 descriptorBuilder.addArgDescriptor(descriptor)
             }
         }
@@ -543,6 +611,7 @@ fun convertNd4jDataTypeFromNameSpaceTensorDataType(dataType: TensorNamespace.Dat
         TensorNamespace.DataType.BFLOAT16 -> return  DataType.BFLOAT16
         TensorNamespace.DataType.INT8 -> return DataType.INT8
         TensorNamespace.DataType.UINT16 -> return DataType.UINT16
+        TensorNamespace.DataType.UNDEFINED,TensorNamespace.DataType.UNRECOGNIZED -> return DataType.UNKNOWN
         else -> {
             throw IllegalArgumentException("Illegal data type $dataType")
         }
@@ -571,45 +640,108 @@ fun convertNameSpaceTensorDataTypeFromNd4jDataType(dataType: DataType): TensorNa
     }
 }
 
+
+fun ndarrayFromNameSpaceTensor(inputTensor: TensorNamespace.TensorProto): INDArray {
+    val dtype = convertNd4jDataTypeFromNameSpaceTensorDataType(TensorNamespace.DataType.values()[inputTensor.dataType])
+    val shape = inputTensor.dimsList.toLongArray()
+    when(dtype) {
+        DataType.FLOAT -> {
+            val floatArray = inputTensor.floatDataList.toFloatArray()
+            if(floatArray.isEmpty())
+                return loadDataBufferFromRawData(inputTensor)
+            val dataBuffer = Nd4j.createBuffer(floatArray)
+            return Nd4j.create(dataBuffer).reshape(*shape)
+        }
+        DataType.DOUBLE -> {
+            val doubleArray = inputTensor.doubleDataList.toDoubleArray()
+            if(doubleArray.isEmpty())
+                return loadDataBufferFromRawData(inputTensor)
+
+            val dataBuffer = Nd4j.createBuffer(doubleArray)
+            return Nd4j.create(dataBuffer).reshape(*shape)
+        }
+        DataType.INT64 -> {
+            val longArray = inputTensor.int64DataList.toLongArray()
+            if(longArray.isEmpty())
+                return loadDataBufferFromRawData(inputTensor)
+            val dataBuffer = Nd4j.createBuffer(longArray)
+            return Nd4j.create(dataBuffer).reshape(*shape)
+        }
+        DataType.INT32 -> {
+            val intArray = inputTensor.int32DataList.toIntArray()
+            if(intArray.isEmpty())
+                return loadDataBufferFromRawData(inputTensor)
+
+            val dataBuffer = Nd4j.createBuffer(intArray)
+            return Nd4j.create(dataBuffer).reshape(*shape)
+        }
+        DataType.UNKNOWN -> {
+            val ret =  Nd4j.empty()
+            return ret
+        }
+
+        else -> {
+            return loadDataBufferFromRawData(inputTensor)
+        }
+
+    }
+
+    throw IllegalArgumentException("Illegal type found for conversion ${dtype}")
+}
+
+fun loadDataBufferFromRawData(inputTensor: TensorNamespace.TensorProto): INDArray {
+    val shape = inputTensor.dimsList.toLongArray()
+    val dtype = convertNd4jDataTypeFromNameSpaceTensorDataType(TensorNamespace.DataType.values()[inputTensor.dataType])
+    val byteArray = inputTensor.rawData.toByteArray()
+    val totalLen = ArrayUtil.prod(*shape)
+    val byteBuffer = ByteBuffer.allocateDirect(byteArray.size)
+    byteBuffer.put(byteArray)
+    byteBuffer.rewind()
+    val rawDataBuffer = Nd4j.createBuffer(byteBuffer,dtype,totalLen,0)
+    return Nd4j.create(rawDataBuffer).reshape(*shape)
+}
+
+
+
 fun nameSpaceTensorFromNDarray(ndarray:INDArray): TensorNamespace.TensorProto {
-  val nameSpaceDataType = convertNameSpaceTensorDataTypeFromNd4jDataType(ndarray.dataType()).ordinal
+    val nameSpaceDataType = convertNameSpaceTensorDataTypeFromNd4jDataType(ndarray.dataType()).ordinal
     when(ndarray.dataType()) {
-       DataType.INT64 -> {
-           return NameSpaceTensor {
-               dataType = nameSpaceDataType
-               Int64Data(ndarray.data().asLong().toList())
-               Dims(ndarray.shape().asList())
-           }
-       }
+        DataType.INT64 -> {
+            return NameSpaceTensor {
+                dataType = nameSpaceDataType
+                Int64Data(ndarray.data().asLong().toList())
+                Dims(ndarray.shape().asList())
+            }
+        }
 
-       DataType.INT32 -> {
-           return NameSpaceTensor {
-               dataType = nameSpaceDataType
-               IntData(ndarray.data().asInt().toList())
-               Dims(ndarray.shape().asList())
-           }
-       }
+        DataType.INT32 -> {
+            return NameSpaceTensor {
+                dataType = nameSpaceDataType
+                IntData(ndarray.data().asInt().toList())
+                Dims(ndarray.shape().asList())
+            }
+        }
 
-       DataType.DOUBLE -> {
-           return NameSpaceTensor {
-               dataType = nameSpaceDataType
-               DoubleData(ndarray.data().asDouble().toList())
-               Dims(ndarray.shape().asList())
-           }
-       }
+        DataType.DOUBLE -> {
+            return NameSpaceTensor {
+                dataType = nameSpaceDataType
+                DoubleData(ndarray.data().asDouble().toList())
+                Dims(ndarray.shape().asList())
+            }
+        }
 
-       DataType.FLOAT -> {
-           return NameSpaceTensor {
-               dataType = nameSpaceDataType
-               FloatData(ndarray.data().asFloat().toList())
-               Dims(ndarray.shape().asList())
-           }
-       }
+        DataType.FLOAT -> {
+            return NameSpaceTensor {
+                dataType = nameSpaceDataType
+                FloatData(ndarray.data().asFloat().toList())
+                Dims(ndarray.shape().asList())
+            }
+        }
 
-       else -> {
-           throw IllegalArgumentException("Illegal data type ${ndarray.dataType()}")
-       }
-   }
+        else -> {
+            throw IllegalArgumentException("Illegal data type ${ndarray.dataType()}")
+        }
+    }
 
 }
 

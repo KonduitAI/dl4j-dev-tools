@@ -93,7 +93,7 @@ class TestTensorflowRuleDeclarations {
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
-        val convertNumberListToInputNDArrayRule = convertNDArrayInputToScalarAttr(mutableMapOf("output" to "inputs "))
+        val convertNumberListToInputNDArrayRule = convertNDArrayInputToNumericalAttr(mutableMapOf("output" to "inputs "))
         val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
         assertEquals(1,convertNumberListToInputNDArrayResult.size)
         assertEquals(2,convertNumberListToInputNDArrayResult[0].int64Value)

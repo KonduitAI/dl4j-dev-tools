@@ -1,11 +1,9 @@
 package org.nd4j.codegen.ir
 
 import org.nd4j.ir.MapperNamespace
-import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.OpNamespace.*
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
-import org.nd4j.linalg.api.shape.Shape
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
@@ -45,9 +43,7 @@ abstract class BaseAttributeExtractionRule<
     }
 
 
-
     abstract fun createIRAttribute(name: String, attrDef: ATTR_DEF, attributeValueType: ATTR_VALUE_TYPE): IRAttribute<ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
-
 
 
     override fun serialize(): MapperNamespace.MappingRule {
@@ -55,12 +51,12 @@ abstract class BaseAttributeExtractionRule<
         builder.ruleName = name()
         builder.functionName = name()
         val descriptorList = opDescriptor!!.argDescriptorList
-        for((k,v) in transformerArgs) {
+        for ((k, v) in transformerArgs) {
             val filteredList = descriptorList.filter { input -> input.name == k }
-            require(filteredList.isNotEmpty()) {"Output attribute " + k + " was not found in op descriptor " + name() + " list of attribtues was " + descriptorList.map { input -> input.name }}
+            require(filteredList.isNotEmpty()) { "Output attribute " + k + " was not found in op descriptor " + name() + " list of attribtues was " + descriptorList.map { input -> input.name } }
 
             val descriptor = filteredList[0]
-            when(descriptor.argType) {
+            when (descriptor.argType) {
                 ArgDescriptor.ArgType.BOOL -> builder.addOutputBooleanName(k)
                 ArgDescriptor.ArgType.INT64 -> builder.addOutputIntName(k)
                 ArgDescriptor.ArgType.FLOAT -> builder.addOutputFloatName(k)
@@ -70,8 +66,8 @@ abstract class BaseAttributeExtractionRule<
                 ArgDescriptor.ArgType.OUTPUT_TENSOR -> builder.addOutputTensorName(k)
             }
 
-            for(associatedInput in v) {
-                when(associatedInput.argType) {
+            for (associatedInput in v) {
+                when (associatedInput.argType) {
                     AttributeValueType.STRING -> builder.addInputStringAttrName(associatedInput.name)
                     AttributeValueType.BOOL -> builder.addInputBooleanName(associatedInput.name)
                     AttributeValueType.FLOAT -> builder.addInputFloatName(associatedInput.name)
@@ -81,11 +77,15 @@ abstract class BaseAttributeExtractionRule<
             }
 
 
-
         }
 
 
         return builder.build()
+    }
+
+    override fun argDescriptorTypeForOutputName(name: String, mappingProcess: MappingProcess<OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return nd4jOpDescriptor.argDescriptorList.first { argDescriptor -> argDescriptor.name == name }.argType
     }
 }
 
@@ -102,6 +102,14 @@ abstract class StringEqualsAdapterRule<
                 transformerArgs = transformerArgs)
         where DATA_TYPE: ProtocolMessageEnum {
 
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.STRING
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.BOOL || argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -110,8 +118,19 @@ abstract class StringEqualsAdapterRule<
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
             val descriptorBuilder = ArgDescriptor.newBuilder()
             descriptorBuilder.name = v
-            descriptorBuilder.argType = ArgDescriptor.ArgType.BOOL
-            descriptorBuilder.boolValue = testValue == compString
+            val argDescriptorType =  mappingCtx.argDescriptorTypeForName(k)
+            descriptorBuilder.argType = argDescriptorType
+            when(argDescriptorType) {
+                ArgDescriptor.ArgType.BOOL -> {
+                    descriptorBuilder.boolValue = testValue == compString
+                }
+
+                ArgDescriptor.ArgType.INT64 -> {
+                    descriptorBuilder.int64Value = if (testValue == compString) 1 else 0
+
+                }
+            }
+
             ret.add(descriptorBuilder.build())
 
         }
@@ -132,6 +151,13 @@ abstract class StringContainsAdapterRule<
                 mappingNamesToPerform =  mappingNamesToPerform,
                 transformerArgs = transformerArgs)
         where DATA_TYPE: ProtocolMessageEnum {
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.STRING
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.BOOL || argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
@@ -140,9 +166,19 @@ abstract class StringContainsAdapterRule<
             val compString = descriptorForName!![0].stringValue
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
             val descriptorBuilder = ArgDescriptor.newBuilder()
-            descriptorBuilder.name = v
-            descriptorBuilder.argType = ArgDescriptor.ArgType.BOOL
-            descriptorBuilder.boolValue = compString.contains(testValue)
+            val argDescriptorType =  mappingCtx.argDescriptorTypeForName(k)
+            descriptorBuilder.name = k
+            descriptorBuilder.argType =  mappingCtx.argDescriptorTypeForName(k)
+            when(argDescriptorType) {
+                ArgDescriptor.ArgType.BOOL -> {
+                    descriptorBuilder.boolValue = compString.contains(testValue)
+                }
+
+                ArgDescriptor.ArgType.INT64 -> {
+                    descriptorBuilder.int64Value = if (compString.contains(testValue)) 1 else 0
+
+                }
+            }
             ret.add(descriptorBuilder.build())
 
         }
@@ -158,7 +194,7 @@ abstract class StringNotEqualsAdapterRule<
         mappingNamesToPerform: Map<String, String> = emptyMap(),
         transformerArgs: Map<String, List<ArgDescriptor>> = emptyMap()):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
-        (name = "sizethresholdarrayint",
+        (name = "stringnotequalsadapterrule",
                 mappingNamesToPerform =  mappingNamesToPerform,
                 transformerArgs = transformerArgs)
         where DATA_TYPE: ProtocolMessageEnum {
@@ -171,7 +207,7 @@ abstract class StringNotEqualsAdapterRule<
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
             val argDescriptor = ArgDescriptor {
                 name = v
-                argType = ArgDescriptor.ArgType.BOOL
+                argType = mappingCtx.argDescriptorTypeForName(k)
                 boolValue = testValue != compString
             }
 
@@ -179,6 +215,15 @@ abstract class StringNotEqualsAdapterRule<
 
         }
         return ret
+    }
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.STRING
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.BOOL ||
+                argDescriptorType == ArgDescriptor.ArgType.INT64
     }
 }
 
@@ -207,13 +252,22 @@ abstract class SizeThresholdIntArrayIntIndexRule<OP_DEF_TYPE: GeneratedMessageV3
             if(inputArr.size < sizeThreshold) {
                 descriptorBuilder.int64Value = inputArr[fallbackIndex.toInt()]
             } else {
-                descriptorBuilder.int64Value = inputArr[index.toInt()]
+                descriptorBuilder.int64Value = inputArr[index]
             }
 
             ret.add(descriptorBuilder.build())
 
         }
         return ret
+    }
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.INT ||
+                argDescriptorType == AttributeValueType.STRING
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64
     }
 }
 
@@ -228,6 +282,13 @@ abstract class ConditionalFieldValueIntIndexArrayRule<
         (name = "conditionalfieldvalueintindex", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs)
         where  DATA_TYPE: ProtocolMessageEnum {
 
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.STRING || argDescriptorType ==AttributeValueType.INT
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
@@ -267,6 +328,13 @@ abstract class NDArraySizeAtRule<
         (name = "ndarraysizeat", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs)
         where  DATA_TYPE: ProtocolMessageEnum {
 
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.TENSOR
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
@@ -305,13 +373,32 @@ abstract class ValueMapping<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "valuemapping", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType != AttributeValueType.TENSOR
+    }
 
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType != ArgDescriptor.ArgType.INPUT_TENSOR &&
+                argDescriptorType != ArgDescriptor.ArgType.OUTPUT_TENSOR &&
+                argDescriptorType != ArgDescriptor.ArgType.DATA_TYPE
+    }
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
             val descriptorBuilder = ArgDescriptor.newBuilder()
             descriptorBuilder.name = k
+            /**
+             * TODO: Need to add type validation to the mapping rules.
+             * We will add both input types and output types.
+             * This will check for issues such as making sure if you're converting tensors,
+             * you're not passing in the wrong values or rules for mapping. This helps correct
+             * which  mapping should be applicable to which arguments.
+             *
+             * Potentially add checking methods to the mapping context that
+             * check for what type of argument a particular attribute is,
+             * something like mappingCtx.isTensorInput(inputFrameworkName) and mappingCtx.isAttributeInput(inputFrameworkName)
+             */
             val irAttribute = mappingCtx.irAttributeValueForNode(v)
             when(irAttribute.attributeValueType()) {
                 AttributeValueType.INT -> {
@@ -359,6 +446,13 @@ abstract class BooleanToInt<
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "booleantoint", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
 
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.INT || argDescriptorType == AttributeValueType.BOOL
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
@@ -402,6 +496,15 @@ abstract class StringToIndex<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "stringtoindex", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.STRING
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -430,6 +533,20 @@ abstract class ListAttributeValueLookupToIndex<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "listattributevaluelookuptoindex", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.LIST_FLOAT ||
+                argDescriptorType == AttributeValueType.LIST_INT ||
+                argDescriptorType == AttributeValueType.LIST_STRING ||
+                argDescriptorType == AttributeValueType.LIST_TENSOR ||
+                argDescriptorType == AttributeValueType.LIST_BOOL ||
+                argDescriptorType == AttributeValueType.INT
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType != ArgDescriptor.ArgType.OUTPUT_TENSOR
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -503,7 +620,18 @@ abstract class AttributeNumberListNDArray<
         TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum>(mappingNamesToPerform: Map<String, String>,
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
-        (name = "attributenumberlistndarrayinput", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+        (name = "convertinputnumberlisttondarray", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.LIST_FLOAT ||
+                argDescriptorType == AttributeValueType.LIST_INT
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INPUT_TENSOR
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -547,6 +675,18 @@ abstract class ListNumberToListNumber<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "listnumbertolistnumber", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.INT ||
+                argDescriptorType == AttributeValueType.FLOAT ||
+                argDescriptorType == AttributeValueType.LIST_INT ||
+                argDescriptorType == AttributeValueType.LIST_FLOAT
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64 || argDescriptorType ==
+                ArgDescriptor.ArgType.DOUBLE
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -587,7 +727,7 @@ abstract class ListNumberToListNumber<
 }
 
 
-abstract class NDArrayInputToScalarAttribute<
+abstract class ListNumberToNDArray<
         OP_DEF_TYPE: GeneratedMessageV3,
         NODE_TYPE: GeneratedMessageV3,
         ATTR_DEF : GeneratedMessageV3,
@@ -595,28 +735,100 @@ abstract class NDArrayInputToScalarAttribute<
         TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum>(mappingNamesToPerform: Map<String, String>,
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
-        (name = "ndarrayinputtoscalarattribute", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+        (name = "listnumbertondarray", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.INT ||
+                argDescriptorType == AttributeValueType.FLOAT ||
+                argDescriptorType == AttributeValueType.LIST_INT ||
+                argDescriptorType == AttributeValueType.LIST_FLOAT
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INPUT_TENSOR
+    }
+
+    override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
+        val ret = ArrayList<ArgDescriptor>()
+        for ((k, v) in mappingNamesToPerform()) {
+            val listOfValues = mappingCtx.irAttributeValueForNode(v)
+            when (listOfValues.attributeValueType()) {
+                AttributeValueType.LIST_FLOAT -> {
+                    listOfValues.listFloatValue().forEachIndexed { index, value ->
+                        run {
+                            ret.add(ArgDescriptor {
+                                doubleValue = value.toDouble()
+                                name = k + "_$index"
+                            })
+                        }
+                    }
+
+
+                }
+
+                AttributeValueType.LIST_INT -> {
+                    listOfValues.listIntValue().forEachIndexed { index, value ->
+                        run {
+                            ret.add(ArgDescriptor {
+                                int64Value = value.toLong()
+                                name = k + "_$index"
+                            })
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+        return ret
+    }
+}
+
+
+abstract class NDArrayInputToNumericalAttribute<
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE: GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum>(mappingNamesToPerform: Map<String, String>,
+                                                                          transformerArgs: Map<String, List<ArgDescriptor>>):
+        BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (name = "ndarrayinputtonumericalattribute", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.TENSOR
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.DOUBLE
+                || argDescriptorType == ArgDescriptor.ArgType.INT64 ||
+                argDescriptorType == ArgDescriptor.ArgType.FLOAT
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
             val inputTensor = mappingCtx.tensorInputFor(v).toNd4jNDArray()
             when(inputTensor.dataType()) {
                 DataType.FLOAT,DataType.DOUBLE -> {
-                    val floatVal = inputTensor.getDouble(0)
-                    ret.add(ArgDescriptor {
-                        name = k
-                        argType = ArgDescriptor.ArgType.DOUBLE
-                        doubleValue = floatVal
-                    })
+                    for( i in 0 until inputTensor.length()) {
+                        ret.add(ArgDescriptor {
+                            name = k
+                            argType = ArgDescriptor.ArgType.INT64
+                            doubleValue = inputTensor.getDouble(i)
+                        })
+                    }
                 }
 
                 DataType.UINT64,DataType.INT32,DataType.UINT32,DataType.INT64 -> {
-                    val intVal = inputTensor.getInt(0)
-                    ret.add(ArgDescriptor {
-                        name = k
-                        argType = ArgDescriptor.ArgType.INT64
-                        int64Value = intVal.toLong()
-                    })
+                    for( i in 0 until inputTensor.length()) {
+                        ret.add(ArgDescriptor {
+                            name = k
+                            argType = ArgDescriptor.ArgType.INT64
+                            int64Value = inputTensor.getLong(i)
+                        })
+                    }
+
                 }
                 else -> {
                     throw java.lang.IllegalArgumentException("Attribute $k is invalid type ${inputTensor.dataType()}")
@@ -639,6 +851,15 @@ abstract class AttributeScalarNDArrayAttribute<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "attributescalarndarrayattribute", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.FLOAT || argDescriptorType == AttributeValueType.INT
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INPUT_TENSOR
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
@@ -685,13 +906,20 @@ abstract class NDArrayToIntAttributeValue<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "ndarraytointattributevalue", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.TENSOR
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return argDescriptorType == ArgDescriptor.ArgType.INT64
+    }
 
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
         for((k, v) in mappingNamesToPerform()) {
             val ndarray = mappingCtx.tensorInputFor(v).toNd4jNDArray()
             val arrInts = ndarray.toIntVector()
-            for(i in 0 .. ndarray.length()) {
+            for(i in 0 until ndarray.length()) {
                 val argDescriptor = ArgDescriptor {
                     name = k
                     int64Value = arrInts[i.toInt()].toLong()
@@ -747,18 +975,20 @@ abstract class BaseNDArrayMappingRule<OP_DEF_TYPE: GeneratedMessageV3
     }
 
 
-    override fun convertInput(): List<ArgDescriptor> {
+    override fun convertInput(mappingContext: MappingContext<NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
 
         val mappingsToPerform = inputArgumentMappings()
         for(i in 0 until opDescriptor!!.argDescriptorCount) {
             if(mappingsToPerform.containsKey(opDescriptor!!.getArgDescriptor(i).name)) {
-                val outputName = mappingsToPerform[opDescriptor!!.getArgDescriptor(i).name]
+                val inputName = mappingsToPerform[opDescriptor!!.getArgDescriptor(i).name]!!
+                val inputTensor = mappingContext.tensorInputFor(inputName)
                 val builder = ArgDescriptor.newBuilder()
                 builder.argType = opDescriptor!!.argDescriptorList[i].argType
-                builder.name = outputName
+                builder.name = opDescriptor!!.getArgDescriptor(i).name
                 require(opDescriptor!!.argDescriptorList[i].argType == ArgDescriptor.ArgType.INPUT_TENSOR) {"Input type must be INPUT_TENSOR"}
                 builder.argIndex = opDescriptor!!.argDescriptorList[i].argIndex
+                builder.inputValue = inputTensor.toArgTensor()
                 ret.add(builder.build())
             }
 
@@ -827,6 +1057,15 @@ abstract class ArgDescriptorConstant<
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
         BaseAttributeExtractionRule<OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
         (name = "argdescriptorconstant", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return true
+    }
+
+    override fun outputsType(argDescriptorType: ArgDescriptor.ArgType): Boolean {
+        return true
+    }
+
     override fun convertAttributes(mappingCtx: MappingContext<NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
         return transformerArgs.flatMap { it.value }
     }

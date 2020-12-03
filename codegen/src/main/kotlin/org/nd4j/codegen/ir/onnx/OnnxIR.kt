@@ -493,6 +493,24 @@ class OnnxImportProcess(inputFramework: String = "onnx") : AbstractImportProcess
 }
 
 
+fun onnxAttributeTypeFor(attributeName: String,opDef: Onnx.NodeProto): AttributeValueType {
+    if(isOnnxTensorName(attributeName,opDef))
+        return AttributeValueType.TENSOR
+    return OnnxIRAttr(opDef.attributeList.first {
+        attributeProto -> attributeProto.name == attributeName },
+            Onnx.AttributeProto.getDefaultInstance()).attributeValueType()
+}
+
+fun isOnnxTensorName(name: String, opDef: Onnx.NodeProto): Boolean {
+    return opDef.inputList.contains(name)
+}
+
+
+fun isOnnxAttributeName(name: String, opDef: Onnx.NodeProto): Boolean {
+    return opDef.attributeList.map { attrDef -> attrDef.name }.contains(name)
+}
+
+
 fun NodeProto(block: Onnx.NodeProto.Builder.() -> Unit): Onnx.NodeProto {
     return Onnx.NodeProto.newBuilder().apply(block).build()
 }

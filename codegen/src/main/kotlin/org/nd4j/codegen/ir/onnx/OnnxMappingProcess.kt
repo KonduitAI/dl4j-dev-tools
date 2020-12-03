@@ -6,8 +6,8 @@ import org.nd4j.codegen.ir.AttributeMappingRule
 import org.nd4j.codegen.ir.TensorMappingRule
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 
-open class OnnxMappingProcess(inputFramework: String = "tensorflow",
-                              frameworkVersion: String = "2.3",
+open class OnnxMappingProcess(inputFramework: String = "onnx",
+                              frameworkVersion: String = "1.4",
                               inputFrameworkOpName: String,
                               opName: String,
                               opMappingRegistry: OpMappingRegistry<Onnx.NodeProto,
