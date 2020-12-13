@@ -4,9 +4,10 @@ import org.nd4j.codegen.ir.*
 import org.nd4j.ir.OpNamespace
 import org.tensorflow.framework.*
 
-class TensorflowConditionalFieldValueIntIndexArrayRule
-(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        ConditionalFieldValueIntIndexArrayRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+
+class TensorflowConditionalFieldValueIntIndexNDArrayRule
+    (mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+    ConditionalFieldValueIntIndexNDArrayRule<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         (mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
@@ -17,32 +18,117 @@ class TensorflowConditionalFieldValueIntIndexArrayRule
         TODO("Not yet implemented")
     }
 
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<
+            GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
+    }
+
+
+}
+
+fun conditionalFieldValueIntIndexNDArrayRule(outputAttribute: String,
+                                             inputFrameworkStringNameToTest: String,
+                                             targetValue: String,
+                                             trueIndex: Int,
+                                             falseIndex: Int,
+                                             attributeNameOfListAttribute: String,
+                                             argumentIndex: Int): TensorflowConditionalFieldValueIntIndexNDArrayRule {
+    return TensorflowConditionalFieldValueIntIndexNDArrayRule(
+        mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkStringNameToTest),
+        transformerArgs = mapOf(outputAttribute to listOf(
+            ArgDescriptor {
+                name = "targetValue"
+                stringValue = targetValue
+                argIndex = argumentIndex
+            },
+            ArgDescriptor {
+                name = "trueIndex"
+                int32Value = trueIndex
+                argIndex = argumentIndex
+            },
+            ArgDescriptor {
+                name = "falseIndex"
+                int32Value = falseIndex
+                argIndex = argumentIndex
+            },
+            ArgDescriptor {
+                name = "attributeNameOfListAttribute"
+                stringValue = attributeNameOfListAttribute
+                argIndex = argumentIndex
+            }))
+    )
+}
+
+
+
+
+
+class TensorflowConditionalFieldValueIntIndexArrayRule
+    (mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+    ConditionalFieldValueIntIndexArrayRule<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+        (mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(attrDef, attributeValueType)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowTensorName(name,opDef)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<
+            GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowAttributeName(name,opDef)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
+    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -55,31 +141,36 @@ fun conditionalFieldValueIntIndexArrayRule(outputAttribute: String,
                                            targetValue: String,
                                            trueIndex: Int,
                                            falseIndex: Int,
-                                           attributeNameOfListAttribute: String): TensorflowConditionalFieldValueIntIndexArrayRule {
+                                           attributeNameOfListAttribute: String,
+                                           argumentIndex: Int): TensorflowConditionalFieldValueIntIndexArrayRule {
     return TensorflowConditionalFieldValueIntIndexArrayRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkStringNameToTest),
-            transformerArgs = mapOf(outputAttribute to listOf(
-                    ArgDescriptor {
-                        name = "targetValue"
-                        stringValue = targetValue
-                    },
-                    ArgDescriptor {
-                        name = "trueIndex"
-                        int32Value = trueIndex
-                    },
-                    ArgDescriptor {
-                        name = "falseIndex"
-                        int32Value = falseIndex
-                    },
-                    ArgDescriptor {
-                        name = "attributeNameOfListAttribute"
-                        stringValue = attributeNameOfListAttribute
-                    }))
+        mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkStringNameToTest),
+        transformerArgs = mapOf(outputAttribute to listOf(
+            ArgDescriptor {
+                name = "targetValue"
+                stringValue = targetValue
+                argIndex = argIndex
+            },
+            ArgDescriptor {
+                name = "trueIndex"
+                int32Value = trueIndex
+                argIndex = argumentIndex
+            },
+            ArgDescriptor {
+                name = "falseIndex"
+                int32Value = falseIndex
+                argIndex = argumentIndex
+            },
+            ArgDescriptor {
+                name = "attributeNameOfListAttribute"
+                stringValue = attributeNameOfListAttribute
+                argIndex = argumentIndex
+            }))
     )
 }
 
 class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>):
-        NDArraySizeAtRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+    NDArraySizeAtRule<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef, attributeValueType)
@@ -88,32 +179,32 @@ class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transf
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -121,19 +212,21 @@ class TensorflowNDArraySizeAt(mappingNamesToPerform: Map<String, String>, transf
 
 fun sizeAtRule(dimensionIndex: Int,
                outputAttributeName: String,
-               inputFrameworkAttributeName: String): TensorflowNDArraySizeAt {
+               inputFrameworkAttributeName: String,
+               argumentIndex: Int): TensorflowNDArraySizeAt {
     return TensorflowNDArraySizeAt(
-            mappingNamesToPerform = mapOf(outputAttributeName to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttributeName to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                int32Value = dimensionIndex
-            }.build()))
+        mappingNamesToPerform = mapOf(outputAttributeName to inputFrameworkAttributeName),
+        transformerArgs = mapOf(outputAttributeName to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
+            name = inputFrameworkAttributeName
+            int32Value = dimensionIndex
+            argIndex = argumentIndex
+        }.build()))
     )
 }
 
 class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
                                         transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringEqualsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+    StringEqualsAdapterRule<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
@@ -143,32 +236,32 @@ class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, Strin
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -176,19 +269,24 @@ class TensorflowStringEqualsAdapterRule(mappingNamesToPerform: Map<String, Strin
 
 fun stringEqualsRule(outputAttribute: String,
                      inputFrameworkAttributeName: String,
-                     valueToTest: String): TensorflowStringEqualsAdapterRule {
+                     valueToTest: String,
+                     argumentIndex: Int): TensorflowStringEqualsAdapterRule {
     return TensorflowStringEqualsAdapterRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
+        mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
+        transformerArgs = mapOf(outputAttribute to listOf(
+            ArgDescriptor {
                 name = inputFrameworkAttributeName
                 stringValue = valueToTest
-            }.build())))
+                argType = OpNamespace.ArgDescriptor.ArgType.STRING
+                argIndex = argumentIndex
+            })))
 }
 
 
 class TensorflowStringNotEqualsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
                                            transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringNotEqualsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+    StringNotEqualsAdapterRule<GraphDef,OpDef, NodeDef,
+            OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
@@ -198,50 +296,53 @@ class TensorflowStringNotEqualsAdapterRule(mappingNamesToPerform: Map<String, St
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String,
+                                               mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String,
+                                                mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
 }
 
-fun stringNotEqualsRule(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowStringNotEqualsAdapterRule {
+fun stringNotEqualsRule(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String,argumentIndex: Int): TensorflowStringNotEqualsAdapterRule {
     return TensorflowStringNotEqualsAdapterRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                stringValue = valueToTest
-            }.build())))
+        mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
+        transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
+            name = inputFrameworkAttributeName
+            stringValue = valueToTest
+            argIndex = argumentIndex
+        }.build())))
 }
 
 
 class TensorflowStringContainsAdapterRule(mappingNamesToPerform: Map<String, String> = emptyMap(),
                                           transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        StringContainsAdapterRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+    StringContainsAdapterRule<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
@@ -251,32 +352,32 @@ class TensorflowStringContainsAdapterRule(mappingNamesToPerform: Map<String, Str
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -284,17 +385,17 @@ class TensorflowStringContainsAdapterRule(mappingNamesToPerform: Map<String, Str
 
 fun stringContainsRule(outputAttribute: String, inputFrameworkAttributeName: String, valueToTest: String): TensorflowStringContainsAdapterRule {
     return TensorflowStringContainsAdapterRule(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
-            transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
-                name = inputFrameworkAttributeName
-                stringValue = valueToTest
-            }.build())))
+        mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName),
+        transformerArgs = mapOf(outputAttribute to listOf(OpNamespace.ArgDescriptor.newBuilder().apply {
+            name = inputFrameworkAttributeName
+            stringValue = valueToTest
+        }.build())))
 }
 
 
 class TensorflowAttributeScalarNDArrayAttribute(mappingNamesToPerform: Map<String, String> = emptyMap(),
                                                 transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()) :
-        AttributeScalarNDArrayAttribute<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
+    AttributeScalarNDArrayAttribute<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>
         ( mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
@@ -304,32 +405,32 @@ class TensorflowAttributeScalarNDArrayAttribute(mappingNamesToPerform: Map<Strin
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -337,14 +438,14 @@ class TensorflowAttributeScalarNDArrayAttribute(mappingNamesToPerform: Map<Strin
 
 fun attributeScalarToNDArrayInput(outputAttribute: String, inputFrameworkAttributeName: String): TensorflowAttributeScalarNDArrayAttribute {
     return TensorflowAttributeScalarNDArrayAttribute(
-            mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName))
+        mappingNamesToPerform = mapOf(outputAttribute to inputFrameworkAttributeName))
 }
 
 
 
 
 class TensorflowValueMappingRule(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        ValueMapping<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+    ValueMapping<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef, attributeValueType)
@@ -353,32 +454,32 @@ class TensorflowValueMappingRule(mappingNamesToPerform: Map<String, String>, tra
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -388,8 +489,8 @@ fun valueMapping(mappings: Map<String,String>): TensorflowValueMappingRule {
     return TensorflowValueMappingRule(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
 }
 
-class TensorflowBooleanToInt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        BooleanToInt<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowBooleanToNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+    BooleanToNumber<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef, attributeValueType)
@@ -398,43 +499,92 @@ class TensorflowBooleanToInt(mappingNamesToPerform: Map<String, String>, transfo
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
 }
 
-fun booleanToInt(mappings: Map<String,String>): TensorflowBooleanToInt {
-    return TensorflowBooleanToInt(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
+fun booleanToNumber(mappings: Map<String,String>): TensorflowBooleanToNumber {
+    return TensorflowBooleanToNumber(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
 }
 
 
-class TensorflowNDArrayToIntAttributeValue(mappingNamesToPerform: Map<String, String>) : NDArrayToIntAttributeValue<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform,transformerArgs = emptyMap()) {
+
+class TensorflowNumberToBoolean(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+    NumberToBoolean<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(attrDef, attributeValueType)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowTensorName(name,opDef)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowAttributeName(name,opDef)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
+    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
+    }
+}
+
+fun numberToBoolean(mappings: Map<String,String>): TensorflowNumberToBoolean {
+    return TensorflowNumberToBoolean(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
+}
+
+
+
+
+class TensorflowNDArrayToIntAttributeValue(mappingNamesToPerform: Map<String, String>) : NDArrayToIntAttributeValue<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform,transformerArgs = emptyMap()) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(attrDef,attributeValueType)
@@ -443,32 +593,32 @@ class TensorflowNDArrayToIntAttributeValue(mappingNamesToPerform: Map<String, St
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -478,7 +628,7 @@ fun ndarrayToIntList(ndarrayNameToAttributeName: MutableMap<String,String>): Ten
     return TensorflowNDArrayToIntAttributeValue(mappingNamesToPerform = ndarrayNameToAttributeName)
 }
 
-class TensorflowNdArrayToStringIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : StringToIndex<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowNdArrayToStringIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : StringToInt<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -487,49 +637,49 @@ class TensorflowNdArrayToStringIndex(mappingNamesToPerform: Map<String, String>,
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
 }
 
-fun ndarrayStringToIndex(outputAttributeValue: String,inputAttributeValue: String, listOfValues: List<String>): TensorflowNdArrayToStringIndex {
+fun ndarrayStringToIndex(outputAttributeValue: String,inputAttributeValue: String, listOfValues: List<String>,argumentIndex: Int): TensorflowNdArrayToStringIndex {
     return TensorflowNdArrayToStringIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = mapOf(outputAttributeValue to listOfValues.map {
-        valueName -> ArgDescriptor {
+            valueName -> ArgDescriptor {
         name = valueName
         stringValue = valueName
+        argIndex = argumentIndex
     }
     }))
 }
 
 
-
-class TensorflowListNumberToListNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListNumberToListNumber<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowMapStringToInt(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : MapStringToInt<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -538,32 +688,89 @@ class TensorflowListNumberToListNumber(mappingNamesToPerform: Map<String, String
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
+    }
+}
+
+fun mapStringToInt(outputAttributeValue: String, inputAttributeValue: String, mapOfValuesToInts: Map<String,Int>,argumentIndex: Int,lookupIndex:Int): TensorflowMapStringToInt {
+    return TensorflowMapStringToInt(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs =
+    mapOf(outputAttributeValue to mapOfValuesToInts.map {
+            entry -> ArgDescriptor {
+        name = entry.key
+        int64Value = entry.value.toLong()
+        argIndex = argumentIndex
+    }
+    },"index" to listOf(ArgDescriptor {
+        name = "index"
+        int64Value = lookupIndex.toLong()
+    })))
+}
+
+
+
+
+class TensorflowListNumberToListNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListNumberToListNumber<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowTensorName(name,opDef)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowAttributeName(name,opDef)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
+    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -574,7 +781,7 @@ fun listNumberToListNumber(outputAttributeValue: String, inputAttributeValue: St
 }
 
 
-class TensorflowAttributeNumberListNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : AttributeNumberListNDArray<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowAttributeNumberListNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : AttributeNumberListNDArray<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -583,32 +790,32 @@ class TensorflowAttributeNumberListNDArray(mappingNamesToPerform: Map<String, St
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -619,7 +826,7 @@ fun convertNumberListToInputNDArray(outputAttributeValue: String, inputAttribute
 }
 
 
-class TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListAttributeValueLookupToIndex<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+class TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : ListAttributeValueLookupToIndex<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -628,51 +835,52 @@ class TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform: Map<Strin
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
 }
 
-fun listAttributeValueLookupToIndex(outputAttributeValue: String, inputAttributeValue: String, idx: Int): TensorflowListAttributeValueLookupToIndex {
+fun listAttributeValueLookupToIndex(outputAttributeValue: String, inputAttributeValue: String, idx: Int,argumentIndex: Int): TensorflowListAttributeValueLookupToIndex {
     return TensorflowListAttributeValueLookupToIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),
-            transformerArgs = mapOf(outputAttributeValue to listOf(ArgDescriptor {
-                argType = OpNamespace.ArgDescriptor.ArgType.INT32
-                int32Value = idx
-                name = "index"
-            })))
+        transformerArgs = mapOf(outputAttributeValue to listOf(ArgDescriptor {
+            argType = OpNamespace.ArgDescriptor.ArgType.INT32
+            int32Value = idx
+            name = "index"
+            argIndex = argumentIndex
+        })))
 }
 
 
 
 
 class TensorflowNDArrayInputToNumericalAttribute(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        NDArrayInputToNumericalAttribute<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+    NDArrayInputToNumericalAttribute<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -681,32 +889,32 @@ class TensorflowNDArrayInputToNumericalAttribute(mappingNamesToPerform: Map<Stri
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -716,9 +924,8 @@ fun convertNDArrayInputToNumericalAttr(mutableMap: MutableMap<String,String>): T
     return TensorflowNDArrayInputToNumericalAttribute(mappingNamesToPerform = mutableMap,transformerArgs = emptyMap())
 }
 
-//ListNumberToNDArray
 class TensorflowListNumberToNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
-        ListNumberToNDArray<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+    ListNumberToNDArray<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -727,32 +934,32 @@ class TensorflowListNumberToNDArray(mappingNamesToPerform: Map<String, String>, 
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -762,8 +969,9 @@ fun listNumberToNDarray(mutableMap: MutableMap<String,String>): TensorflowListNu
     return TensorflowListNumberToNDArray(mappingNamesToPerform = mutableMap,transformerArgs = emptyMap())
 }
 
-class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>)
-    : ArgDescriptorConstant<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+class TensorflowNDArrayAttributeToNDArrayInput(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+    NDArrayAttributeToNDArrayInput<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 
     override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
         return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
@@ -772,32 +980,78 @@ class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>
     override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
         TODO("Not yet implemented")
     }
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowTensorName(name,opDef)
     }
 
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isNd4jTensorName(name,nd4jOpDescriptor)
     }
 
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return isTensorflowAttributeName(name,opDef)
     }
 
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
     }
 
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         return argDescriptorType(name,nd4jOpDescriptor)
     }
 
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
+    }
+}
+
+fun ndArrayAttributeToNDarrayInput(mutableMap: MutableMap<String,String>): TensorflowNDArrayAttributeToNDArrayInput {
+    return TensorflowNDArrayAttributeToNDArrayInput(mappingNamesToPerform = mutableMap,transformerArgs = emptyMap())
+}
+
+
+class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>)
+    : ArgDescriptorConstant<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowTensorName(name,opDef)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowAttributeName(name,opDef)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
+    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
         val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
         return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
     }
@@ -805,4 +1059,50 @@ class TensorflowArgDescriptorConstant(mappingNamesToPerform: Map<String, String>
 
 fun argDescriptorConstant(argDescriptorConstants: List<OpNamespace.ArgDescriptor>): TensorflowArgDescriptorConstant {
     return TensorflowArgDescriptorConstant(mappingNamesToPerform = emptyMap(),transformerArgs = mapOf("value" to argDescriptorConstants))
+}
+
+
+class TensorflowAttributeNDArrayToScalarAttribute(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>)
+    : AttributeNDArrayToScalarAttribute<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: OpDef.AttrDef, attributeValueType: AttrValue): IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType> {
+        return TensorflowIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<OpDef.AttrDef, AttrValue, TensorProto, DataType>> {
+        TODO("Not yet implemented")
+    }
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowTensorName(name,opDef)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return isTensorflowAttributeName(name,opDef)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
+    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef, AttrValue, DataType>): AttributeValueType {
+        val opDef = tensorflowOps.findOp(mappingProcess.inputFrameworkOpName())
+        return tensorflowAttributeValueTypeFor(attributeName = name,opDef = opDef)
+    }
+}
+
+fun ndarrayAttributeToScalarAttribute(argDescriptorConstants: List<OpNamespace.ArgDescriptor>): TensorflowAttributeNDArrayToScalarAttribute {
+    return TensorflowAttributeNDArrayToScalarAttribute(mappingNamesToPerform = emptyMap(),transformerArgs = mapOf("value" to argDescriptorConstants))
 }

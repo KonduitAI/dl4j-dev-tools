@@ -2,7 +2,6 @@ package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
 import org.nd4j.codegen.ir.*
-import org.nd4j.codegen.ir.tensorflow.*
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
@@ -10,9 +9,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.shade.protobuf.ByteString
-import org.tensorflow.framework.*
-import org.tensorflow.framework.TensorShapeProto
+import java.lang.IllegalArgumentException
 
 fun loadOnnxOps(): List<Onnx.NodeProto> {
     val graphProto = Onnx.GraphProto.parseFrom(ClassPathResource("onnx-op-defs.pb").inputStream)
@@ -40,9 +37,9 @@ class OnnxIRTensor(input: Onnx.TensorProto): IRTensor<Onnx.TensorProto, Onnx.Ten
 
     override fun toArgTensor(): TensorNamespace.TensorProto {
         val builder = TensorNamespace.TensorProto.newBuilder()
-                .setDataLocation(TensorNamespace.TensorProto.DataLocation.DEFAULT)
+            .setDataLocation(TensorNamespace.TensorProto.DataLocation.DEFAULT)
 
-        for(i in 0 .. tensor.dimsCount) {
+        for(i in 0 until tensor.dimsCount) {
             builder.addDims(tensor.getDims(i))
         }
 
@@ -65,23 +62,27 @@ class OnnxIRTensor(input: Onnx.TensorProto): IRTensor<Onnx.TensorProto, Onnx.Ten
         }
 
 
-        if(tensor.doubleDataList != null) {
+        if(tensor.doubleDataList != null && tensor.doubleDataCount > 0) {
             builder.addAllDoubleData(tensor.doubleDataList)
         }
 
-        if(tensor.stringDataList != null) {
+        if(tensor.stringDataList != null && tensor.stringDataCount > 0) {
             builder.addAllStringData(tensor.stringDataList)
         }
 
-        if(tensor.floatDataList != null) {
+        if(tensor.floatDataList != null && tensor.floatDataCount > 0) {
             builder.addAllFloatData(tensor.floatDataList)
         }
 
-        if(tensor.int32DataList != null) {
+        if(tensor.int32DataList != null && tensor.int32DataCount > 0) {
             builder.addAllInt32Data(tensor.int32DataList)
         }
 
-        if(tensor.uint64DataList != null) {
+        if(tensor.int64DataCount != null && tensor.int64DataCount > 0) {
+            builder.addAllInt64Data(tensor.int64DataList)
+        }
+
+        if(tensor.uint64DataList != null && tensor.uint64DataCount > 0) {
             builder.addAllInt64Data(tensor.uint64DataList)
         }
 
@@ -99,7 +100,7 @@ class OnnxIRTensor(input: Onnx.TensorProto): IRTensor<Onnx.TensorProto, Onnx.Ten
     }
 
     override fun toNd4jNDArray(): INDArray {
-        TODO("Not yet implemented")
+       return ndarrayFromNameSpaceTensor(toArgTensor())
     }
 
 
@@ -140,22 +141,41 @@ class OnnxIRDataType(inputDataType: Onnx.TensorProto.DataType): IRDataType<Onnx.
 
     override fun nd4jDataType(): DataType {
         when(this.dataType) {
-            Onnx.TensorProto.DataType.UINT64 ->  return  return org.nd4j.linalg.api.buffer.DataType.INT64
-            Onnx.TensorProto.DataType.UINT32 ->  return return org.nd4j.linalg.api.buffer.DataType.INT32
-            Onnx.TensorProto.DataType.UINT16 ->  return return org.nd4j.linalg.api.buffer.DataType.INT16
-            Onnx.TensorProto.DataType.FLOAT16 -> return   return org.nd4j.linalg.api.buffer.DataType.FLOAT16
-            Onnx.TensorProto.DataType.STRING -> return  return org.nd4j.linalg.api.buffer.DataType.UTF8
-            Onnx.TensorProto.DataType.FLOAT ->  return  return org.nd4j.linalg.api.buffer.DataType.FLOAT
-            Onnx.TensorProto.DataType.DOUBLE -> return  return org.nd4j.linalg.api.buffer.DataType.DOUBLE
-            Onnx.TensorProto.DataType.BOOL -> return  return org.nd4j.linalg.api.buffer.DataType.BOOL
-            Onnx.TensorProto.DataType.INT64 -> return  return org.nd4j.linalg.api.buffer.DataType.INT64
-            Onnx.TensorProto.DataType.INT32 ->  return  return org.nd4j.linalg.api.buffer.DataType.INT32
-            Onnx.TensorProto.DataType.INT16 -> return  return org.nd4j.linalg.api.buffer.DataType.INT16
+            Onnx.TensorProto.DataType.UINT64 ->  return  return DataType.INT64
+            Onnx.TensorProto.DataType.UINT32 ->  return return DataType.INT32
+            Onnx.TensorProto.DataType.UINT16 ->  return return DataType.INT16
+            Onnx.TensorProto.DataType.FLOAT16 -> return   return DataType.FLOAT16
+            Onnx.TensorProto.DataType.STRING -> return  return DataType.UTF8
+            Onnx.TensorProto.DataType.FLOAT ->  return  return DataType.FLOAT
+            Onnx.TensorProto.DataType.DOUBLE -> return  return DataType.DOUBLE
+            Onnx.TensorProto.DataType.BOOL -> return  return DataType.BOOL
+            Onnx.TensorProto.DataType.INT64 -> return  return DataType.INT64
+            Onnx.TensorProto.DataType.INT32 ->  return  return DataType.INT32
+            Onnx.TensorProto.DataType.INT16 -> return  return DataType.INT16
 
         }
 
-        return  return org.nd4j.linalg.api.buffer.DataType.UNKNOWN
+        return  return DataType.UNKNOWN
 
+    }
+
+    override fun nameSpaceDataType(): TensorNamespace.DataType {
+        when(this.dataType) {
+            Onnx.TensorProto.DataType.UINT64 ->  return  return TensorNamespace.DataType.INT64
+            Onnx.TensorProto.DataType.UINT32 ->  return return TensorNamespace.DataType.INT32
+            Onnx.TensorProto.DataType.UINT16 ->  return return TensorNamespace.DataType.INT16
+            Onnx.TensorProto.DataType.FLOAT16 -> return   return TensorNamespace.DataType.FLOAT16
+            Onnx.TensorProto.DataType.STRING -> return  return TensorNamespace.DataType.STRING
+            Onnx.TensorProto.DataType.FLOAT ->  return  TensorNamespace.DataType.FLOAT
+            Onnx.TensorProto.DataType.DOUBLE -> return  TensorNamespace.DataType.DOUBLE
+            Onnx.TensorProto.DataType.BOOL -> return  return TensorNamespace.DataType.BOOL
+            Onnx.TensorProto.DataType.INT64 -> return  return TensorNamespace.DataType.INT64
+            Onnx.TensorProto.DataType.INT32 ->  return  return TensorNamespace.DataType.INT32
+            Onnx.TensorProto.DataType.INT16 -> return  return TensorNamespace.DataType.INT16
+
+        }
+
+        return  TensorNamespace.DataType.UNDEFINED
     }
 
 }
@@ -165,7 +185,7 @@ fun attrDefaultValue(): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, On
 }
 
 class OnnxIRAttr(inputAttributeDef: Onnx.AttributeProto, inputAttributeValue: Onnx.AttributeProto):
-        IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
+    IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
 
     private val attributeDef = inputAttributeDef
     private val attributeValue = inputAttributeValue
@@ -192,7 +212,7 @@ class OnnxIRAttr(inputAttributeDef: Onnx.AttributeProto, inputAttributeValue: On
     }
 
     override fun boolValue(): Boolean {
-        TODO("Implement")
+       return attributeValue.i > 0
     }
 
     override fun listBoolValue(): List<Boolean> {
@@ -226,7 +246,7 @@ class OnnxIRAttr(inputAttributeDef: Onnx.AttributeProto, inputAttributeValue: On
 
     override fun listTensorValue(): List<IRTensor<Onnx.TensorProto,Onnx.TensorProto.DataType>> {
         return attributeValue.tensorsList.map {
-            input -> OnnxIRTensor(input)
+                input -> OnnxIRTensor(input)
         }
     }
 
@@ -240,6 +260,10 @@ class OnnxIRAttr(inputAttributeDef: Onnx.AttributeProto, inputAttributeValue: On
 
     override fun listStringValue(): List<String> {
         return attributeValue.stringsList.map { it.toStringUtf8() }
+    }
+
+    override fun dataTataTypeValue(): IRDataType<Onnx.TensorProto.DataType> {
+        return OnnxIRDataType(Onnx.TensorProto.DataType.values()[attributeDef.t.dataType])
     }
 
 }
@@ -269,7 +293,7 @@ class OnnxIRArgDef(input: Onnx.NodeProto): IRArgDef<Onnx.NodeProto,Onnx.TensorPr
 
 }
 
-class OnnxIROp(input: Onnx.NodeProto): IROpDef<Onnx.NodeProto, Onnx.TensorProto, Onnx.NodeProto,Onnx.TensorProto.DataType, Onnx.AttributeProto, Onnx.AttributeProto> {
+class OnnxIROp(input: Onnx.NodeProto): IROpDef<Onnx.GraphProto,Onnx.NodeProto, Onnx.TensorProto, Onnx.NodeProto,Onnx.TensorProto.DataType, Onnx.AttributeProto, Onnx.AttributeProto> {
 
     val opDef = input
 
@@ -307,7 +331,7 @@ class OnnxIRNode(inputNode: Onnx.NodeProto, inputOpDef: Onnx.NodeProto): IRNode<
     private val opDef = inputOpDef
     private val attrDefsMap = attrDefsByName(inputOpDef.attributeList)
     private val attrMap: Map<String, IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto,Onnx.TensorProto.DataType>> =
-            initAttrMapFromNode(inputNode)
+        initAttrMapFromNode(inputNode)
 
     init {
 
@@ -372,6 +396,14 @@ class OnnxIRNode(inputNode: Onnx.NodeProto, inputOpDef: Onnx.NodeProto): IRNode<
         return nodeDef
     }
 
+    override fun numInputs(): Int {
+        return nodeDef.inputCount
+    }
+
+    override fun numOutputs(): Int {
+        return nodeDef.outputCount
+    }
+
 }
 
 
@@ -379,8 +411,10 @@ fun Onnx.GraphProto.nodeByName(name: String): Onnx.NodeProto {
     return this.nodeList.first { it.name == name }!!
 }
 
-class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<Onnx.NodeProto,
-        Onnx.NodeProto,Onnx.TensorProto,Onnx.AttributeProto,Onnx.AttributeProto,Onnx.TensorProto.DataType> {
+class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
+        Onnx.GraphProto,Onnx.NodeProto,
+        Onnx.NodeProto,Onnx.TensorProto,Onnx.AttributeProto,Onnx.AttributeProto,
+        Onnx.TensorProto.DataType> {
 
     val graphDef = graphDef
     val opList = graphDef.nodeList
@@ -388,26 +422,61 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<Onnx.NodeProto,
         return graphDef.nodeByName(input)
     }
 
-    override fun nodeList(): List<Onnx.NodeProto> {
-        return graphDef.nodeList
+    override fun nodeList(): List<IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>> {
+        val ret2 = ArrayList<IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>>()
+        graphDef.nodeList.forEach {
+            val opDef = onnxops.first { opDef -> opDef.name == it.opType }
+            ret2.add(OnnxIRNode(it,opDef))
+        }
+
+        return ret2
     }
 
-    override fun opDefFor(name: String): Onnx.NodeProto {
-        return opList.first { it.name == name }!!
-    }
 
     fun graphDef(): Onnx.GraphProto {
         return graphDef
     }
 
+    override fun internalValue(): Onnx.GraphProto {
+        return graphDef
+    }
+
+
+
+    override fun createMappingContext(
+        opDef: Onnx.NodeProto,
+        node: Onnx.NodeProto
+    ): MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+        return OnnxMappingContext(opDef = opDef,node =  node,graph = this)
+    }
+
+    override fun frameworkName(): String {
+        return "onnx"
+    }
+
+    override fun nd4jNameForInternalOpName(name: String): String {
+        return onnxOpRegistry.lookupOpMappingProcess(name).opName()
+    }
+
+    override fun isConstantOpName(name: String): Boolean {
+        return name == "Constant" || name == "Placeholder"
+    }
+
+    override fun isConstant(opName: String): Boolean {
+        return opName == "Constant"
+    }
+
+    override fun isPlaceHolder(opName: String): Boolean {
+        return opName == "Placeholder"
+    }
 }
 
 
 class OnnxMappingContext(opDef: Onnx.NodeProto, node: Onnx.NodeProto, graph:
-IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
+IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
         Onnx.AttributeProto,
         Onnx.AttributeProto, Onnx.TensorProto.DataType>) :
-        AbstractMappingContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(opDef, node, graph) {
+    AbstractMappingContext< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(opDef, node, graph) {
 
     override fun attrDef(name: String): Onnx.AttributeProto {
         val ret = opDef().attributeList.firstOrNull { it.name == name }
@@ -423,24 +492,18 @@ IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
 
     override fun tensorInputFor(name: String): IRTensor<Onnx.TensorProto,Onnx.TensorProto.DataType> {
         var foundIndex = -1
-        /**
-         * Use op definition name as 1 unified reference name in rules for static purposes, but
-         * look up via index for specific node mappings.
-         *
-         * This is equivalent to the tf input position attribute value in the previous tensorflow import.
-         */
         opDef.inputList.forEachIndexed {
-            index,argDef -> if(argDef == name) foundIndex = index
+                index,argDef -> if(argDef == name) foundIndex = index
         }
 
-
-        val targetName = opDef.getInput(foundIndex)
-        val graphNode = graph.nodeByName(targetName)
         val castedGraph = graph as OnnxIRGraph
         val graphDef = castedGraph.graphDef()
-        graphDef.initializerList.filter { it.name == name }
         //value nodes are the values of attributes that are input nodes in a frozen graph
-        return OnnxIRTensor(graphDef.initializerList.first { it.name == name })
+        val attemptedTensor = graphDef.initializerList.firstOrNull { it.name == name }
+        if(attemptedTensor == null) {
+            throw IllegalArgumentException("Name $name not found in initializer list.")
+        }
+        return OnnxIRTensor(attemptedTensor!!)
     }
 
     override fun opName(): String {
@@ -466,29 +529,64 @@ IRGraph<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
         return OnnxIRTensor(ret)
     }
 
-}
-
-class OnnxImportContext(process: MappingProcess<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, mappingContext: MappingContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): AbstractImportContext<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(process, mappingContext) {
-
-}
-
-class OnnxImportProcess(inputFramework: String = "onnx") : AbstractImportProcess<Onnx.NodeProto, Onnx.NodeProto,
-        Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(inputFramework) {
-
-    override fun createMappingContext(graph: IRGraph<Onnx.NodeProto, Onnx.NodeProto,
-            Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, node: Onnx.NodeProto): MappingContext<Onnx.NodeProto,
-            Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
-        val opDef = onnxops.first{ it.opType == node.opType  }
-        return OnnxMappingContext(graph = graph,node = node,opDef = opDef)
+    override fun tensorAttributeFor(name: String): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        return irAttributeValueForNode(name).tensorValue()
     }
 
-    override fun createImportContext(mappingProcess: MappingProcess<Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
+}
+
+class OnnxImportContext(process: MappingProcess< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, mappingContext:
+MappingContext<Onnx.GraphProto,
+        Onnx.NodeProto,
+        Onnx.NodeProto,
+        Onnx.TensorProto,
+        Onnx.AttributeProto,
+        Onnx.AttributeProto, Onnx.TensorProto.DataType>): AbstractImportContext<Onnx.GraphProto,
+        Onnx.NodeProto,
+        Onnx.NodeProto,
+        Onnx.TensorProto,
+        Onnx.AttributeProto,
+        Onnx.AttributeProto,
+        Onnx.TensorProto.DataType>(process, mappingContext) {
+
+}
+
+class OnnxImportProcess(inputFramework: String = "onnx") : AbstractImportProcess<
+        Onnx.GraphProto,
+        Onnx.NodeProto, Onnx.NodeProto,
+        Onnx.TensorProto,
+        Onnx.AttributeProto,
+        Onnx.AttributeProto,
+        Onnx.TensorProto.DataType>(inputFramework) {
+
+    override fun createMappingContext(
+        graph: IRGraph<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>,
+        node: IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>
+    ): MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+        val opDef = onnxops.first{ it.opType == node.opName()  }
+        return OnnxMappingContext(graph = graph,node = node.internalValue(),opDef = opDef)
+    }
+
+
+    override fun createImportContext(mappingProcess: MappingProcess<
+            Onnx.GraphProto,
+            Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
             Onnx.AttributeProto, Onnx.AttributeProto,
-            Onnx.TensorProto.DataType>, mappingContext: MappingContext<Onnx.NodeProto,
-            Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>):
-            ImportContext<Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto, Onnx.AttributeProto,Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+            Onnx.TensorProto.DataType>, mappingContext: MappingContext< Onnx.GraphProto,
+            Onnx.NodeProto,
+            Onnx.NodeProto,
+            Onnx.TensorProto,
+            Onnx.AttributeProto,
+            Onnx.AttributeProto, Onnx.TensorProto.DataType>):
+            ImportContext< Onnx.GraphProto,
+                    Onnx.NodeProto,
+                    Onnx.NodeProto,
+                    Onnx.TensorProto,
+                    Onnx.AttributeProto,Onnx.AttributeProto, Onnx.TensorProto.DataType> {
         return OnnxImportContext(mappingContext =  mappingContext,process = mappingProcess)
     }
+
+
 
 }
 
@@ -497,8 +595,8 @@ fun onnxAttributeTypeFor(attributeName: String,opDef: Onnx.NodeProto): Attribute
     if(isOnnxTensorName(attributeName,opDef))
         return AttributeValueType.TENSOR
     return OnnxIRAttr(opDef.attributeList.first {
-        attributeProto -> attributeProto.name == attributeName },
-            Onnx.AttributeProto.getDefaultInstance()).attributeValueType()
+            attributeProto -> attributeProto.name == attributeName },
+        Onnx.AttributeProto.getDefaultInstance()).attributeValueType()
 }
 
 fun isOnnxTensorName(name: String, opDef: Onnx.NodeProto): Boolean {
@@ -511,70 +609,25 @@ fun isOnnxAttributeName(name: String, opDef: Onnx.NodeProto): Boolean {
 }
 
 
-fun NodeProto(block: Onnx.NodeProto.Builder.() -> Unit): Onnx.NodeProto {
-    return Onnx.NodeProto.newBuilder().apply(block).build()
-}
-
-fun AttributeProto(block: Onnx.AttributeProto.Builder.() -> Unit) : Onnx.AttributeProto {
-    return Onnx.AttributeProto.newBuilder().apply { block }.build()
-}
-
-
-
-fun Onnx.NodeProto.Builder.Input(inputName: String) {
-    this.addInput(inputName)
-}
-
-fun GraphProto(block: Onnx.GraphProto.Builder.() -> Unit): Onnx.GraphProto {
-    return Onnx.GraphProto.newBuilder().apply(block).build()
-}
-
-fun Onnx.GraphProto.Builder.Node(inputNode: Onnx.NodeProto) {
-    this.addNode(inputNode)
-}
-
-
-
-
-
-fun OnnxTensorProto(block: Onnx.TensorProto.Builder.() -> Unit): Onnx.TensorProto {
-    return Onnx.TensorProto.newBuilder().apply { block }.build()
-}
-
 fun convertToOnnxDataType(dataType: org.nd4j.linalg.api.buffer.DataType): Onnx.TensorProto.DataType {
     return when (dataType) {
         org.nd4j.linalg.api.buffer.DataType.UINT16 -> Onnx.TensorProto.DataType.UINT16
         org.nd4j.linalg.api.buffer.DataType.UINT32 ->  Onnx.TensorProto.DataType.UINT32
         org.nd4j.linalg.api.buffer.DataType.UINT64 ->  Onnx.TensorProto.DataType.UINT64
-        org.nd4j.linalg.api.buffer.DataType.BOOL ->  Onnx.TensorProto.DataType.BOOL
+        DataType.BOOL ->  Onnx.TensorProto.DataType.BOOL
         org.nd4j.linalg.api.buffer.DataType.BFLOAT16 ->  Onnx.TensorProto.DataType.BFLOAT16
-        org.nd4j.linalg.api.buffer.DataType.FLOAT ->  Onnx.TensorProto.DataType.FLOAT
+        DataType.FLOAT ->  Onnx.TensorProto.DataType.FLOAT
         org.nd4j.linalg.api.buffer.DataType.INT ->  Onnx.TensorProto.DataType.INT32
         org.nd4j.linalg.api.buffer.DataType.LONG ->  Onnx.TensorProto.DataType.INT64
         org.nd4j.linalg.api.buffer.DataType.BYTE ->  Onnx.TensorProto.DataType.INT8
         org.nd4j.linalg.api.buffer.DataType.SHORT -> Onnx.TensorProto.DataType.INT16
-        org.nd4j.linalg.api.buffer.DataType.DOUBLE -> Onnx.TensorProto.DataType.DOUBLE
+        DataType.DOUBLE -> Onnx.TensorProto.DataType.DOUBLE
         org.nd4j.linalg.api.buffer.DataType.UBYTE ->  Onnx.TensorProto.DataType.UINT8
         org.nd4j.linalg.api.buffer.DataType.HALF ->  Onnx.TensorProto.DataType.FLOAT16
-        org.nd4j.linalg.api.buffer.DataType.UTF8 ->  Onnx.TensorProto.DataType.STRING
+        DataType.UTF8 ->  Onnx.TensorProto.DataType.STRING
         else -> throw UnsupportedOperationException("Unknown TF data type: [" + dataType.name + "]")
     }
 }
 
-
-fun Onnx.TensorProto.Builder.OnnxDataType(value: Onnx.TensorProto.DataType) {
-    this.dataType = value.ordinal
-}
-
-
-
-fun Onnx.TensorProto.Builder.OnnxRawData(byteArray: ByteArray) {
-    this.rawData = ByteString.copyFrom(byteArray)
-}
-
-fun Onnx.TensorProto.Builder.Shape(shape: List<Long>) {
-    this.dimsList.clear()
-    this.dimsList.addAll(shape)
-}
 
 

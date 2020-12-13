@@ -120,7 +120,7 @@ class TestTensorflowRuleDeclarations {
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
-        val convertNumberListToInputNDArrayRule = listAttributeValueLookupToIndex(outputAttributeValue = "output", inputAttributeValue = "strides", idx = 0)
+        val convertNumberListToInputNDArrayRule = listAttributeValueLookupToIndex(outputAttributeValue = "output", inputAttributeValue = "strides", idx = 0,argumentIndex = 0)
         val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
         assertEquals(1,convertNumberListToInputNDArrayResult.size)
         assertEquals(2,convertNumberListToInputNDArrayResult[0].int64Value)
@@ -217,7 +217,7 @@ class TestTensorflowRuleDeclarations {
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
-        val booleanToInt = booleanToInt(mapOf("output" to "is_training"))
+        val booleanToInt = booleanToNumber(mapOf("output" to "is_training"))
         val booleanToIntResult = booleanToInt.convertAttributes(mappingContext)
         assertEquals(1,booleanToIntResult.size)
         val boolValue = booleanToIntResult[0].int64Value
@@ -302,7 +302,7 @@ class TestTensorflowRuleDeclarations {
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
         listOf("value","notValue").zip(listOf(false,true)).forEach { (valueToTest,assertionResult) ->
-            val stringNotEqualsRule = stringNotEqualsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest)
+            val stringNotEqualsRule = stringNotEqualsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest,argumentIndex = 0)
             val stringEqualsResult = stringNotEqualsRule.convertAttributes(mappingCtx = mappingContext)
             assertEquals(1,stringEqualsResult.size)
             assertEquals(assertionResult,stringEqualsResult[0].boolValue)
@@ -364,7 +364,7 @@ class TestTensorflowRuleDeclarations {
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
         listOf("value","notValue").zip(listOf(true,false)).forEach { (valueToTest,assertionResult) ->
-            val stringEqualsRule = stringEqualsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest)
+            val stringEqualsRule = stringEqualsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest,argumentIndex = 0)
             val stringEqualsResult = stringEqualsRule.convertAttributes(mappingCtx = mappingContext)
             assertEquals(1,stringEqualsResult.size)
             assertEquals(assertionResult,stringEqualsResult[0].boolValue)
@@ -408,7 +408,7 @@ class TestTensorflowRuleDeclarations {
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = nodeDef,graph = tfGraph)
         shape.forEachIndexed { i,value ->
-            val sizeAtRule = sizeAtRule(dimensionIndex = i,outputAttributeName = "output",inputFrameworkAttributeName = "inputs")
+            val sizeAtRule = sizeAtRule(dimensionIndex = i,outputAttributeName = "output",inputFrameworkAttributeName = "inputs",argumentIndex = 0)
             val sizeAtRuleResult = sizeAtRule.convertAttributes(mappingCtx = mappingContext)
             assertEquals(1,sizeAtRuleResult.size)
             assertEquals(value,sizeAtRuleResult[0].int64Value)
@@ -461,7 +461,7 @@ class TestTensorflowRuleDeclarations {
                     outputAttribute = "N",
                     attributeNameOfListAttribute = "N",
                     targetValue = "value", trueIndex = trueIndex, falseIndex = falseIndex,
-                    inputFrameworkStringNameToTest = "T")
+                    inputFrameworkStringNameToTest = "T",argumentIndex = 0)
 
             val ret = conditionalIndex.convertAttributes(mappingContext)
             assertEquals(1,ret.size)

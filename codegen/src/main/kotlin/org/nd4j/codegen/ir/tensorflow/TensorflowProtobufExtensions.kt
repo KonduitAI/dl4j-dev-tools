@@ -1,17 +1,12 @@
 package org.nd4j.codegen.ir.tensorflow
 
-import org.nd4j.codegen.ir.BaseNDArrayMappingRule
-import org.nd4j.codegen.ir.findOp
-import org.nd4j.codegen.ir.nd4jOpDescriptors
-import org.nd4j.codegen.ir.onnx.onnxops
-import org.nd4j.ir.OpNamespace
-import org.nd4j.ir.TensorNamespace
 import org.nd4j.shade.protobuf.ByteString
 import org.tensorflow.framework.*
 import java.nio.charset.Charset
 
 fun GraphDef.nodeByName(name: String): NodeDef {
-    return this.nodeList.first { it.name == name }!!
+    val nodeNames = nodeList.map { node -> node.name }
+    return nodeList.first { it.name == name }!!
 }
 
 fun ListAttrValue(vararg i: Long): AttrValue.ListValue =
@@ -57,6 +52,15 @@ fun TensorProto.Builder.Double(value: Double) {
     this.addDoubleVal(value)
 }
 
+fun TensorProto.Builder.Int64Data(value: List<Long>) {
+    this.addAllInt64Val(value)
+}
+
+
+fun TensorProto.Builder.Int32Data(value: List<Int>) {
+    this.addAllIntVal(value)
+}
+
 fun TensorProto.Builder.DoubleData(value: List<Double>) {
     this.addAllDoubleVal(value)
 }
@@ -94,6 +98,16 @@ fun AttrValue(block: AttrValue.Builder.() -> Unit): AttrValue {
     return AttrValue.newBuilder().apply(block).build()
 }
 
+fun AttrValue.Builder.ListInts(listInts: List<Long>) {
+    this.listBuilder.addAllI(listInts)
+}
+
+fun AttrValue.Builder.ListFloats(listFloats: List<Float>) {
+    this.listBuilder.addAllF(listFloats)
+}
+
+
+
 fun GraphDef(block: GraphDef.Builder.() -> Unit): GraphDef {
     return GraphDef.newBuilder().apply(block).build()
 }
@@ -103,6 +117,7 @@ fun GraphDef.Builder.Node(inputNode: NodeDef) {
 }
 
 fun String.toByteString() = ByteString.copyFrom(this, Charset.defaultCharset())
+
 fun OpDef(block: OpDef.Builder.() -> Unit): OpDef {
     return OpDef.newBuilder().apply(block).build()
 }
@@ -139,30 +154,3 @@ fun OpList.findOp(name: String): OpDef {
     return this.opList.first { it.name == name }!!
 }
 
-class NDArrayMappingRule(mappingNamesToPerform: MutableMap<String, String>,
-                         transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
-        BaseNDArrayMappingRule<OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
-
-
-
-    override fun createTensorProto(input: TensorProto): TensorNamespace.TensorProto {
-        return TensorflowIRTensor(input).toArgTensor()
-    }
-
-
-    override fun isInputTensorName(inputName: String): Boolean {
-        val tfOp = tensorflowOps.findOp(mappingProcess!!.inputFrameworkOpName())
-        return tfOp.inputArgList.map { input -> input.name }.contains(inputName)
-    }
-
-    override fun isOutputTensorName(outputName: String): Boolean {
-        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess!!.opName())
-        return nd4jOpDescriptor.argDescriptorList.filter { inputDescriptor -> inputDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }
-                .map {inputDescriptor -> inputDescriptor.name }.contains(outputName)
-    }
-}
-
-fun mappingNDArrayInputs(inputs: MutableMap<String, String>) : NDArrayMappingRule {
-    return NDArrayMappingRule(
-            mappingNamesToPerform = inputs)
-}

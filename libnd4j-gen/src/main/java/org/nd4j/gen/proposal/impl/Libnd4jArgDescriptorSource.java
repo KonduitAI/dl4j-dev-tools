@@ -121,7 +121,42 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             name = split[0];
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.CUSTOM_OP_IMPL);
 
+
                             argDescriptorProposals = new ArrayList<>();
+                            if(name.equals("range")) {
+                                //add limit since it's not parseable and is primed to be ignored
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("l")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("l")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("l")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
+                                                .setName("l")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("l")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("l")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+                            }
+
+
                             ret.put(name,argDescriptorProposals);
                             int nIn = Integer.parseInt(split[1].trim());
                             int nOut = Integer.parseInt(split[2].trim());
@@ -462,14 +497,43 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                              */
                         } else if (matchesArgDeclaration(INT_ARG,line)) {
                             processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
+                            //hard coded case, impossible to parse from as the code exists today, and it doesn't exist anywhere in the libnd4j code base
+                            if(name.contains("maxpool2d")) {
+                                if(!containsProposalWithDescriptorName("extraParam0",argDescriptorProposals)) {
+                                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                            .sourceOfProposal("extraParam0")
+                                            .proposalWeight(9999.0)
+                                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                    .setName("extraParam0")
+                                                    .setIsArray(false)
+                                                    .setArgIndex(9)
+                                                    .build()).build());
+                                }
+                            }
+
+                            if(name.equals("top_k")) {
+                                if(!containsProposalWithDescriptorName("sorted",argDescriptorProposals)) {
+                                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                            .sourceOfProposal("sorted")
+                                            .proposalWeight(9999.0)
+                                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                    .setName("sorted")
+                                                    .setIsArray(false)
+                                                    .setArgIndex(0)
+                                                    .build()).build());
+                                }
+                            }
+
 
                         } else if (matchesArgDeclaration(OUTPUT_NULLIFIED,line)
-                                || matchesArgDeclaration(OUTPUT_VARIABLE,line)) {
+                                || matchesArgDeclaration(OUTPUT_VARIABLE,line) && !line.contains("->rankOf()")) {
                             processLine(outArgNames, outArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
 
                         } else if (matchesArgDeclaration(T_ARG,line)) {
-                            processLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.FLOAT);
-                        } else if (matchesArgDeclaration(INPUT_VARIABLE,line) || matchesArgDeclaration(INPUT_LIST,line)) {
+                            processLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.DOUBLE);
+                        } else if (!line.contains("->rankOf()") && !line.contains("->dataType()") && matchesArgDeclaration(INPUT_VARIABLE,line) || matchesArgDeclaration(INPUT_LIST,line)) {
                             processLine(inArgNames,inArgIndices,argDescriptorProposals,line, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
                         } else if (matchesArgDeclaration(B_ARG,line)) {
                             processLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL);
@@ -479,7 +543,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             else if(line.contains(OUTPUT_NULLIFIED) || line.contains(OUTPUT_VARIABLE)) {
                                 processArrayLine(outArgNames, outArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
                             } else if(line.contains(T_ARG)) {
-                                processArrayLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.FLOAT);
+                                processArrayLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.DOUBLE);
                             } else if(line.contains(B_ARG)) {
                                 processArrayLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL);
 

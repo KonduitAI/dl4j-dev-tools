@@ -107,6 +107,7 @@ public class ArgDescriptorParserUtils {
         add("inArrs");
         add("layerInput");
         add("in1");
+        add("arrays");
     }};
     public static Set<String> input2Names = new HashSet<String>() {{
         add("y");
@@ -285,6 +286,16 @@ public class ArgDescriptorParserUtils {
             return false;
 
         return true;
+    }
+
+    public static boolean containsProposalWithDescriptorName(String name, Collection<ArgDescriptorProposal> proposals) {
+        for(ArgDescriptorProposal proposal : proposals) {
+            if(proposal.getDescriptor().getName().equals(name)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public  List<ArgDescriptorProposal> updateOpDescriptor(OpNamespace.OpDescriptor opDescriptor, OpDeclarationDescriptor declarationDescriptor, List<String> argsByIIndex, OpNamespace.ArgDescriptor.ArgType int64) {
@@ -753,11 +764,12 @@ public class ArgDescriptorParserUtils {
         // Matcher arrArg = Pattern.compile(argType + ARGUMENT_PATTERN)
         boolean ret =  matcher.find();
         boolean argOnlyResult = argOnly.find();
-        return ret || testLine.contains("?") && argOnlyResult || testLine.contains("static_cast") && argOnlyResult ||
-                (testLine.contains("))") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE")) ||
-                (testLine.contains("==") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE"))
-                || (testLine.contains("(" + argType) && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE"))
-                ||  (testLine.contains("->") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE"));
+        return ret || testLine.contains("?") && argOnlyResult
+                || testLine.contains("static_cast") && argOnlyResult
+                || (testLine.contains("))") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE")) && !testLine.contains("->rankOf()")
+                || (testLine.contains("==") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE")) && !testLine.contains("->rankOf()")
+                || (testLine.contains("(" + argType) && argOnlyResult &&  !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE")) && !testLine.contains("->rankOf()")
+                ||  (testLine.contains("->") && argOnlyResult && !testLine.contains("if") && !testLine.contains("REQUIRE_TRUE")) && !testLine.contains("->rankOf()");
     }
 
 }

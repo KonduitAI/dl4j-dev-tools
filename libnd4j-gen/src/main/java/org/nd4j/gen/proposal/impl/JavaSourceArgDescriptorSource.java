@@ -26,6 +26,7 @@ import org.nd4j.gen.proposal.ArgDescriptorSource;
 import org.nd4j.ir.OpNamespace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.*;
+import org.nd4j.linalg.api.ops.impl.transforms.BaseDynamicTransformOp;
 import org.reflections.Reflections;
 
 import java.io.File;
@@ -145,10 +146,10 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                         if(methodInvoked.equals(ADD_T_ARGUMENT_INVOCATION)) {
                             method.getArguments().forEach(argument -> {
                                 if(argument.isNameExpr())
-                                    paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.FLOAT),indexed.get(),100.0);
+                                    paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.DOUBLE),indexed.get(),100.0);
                                 else if(argument.isMethodCallExpr()) {
                                     if(argument.asMethodCallExpr().getName().toString().equals("ordinal")) {
-                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.FLOAT),indexed.get(),100.0);
+                                        paramIndicesCount.incrementCount(Pair.of(argument.asNameExpr().getNameAsString(), OpNamespace.ArgDescriptor.ArgType.DOUBLE),indexed.get(),100.0);
 
                                     }
                                 }
@@ -353,7 +354,7 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                                     .sourceOfProposal("java")
                                     .proposalWeight(99.0 * (counter == null ? 1 :(counter == null ? 1 : counter.size()) ))
                                     .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                            .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
+                                            .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
                                             .setName(parameter.getSecond())
                                             .setIsArray(parameter.getFirst().contains("[]"))
                                             .setArgIndex(counter.argMax())
@@ -430,7 +431,7 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                             .sourceOfProposal("java")
                             .proposalWeight(99.0)
                             .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.FLOAT)
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
                                     .setName(field.getName())
                                     .setIsArray(field.getType().describe().contains("[]"))
                                     .setArgIndex(floatIdx)
@@ -450,7 +451,8 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                 }
             }
 
-            if(funcInstance instanceof BaseReduceOp || funcInstance instanceof BaseReduceBoolOp) {
+            if(funcInstance instanceof BaseReduceOp ||
+                    funcInstance instanceof BaseReduceBoolOp || funcInstance instanceof BaseReduceSameOp) {
                 if(!containsProposalWithDescriptorName("keepDims",argDescriptorProposals)) {
                     argDescriptorProposals.add(ArgDescriptorProposal.builder()
                             .sourceOfProposal("java")
@@ -461,6 +463,73 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                                     .setIsArray(false)
                                     .setArgIndex(boolIdx)
                                     .build()).build());
+
+                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                            .sourceOfProposal("java")
+                            .proposalWeight(9999.0)
+                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                    .setName("keepDims")
+                                    .setIsArray(false)
+                                    .setArgIndex(intIdx)
+                                    .build()).build());
+                }
+
+
+                if(!containsProposalWithDescriptorName("dimensions",argDescriptorProposals)) {
+                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                            .sourceOfProposal("java")
+                            .proposalWeight(9999.0)
+                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                    .setName("dimensions")
+                                    .setIsArray(true)
+                                    .setArgIndex(0)
+                                    .build()).build());
+
+                }
+            }
+
+            if(funcInstance instanceof BaseDynamicTransformOp) {
+                if(!containsProposalWithDescriptorName("inPlace",argDescriptorProposals)) {
+                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                            .sourceOfProposal("java")
+                            .proposalWeight(9999.0)
+                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                    .setName("inPlace")
+                                    .setIsArray(false)
+                                    .setArgIndex(boolIdx)
+                                    .build()).build());
+                }
+            }
+
+            //hard coded case, impossible to parse from as the code exists today, and it doesn't exist anywhere in the libnd4j code base
+            if(name.contains("maxpool2d")) {
+                if(!containsProposalWithDescriptorName("extraParam0",argDescriptorProposals)) {
+                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                            .sourceOfProposal("extraParam0")
+                            .proposalWeight(9999.0)
+                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                    .setName("extraParam0")
+                                    .setIsArray(false)
+                                    .setArgIndex(9)
+                                    .build()).build());
+                }
+            }
+
+            if(name.equals("top_k")) {
+                if(!containsProposalWithDescriptorName("sorted",argDescriptorProposals)) {
+                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                            .sourceOfProposal("sorted")
+                            .proposalWeight(9999.0)
+                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                    .setName("sorted")
+                                    .setIsArray(false)
+                                    .setArgIndex(0)
+                                    .build()).build());
                 }
             }
 
@@ -469,16 +538,6 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
         }
     }
 
-
-    private static boolean containsProposalWithDescriptorName(String name,Collection<ArgDescriptorProposal> proposals) {
-        for(ArgDescriptorProposal proposal : proposals) {
-            if(proposal.getDescriptor().getName().equals(name)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     private static ResolvedFieldDeclaration getResolve(FieldDeclaration input) {
         try {
