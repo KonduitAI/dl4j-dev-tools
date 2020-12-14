@@ -165,9 +165,15 @@ public class ParseOpFile {
 
         //sort alphabetically
         Collections.sort(sortedDescriptors,Comparator.comparing(opDescriptor -> opDescriptor.getName()));
+        //add placeholder as an op to map
+        sortedDescriptors.add(OpNamespace.OpDescriptor.newBuilder()
+                .setName("placeholder")
+                .setOpDeclarationType(OpNamespace.OpDescriptor.OpDeclarationType.LOGIC_OP_IMPL)
+                .build());
         sortedDescriptors.forEach(input -> {
             sortedListBuilder.addOpList(input);
         });
+
 
         String write = TextFormat.printToString(sortedListBuilder.build());
         FileUtils.writeStringToFile(new File(outputFilePath),write, Charset.defaultCharset());

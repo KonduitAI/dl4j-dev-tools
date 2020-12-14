@@ -1,5 +1,6 @@
 package org.nd4j.codegen.ir.tensorflow
 
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.nd4j.autodiff.functions.DifferentialFunction
 import org.nd4j.autodiff.samediff.SDVariable
@@ -20,8 +21,10 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.api.ops.impl.controlflow.compat.Merge
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.TextFormat
+import org.nd4j.tensorflow.conversion.graphrunner.GraphRunner
 import org.tensorflow.framework.*
 import org.tensorflow.framework.OpDef.AttrDef
+import java.io.File
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.collections.HashMap
@@ -86,27 +89,27 @@ class TensorflowIRTensor(input: TensorProto): IRTensor<TensorProto, DataType> {
         }
 
 
-        if(tensor.doubleValList != null) {
+        if(tensor.doubleValList != null && tensor.doubleValCount > 0) {
             builder.addAllDoubleData(tensor.doubleValList)
         }
 
-        if(tensor.stringValList != null) {
+        if(tensor.stringValList != null && tensor.stringValCount > 0) {
             builder.addAllStringData(tensor.stringValList)
         }
 
-        if(tensor.floatValList != null) {
+        if(tensor.floatValList != null && tensor.floatValCount > 0) {
             builder.addAllFloatData(tensor.floatValList)
         }
 
-        if(tensor.uint32ValList != null) {
-            builder.addAllInt32Data(tensor.uint32ValList)
+        if(tensor.intValList != null && tensor.intValCount > 0) {
+            builder.addAllInt32Data(tensor.intValList)
         }
 
-        if(tensor.uint64ValList != null) {
+        if(tensor.uint64ValList != null && tensor.uint64ValCount > 0) {
             builder.addAllInt64Data(tensor.uint64ValList)
         }
 
-        if(tensor.int64ValList != null) {
+        if(tensor.int64ValList != null && tensor.int64ValCount > 0) {
             builder.addAllInt64Data(tensor.int64ValList)
         }
 
@@ -440,6 +443,29 @@ class TensorflowIRNode(inputNode: NodeDef, inputOpDef: OpDef): IRNode<NodeDef, T
 
 }
 
+
+class TensorflowIRGraphRunner(irGraph: TensorflowIRGraph,inputNames: List<String>,outputNames: List<String>): IRGraphRunner<GraphDef,NodeDef,OpDef,TensorProto,AttrDef,AttrValue,DataType> {
+
+    val irGraph = irGraph
+    val graphRunner: GraphRunner
+    init {
+        graphRunner = GraphRunner.builder()
+            .graphBytes(irGraph.graphDef.toByteArray())
+            .inputNames(inputNames)
+            .outputNames(outputNames)
+            .build()
+    }
+
+
+    override fun graph(): IRGraph<GraphDef, NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
+        return irGraph
+    }
+
+    override fun run(inputs: Map<String, INDArray>): Map<String, INDArray> {
+           return graphRunner.run(inputs)
+    }
+
+}
 
 class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
         GraphDef,

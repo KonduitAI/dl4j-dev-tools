@@ -299,7 +299,7 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                     .collect(Collectors.toSet());
 
 
-            Set<String> constructorNamesEncountered =new HashSet<>();
+            Set<String> constructorNamesEncountered = new HashSet<>();
             List<ArgDescriptorProposal> finalArgDescriptorProposals = argDescriptorProposals;
             typesAndParams.forEach(listOfTypesAndNames -> {
 
@@ -464,15 +464,6 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                                     .setArgIndex(boolIdx)
                                     .build()).build());
 
-                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                            .sourceOfProposal("java")
-                            .proposalWeight(9999.0)
-                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
-                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
-                                    .setName("keepDims")
-                                    .setIsArray(false)
-                                    .setArgIndex(intIdx)
-                                    .build()).build());
                 }
 
 

@@ -285,8 +285,8 @@ interface AttributeMappingRule<GRAPH_TYPE: GeneratedMessageV3,OP_DEF_TYPE: Gener
 
     fun argDescriptorTypesForOutputName(
         name: String, mappingProcess:
-    MappingProcess<GRAPH_TYPE,OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,
-            ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor.ArgType>
+        MappingProcess<GRAPH_TYPE,OP_DEF_TYPE,NODE_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,
+                ATTRIBUTE_VALUE_TYPE,DATA_TYPE>): List<OpNamespace.ArgDescriptor.ArgType>
 }
 
 
@@ -362,6 +362,26 @@ abstract class AbstractMappingContext<GRAPH_TYPE: GeneratedMessageV3,
     }
 }
 
+
+interface IRGraphRunner<
+        GRAPH_TYPE: GeneratedMessageV3,
+        NODE_TYPE: GeneratedMessageV3,
+        OP_DEF_TYPE: GeneratedMessageV3,
+        TENSOR_TYPE: GeneratedMessageV3,
+        ATTRIBUTE_TYPE: GeneratedMessageV3,
+        ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,
+        DATA_TYPE : ProtocolMessageEnum> {
+
+    fun graph(): IRGraph<GRAPH_TYPE,
+            NODE_TYPE,
+            OP_DEF_TYPE,
+            TENSOR_TYPE,
+            ATTRIBUTE_TYPE,
+            ATTRIBUTE_VALUE_TYPE,
+            DATA_TYPE>
+
+    fun run(inputs: Map<String,INDArray>): Map<String,INDArray>
+}
 
 interface IRGraph<
         GRAPH_TYPE: GeneratedMessageV3,
@@ -1091,9 +1111,9 @@ fun lookupIndexForArgDescriptor(
     val ret =  op
         .argDescriptorList.firstOrNull { argDescriptor -> argDescriptor.name == argDescriptorName &&
                 argDescriptor.argType == argDescriptorType }
-            if(ret == null)
-                return -1
-        else return ret.argIndex
+    if(ret == null)
+        return -1
+    else return ret.argIndex
 }
 
 fun createVariable(varName: String,varType: VariableType,sameDiff: SameDiff,shape: List<Long>,dataType: DataType): SDVariable {
@@ -1195,7 +1215,7 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
                         }
 
                         //note we don't add arrays one at a time because addInputArgument requires all the input arrays to be added at once
-                        dynamicCustomOp.addInputArgument(*arraysToAdd.toTypedArray())
+                        //dynamicCustomOp.addInputArgument(*arraysToAdd.toTypedArray())
 
 
                     }
@@ -1620,7 +1640,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 val nextOpDef = remainingNodes[nextOp]
                 val nextOpDefDescriptor = opRegistryHolder.lookupNd4jOpDef(irGraph.nd4jNameForInternalOpName(nextOpDef!!.opName()))
                 val opInputs = nextOpDefDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR  }
-                val nInNext = nd.numInputs()
+                val nInNext = nextOpDef.numInputs()
 
                 if (nextOpDef == null) {
                     if (sd.ops.containsKey(nextOp)) {
@@ -1639,8 +1659,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                  * We need to make the inbound input names line up in order for the graph to converge.
                  */
                 for (i in 0 until nInNext) {
-                    val s = nodeInputTo[nd.nodeName()]!![i]!!
-//                        String inName = stripControl(nextOpDef.getInput(i));
+                    val s = nextOpDef.inputAt(i)
                     var inName = stripControl(nextOpDef.inputAt(i))
                     if (inName.endsWith(":0")) {
                         //Strip ":0" suffix. Some ops can depend on placeholders, like "image_tensor:0" but in SameDiff this is a variable called "image_tensor"

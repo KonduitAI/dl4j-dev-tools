@@ -906,13 +906,15 @@ val histogramFixedWidth = TensorflowMappingProcess(
 val identity = multipleNameMapping(
         opName = "identity",
         inputFrameworkOpNames = listOf("DeepCopy"),
-        tensorNames =  mutableMapOf("input" to "x"))
+        tensorNames =  mutableMapOf("input" to "x"),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0))
 
 
 val identityCopyToHost = multipleNameMapping(
         opName = "identity",
         inputFrameworkOpNames = listOf("CopyHost"),
-        tensorNames =  mutableMapOf("input" to "input"))
+        tensorNames =  mutableMapOf("input" to "input"),
+        attributeMappingRules =  booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0))
 
 val identityN = TensorflowMappingProcess(
         opName = "identity_n",
@@ -1309,6 +1311,8 @@ val pad = multipleNameMapping(inputFrameworkOpNames = listOf("Pad","PadV2"),
 val randomCrop = mapTensorNamesWithOp(inputFrameworkOpName = "RandomCrop",opName = "random_crop",tensorNames = mutableMapOf("input" to "image","shape" to "size"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("seed" to "seed"))))
 
+val placeHolder = mapTensorNamesWithOp(inputFrameworkOpName = "Placeholder",opName = "placeholder",tensorNames = mutableMapOf())
+
 val randomGamma = mapTensorNamesWithOp(inputFrameworkOpName = "RandomGamma",opName = "random_gamma",tensorNames = mutableMapOf("shape" to "shape","alpha" to "alpha"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("seed" to "seed"))))
 
@@ -1662,7 +1666,8 @@ val stridedSlice = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 valueMapping(mutableMapOf("begin_mask" to "begin_mask","end_mask" to "end_mask",
                         "ellipsis_mask" to "ellipsis_mask","new_axis_mask" to "new_axis_mask",
-                        "shrink_axis_mask" to "shrink_axis_mask")))
+                        "shrink_axis_mask" to "shrink_axis_mask","ellipsisMask" to "ellipsis_mask","newAxisMask" to "new_axis_mask"
+                        ,"shrinkAxisMask" to "shrink_axis_mask")))
 )
 
 /**
@@ -1781,12 +1786,14 @@ val tile = mapTensorNamesWithOp(inputFrameworkOpName = "Tile",opName = "tile",
 
 val topk = multipleNameMapping(inputFrameworkOpNames = listOf("TopK"),opName = "top_k",
         tensorNames = mutableMapOf("input" to "input"),
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("needSort" to "sorted","k" to "k"))))
+        attributeMappingRules = listOf(valueMapping(mutableMapOf("needSort" to "sorted","k" to "k")),
+                booleanToNumber(mutableMapOf("sorted" to "sorted"))))
 
 val topkV2 = multipleNameMapping(inputFrameworkOpNames = listOf("TopKV2"),opName = "top_k",
         tensorNames = mutableMapOf("input" to "input"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("needSort" to "sorted")),
-                convertNDArrayInputToNumericalAttr(mutableMapOf("k" to "k"))))
+                convertNDArrayInputToNumericalAttr(mutableMapOf("k" to "k")),
+                booleanToNumber(mutableMapOf("sorted" to "sorted"))))
 
 val transpose = mapTensorNamesWithOp(
         inputFrameworkOpName = "Transpose",

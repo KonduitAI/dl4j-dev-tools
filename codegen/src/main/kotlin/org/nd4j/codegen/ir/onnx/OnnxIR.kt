@@ -1,6 +1,7 @@
 package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
+import org.apache.commons.io.FileUtils
 import org.nd4j.codegen.ir.*
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.TensorNamespace
@@ -9,7 +10,11 @@ import org.nd4j.linalg.api.ndarray.INDArray
 
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.onnxruntime.runner.OnnxRuntimeRunner
+import java.io.File
 import java.lang.IllegalArgumentException
+import java.util.*
+import kotlin.collections.ArrayList
 
 fun loadOnnxOps(): List<Onnx.NodeProto> {
     val graphProto = Onnx.GraphProto.parseFrom(ClassPathResource("onnx-op-defs.pb").inputStream)
@@ -411,6 +416,40 @@ fun Onnx.GraphProto.nodeByName(name: String): Onnx.NodeProto {
     return this.nodeList.first { it.name == name }!!
 }
 
+
+class OnnxIRGraphRunner(graphDef: OnnxIRGraph,inputNames: List<String>,outputNames: List<String>): IRGraphRunner<
+        Onnx.GraphProto,
+        Onnx.NodeProto,
+        Onnx.NodeProto,
+        Onnx.TensorProto,Onnx.AttributeProto,Onnx.AttributeProto,Onnx.TensorProto.DataType> {
+    val graphDef = graphDef
+    val inputNames = inputNames
+    val outputNames = outputNames
+    val graphRunner: OnnxRuntimeRunner
+
+    init {
+        val uuid = UUID.randomUUID().toString()
+        val tempFile = File("tempFile-$uuid.proto")
+        FileUtils.writeByteArrayToFile(tempFile,graph().internalValue().toByteArray())
+        graphRunner = OnnxRuntimeRunner.builder()
+            .modelUri(tempFile.absolutePath)
+            .inputs(inputNames)
+            .outputs(outputNames)
+            .build()
+        tempFile.deleteOnExit()
+    }
+
+    override fun graph(): IRGraph<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+        return graphDef
+    }
+
+    override fun run(inputs: Map<String, INDArray>): Map<String, INDArray> {
+        return graphRunner.exec(inputs)
+    }
+
+}
+
+
 class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
         Onnx.GraphProto,Onnx.NodeProto,
         Onnx.NodeProto,Onnx.TensorProto,Onnx.AttributeProto,Onnx.AttributeProto,
@@ -589,6 +628,7 @@ class OnnxImportProcess(inputFramework: String = "onnx") : AbstractImportProcess
 
 
 }
+
 
 
 fun onnxAttributeTypeFor(attributeName: String,opDef: Onnx.NodeProto): AttributeValueType {

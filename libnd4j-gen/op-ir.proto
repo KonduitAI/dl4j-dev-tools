@@ -882,7 +882,7 @@ opList {
 opList {
   name: "all"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -966,7 +966,7 @@ opList {
 opList {
   name: "amax"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -1006,7 +1006,7 @@ opList {
 opList {
   name: "amean"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -1030,7 +1030,7 @@ opList {
 opList {
   name: "amin"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -1189,7 +1189,7 @@ opList {
 opList {
   name: "any"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -1400,7 +1400,7 @@ opList {
 opList {
   name: "asum"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -4276,7 +4276,7 @@ opList {
 opList {
   name: "countNonZero"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -4291,7 +4291,7 @@ opList {
 opList {
   name: "countZero"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -6234,7 +6234,7 @@ opList {
 opList {
   name: "entropy"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -6323,7 +6323,7 @@ opList {
 opList {
   name: "equals_with_eps"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -8674,7 +8674,7 @@ opList {
 opList {
   name: "logentropy"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -15297,7 +15297,7 @@ opList {
 opList {
   name: "shannonentropy"
   argDescriptor {
-    name: "keepDims"
+    name: "dimensions"
     argType: INT64
   }
   argDescriptor {
@@ -18475,4 +18475,8 @@ opList {
     argType: INPUT_TENSOR
     argIndex: 1
   }
+}
+opList {
+  name: "placeholder"
+  opDeclarationType: LOGIC_OP_IMPL
 }

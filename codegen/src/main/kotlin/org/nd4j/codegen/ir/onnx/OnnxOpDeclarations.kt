@@ -32,19 +32,74 @@ val names = mapOf(
 )
 
 val pairWiseNames = mapOf(
-        "Add" to "add",
-        "And" to "boolean_and",
-        "Div" to "divide",
-        "Equal" to "equals",
-        "Greater" to "greater",
-        "GreaterOrEqual" to "greater_equal",
-        "Less" to "less",
-        "LessOrEqual" to "less_equal",
-        "Mul" to "multiply",
-        "Sub" to "subtract"
-)
+        "And" to "boolean_and")
+
+val equal = OnnxMappingProcess(
+        inputFrameworkOpName = "Equal",
+        opName = "equals",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
 
 
+val sub = OnnxMappingProcess(
+        inputFrameworkOpName = "Sub",
+        opName = "subtract",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+val mul = OnnxMappingProcess(
+        inputFrameworkOpName = "Mul",
+        opName = "multiply",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+val lessEqual = OnnxMappingProcess(
+        inputFrameworkOpName = "LessOrEqual",
+        opName = "less_equal",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+
+val less = OnnxMappingProcess(
+        inputFrameworkOpName = "Less",
+        opName = "less",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+val greaterEqual = OnnxMappingProcess(
+        inputFrameworkOpName = "GreaterOrEqual",
+        opName = "greater_equal",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+
+val greater = OnnxMappingProcess(
+        inputFrameworkOpName = "Greater",
+        opName = "greater",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+val divide = OnnxMappingProcess(
+        inputFrameworkOpName = "Div",
+        opName = "divide",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
+
+
+val add = OnnxMappingProcess(
+        inputFrameworkOpName = "Add",
+        opName = "add",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
+        opMappingRegistry = onnxOpRegistry)
 //Adagrad
 //Adam
 
@@ -157,7 +212,8 @@ val constantFill = OnnxMappingProcess(
         inputFrameworkOpName = "ConstantOfShape",
         opMappingRegistry = onnxOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("shapeArray" to "input"))),
-        attributeMappingRules = listOf(ndarrayAttributeToScalarAttribute(outputAttributeValue = "value",inputAttributeValue = "value"))
+        attributeMappingRules = listOf(ndarrayAttributeToScalarAttribute(outputAttributeValue = "value",inputAttributeValue = "value"),
+        intConstant(inputName = "outputDataType",constantValue = 0 as Integer,argumentIndex = 0)[0])
 )
 
 //TODO: ConvInteger
@@ -222,6 +278,7 @@ val mod = OnnxMappingProcess(
         opName = "mod",
         inputFrameworkOpName = "Mod",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "A","y" to "B"))),
+        attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0),
         opMappingRegistry = onnxOpRegistry
 )
 
@@ -580,6 +637,7 @@ val reduceLogSumExp = OnnxMappingProcess(
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(
                 booleanToNumber(mutableMapOf("keepDims" to "keepdims")),
+                valueMappings(mutableMapOf("keepDim" to "keepdims")),
                 listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )
@@ -776,6 +834,7 @@ val topK = OnnxMappingProcess(
         inputFrameworkOpName = "TopK",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
         attributeMappingRules = listOf(
+                valueMappings(mutableMapOf("sorted" to "sorted")),
                 numberToBoolean(mapOf("needSort" to "sorted")),
                 convertNDArrayInputToScalarAttr(outputAttributeValue = "k",inputAttributeValue = "K")),
         opMappingRegistry = onnxOpRegistry
@@ -885,7 +944,8 @@ val const = OnnxMappingProcess(
         opName = "copy",
         opMappingRegistry = onnxOpRegistry,
         tensorMappingRules = listOf(),
-        attributeMappingRules = listOf(ndarrayAttributeToNDArrayInput(mutableMapOf("input" to "value"))))
+        attributeMappingRules = listOf(ndarrayAttributeToNDArrayInput(mutableMapOf("input" to "value")),
+                booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0)[0]))
 
 
 val conv2d = OnnxMappingProcess(
