@@ -79,7 +79,8 @@ class TestOnnxIR {
     fun testOpOrdering() {
         val onnxOpNames = onnxOpRegistry.inputFrameworkOpNames()
         //TODO: list ops need to work and TopK has a data type conversion issue with the k ndarray input
-        val bannedOps = setOf("Constant","Squeeze","ArgMax","Split","ReduceLogSumExp","AveragePool","TopK")
+        val bannedOps = setOf("Constant","Squeeze","ArgMax","Split",
+            "ReduceLogSumExp","AveragePool","TopK","RandomUniform")
 
         onnxOpNames.forEach { opName ->
             if(onnxOpRegistry.hasMappingOpProcess(opName)) {
@@ -449,5 +450,11 @@ class TestOnnxIR {
 
             }
     }
+
+    @Test
+    fun testOpExecution() {
+
+    }
+
 
 }

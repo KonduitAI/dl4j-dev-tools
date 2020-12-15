@@ -637,7 +637,7 @@ val reduceLogSumExp = OnnxMappingProcess(
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(
                 booleanToNumber(mutableMapOf("keepDims" to "keepdims")),
-                valueMappings(mutableMapOf("keepDim" to "keepdims")),
+                valueMappings(mutableMapOf("keepDims" to "keepdims")),
                 listNumberToListNumber(outputAttributeValue =  "dimensions",inputAttributeValue = "axes")),
         opMappingRegistry = onnxOpRegistry
 )

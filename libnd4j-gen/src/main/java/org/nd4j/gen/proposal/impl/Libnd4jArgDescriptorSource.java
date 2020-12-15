@@ -1,6 +1,7 @@
 package org.nd4j.gen.proposal.impl;
 
 import lombok.Builder;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.nd4j.common.base.Preconditions;
@@ -60,6 +61,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
     public final static String ARRAY_ASSIGNMENT = "\\w+\\[[\\w\\d]\\]\\s*=\\s*[A-Z]+_[A-Z]+\\s*\\([\\w\\d\\+\\-\\*\\/\\s]+\\);";
 
     @Builder.Default
+    @Getter
     private Map<String, OpNamespace.OpDescriptor.OpDeclarationType> opTypes = new HashMap<>();
 
     @Builder

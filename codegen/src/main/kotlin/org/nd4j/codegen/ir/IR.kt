@@ -392,6 +392,9 @@ interface IRGraph<
         ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,
         DATA_TYPE : ProtocolMessageEnum> {
 
+    fun shapeOfInput(varName: String): LongArray?
+
+    fun dataTypeForVariable(varName: String): IRDataType<DATA_TYPE>
 
     fun isConstant(opName: String): Boolean
 
@@ -1387,12 +1390,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         val nd = availableToAdd.remove()
         val name = nd.nodeName()
         val opName = nd.opName()
-        if(opRegistryHolder.hasMappingOpProcess(opName)) {
-            val mappingProcess = opRegistryHolder.lookupOpMappingProcess(opName)  as MappingProcess<GRAPH_TYPE,OP_DEF_TYPE,NODE_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>
-            val ctx = irGraph.createMappingContext(opDef = opRegistryHolder.lookupInputFrameworkOpDef(opName) as OP_DEF_TYPE,node = irGraph.nodeByName(name) as NODE_TYPE)
-            val mapped = mappingProcess.applyProcess(ctx)
-            println(mapped)
-        }
 
         /**
          * How do we handle flexible inputs here?
@@ -1440,19 +1437,11 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 } else if (irGraph.isPlaceHolder(opName)) {
                     //TODO support the "WithDefault" array
                     val attrMap = nd.attributeMap()
-                    val shapeAvailable = attrMap.containsKey("shape")
-                    var shape: LongArray?
-                    shape = if (shapeAvailable) {
-                        attrMap["shape"]!!.listIntValue().toLongArray()
-
-                    } else {
-                        //Some placeholders don't have any shape restrictions - i.e., accept anything...
-                        null
-                    }
+                    var shape = irGraph.shapeOfInput(nd.nodeName())
 
                     variableTracker.addVariable(name)
 
-                    val dt = attrMap["dtype"]!!.dataTataTypeValue().nd4jDataType()
+                    val dt = irGraph.dataTypeForVariable(nd.nodeName()).nd4jDataType()
                     if(shape != null)
                         sd.placeHolder(name, dt, *shape)
                     else
@@ -1471,7 +1460,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         https://github.com/eclipse/deeplearning4j/issues/8285
                          */
 
-                    //    val mappingProcess =
 
                     val nd4jOpName = opRegistryHolder.lookupOpMappingProcess(opName).opName()
 
@@ -1577,10 +1565,10 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                     val outSDVars = arrayOfNulls<SDVariable>(numOutputs)
                     val outVars = arrayOfNulls<Variable>(numOutputs)
                     val outNames: MutableList<String> = java.util.ArrayList(numOutputs)
-
+                    val outputDataTypes = df.calculateOutputDataTypes(newInDtypes)
                     //Create output variables and add to graph
                     for (i in 0 until numOutputs) {
-                        val dt = DataType.FLOAT
+                        val dt = outputDataTypes[i]
                         val varName = name + if (i == 0) "" else ":$i"
                         //TODO: handle variadic type in kotlin
                         /**

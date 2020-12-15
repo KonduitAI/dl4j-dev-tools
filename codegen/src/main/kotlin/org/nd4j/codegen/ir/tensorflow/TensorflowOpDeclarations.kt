@@ -67,11 +67,14 @@ val elementWiseTransformOps = mapOf(
 
 
 val reduceOps = mapOf(
-        "AccumulateNV2" to "mergeadd",
+        //"AccumulateNV2" to "mergeadd",
+        "All" to "all",
+        "Any" to "any",
         "Mean" to "reduce_mean",
         "Prod" to "reduce_prod",
         "Sum" to "reduce_sum",
-        "Min" to "reduce_min"
+        "Min" to "reduce_min",
+        "Max" to "reduce_max"
 
 )
 
@@ -158,22 +161,7 @@ val addN = TensorflowMappingProcess(
 val assert = mapTensorNamesWithOp(inputFrameworkOpName = "Assert",opName = "Assert",tensorNames = mutableMapOf("input" to "condition"))
 
 
-val allRule = TensorflowMappingProcess(
-        inputFrameworkOpName = "All",
-        opName = "all",
-        opMappingRegistry = tensorflowOpRegistry,
-        tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMapping((mapOf("keepDims" to "keep_dims"))),
-                ndarrayToIntList(mutableMapOf("dimensions" to "reduction_indices"))))
 
-
-val anyRule = TensorflowMappingProcess(
-        inputFrameworkOpName = "Any",
-        opName = "any",
-        opMappingRegistry = tensorflowOpRegistry,
-        tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(valueMapping((mapOf("keepDims" to "keep_dims"))),ndarrayToIntList(mutableMapOf("dimensions" to "reduction_indices")))
-)
 
 val angleRule = TensorflowMappingProcess(
         inputFrameworkOpName = "Angle",
@@ -674,6 +662,14 @@ fun defineTensorflowSingleTransform(inputOpName: String, inputFrameworkOpName: S
 
 }
 
+fun defineSingularReduce(inputFrameworkOpName: String,inputOpName: String): TensorflowMappingProcess {
+        return mapTensorNamesWithOp(inputFrameworkOpName = inputFrameworkOpName ,
+                opName = inputOpName,
+                attributeMappingRules = listOf(valueMapping(mutableMapOf("keepDims" to "keep_dims")),
+                        ndarrayToIntList(mutableMapOf("dimensions" to "reduction_indices"))),
+                tensorNames = mutableMapOf("input" to "input"))
+}
+
 fun defineTensorflowPairwiseTransforms(opName: String, inputFrameworkOpName: String,
                                        firstOutputName: String = "input",
                                        secondOutputName: String = "y",
@@ -1037,11 +1033,6 @@ val minPairWise = mapTensorNamesWithOp(inputFrameworkOpName = "Minimum",
         opName = "min_pairwise",
         tensorNames = mutableMapOf("input" to "x","y" to "y"))
 
-val max = mapTensorNamesWithOp(inputFrameworkOpName = "Max" ,
-        opName = "reduce_max",
-        attributeMappingRules = listOf(valueMapping(mutableMapOf("keepDims" to "keep_dims")),
-                ndarrayToIntList(mutableMapOf("dimensions" to "reduction_indices"))),
-        tensorNames = mutableMapOf("input" to "input","axesVector" to "reduction_indices"))
 
 val maxPool = multipleNameMapping(
         inputFrameworkOpNames = listOf("MaxPool"),
@@ -1777,7 +1768,7 @@ val tensorArraySize = multipleNameMapping(inputFrameworkOpNames = listOf("Tensor
 
 val tensorArraySplit = multipleNameMapping(inputFrameworkOpNames = listOf("TensorArraySplit", "TensorArraySplitV2", "TensorArraySplitV3"),
         opName = "split_list",
-        tensorNames = mutableMapOf("sizes" to "lengths","array" to "value"))
+        tensorNames = mutableMapOf("sizes" to "lengths","list" to "value"))
 
 val tile = mapTensorNamesWithOp(inputFrameworkOpName = "Tile",opName = "tile",
         attributeMappingRules = listOf(intConstant(inputName = "dimensions",constantValue = 0 as Integer,argumentIndex = 0)[0],
@@ -1882,6 +1873,9 @@ val zeta = mapTensorNamesWithOp(inputFrameworkOpName = "Zeta",opName = "zeta",
 object TensorflowOpDeclarations {
         init {
                 OpRegistryHolder.registerOpMappingRegistry("tensorflow", tensorflowOpRegistry)
+                reduceOps.forEach { tensorflowOpName, nd4jOpName ->
+                        defineSingularReduce(inputFrameworkOpName = tensorflowOpName,inputOpName = nd4jOpName)
+                }
                 singleTransformArgs.forEach {
                         defineTensorflowSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
                 }

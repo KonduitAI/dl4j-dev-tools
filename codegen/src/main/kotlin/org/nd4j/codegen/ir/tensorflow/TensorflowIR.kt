@@ -462,7 +462,7 @@ class TensorflowIRGraphRunner(irGraph: TensorflowIRGraph,inputNames: List<String
     }
 
     override fun run(inputs: Map<String, INDArray>): Map<String, INDArray> {
-           return graphRunner.run(inputs)
+        return graphRunner.run(inputs)
     }
 
 }
@@ -517,6 +517,30 @@ class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
 
     override fun isPlaceHolder(opName: String): Boolean {
         return opName == "Placeholder" || opName == "PlaceholderWithDefault"
+    }
+
+    override fun shapeOfInput(varName: String): LongArray? {
+        val attrMap = nodeByName(varName).attrMap
+        val shapeAvailable = attrMap.containsKey("shape")
+        var shape: LongArray?
+        shape = if (shapeAvailable) {
+            attrMap["shape"]!!.list.iList.toLongArray()
+
+        } else {
+            //Some placeholders don't have any shape restrictions - i.e., accept anything...
+            null
+        }
+
+        return shape
+    }
+
+    override fun dataTypeForVariable(varName: String): IRDataType<DataType> {
+        val attrMap = nodeByName(varName).attrMap
+        if(attrMap.containsKey("dtype")) {
+            return TensorflowIRDataType(attrMap["dtype"]!!.type)
+        }
+
+        return TensorflowIRDataType(DataType.DT_INVALID)
     }
 
 

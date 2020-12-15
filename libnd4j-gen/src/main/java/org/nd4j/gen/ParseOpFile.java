@@ -78,6 +78,8 @@ public class ParseOpFile {
                 .weight(1.0)
                 .build();
 
+        Map<String, OpNamespace.OpDescriptor.OpDeclarationType> opTypes = new HashMap<>();
+
         Map<String,List<ArgDescriptorProposal>> proposals = new HashMap<>();
         for(ArgDescriptorSource argDescriptorSource : new ArgDescriptorSource[] {libnd4jArgDescriptorSource,javaSourceArgDescriptorSource}) {
             Map<String, List<ArgDescriptorProposal>> currProposals = argDescriptorSource.getProposals();
@@ -101,6 +103,18 @@ public class ParseOpFile {
             }
         }
 
+        javaSourceArgDescriptorSource.getOpTypes().forEach((k,v) -> {
+            opTypes.put(k, OpNamespace.OpDescriptor.OpDeclarationType.valueOf(v.name()));
+        });
+
+        libnd4jArgDescriptorSource.getOpTypes().forEach((k,v) -> {
+            opTypes.put(k, OpNamespace.OpDescriptor.OpDeclarationType.valueOf(v.name()));
+
+        });
+
+        opTypes.putAll(javaSourceArgDescriptorSource.getOpTypes());
+        opTypes.putAll(libnd4jArgDescriptorSource.getOpTypes());
+
         OpNamespace.OpDescriptorList.Builder listBuilder = OpNamespace.OpDescriptorList.newBuilder();
         for(Map.Entry<String,List<ArgDescriptorProposal>> proposal : proposals.entrySet()) {
             Preconditions.checkState(!proposal.getKey().isEmpty());
@@ -114,6 +128,7 @@ public class ParseOpFile {
             Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>, OpNamespace.ArgDescriptor> rankedProposals = ArgDescriptorParserUtils.
                     standardizeNames(collect);
             OpNamespace.OpDescriptor.Builder opDescriptorBuilder = OpNamespace.OpDescriptor.newBuilder()
+                    .setOpDeclarationType(opTypes.get(proposal.getKey()))
                     .setName(proposal.getKey());
             rankedProposals.entrySet().stream().map(input -> input.getValue())
                     .forEach(argDescriptor -> {

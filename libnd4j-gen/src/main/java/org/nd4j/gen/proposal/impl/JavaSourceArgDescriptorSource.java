@@ -16,6 +16,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import com.github.javaparser.utils.Log;
 import com.github.javaparser.utils.SourceRoot;
 import lombok.Builder;
+import lombok.Getter;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.common.primitives.Counter;
@@ -62,6 +63,7 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
     public final static String ADD_D_ARGUMENT_INVOCATION = "addDArgument";
     public final static String ADD_INPUT_ARGUMENT = "addInputArgument";
     public final static String ADD_OUTPUT_ARGUMENT = "addOutputArgument";
+    @Getter
     private Map<String, OpNamespace.OpDescriptor.OpDeclarationType> opTypes;
     static {
         Log.setAdapter(new Log.StandardOutStandardErrorAdapter());
@@ -518,6 +520,20 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                             .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                     .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
                                     .setName("sorted")
+                                    .setIsArray(false)
+                                    .setArgIndex(0)
+                                    .build()).build());
+                }
+            }
+
+            if(opTypes.get(name) == OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ) {
+                if(!containsOutputTensor(argDescriptorProposals)) {
+                    argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                            .sourceOfProposal("z")
+                            .proposalWeight(9999.0)
+                            .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                    .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                    .setName("z")
                                     .setIsArray(false)
                                     .setArgIndex(0)
                                     .build()).build());

@@ -508,6 +508,14 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
     override fun isPlaceHolder(opName: String): Boolean {
         return opName == "Placeholder"
     }
+
+    override fun shapeOfInput(varName: String): LongArray? {
+     return graphDef.initializerList.first { inputNode -> inputNode.name == varName }.dimsList.toLongArray()
+    }
+
+    override fun dataTypeForVariable(varName: String): IRDataType<Onnx.TensorProto.DataType> {
+        return OnnxIRDataType(Onnx.TensorProto.DataType.values()[graphDef.initializerList.first { inputNode -> inputNode.name == varName }.dataType])
+    }
 }
 
 

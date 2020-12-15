@@ -93,6 +93,7 @@ public class ArgDescriptorParserUtils {
         add("ax");
         add("dims");
         add("axes");
+        add("axesVector");
     }};
 
     public static Set<String> inputNames = new HashSet<String>() {{
@@ -286,6 +287,16 @@ public class ArgDescriptorParserUtils {
             return false;
 
         return true;
+    }
+
+    public static boolean containsOutputTensor(Collection<ArgDescriptorProposal> proposals) {
+        for(ArgDescriptorProposal proposal : proposals) {
+            if(proposal.getDescriptor().getArgType() == OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static boolean containsProposalWithDescriptorName(String name, Collection<ArgDescriptorProposal> proposals) {

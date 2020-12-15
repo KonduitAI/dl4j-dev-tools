@@ -12,11 +12,13 @@ import org.nd4j.codegen.ir.importGraph
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.OpNamespace
+import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.ByteString
 import org.tensorflow.framework.*
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
+import kotlin.math.sin
 import kotlin.test.assertTrue
 
 class TestTensorflowIR {
@@ -577,15 +579,7 @@ class TestTensorflowIR {
     fun testOpsMapped() {
         val tensorflowOpNames = tensorflowOpRegistry.inputFrameworkOpNames().filter { tensorflowOpRegistry.registeredOps.containsKey(it) }
         val nd4jOpNames = tensorflowOpRegistry.nd4jOpNames()
-        /**
-         * TODO: Assert each op is mapped.
-         *
-         * Assert all attributes in nd4j are mapped.
-         * If not, let's document what isn't and why for each op.
-         *
-         * Create an op generation tool that allows random generation of test cases
-         * based on existing mapped ops between nd4j and tensorflow.
-         */
+
         tensorflowOpNames.map {tensorflowOpName -> tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpName)}
             .forEach {
                 val tensorflowNamesMapped = HashSet<String>()
@@ -726,4 +720,293 @@ class TestTensorflowIR {
         }
     }
 
+    @Test
+    fun testOpExecution() {
+        Nd4j.getRandom().setSeed(12345)
+        val tensorflowOpNames = tensorflowOpRegistry.inputFrameworkOpNames()
+        val nd4jOpNames = tensorflowOpRegistry.nd4jOpNames()
+
+        val scalarInputs = mapOf(
+            "abs" to -1.0,
+            "acos" to 1.0,
+            "acosh" to 1.0,
+            "asin" to 1.0,
+            "asinh" to 1.0,
+            "atan" to 1.0,
+            "atanh" to 0.5,
+            "ceil" to 1.0,
+            "cos" to 1.0,
+            "cosh" to 1.0,
+            "erf" to 1.0,
+            "erfc" to 1.0,
+            "exp" to 1.0,
+            "expm1" to 1.0,
+            "floor" to 1.0,
+            "log" to 1.0,
+            "log1p" to 1.0,
+            "neg" to 1.0,
+            "rint" to 1.0,
+            "round" to 1.0,
+            "rsqrt" to 1.0,
+            "sigmoid" to 1.0,
+            "sign" to 1.0,
+            "sin" to 1.0,
+            "sinh" to 1.0,
+            "square" to 1.0,
+            "sqrt" to 1.0,
+            "tan" to 1.0,
+            "tanh" to 1.0
+        )
+
+        val singleInputOps = scalarInputs.keys
+
+        val pairWiseInputs = mapOf(
+            "add" to listOf(1.0,1.0),
+            "divide" to listOf(1.0,1.0),
+            "greater" to listOf(1.0,1.0),
+            "less" to listOf(1.0,1.0),
+            "less_equal" to listOf(1.0,1.0),
+            "multiply" to listOf(1.0,1.0),
+            "floordiv" to listOf(1.0,1.0),
+            "mod" to listOf(1.0,1.0),
+            "squaredsubtract" to listOf(1.0,1.0),
+            "not_equals" to listOf(1.0,1.0),
+            "realdiv" to listOf(1.0,1.0),
+            "tf_atan2" to listOf(1.0,1.0),
+            "min_pairwise" to listOf(1.0,1.0)
+        )
+
+        val pairWiseIntOps = mapOf(
+            "fmod" to listOf(1,1),
+            "rshift_bits" to listOf(1,1),
+            "truncatediv" to listOf(1,1)
+        )
+
+        val pairWiseNames = pairWiseInputs.keys
+
+
+        val singularReduceOps = mapOf(
+            "reduce_mean" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_prod" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_min" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_sum" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_max" to Nd4j.linspace(1,4,4).reshape(2,2)
+        )
+
+        val singularReduceNames = singularReduceOps.keys
+
+        tensorflowOpRegistry.mappingProcessNames().map {
+            tensorflowOpRegistry.lookupOpMappingProcess(it)
+        }.forEach {
+            val nd4jOpDef = tensorflowOpRegistry.lookupNd4jOpDef(it.opName())
+            val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(it.inputFrameworkOpName())
+            if(singleInputOps.contains(nd4jOpDef.name)) {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val opNode = NodeDef {
+                    Input("x")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(opNode)
+                }
+
+                val mappingProcess = tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpDef.name)
+                val tensorflowGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+                val mappedGraph = importGraph(tensorflowGraph,null,null)!!
+                val xVal =  Nd4j.scalar(scalarInputs[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                val tensorflowRunner = TensorflowIRGraphRunner(irGraph =   tensorflowGraph,inputNames = listOf("x"),outputNames = listOf("output"))
+                val inputs = mapOf("x" to xVal)
+                val results = mappedGraph.output(inputs,"output")
+                val tfResults = tensorflowRunner.run(inputs)
+                assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",tfResults["output"]!!.reshape(1,1), results["output"]!!.reshape(1,1))
+            }
+
+            if(singularReduceNames.contains(nd4jOpDef.name)) {
+                listOf(listOf(0),listOf(-1),listOf(0,1)).forEach { dimensions ->
+                    val tensorNode = NodeDef {
+                        name = "x"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                    }
+
+                    val opNode = NodeDef {
+                        Input("x")
+                        Input("dimensions")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                        Attribute("Tidx",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                    }
+
+                    val tensorNode2 = NodeDef {
+                        op = "Const"
+                        name = "dimensions"
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                Int32Data(dimensions)
+                                dtype = DataType.DT_INT32
+                                tensorShape = TensorShapeProto {
+                                    Dims(listOf(1,dimensions.size.toLong()))
+                                }
+                            }
+                        })
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(tensorNode)
+                        Node(tensorNode2)
+                        Node(opNode)
+                    }
+
+                    val mappingProcess = tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpDef.name)
+                    val tensorflowGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+                    val mappedGraph = importGraph(tensorflowGraph,null,null)!!
+                    val xVal =  singularReduceOps[mappingProcess.opName()]!!.castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                    val tensorflowRunner = TensorflowIRGraphRunner(irGraph =   tensorflowGraph,inputNames = listOf("x"),outputNames = listOf("output"))
+                    val inputs = mapOf("x" to xVal)
+                    val results = mappedGraph.output(inputs,"output")
+                    val tfResults = tensorflowRunner.run(inputs)
+                    //2 dimensions means sum the whole array, sometimes there are subtle differences in the shape like 1,1 vs a zero length array which is effectively the same thing
+                    if(dimensions.size < 2)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input $xVal and dimension ${dimensions}",tfResults["output"]!!, results["output"]!!)
+                    else
+                        assertEquals("Function ${nd4jOpDef.name} failed with input $xVal and dimension ${dimensions}",tfResults["output"]!!.reshape(1,1), results["output"]!!.reshape(1,1))
+
+                }
+            }
+
+
+            if(pairWiseNames.contains(nd4jOpDef.name)) {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val tensorNode2 = NodeDef {
+                    op = "Placeholder"
+                    name = "y"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("y")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(opNode)
+                    Node(tensorNode2)
+                }
+
+                val mappingProcess = tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpDef.name)
+                val tensorflowGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+                val mappedGraph = importGraph(tensorflowGraph,null,null)!!
+
+                val xVal =  Nd4j.scalar(pairWiseInputs[mappingProcess.opName()]!![0])
+                    .reshape(1,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                val yVal =  Nd4j.scalar(pairWiseInputs[mappingProcess.opName()]!![1])
+                    .reshape(1,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val tensorflowRunner = TensorflowIRGraphRunner(irGraph =   tensorflowGraph,inputNames = listOf("x","y"),outputNames = listOf("output"))
+                val inputs = mapOf("x" to xVal,"y" to yVal)
+                val results = mappedGraph.output(inputs,"output")
+                val tfResults = tensorflowRunner.run(inputs)
+                assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",tfResults["output"]!!.reshape(1,1), results["output"]!!.reshape(1,1))
+
+            }
+
+            if(pairWiseIntOps.contains(nd4jOpDef.name)) {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val tensorNode2 = NodeDef {
+                    op = "Placeholder"
+                    name = "y"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("y")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(opNode)
+                    Node(tensorNode2)
+                }
+
+                val mappingProcess = tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpDef.name)
+                val tensorflowGraph = TensorflowIRGraph(graphDef, tensorflowOps)
+                val mappedGraph = importGraph(tensorflowGraph,null,null)!!
+
+                val xVal =  Nd4j.scalar(pairWiseIntOps[mappingProcess.opName()]!![0])
+                    .reshape(1,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                val yVal =  Nd4j.scalar(pairWiseIntOps[mappingProcess.opName()]!![1])
+                    .reshape(1,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val tensorflowRunner = TensorflowIRGraphRunner(irGraph =   tensorflowGraph,inputNames = listOf("x","y"),outputNames = listOf("output"))
+                val inputs = mapOf("x" to xVal,"y" to yVal)
+                val results = mappedGraph.output(inputs,"output")
+                val tfResults = tensorflowRunner.run(inputs)
+                assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",tfResults["output"]!!.reshape(1,1), results["output"]!!.reshape(1,1))
+
+            }
+
+
+        }
+    }
 }
