@@ -10,9 +10,9 @@ fun GraphDef.nodeByName(name: String): NodeDef {
 }
 
 fun ListAttrValue(vararg i: Long): AttrValue.ListValue =
-        AttrValue.ListValue.newBuilder().apply {
-            i.forEach { addI(it) }
-        }.build()
+    AttrValue.ListValue.newBuilder().apply {
+        i.forEach { addI(it) }
+    }.build()
 
 fun TensorProto(block: TensorProto.Builder.() -> Unit): TensorProto {
     return TensorProto.newBuilder().apply(block).build()
@@ -83,10 +83,10 @@ fun Dim(block: TensorShapeProto.Dim.Builder.() -> Unit): TensorShapeProto.Dim {
 
 fun TensorShapeProto.Builder.Dims(shape: List<Long>) {
     shape.forEachIndexed  { index, value ->  this.addDim(
-            Dim {
-                name = index.toString()
-                size = value
-            })
+        Dim {
+            name = index.toString()
+            size = value
+        })
     }
 }
 
@@ -96,6 +96,12 @@ fun TensorShapeProto(block: TensorShapeProto.Builder.() -> Unit): TensorShapePro
 
 fun AttrValue(block: AttrValue.Builder.() -> Unit): AttrValue {
     return AttrValue.newBuilder().apply(block).build()
+}
+
+
+
+fun AttrValue.Builder.ListDataType(listDataTypes: List<DataType>) {
+    this.listBuilder.addAllType(listDataTypes)
 }
 
 fun AttrValue.Builder.ListInts(listInts: List<Long>) {
@@ -151,6 +157,9 @@ fun NodeDef.Builder.Attribute(name: String, value: AttrValue) {
 }
 
 fun OpList.findOp(name: String): OpDef {
+    if(!this.opList.map { input -> input.name }.contains(name)) {
+        throw IllegalArgumentException("Op $name not found!")
+    }
     return this.opList.first { it.name == name }!!
 }
 

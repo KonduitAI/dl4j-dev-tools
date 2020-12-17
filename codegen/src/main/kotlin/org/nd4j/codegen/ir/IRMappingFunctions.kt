@@ -676,7 +676,7 @@ abstract class BooleanToNumber<
             descriptorBuilder.name = k
             val irAttribute = mappingCtx.irAttributeValueForNode(v)
 
-            listOf(ArgDescriptor.ArgType.INT64, ArgDescriptor.ArgType.DOUBLE, ArgDescriptor.ArgType.BOOL)
+            listOf(ArgDescriptor.ArgType.INT64, ArgDescriptor.ArgType.DOUBLE)
                 .forEach { argDescriptorType ->
                     val targetIdx = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
@@ -695,6 +695,10 @@ abstract class BooleanToNumber<
                                 descriptorBuilder.argType = argDescriptorType
                                 descriptorBuilder.int64Value = if (irAttribute.boolValue()) 1 else 0
                                 descriptorBuilder.argIndex = targetIdx
+                            }
+
+                            else -> {
+                                throw IllegalArgumentException("Illegal type passed in $argDescriptorType")
                             }
                         }
 
@@ -1614,11 +1618,6 @@ abstract class ArgDescriptorConstant<
         mappingCtx: MappingContext<GRAPH_DEF, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF,
                 ATTR_VALUE_TYPE, DATA_TYPE>
     ): List<ArgDescriptor> {
-        /**
-         * TODO: add index mapping by doing a list lookup of what value
-         * is present in the key. Each final arg descriptor can be used to
-         * look up the intended index of the argument.
-         */
         return transformerArgs.flatMap {
             it.value.map { descriptor ->
                 ArgDescriptor {

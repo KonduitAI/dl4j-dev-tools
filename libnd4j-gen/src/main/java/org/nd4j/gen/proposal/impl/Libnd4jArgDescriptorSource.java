@@ -253,6 +253,27 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                     .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.LOGIC_OP_IMPL);
 
                             inOpBlock = true;
+                            //dummy output for import
+                            if(name.equals("While") || name.equals("Switch") | name.equals("Conditional")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder().setArgIndex(0)
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                                .setName("output").build())
+                                        .build());
+                            }
+
+                            //dummy input for import
+                            if(name.equals("While")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder().setArgIndex(0)
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("condition").build())
+                                        .build());
+                            }
+
+
                         } else if(line.contains(DIVERGENT_OP_IMPL)) {
                             foundOp = true;
                             //DIVERGENT_OP_IMPL(NAME, NIN, NOUT, INPLACEABLE)

@@ -598,45 +598,6 @@ MappingContext<Onnx.GraphProto,
 
 }
 
-class OnnxImportProcess(inputFramework: String = "onnx") : AbstractImportProcess<
-        Onnx.GraphProto,
-        Onnx.NodeProto, Onnx.NodeProto,
-        Onnx.TensorProto,
-        Onnx.AttributeProto,
-        Onnx.AttributeProto,
-        Onnx.TensorProto.DataType>(inputFramework) {
-
-    override fun createMappingContext(
-        graph: IRGraph<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>,
-        node: IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>
-    ): MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
-        val opDef = onnxops.first{ it.opType == node.opName()  }
-        return OnnxMappingContext(graph = graph,node = node.internalValue(),opDef = opDef)
-    }
-
-
-    override fun createImportContext(mappingProcess: MappingProcess<
-            Onnx.GraphProto,
-            Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
-            Onnx.AttributeProto, Onnx.AttributeProto,
-            Onnx.TensorProto.DataType>, mappingContext: MappingContext< Onnx.GraphProto,
-            Onnx.NodeProto,
-            Onnx.NodeProto,
-            Onnx.TensorProto,
-            Onnx.AttributeProto,
-            Onnx.AttributeProto, Onnx.TensorProto.DataType>):
-            ImportContext< Onnx.GraphProto,
-                    Onnx.NodeProto,
-                    Onnx.NodeProto,
-                    Onnx.TensorProto,
-                    Onnx.AttributeProto,Onnx.AttributeProto, Onnx.TensorProto.DataType> {
-        return OnnxImportContext(mappingContext =  mappingContext,process = mappingProcess)
-    }
-
-
-
-}
-
 
 
 fun onnxAttributeTypeFor(attributeName: String,opDef: Onnx.NodeProto): AttributeValueType {

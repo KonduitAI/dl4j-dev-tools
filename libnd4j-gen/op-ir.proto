@@ -83,6 +83,10 @@ opList {
 }
 opList {
   name: "Conditional"
+  argDescriptor {
+    name: "outputs"
+    argType: OUTPUT_TENSOR
+  }
   opDeclarationType: LOGIC_OP_IMPL
 }
 opList {
@@ -257,6 +261,14 @@ opList {
 }
 opList {
   name: "While"
+  argDescriptor {
+    name: "outputs"
+    argType: OUTPUT_TENSOR
+  }
+  argDescriptor {
+    name: "condition"
+    argType: INPUT_TENSOR
+  }
   opDeclarationType: LOGIC_OP_IMPL
 }
 opList {
@@ -11643,6 +11655,10 @@ opList {
 }
 opList {
   name: "next_iteration"
+  argDescriptor {
+    name: "outputs"
+    argType: OUTPUT_TENSOR
+  }
   argDescriptor {
     name: "input"
     argType: INPUT_TENSOR

@@ -137,23 +137,23 @@ class TensorflowIRDataType(inputDataType: DataType): IRDataType<DataType> {
 
     override fun convertToDataType(input: DataType): IRDataTypeValue {
         when(input) {
-            DataType.DT_BOOL -> return IRDataTypeValue.DT_BOOL
-            DataType.DT_BFLOAT16 -> return IRDataTypeValue.DT_BFLOAT16
-            DataType.DT_COMPLEX128 -> return IRDataTypeValue.DT_COMPLEX128
-            DataType.DT_COMPLEX64 -> return IRDataTypeValue.DT_COMPLEX64
-            DataType.DT_DOUBLE -> return IRDataTypeValue.DT_DOUBLE
-            DataType.DT_FLOAT -> return IRDataTypeValue.DT_FLOAT
-            DataType.DT_HALF -> return IRDataTypeValue.DT_HALF
-            DataType.DT_INT16 -> return IRDataTypeValue.DT_INT16
-            DataType.DT_INT32 -> return IRDataTypeValue.DT_INT32
-            DataType.DT_INT64 -> return IRDataTypeValue.DT_INT64
-            DataType.DT_QINT8 -> return IRDataTypeValue.DT_QINT8
-            DataType.DT_QINT16 -> return IRDataTypeValue.DT_QINT16
-            DataType.DT_QINT32 -> return IRDataTypeValue.DT_QINT32
-            DataType.DT_STRING -> return IRDataTypeValue.DT_STRING
-            DataType.DT_UINT16 -> return IRDataTypeValue.DT_UINT16
-            DataType.DT_UINT32 -> return IRDataTypeValue.DT_UINT32
-            DataType.DT_UINT64 -> return IRDataTypeValue.DT_UINT64
+            DataType.DT_BOOL,DataType.DT_BOOL_REF -> return IRDataTypeValue.DT_BOOL
+            DataType.DT_BFLOAT16,DataType.DT_BFLOAT16_REF -> return IRDataTypeValue.DT_BFLOAT16
+            DataType.DT_COMPLEX128,DataType.DT_COMPLEX128_REF -> return IRDataTypeValue.DT_COMPLEX128
+            DataType.DT_COMPLEX64,DataType.DT_COMPLEX64_REF -> return IRDataTypeValue.DT_COMPLEX64
+            DataType.DT_DOUBLE, DataType.DT_DOUBLE_REF -> return IRDataTypeValue.DT_DOUBLE
+            DataType.DT_FLOAT,DataType.DT_FLOAT_REF -> return IRDataTypeValue.DT_FLOAT
+            DataType.DT_HALF,DataType.DT_HALF_REF -> return IRDataTypeValue.DT_HALF
+            DataType.DT_INT16,DataType.DT_INT16_REF -> return IRDataTypeValue.DT_INT16
+            DataType.DT_INT32,DataType.DT_INT32_REF -> return IRDataTypeValue.DT_INT32
+            DataType.DT_INT64, DataType.DT_INT64_REF -> return IRDataTypeValue.DT_INT64
+            DataType.DT_QINT8,DataType.DT_QINT8_REF -> return IRDataTypeValue.DT_QINT8
+            DataType.DT_QINT16, DataType.DT_QINT16_REF -> return IRDataTypeValue.DT_QINT16
+            DataType.DT_QINT32, DataType.DT_QINT32_REF -> return IRDataTypeValue.DT_QINT32
+            DataType.DT_STRING,DataType.DT_STRING_REF -> return IRDataTypeValue.DT_STRING
+            DataType.DT_UINT16, DataType.DT_UINT16_REF -> return IRDataTypeValue.DT_UINT16
+            DataType.DT_UINT32,DataType.DT_UINT32_REF -> return IRDataTypeValue.DT_UINT32
+            DataType.DT_UINT64,DataType.DT_UINT64_REF -> return IRDataTypeValue.DT_UINT64
 
         }
 
@@ -172,18 +172,18 @@ class TensorflowIRDataType(inputDataType: DataType): IRDataType<DataType> {
 
     override fun nd4jDataType(): org.nd4j.linalg.api.buffer.DataType {
         when(this.dataType) {
-            DataType.DT_BOOL -> return org.nd4j.linalg.api.buffer.DataType.BOOL
-            DataType.DT_FLOAT -> return org.nd4j.linalg.api.buffer.DataType.FLOAT
-            DataType.DT_STRING -> return org.nd4j.linalg.api.buffer.DataType.UTF8
-            DataType.DT_BFLOAT16 -> return org.nd4j.linalg.api.buffer.DataType.BFLOAT16
-            DataType.DT_INT64 -> return org.nd4j.linalg.api.buffer.DataType.INT64
-            DataType.DT_HALF -> return org.nd4j.linalg.api.buffer.DataType.FLOAT16
-            DataType.DT_INT16 -> return org.nd4j.linalg.api.buffer.DataType.INT16
-            DataType.DT_INT32 -> return org.nd4j.linalg.api.buffer.DataType.INT32
-            DataType.DT_DOUBLE -> return org.nd4j.linalg.api.buffer.DataType.DOUBLE
-            DataType.DT_UINT16 -> return org.nd4j.linalg.api.buffer.DataType.UINT16
-            DataType.DT_UINT32 -> return org.nd4j.linalg.api.buffer.DataType.UINT32
-            DataType.DT_UINT64 -> return org.nd4j.linalg.api.buffer.DataType.UINT64
+            DataType.DT_BOOL,DataType.DT_BOOL_REF -> return org.nd4j.linalg.api.buffer.DataType.BOOL
+            DataType.DT_FLOAT,DataType.DT_FLOAT_REF -> return org.nd4j.linalg.api.buffer.DataType.FLOAT
+            DataType.DT_STRING, DataType.DT_STRING_REF -> return org.nd4j.linalg.api.buffer.DataType.UTF8
+            DataType.DT_BFLOAT16,DataType.DT_BFLOAT16_REF -> return org.nd4j.linalg.api.buffer.DataType.BFLOAT16
+            DataType.DT_INT64,DataType.DT_INT64_REF -> return org.nd4j.linalg.api.buffer.DataType.INT64
+            DataType.DT_HALF,DataType.DT_HALF_REF -> return org.nd4j.linalg.api.buffer.DataType.FLOAT16
+            DataType.DT_INT16,DataType.DT_INT16_REF -> return org.nd4j.linalg.api.buffer.DataType.INT16
+            DataType.DT_INT32,DataType.DT_INT32_REF -> return org.nd4j.linalg.api.buffer.DataType.INT32
+            DataType.DT_DOUBLE,DataType.DT_DOUBLE_REF -> return org.nd4j.linalg.api.buffer.DataType.DOUBLE
+            DataType.DT_UINT16, DataType.DT_UINT16_REF -> return org.nd4j.linalg.api.buffer.DataType.UINT16
+            DataType.DT_UINT32,DataType.DT_UINT32_REF -> return org.nd4j.linalg.api.buffer.DataType.UINT32
+            DataType.DT_UINT64, DataType.DT_UINT64_REF -> return org.nd4j.linalg.api.buffer.DataType.UINT64
         }
 
         return org.nd4j.linalg.api.buffer.DataType.UNKNOWN
@@ -191,18 +191,18 @@ class TensorflowIRDataType(inputDataType: DataType): IRDataType<DataType> {
 
     override fun nameSpaceDataType(): TensorNamespace.DataType {
         when(this.dataType) {
-            DataType.DT_BOOL -> return TensorNamespace.DataType.BOOL
-            DataType.DT_FLOAT -> return TensorNamespace.DataType.FLOAT
-            DataType.DT_STRING -> return TensorNamespace.DataType.STRING
-            DataType.DT_BFLOAT16 -> return TensorNamespace.DataType.BFLOAT16
-            DataType.DT_INT64 -> return TensorNamespace.DataType.INT64
-            DataType.DT_HALF -> return TensorNamespace.DataType.FLOAT16
-            DataType.DT_INT16 -> return TensorNamespace.DataType.INT16
-            DataType.DT_INT32 -> return TensorNamespace.DataType.INT32
-            DataType.DT_DOUBLE -> return TensorNamespace.DataType.DOUBLE
-            DataType.DT_UINT16 -> return TensorNamespace.DataType.UINT16
-            DataType.DT_UINT32 -> return TensorNamespace.DataType.UINT32
-            DataType.DT_UINT64 -> return TensorNamespace.DataType.UINT64
+            DataType.DT_BOOL,DataType.DT_BOOL_REF -> return TensorNamespace.DataType.BOOL
+            DataType.DT_FLOAT,DataType.DT_FLOAT_REF -> return TensorNamespace.DataType.FLOAT
+            DataType.DT_STRING,DataType.DT_STRING_REF -> return TensorNamespace.DataType.STRING
+            DataType.DT_BFLOAT16,DataType.DT_BFLOAT16_REF -> return TensorNamespace.DataType.BFLOAT16
+            DataType.DT_INT64,  DataType.DT_INT64_REF -> return TensorNamespace.DataType.INT64
+            DataType.DT_HALF,DataType.DT_HALF_REF-> return TensorNamespace.DataType.FLOAT16
+            DataType.DT_INT16,DataType.DT_INT16_REF -> return TensorNamespace.DataType.INT16
+            DataType.DT_INT32,DataType.DT_INT32_REF -> return TensorNamespace.DataType.INT32
+            DataType.DT_DOUBLE,DataType.DT_DOUBLE_REF -> return TensorNamespace.DataType.DOUBLE
+            DataType.DT_UINT16,DataType.DT_UINT16_REF -> return TensorNamespace.DataType.UINT16
+            DataType.DT_UINT32, DataType.DT_UINT32_REF -> return TensorNamespace.DataType.UINT32
+            DataType.DT_UINT64,DataType.DT_UINT64_REF -> return TensorNamespace.DataType.UINT64
         }
 
         return TensorNamespace.DataType.UNDEFINED
@@ -535,8 +535,16 @@ class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
     }
 
     override fun dataTypeForVariable(varName: String): IRDataType<DataType> {
-        val attrMap = nodeByName(varName).attrMap
-        if(attrMap.containsKey("dtype")) {
+        val node = nodeByName(varName)
+        val attrMap = node.attrMap
+        if(!attrMap.containsKey("dtype")) {
+            val retSet =  attrMap.values.filter { attrValue -> attrValue.type != DataType.DT_INVALID }
+            if(retSet.isEmpty()) {
+                return TensorflowIRDataType(DataType.DT_INVALID)
+            } else {
+                return TensorflowIRDataType(attrMap.values.filter { attrValue -> attrValue.type != DataType.DT_INVALID }.first().type)
+            }
+        } else if(attrMap.containsKey("dtype")) {
             return TensorflowIRDataType(attrMap["dtype"]!!.type)
         }
 
@@ -547,50 +555,6 @@ class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
 }
 
 
-class TensorflowImportProcess(inputFramework: String = "tensorflow") :
-    AbstractImportProcess<GraphDef,OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>(
-        inputFramework) {
-
-
-    override fun createImportContext(mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>,
-                                     mappingContext: MappingContext<GraphDef,NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>):
-            ImportContext<GraphDef,OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
-        return TensorflowImportContext(mappingContext = mappingContext, process = mappingProcess)
-    }
-
-    override fun createMappingContext(
-        graph: IRGraph<GraphDef, NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>,
-        node: IRNode<NodeDef, TensorProto, AttrDef, AttrValue, DataType>
-    ): MappingContext<GraphDef, NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
-        val opDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(node.opName())
-        return TensorflowMappingContext(graph = graph, node = node.internalValue(), opDef = opDef)
-    }
-
-}
-
-class TensorflowImportContext(process: MappingProcess<GraphDef
-        ,OpDef, NodeDef,
-        TensorProto,
-        AttrDef, AttrValue, DataType>, mappingContext:
-                              MappingContext<GraphDef,
-                                      NodeDef,
-                                      OpDef,
-                                      TensorProto,
-                                      AttrDef,
-                                      AttrValue, DataType>) :
-    AbstractImportContext<GraphDef,OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType>(process, mappingContext) {
-
-    override fun process():
-            MappingProcess<GraphDef,
-                    OpDef, NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
-        return process
-    }
-
-    override fun mappingContext(): MappingContext<GraphDef,NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
-        return mappingContext
-    }
-
-}
 
 
 fun convertToDataType(dataType: org.nd4j.linalg.api.buffer.DataType): DataType {
@@ -664,6 +628,7 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<Graph
         //no value to be found on placeholder, return default instance
         //if no value exists it's an output from another node
         if("Placeholder" in searchedNode.op || !searchedNode.containsAttr("value")) {
+            println("Value for node $graphNode is not a constant! This method only works for constants. Consider replacing the Placeholder node with a Constant node. This will return an empty tensor.")
             return TensorflowIRTensor(TensorProto.getDefaultInstance())
         }
 

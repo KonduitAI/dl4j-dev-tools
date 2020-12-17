@@ -526,6 +526,16 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                 }
             }
 
+            //dummy output tensor
+            if(name.equals("next_iteration")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .proposalWeight(9999.0)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder().setArgIndex(0)
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                .setName("output").build())
+                        .build());
+            }
+
             if(opTypes.get(name) == OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ) {
                 if(!containsOutputTensor(argDescriptorProposals)) {
                     argDescriptorProposals.add(ArgDescriptorProposal.builder()

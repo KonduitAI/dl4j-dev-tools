@@ -962,143 +962,6 @@ interface ImportProcess<
 
 }
 
-abstract class AbstractImportProcess<
-        GRAPH_TYPE: GeneratedMessageV3,
-        OP_DEF_TYPE: GeneratedMessageV3,
-        NODE_TYPE: GeneratedMessageV3,
-        TENSOR_TYPE: GeneratedMessageV3,
-        ATTRIBUTE_TYPE: GeneratedMessageV3,
-        ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,
-        DATA_TYPE: ProtocolMessageEnum>
-    (inputFramework: String):
-    ImportProcess<GRAPH_TYPE,
-            OP_DEF_TYPE,
-            NODE_TYPE,
-            TENSOR_TYPE,
-            ATTRIBUTE_TYPE,
-            ATTRIBUTE_VALUE_TYPE,
-            DATA_TYPE> {
-
-    val inputFramework = inputFramework
-
-
-    override fun createMappingProcesses(graph: IRGraph<GRAPH_TYPE,NODE_TYPE,
-            OP_DEF_TYPE, TENSOR_TYPE,
-            ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>):
-            List<MappingProcess<GRAPH_TYPE,
-                    OP_DEF_TYPE,
-                    NODE_TYPE,
-                    TENSOR_TYPE,
-                    ATTRIBUTE_TYPE,
-                    ATTRIBUTE_VALUE_TYPE,
-                    DATA_TYPE>> {
-        return graph.nodeList().map {
-            val mappingContext = createMappingContext(graph = graph, node = it)
-            val opName = mappingContext.opName()
-            OpRegistryHolder.lookupOpMappingProcess<
-                    GRAPH_TYPE,
-                    NODE_TYPE,
-                    OP_DEF_TYPE,
-                    TENSOR_TYPE,
-                    DATA_TYPE,
-                    ATTRIBUTE_TYPE,
-                    ATTRIBUTE_VALUE_TYPE>(inputFrameworkOpName = opName, inputFrameworkName = inputFramework)
-        }
-    }
-
-
-    override fun runImportProcess(importContexts: List<ImportContext<GRAPH_TYPE,
-            OP_DEF_TYPE,
-            NODE_TYPE,
-            TENSOR_TYPE,
-            ATTRIBUTE_TYPE,
-            ATTRIBUTE_VALUE_TYPE,
-            DATA_TYPE>>): SameDiff {
-        val sameDiff = SameDiff.create()
-        importContexts.map {
-            it.process().applyProcess(it.mappingContext())
-        }.forEach {
-                pair ->
-            val variables2 = ArrayList<SDVariable>()
-            val opDescriptor = pair.second
-            val mappingContext = pair.first
-            when(opDescriptor.opDeclarationType) {
-                OpNamespace.OpDescriptor.OpDeclarationType.LEGACY_XYZ -> {
-                    val createdOp = createDifferentialFunctionInstanceForName(opDescriptor.name)
-                    opDescriptor.argDescriptorList.forEach {
-                            argDescriptor ->
-                        val field = ReflectionUtils.findField(createdOp.javaClass,argDescriptor.name)
-                        field.isAccessible = true
-                        when(argDescriptor.name) {
-                            "x","y","z" ->  {
-                                val createdNDArray = mappingContext.tensorInputFor(argDescriptor.name).toNd4jNDArray()
-
-                                ReflectionUtils.setField(field,createdOp,createdNDArray)
-                                val variable = createVariable(varName = argDescriptor.name, shape = createdNDArray.shape().toList(),dataType = createdNDArray.dataType(),sameDiff = sameDiff,varType = VariableType.ARRAY)
-                                //add var to graph
-                                sameDiff.`var`(variable)
-                                variables2.add(variable)
-                            }
-                            "keepDims" ->  ReflectionUtils.setField(field,createdOp, argDescriptor.boolValue)
-                            else -> { }
-                        }
-
-                    }
-
-                    sameDiff.addArgsFor(variables2.toTypedArray(),createdOp)
-
-                }
-
-                OpNamespace.OpDescriptor.OpDeclarationType.CUSTOM_OP_IMPL -> {
-                    val dynamicCustomOp = DynamicCustomOp.builder(opDescriptor.name)
-                    opDescriptor.argDescriptorList.forEach {
-                            argDescriptor ->
-                        when(argDescriptor.argType) {
-                            OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
-                                val arr = mappingContext.tensorInputFor(argDescriptor.name)
-                                val nd4jDataType = mappingContext.nd4jDataTypeFor(arr)
-                                val variable = createVariable(varName = argDescriptor.name, shape = arr.shape(),dataType = nd4jDataType,sameDiff = sameDiff,varType = VariableType.ARRAY)
-                                variables2.add(variable)
-                                dynamicCustomOp.addInputs(arr.toNd4jNDArray())
-                            }
-                            OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR -> {
-
-                            }
-
-                            OpNamespace.ArgDescriptor.ArgType.INT32 -> {
-                                dynamicCustomOp.addIntegerArguments(argDescriptor.int32Value)
-                            }
-
-                            OpNamespace.ArgDescriptor.ArgType.INT64 -> {
-                                dynamicCustomOp.addIntegerArguments(argDescriptor.int64Value)
-                            }
-
-                            OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
-                                dynamicCustomOp.addFloatingPointArguments(argDescriptor.floatValue.toDouble())
-                            }
-
-                            OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
-                                dynamicCustomOp.addFloatingPointArguments(argDescriptor.doubleValue)
-                            }
-
-                            OpNamespace.ArgDescriptor.ArgType.STRING -> {
-
-                            }
-
-                        }
-                    }
-
-                    sameDiff.addArgsFor(variables2.toTypedArray(),dynamicCustomOp.build())
-                }
-            }
-
-
-        }
-
-        return sameDiff
-
-    }
-}
 
 fun lookupIndexForArgDescriptor(
     argDescriptorName: String,
@@ -1259,9 +1122,58 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
 
 
         }
+        Op.Type.SCALAR -> {
+            applied.second.argDescriptorList.forEach { argDescriptor ->
+                val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
+                if (field != null) {
+                    field.isAccessible = true
+                    when (argDescriptor.name) {
+                        "x", "y", "z" -> {
+                            val tensorName = opMappingProcess.tensorMappingRules().filter { mappingRule -> mappingRule.mappingNamesToPerform()
+                                .containsKey(argDescriptor.name)}
+                                .map { rule -> rule.mappingNamesToPerform()[argDescriptor.name] }.first()!!
+                            val createdNDArray = mappingContext.tensorInputFor(tensorName).toNd4jNDArray()
+                            ReflectionUtils.setField(field, df, createdNDArray)
+                        }
+                        else -> {
+                           println()
+                        }
+                    }
+
+                }
+                else {
+                    if(argDescriptor.argType in listOf(OpNamespace.ArgDescriptor.ArgType.INT64,
+                            OpNamespace.ArgDescriptor.ArgType.DOUBLE,OpNamespace.ArgDescriptor.ArgType.INT32,
+                            OpNamespace.ArgDescriptor.ArgType.FLOAT)) {
+                        val scalarField = ReflectionUtils.findField(df.javaClass,"scalarValue")
+                        scalarField.isAccessible = true
+                        when(argDescriptor.argType) {
+                            OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.doubleValue)
+                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
+
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.floatValue)
+                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
+
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int32Value)
+                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
+
+                            }
+                            OpNamespace.ArgDescriptor.ArgType.INT64 -> {
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int64Value)
+                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
         else -> {
-            //TODO: still need to finish mapping, mainly need to see how to add the op
-            //in to the graph (this is techincally done down below but still need to verify and test this
             applied.second.argDescriptorList.forEach { argDescriptor ->
                 val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
                 if (field != null) {
@@ -1435,8 +1347,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         constControlDeps[name] = l
                     }
                 } else if (irGraph.isPlaceHolder(opName)) {
-                    //TODO support the "WithDefault" array
-                    val attrMap = nd.attributeMap()
                     var shape = irGraph.shapeOfInput(nd.nodeName())
 
                     variableTracker.addVariable(name)
@@ -1446,7 +1356,18 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         sd.placeHolder(name, dt, *shape)
                     else
                         sd.placeHolder(name, dt)
-                } else {
+                } else if(opName.equals("Variable") || opName.equals("VariableV2")) {
+                    var shape = irGraph.shapeOfInput(nd.nodeName())
+
+                    variableTracker.addVariable(name)
+
+                    val dt = irGraph.dataTypeForVariable(nd.nodeName()).nd4jDataType()
+                    if(shape != null)
+                        sd.`var`(name, dt, *shape)
+                    else
+                        sd.`var`(name, dt,-1)
+                }
+                else {
                     /*
                         Normal ops. Process in the following order:
                         1. Create the op instance
@@ -1561,6 +1482,10 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
 
 
                     val numOutputs = nd4jOpDescriptors.findOp(nd4jOpName).argDescriptorList.filter { input -> input.argType == OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR }.size
+                    if(numInputs < 1 &&  nd4jOpName != "noop") {
+                        throw java.lang.IllegalStateException("Op $nd4jOpName does not have any outputs!")
+                    }
+
                     //println("Out dtypes size ${outDTypes.size} and numOutputs $numOutputs")
                     val outSDVars = arrayOfNulls<SDVariable>(numOutputs)
                     val outVars = arrayOfNulls<Variable>(numOutputs)
@@ -1626,6 +1551,8 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
             val set: List<String>? = nodeInputTo[name]
             for (nextOp in set!!) {
                 val nextOpDef = remainingNodes[nextOp]
+                if(nextOpDef == null)
+                    throw java.lang.IllegalStateException("No next op def found for op $nextOp")
                 val nextOpDefDescriptor = opRegistryHolder.lookupNd4jOpDef(irGraph.nd4jNameForInternalOpName(nextOpDef!!.opName()))
                 val opInputs = nextOpDefDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR  }
                 val nInNext = nextOpDef.numInputs()
