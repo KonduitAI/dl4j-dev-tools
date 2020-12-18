@@ -489,7 +489,7 @@ val depthToSpace = TensorflowMappingProcess(
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
         attributeMappingRules = listOf(valueMapping(mapOf("block_size" to "block_size")),
                 stringEqualsRule("isNHWC"
-                        ,inputFrameworkAttributeName = "data_format",valueToTest = "NWHC",argumentIndex = 1)),
+                        ,inputFrameworkAttributeName = "data_format",valueToTest = "NHWC",argumentIndex = 1)),
         opMappingRegistry = tensorflowOpRegistry
 )
 
@@ -1455,7 +1455,7 @@ val spaceToDepth = TensorflowMappingProcess(
         inputFrameworkOpName = "SpaceToDepth",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
         attributeMappingRules = listOf(valueMapping(mapOf("block_size" to "block_size")),
-                stringEqualsRule("isNHWC",inputFrameworkAttributeName = "data_format",valueToTest = "NWHC",argumentIndex = 1)),
+                stringEqualsRule("isNHWC",inputFrameworkAttributeName = "data_format",valueToTest = "NHWC",argumentIndex = 1)),
         opMappingRegistry = tensorflowOpRegistry
 )
 
@@ -1507,60 +1507,7 @@ val stridedSlice = TensorflowMappingProcess(
                         ,"shrinkAxisMask" to "shrink_axis_mask")))
 )
 
-/**
- * opList {
-name: "svd"
-argDescriptor {
-name: "u"
-argType: INPUT_TENSOR
-argIndex: 6
-}
-argDescriptor {
-name: "switchNum);"
-argType: OUTPUT_TENSOR
-}
-argDescriptor {
-name: "calcUV"
-argType: INT64
-argIndex: 1
-}
-argDescriptor {
-name: "input"
-argType: INPUT_TENSOR
-}
-argDescriptor {
-name: "input"
-argType: INPUT_TENSOR
-argIndex: 5
-}
-argDescriptor {
-name: "v"
-argType: INPUT_TENSOR
-argIndex: 2
-}
-argDescriptor {
-name: "full_matrices"
-argType: INT64
-argIndex: 5
-}
-argDescriptor {
-name: "switchNum"
-argType: INT64
-argIndex: 2
-}
-argDescriptor {
-name: "s"
-argType: INPUT_TENSOR
-argIndex: 4
-}
-argDescriptor {
-name: "fullUV"
-argType: INT64
-}
-}
 
-Fix multiple inputs among other things
- */
 /*
 val svd = TensorflowMappingProcess(
         opName = "svd",
