@@ -32,7 +32,7 @@ fun OnnxTensorProto(block: Onnx.TensorProto.Builder.() -> Unit): Onnx.TensorProt
 }
 
 fun Onnx.TensorProto.Builder.OnnxDataType(value: Onnx.TensorProto.DataType) {
-    this.dataType = value.ordinal
+    this.dataType = value
 }
 
 fun Onnx.TensorProto.Builder.OnnxRawData(byteArray: ByteArray) {

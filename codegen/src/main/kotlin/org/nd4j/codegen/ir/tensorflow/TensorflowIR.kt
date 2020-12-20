@@ -1,34 +1,19 @@
 package org.nd4j.codegen.ir.tensorflow
 
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
-import org.nd4j.autodiff.functions.DifferentialFunction
-import org.nd4j.autodiff.samediff.SDVariable
-import org.nd4j.autodiff.samediff.SameDiff
-import org.nd4j.autodiff.samediff.VariableType
-import org.nd4j.autodiff.samediff.internal.SameDiffOp
-import org.nd4j.autodiff.samediff.internal.Variable
 import org.nd4j.codegen.ir.*
-import org.nd4j.common.base.Preconditions
 import org.nd4j.common.io.ClassPathResource
-import org.nd4j.imports.converters.DifferentialFunctionClassHolder
 import org.nd4j.imports.graphmapper.tf.tensors.TFTensorMappers
-import org.nd4j.imports.tensorflow.TFImportOverride
-import org.nd4j.imports.tensorflow.TFOpImportFilter
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.api.ops.impl.controlflow.compat.Merge
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.TextFormat
 import org.nd4j.tensorflow.conversion.graphrunner.GraphRunner
 import org.tensorflow.framework.*
 import org.tensorflow.framework.OpDef.AttrDef
-import java.io.File
 import java.nio.charset.Charset
-import java.util.*
 import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 import kotlin.math.min
 
 fun loadTensorflowOps(): OpList {
@@ -495,8 +480,12 @@ class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
 
 
 
-    override fun createMappingContext(opDef: OpDef, node: NodeDef): MappingContext<GraphDef, NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
-        return TensorflowMappingContext(opDef = opDef,graph = this,node = node)
+    override fun createMappingContext(
+        opDef: OpDef,
+        node: NodeDef,
+        dynamicVariables: Map<String, TensorProto>
+    ): MappingContext<GraphDef, NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType> {
+        return TensorflowMappingContext(opDef = opDef,graph = this,node = node,dynamicVariables = dynamicVariables)
     }
 
     override fun frameworkName(): String {
@@ -578,8 +567,8 @@ fun convertToDataType(dataType: org.nd4j.linalg.api.buffer.DataType): DataType {
 }
 
 
-class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<GraphDef,NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>) :
-    AbstractMappingContext<GraphDef,NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>(opDef, node, graph) {
+class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<GraphDef,NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>,dynamicVariables: Map<String,TensorProto>) :
+    AbstractMappingContext<GraphDef,NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>(opDef, node, graph,dynamicVariables) {
 
     override fun attrDef(name: String): AttrDef {
         if(opDef().attrCount < 1) {
@@ -619,6 +608,7 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<Graph
                 foundIndex = min(index + baseIndexOffset,node.inputCount - 1)
         }
 
+
         if(foundIndex < 0) {
             throw java.lang.IllegalArgumentException("Node with name ${nodeName()} for opdef with name ${opDef.name} did not contain a tensor with name ${name}")
         }
@@ -629,7 +619,12 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<Graph
         //if no value exists it's an output from another node
         if("Placeholder" in searchedNode.op || !searchedNode.containsAttr("value")) {
             println("Value for node $graphNode is not a constant! This method only works for constants. Consider replacing the Placeholder node with a Constant node. This will return an empty tensor.")
-            return TensorflowIRTensor(TensorProto.getDefaultInstance())
+            if(!dynamicVariables.containsKey(graphNode))
+                return TensorflowIRTensor(TensorProto.getDefaultInstance())
+            else {
+                val toConvert = dynamicVariables[graphNode]!!
+                return TensorflowIRTensor(toConvert)
+            }
         }
 
         //value nodes are the values of attributes that are input nodes in a frozen graph
@@ -661,6 +656,7 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<Graph
     override fun tensorAttributeFor(name: String): IRTensor<TensorProto, DataType> {
         return TensorflowIRTensor(node.getAttrOrThrow(name).tensor)
     }
+
 
 }
 

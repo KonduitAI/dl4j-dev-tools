@@ -879,6 +879,12 @@ fun listAttributeValueLookupToIndex(outputAttributeValue: String, inputAttribute
 
 
 
+
+
+
+
+
+
 class TensorflowNDArrayInputToNumericalAttribute(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
     NDArrayInputToNumericalAttribute<GraphDef,OpDef, NodeDef, OpDef.AttrDef, AttrValue, TensorProto, DataType>(mappingNamesToPerform, transformerArgs) {
 

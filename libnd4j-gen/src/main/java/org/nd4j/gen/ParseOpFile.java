@@ -68,7 +68,7 @@ public class ParseOpFile {
         System.out.println("Parsing  libnd4j code base at " + libnd4jRootDir.getAbsolutePath() + " and writing to " + outputFilePath);
         Libnd4jArgDescriptorSource libnd4jArgDescriptorSource = Libnd4jArgDescriptorSource.builder()
                 .libnd4jPath(libnd4jPath)
-                .weight(999.0)
+                .weight(99999.0)
                 .build();
 
 
@@ -126,7 +126,7 @@ public class ParseOpFile {
             });
 
             Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>, OpNamespace.ArgDescriptor> rankedProposals = ArgDescriptorParserUtils.
-                    standardizeNames(collect);
+                    standardizeNames(collect, proposal.getKey());
             OpNamespace.OpDescriptor.Builder opDescriptorBuilder = OpNamespace.OpDescriptor.newBuilder()
                     .setOpDeclarationType(opTypes.get(proposal.getKey()))
                     .setName(proposal.getKey());
@@ -155,6 +155,10 @@ public class ParseOpFile {
                     if(currDescriptor.getName().contains("[")) {
                         isArrayArg = true;
                         finalName = finalName.replaceAll("\\[.*\\]","").replace("*","");
+                    }
+
+                    if(currDescriptor.getArgIndex() != j) {
+                        throw new IllegalStateException("Op name " + opList.getName() + " has incontiguous indices for type " + entry.getKey() + " with descriptor being "  +currDescriptor);
                     }
 
                     OpNamespace.ArgDescriptor.Builder newDescriptor = OpNamespace.ArgDescriptor.newBuilder()

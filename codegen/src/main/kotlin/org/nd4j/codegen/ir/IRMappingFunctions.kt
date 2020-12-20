@@ -1249,7 +1249,7 @@ abstract class NDArrayInputToNumericalAttribute<
         for ((k, v) in mappingNamesToPerform()) {
             val inputTensor = mappingCtx.tensorInputFor(v).toNd4jNDArray()
             realDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.name == k &&
-                    argDescriptor.argType == ArgDescriptor.ArgType.INPUT_TENSOR}
+                    argDescriptor.argType == ArgDescriptor.ArgType.INT64 && argDescriptor.name == k || argDescriptor.argType == ArgDescriptor.ArgType.DOUBLE && argDescriptor.name == k}
                 .forEach { argDescriptor ->
                     val baseIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
@@ -1271,8 +1271,8 @@ abstract class NDArrayInputToNumericalAttribute<
                             ArgDescriptor.ArgType.INT64 -> {
                                 ret.add(ArgDescriptor {
                                     name = nameToUse
-                                    argType = ArgDescriptor.ArgType.DOUBLE
-                                    doubleValue = inputTensor.getDouble(i)
+                                    argType = ArgDescriptor.ArgType.INT64
+                                    int64Value = inputTensor.getInt(i).toLong()
                                     argIndex = baseIndex + i.toInt()
                                 })
                             }
@@ -1286,7 +1286,6 @@ abstract class NDArrayInputToNumericalAttribute<
         return ret
     }
 }
-
 
 
 abstract class AttributeNDArrayToScalarAttribute<

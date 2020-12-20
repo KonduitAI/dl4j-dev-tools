@@ -44,7 +44,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val convertNumberListToInputNDArrayRule = argDescriptorConstant(listOf(ArgDescriptor {
             name = "value"
             int32Value = 1
@@ -92,7 +92,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val convertNumberListToInputNDArrayRule = convertNDArrayInputToNumericalAttr(mutableMapOf("output" to "inputs "))
         val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
         assertEquals(1,convertNumberListToInputNDArrayResult.size)
@@ -119,7 +119,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val convertNumberListToInputNDArrayRule = listAttributeValueLookupToIndex(outputAttributeValue = "output", inputAttributeValue = "strides", idx = 0,argumentIndex = 0)
         val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
         assertEquals(1,convertNumberListToInputNDArrayResult.size)
@@ -147,7 +147,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val convertNumberListToInputNDArrayRule = convertNumberListToInputNDArray(outputAttributeValue = "output",inputAttributeValue = "strides")
         val convertNumberListToInputNDArrayResult = convertNumberListToInputNDArrayRule.convertAttributes(mappingContext)
         assertEquals(1,convertNumberListToInputNDArrayResult.size)
@@ -185,7 +185,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val booleanToInt = valueMapping(mapOf("output" to "is_training","output2" to "seed","output3" to "dropout","output4" to "direction"))
         val booleanToIntResult = booleanToInt.convertAttributes(mappingContext)
         assertEquals(4,booleanToIntResult.size)
@@ -216,7 +216,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val booleanToInt = booleanToNumber(mapOf("output" to "is_training"))
         val booleanToIntResult = booleanToInt.convertAttributes(mappingContext)
         assertEquals(1,booleanToIntResult.size)
@@ -241,7 +241,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val ndarrScalarRule = attributeScalarToNDArrayInput(outputAttribute = "output",inputFrameworkAttributeName = "dropout")
         val ndarrScalarRuleResult = ndarrScalarRule.convertAttributes(mappingContext)
         assertEquals(1,ndarrScalarRuleResult.size)
@@ -270,7 +270,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         val ndarrScalarRule = attributeScalarToNDArrayInput(outputAttribute = "output",inputFrameworkAttributeName = "limit")
         val ndarrScalarRuleResult = ndarrScalarRule.convertAttributes(mappingContext)
         assertEquals(1,ndarrScalarRuleResult.size)
@@ -300,7 +300,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         listOf("value","notValue").zip(listOf(false,true)).forEach { (valueToTest,assertionResult) ->
             val stringNotEqualsRule = stringNotEqualsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest,argumentIndex = 0)
             val stringEqualsResult = stringNotEqualsRule.convertAttributes(mappingCtx = mappingContext)
@@ -331,7 +331,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         listOf("value","notValue").zip(listOf(true,false)).forEach { (valueToTest,assertionResult) ->
             val stringContainsRule = stringContainsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest)
             val stringEqualsResult = stringContainsRule.convertAttributes(mappingCtx = mappingContext)
@@ -362,7 +362,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         listOf("value","notValue").zip(listOf(true,false)).forEach { (valueToTest,assertionResult) ->
             val stringEqualsRule = stringEqualsRule(outputAttribute = "output",inputFrameworkAttributeName = "value",valueToTest = valueToTest,argumentIndex = 0)
             val stringEqualsResult = stringEqualsRule.convertAttributes(mappingCtx = mappingContext)
@@ -406,7 +406,7 @@ class TestTensorflowRuleDeclarations {
         }
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-        val mappingContext = TensorflowMappingContext(opDef = opDef,node = nodeDef,graph = tfGraph)
+        val mappingContext = TensorflowMappingContext(opDef = opDef,node = nodeDef,graph = tfGraph,dynamicVariables = emptyMap())
         shape.forEachIndexed { i,value ->
             val sizeAtRule = sizeAtRule(dimensionIndex = i,outputAttributeName = "output",inputFrameworkAttributeName = "inputs",argumentIndex = 0)
             val sizeAtRuleResult = sizeAtRule.convertAttributes(mappingCtx = mappingContext)
@@ -455,7 +455,7 @@ class TestTensorflowRuleDeclarations {
             val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
 
 
-            val mappingContext = TensorflowMappingContext(opDef = opDef,node = nodeDef,graph = tfGraph)
+            val mappingContext = TensorflowMappingContext(opDef = opDef,node = nodeDef,graph = tfGraph,dynamicVariables = emptyMap())
 
             val conditionalIndex = conditionalFieldValueIntIndexArrayRule(
                     outputAttribute = "N",

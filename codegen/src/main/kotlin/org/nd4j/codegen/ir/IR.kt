@@ -34,6 +34,7 @@ import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.nd4j.shade.protobuf.TextFormat
 import java.lang.IllegalArgumentException
+import java.lang.reflect.Modifier
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
@@ -291,6 +292,22 @@ interface AttributeMappingRule<GRAPH_TYPE: GeneratedMessageV3,OP_DEF_TYPE: Gener
 
 
 interface MappingContext<GRAPH_TYPE: GeneratedMessageV3,NODE_TYPE: GeneratedMessageV3,OP_DEF_TYPE: GeneratedMessageV3,TENSOR_TYPE: GeneratedMessageV3,ATTRIBUTE_TYPE: GeneratedMessageV3, ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,DATA_TYPE: ProtocolMessageEnum> {
+    /**
+     * Whether to resolve dynamic place holder variables where
+     * scalar values are present. An example scenario is when a value is an input ndarray
+     * such as pow(..) where 1 is always an ndarray and the other is a scalar value
+     * represented as a double argument in nd4j, but might be a placeholder
+     * in the input framework.
+     */
+    fun resolveDynamic(): Boolean
+
+    /**
+     * Input variables for  dynamic resolution required for import.
+     * This  is important for any cases where  a placeholder variable
+     * can be imported and resolved dynamically and later passed on as scalars.
+     */
+    fun dynamicResolutionVariables(): Map<String, TENSOR_TYPE>
+
     fun node(): NODE_TYPE
 
     fun opDef(): OP_DEF_TYPE
@@ -326,19 +343,30 @@ abstract class AbstractMappingContext<GRAPH_TYPE: GeneratedMessageV3,
         TENSOR_TYPE: GeneratedMessageV3,
         ATTRIBUTE_TYPE: GeneratedMessageV3,
         ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,
-        DATA_TYPE: ProtocolMessageEnum>(opDef: OP_DEF_TYPE,
-                                        node: NODE_TYPE,
-                                        graph:
-                                        IRGraph<GRAPH_TYPE,
-                                                NODE_TYPE,
-                                                OP_DEF_TYPE,
-                                                TENSOR_TYPE,
-                                                ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>):
+        DATA_TYPE: ProtocolMessageEnum>(
+    opDef: OP_DEF_TYPE,
+    node: NODE_TYPE,
+    graph:
+    IRGraph<GRAPH_TYPE,
+            NODE_TYPE,
+            OP_DEF_TYPE,
+            TENSOR_TYPE,
+            ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>,
+    dynamicVariables: Map<String, TENSOR_TYPE> = emptyMap()):
     MappingContext<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE> {
 
     val opDef = opDef
     val node = node
     val graph = graph
+    val dynamicVariables: Map<String,TENSOR_TYPE> = dynamicVariables
+
+    override fun dynamicResolutionVariables(): Map<String, TENSOR_TYPE> {
+        return dynamicVariables
+    }
+
+    override fun resolveDynamic(): Boolean {
+        return dynamicVariables.isNotEmpty()
+    }
 
     override fun node(): NODE_TYPE {
         return node
@@ -408,7 +436,11 @@ interface IRGraph<
 
     fun internalValue(): GRAPH_TYPE
 
-    fun createMappingContext(opDef: OP_DEF_TYPE, node: NODE_TYPE): MappingContext<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE_TYPE,DATA_TYPE>
+    fun createMappingContext(
+        opDef: OP_DEF_TYPE,
+        node: NODE_TYPE,
+        dynamicVariables: Map<String, TENSOR_TYPE>
+    ): MappingContext<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE, DATA_TYPE>
 
     fun frameworkName(): String
 
@@ -589,7 +621,7 @@ abstract  class AbstractMappingProcess<
 
                     val outputType = attributeMappingRule.argDescriptorTypesForOutputName(nd4jName,this)
                     if(!attributeMappingRule.outputsType(outputType)) {
-                        throw IllegalArgumentException("Rule ${attributeMappingRule.name()} for framework $inputFramework does not accept output type ${outputType} for attribute name ${nd4jName} and mapping process for op ${opName}")
+                        throw IllegalArgumentException("Rule ${attributeMappingRule.name()} for framework $inputFramework with input framework name $inputFrameworkName does not accept output type ${outputType} for attribute name ${nd4jName} and mapping process for op ${opName}")
                     }
 
                 }
@@ -1086,6 +1118,7 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
 
                     }
 
+
                     OpNamespace.ArgDescriptor.ArgType.INT64, OpNamespace.ArgDescriptor.ArgType.INT32 -> {
                         listOfArgsSortedByIndex.forEach { dynamicCustomOp.addIArgument(it.int64Value) }
                     }
@@ -1110,11 +1143,19 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
                     OpNamespace.ArgDescriptor.ArgType.DATA_TYPE -> {
                         listOfArgsSortedByIndex.forEach {
                             val dtype = convertNd4jDataTypeFromNameSpaceTensorDataType(it.dataTypeValue!!)
+                            val dtypeJavaClass = Class.forName("org.nd4j.linalg.api.buffer.DataType")
                             dynamicCustomOp.addDArgument(dtype)
+                            df.javaClass.declaredFields.forEach { field ->
+                                if(!Modifier.isStatic(field.modifiers) && !Modifier.isFinal(field.modifiers)
+                                    && dtypeJavaClass.isAssignableFrom(field.type)) {
+                                    field.isAccessible = true
+                                    ReflectionUtils.setField(field,df,dtype)
+                                }
+                            }
                         }
                     }
                     else -> {
-                        throw java.lang.IllegalArgumentException("Illegal type")
+                        throw IllegalArgumentException("Illegal type")
                     }
 
                 }
@@ -1136,7 +1177,6 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
                             ReflectionUtils.setField(field, df, createdNDArray)
                         }
                         else -> {
-                           println()
                         }
                     }
 
@@ -1214,8 +1254,10 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         ATTR_DEF_TYPE : GeneratedMessageV3,
         ATTR_VALUE_TYPE : GeneratedMessageV3,
         DATA_TYPE: ProtocolMessageEnum>
-        importGraph(irGraph: IRGraph<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>, importOverride: Map<String?, OpImportOverride<GRAPH_TYPE, NODE_TYPE, ATTR_VALUE_TYPE>?>?,
-                    opFilter: OpImportFilter<GRAPH_TYPE,NODE_TYPE,ATTR_VALUE_TYPE>?): SameDiff? {
+        importGraph(irGraph: IRGraph<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>,
+                    importOverride: Map<String?, OpImportOverride<GRAPH_TYPE, NODE_TYPE, ATTR_VALUE_TYPE>?>?,
+                    opFilter: OpImportFilter<GRAPH_TYPE,NODE_TYPE,ATTR_VALUE_TYPE>?,
+                    dynamicVariables: Map<String, TENSOR_TYPE> = emptyMap()): SameDiff? {
 
     /*
         First, build an in-memory representation of the graph that allows us to build the graph incrementally
@@ -1446,7 +1488,11 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                     }
 
                     val opDefLookup = opRegistryHolder.lookupInputFrameworkOpDef(opName) as OP_DEF_TYPE
-                    val mappingContext = irGraph.createMappingContext(opDef = opDefLookup,node = irGraph.nodeByName(name))
+                    val mappingContext = irGraph.createMappingContext(
+                        opDef = opDefLookup,
+                        node = irGraph.nodeByName(name),
+                        dynamicVariables = dynamicVariables
+                    )
 
                     //Create SameDiffOp instance and add to graph
                     val op = SameDiffOp.builder()

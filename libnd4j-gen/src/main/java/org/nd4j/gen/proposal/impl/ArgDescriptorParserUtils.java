@@ -3,7 +3,6 @@ package org.nd4j.gen.proposal.impl;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
-import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.nd4j.autodiff.samediff.SDVariable;
@@ -17,7 +16,6 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,6 +29,18 @@ public class ArgDescriptorParserUtils {
     public final static String ARGUMENT_PATTERN = "\\([\\w\\d+-\\\\*\\/]+\\)";
 
     public final static String ARRAY_ASSIGNMENT = "\\w+\\[[a-zA-Z]+\\]\\s*=\\s*[A-Z]+_[A-Z]+\\(\\s*[\\d\\w+-\\/\\*\\s]+\\);";
+
+    public final static Set<String> bannedMaxIndexOps = new HashSet<String>() {{
+        add("embedding_lookup");
+        add("stack");
+    }};
+
+    public final static Set<String> bannedIndexChangeOps = new HashSet<String>() {{
+        add("gemm");
+        add("mmul");
+        add("matmul");
+    }};
+
 
     public static final Set<String> cppTypes = new HashSet<String>() {{
         add("int");
@@ -105,7 +115,6 @@ public class ArgDescriptorParserUtils {
         add("args");
         add("i_v1");
         add("first");
-        add("inArrs");
         add("layerInput");
         add("in1");
         add("arrays");
@@ -299,6 +308,17 @@ public class ArgDescriptorParserUtils {
         return false;
     }
 
+
+    public static OpNamespace.ArgDescriptor getDescriptorWithName(String name, Collection<ArgDescriptorProposal> proposals) {
+        for(ArgDescriptorProposal proposal : proposals) {
+            if(proposal.getDescriptor().getName().equals(name)) {
+                return proposal.getDescriptor();
+            }
+        }
+
+        return null;
+    }
+
     public static boolean containsProposalWithDescriptorName(String name, Collection<ArgDescriptorProposal> proposals) {
         for(ArgDescriptorProposal proposal : proposals) {
             if(proposal.getDescriptor().getName().equals(name)) {
@@ -351,8 +371,8 @@ public class ArgDescriptorParserUtils {
         return Integer.parseInt(matcher.group());
     }
 
-    public static Integer extractArgFromCpp(String line) {
-        Matcher matcher =  numberPattern.matcher(line);
+    public static Integer extractArgFromCpp(String line,String argType) {
+        Matcher matcher = Pattern.compile(argType + "\\([\\d]+\\)").matcher(line);
         if(!matcher.find()) {
             //Generally not resolvable
             return -1;
@@ -363,7 +383,7 @@ public class ArgDescriptorParserUtils {
         }
 
         try {
-            return Integer.parseInt(matcher.group().replace("(","").replace(")",""));
+            return Integer.parseInt(matcher.group().replace("(","").replace(")","").replace(argType,""));
         } catch(NumberFormatException e) {
             e.printStackTrace();
             return -1;
@@ -391,7 +411,7 @@ public class ArgDescriptorParserUtils {
         return line;
     }
 
-    public static void addNameToList(String line, List<String> list, List<Integer> argIndices) {
+    public static void addNameToList(String line, List<String> list, List<Integer> argIndices, String argType) {
         String[] split = line.split(" = ");
         String[] arrSplit = split[0].split(" ");
         //type + name
@@ -400,12 +420,12 @@ public class ArgDescriptorParserUtils {
         if(!list.contains(name))
             list.add(name);
 
-        Integer index = extractArgFromCpp(line);
+        Integer index = extractArgFromCpp(line,argType);
         if(index != null)
             argIndices.add(index);
     }
 
-    public static void addArrayNameToList(String line, List<String> list, List<Integer> argIndices) {
+    public static void addArrayNameToList(String line, List<String> list, List<Integer> argIndices, String argType) {
         String[] split = line.split(" = ");
         String[] arrSplit = split[0].split(" ");
         //type + name
@@ -459,7 +479,7 @@ public class ArgDescriptorParserUtils {
     }
 
     public static Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>, OpNamespace.ArgDescriptor> standardizeNames
-            (Map<String,List<ArgDescriptorProposal>> toStandardize) {
+            (Map<String, List<ArgDescriptorProposal>> toStandardize, String opName) {
         Map<String,List<ArgDescriptorProposal>> ret = new HashMap<>();
         Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>,List<ArgDescriptorProposal>> dimensionProposals = new HashMap<>();
         Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>,List<ArgDescriptorProposal>> inPlaceProposals = new HashMap<>();
@@ -529,8 +549,6 @@ public class ArgDescriptorParserUtils {
         }
 
         Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>, OpNamespace.ArgDescriptor> ret2 = new HashMap<>();
-        Set<String> names = ret.keySet();
-        List<ArgDescriptorProposal> allProposals = new ArrayList<>();
         CounterMap<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>,ArgDescriptorProposal> proposalsByType = new CounterMap<>();
         ret.values().forEach(input -> {
             input.forEach(proposal1 -> {
@@ -616,31 +634,33 @@ public class ArgDescriptorParserUtils {
         });
 
         Map<OpNamespace.ArgDescriptor.ArgType,Integer> maxIndex = new HashMap<>();
-        ret2.forEach((key,value) -> {
-            if(!maxIndex.containsKey(key.getRight())) {
-                maxIndex.put(key.getValue(),key.getFirst());
-            } else {
-                maxIndex.put(key.getValue(),Math.max(key.getFirst(),maxIndex.get(key.getValue())));
-            }
-        });
+        if(!bannedMaxIndexOps.contains(opName))
+            ret2.forEach((key,value) -> {
+                if(!maxIndex.containsKey(key.getRight())) {
+                    maxIndex.put(key.getValue(),key.getFirst());
+                } else {
+                    maxIndex.put(key.getValue(),Math.max(key.getFirst(),maxIndex.get(key.getValue())));
+                }
+            });
 
         //update -1 values to be valid indices relative to whatever the last index is when an array is found
         //and -1 is present
         Map<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>, OpNamespace.ArgDescriptor> updateValues = new HashMap<>();
         Set<Pair<Integer, OpNamespace.ArgDescriptor.ArgType>> removeKeys = new HashSet<>();
-        ret2.forEach((key,value) -> {
-            if(value.getArgIndex() < 0) {
-                removeKeys.add(key);
-                int maxIdx = maxIndex.get(value.getArgType());
-                updateValues.put(Pair.of(maxIdx + 1,value.getArgType()), OpNamespace.ArgDescriptor.newBuilder()
-                        .setName(value.getName())
-                        .setIsArray(value.getIsArray())
-                        .setArgType(value.getArgType())
-                        .setArgIndex(maxIdx + 1)
-                        .setConvertBoolToInt(value.getConvertBoolToInt())
-                        .build());
-            }
-        });
+        if(!bannedMaxIndexOps.contains(opName))
+            ret2.forEach((key,value) -> {
+                if(value.getArgIndex() < 0) {
+                    removeKeys.add(key);
+                    int maxIdx = maxIndex.get(value.getArgType());
+                    updateValues.put(Pair.of(maxIdx + 1,value.getArgType()), OpNamespace.ArgDescriptor.newBuilder()
+                            .setName(value.getName())
+                            .setIsArray(value.getIsArray())
+                            .setArgType(value.getArgType())
+                            .setArgIndex(maxIdx + 1)
+                            .setConvertBoolToInt(value.getConvertBoolToInt())
+                            .build());
+                }
+            });
 
         removeKeys.forEach(key -> ret2.remove(key));
         ret2.putAll(updateValues);

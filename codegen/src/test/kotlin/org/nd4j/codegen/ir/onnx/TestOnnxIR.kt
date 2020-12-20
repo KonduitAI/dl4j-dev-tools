@@ -123,7 +123,7 @@ class TestOnnxIR {
                             "double" -> {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.DOUBLE_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.DOUBLE
                                 onnxTensorProto.addAllDoubleData(listOfDoubles)
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
                                 graphBuilder.addInitializer(onnxTensorProto.build())
@@ -140,7 +140,7 @@ class TestOnnxIR {
                             "bool" -> {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.BOOL_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.BOOL
                                 onnxTensorProto.addAllInt32Data(listOfInts)
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
                                 graphBuilder.addInitializer(onnxTensorProto.build())
@@ -158,7 +158,7 @@ class TestOnnxIR {
                             "float" -> {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.FLOAT_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.FLOAT
                                 onnxTensorProto.addAllFloatData(listOfFloats)
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
                                 graphBuilder.addInitializer(onnxTensorProto.build())
@@ -177,7 +177,7 @@ class TestOnnxIR {
                             "int16","uint16" -> {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.INT16_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.INT16
                                 onnxTensorProto.addAllInt32Data(listOfInts)
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
                                 graphBuilder.addInitializer(onnxTensorProto.build())
@@ -194,7 +194,7 @@ class TestOnnxIR {
                             "int32","uint32" -> {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.INT32_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.INT32
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
                                 onnxTensorProto.addAllInt32Data(listOfInts)
                                 graphBuilder.addInitializer(onnxTensorProto.build())
@@ -212,7 +212,7 @@ class TestOnnxIR {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.INT64_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.INT64
                                 onnxTensorProto.addAllInt64Data(listOfLongs)
                                 graphBuilder.addInitializer(onnxTensorProto.build())
                                 val onnxNodeToAdd = Onnx.NodeProto.newBuilder()
@@ -228,7 +228,7 @@ class TestOnnxIR {
                             "string" -> {
                                 val onnxTensorProto = Onnx.TensorProto.newBuilder()
                                 onnxTensorProto.name = nodeName
-                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.STRING_VALUE
+                                onnxTensorProto.dataType = Onnx.TensorProto.DataType.STRING
                                 onnxTensorProto.addAllDims(listOf(1,2,3,4,5,6))
                                 onnxTensorProto.addAllStringData(listOfStrings.map { input -> ByteString.copyFrom(input.toByteArray(
                                     Charset.defaultCharset())) })
@@ -286,7 +286,7 @@ class TestOnnxIR {
                         Onnx.AttributeProto.AttributeType.TENSOR -> {
                             val attrBuilder = Onnx.AttributeProto.newBuilder()
                             attrBuilder.t = Onnx.TensorProto.newBuilder()
-                                .addAllDims(listOf(1,1)).setDataType(Onnx.TensorProto.DataType.DOUBLE_VALUE)
+                                .addAllDims(listOf(1,1)).setDataType(Onnx.TensorProto.DataType.DOUBLE)
                                 .addAllDoubleData(listOf(1.0))
                                 .build()
                             attrBuilder.name = attr.name
@@ -312,7 +312,7 @@ class TestOnnxIR {
                 if(!bannedOps.contains(opName)) {
                     val mappingProcess = onnxOpRegistry.lookupOpMappingProcess(opName)
                     val irGraph = OnnxIRGraph(graphDef = graph)
-                    val mappingContext = OnnxMappingContext(opDef = opDef,node = nodeBuilder.build(),graph = irGraph)
+                    val mappingContext = OnnxMappingContext(opDef = opDef,node = nodeBuilder.build(),graph = irGraph,dynamicVariables = emptyMap())
                     val mapResult = mappingProcess.applyProcess(mappingContext)
                     val groupedByArgType = mapResult.second.argDescriptorList.groupBy { keySelector -> keySelector.argType }
                     val sortedGroups = HashMap<OpNamespace.ArgDescriptor.ArgType,List<OpNamespace.ArgDescriptor>>()

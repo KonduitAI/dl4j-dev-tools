@@ -14,10 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -124,7 +121,224 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.CUSTOM_OP_IMPL);
 
 
+
                             argDescriptorProposals = new ArrayList<>();
+
+
+                            argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                    .sourceOfProposal("dtype")
+                                    .proposalWeight(9999999.0)
+                                    .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                            .setArgType(OpNamespace.ArgDescriptor.ArgType.DATA_TYPE)
+                                            .setName("dtype")
+                                            .setIsArray(false)
+                                            .setArgIndex(0)
+                                            .build()).build());
+
+
+                            if(name.equals("eye")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("numRows")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("numRows")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("numCols")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("numCols")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("batchDimension")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("batchDimension")
+                                                .setIsArray(true)
+                                                .setArgIndex(2)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("dataType")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("dataType")
+                                                .setIsArray(false)
+                                                .setArgIndex(3)
+                                                .build()).build());
+
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
+                                                .setName("dataType")
+                                                .setIsArray(true)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("range")) {
+                                List<ArgDescriptorProposal> finalArgDescriptorProposals = argDescriptorProposals;
+                                Arrays.asList(OpNamespace.ArgDescriptor.ArgType.DOUBLE, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR, OpNamespace.ArgDescriptor.ArgType.INT64).forEach(
+                                        dataType -> {
+                                            finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                                    .proposalWeight(Double.MAX_VALUE)
+                                                    .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                            .setArgType(dataType)
+                                                            .setName("from")
+                                                            .setIsArray(false)
+                                                            .setArgIndex(0)
+                                                            .build()).build());
+
+                                            finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                                    .sourceOfProposal("cpp")
+                                                    .proposalWeight(Double.MAX_VALUE)
+                                                    .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                            .setArgType(dataType)
+                                                            .setName("to")
+                                                            .setIsArray(false)
+                                                            .setArgIndex(1)
+                                                            .build()).build());
+
+                                            finalArgDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                                    .sourceOfProposal("cpp")
+                                                    .proposalWeight(Double.MAX_VALUE)
+                                                    .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                            .setArgType(dataType)
+                                                            .setName("step")
+                                                            .setIsArray(true)
+                                                            .setArgIndex(2)
+                                                            .build()).build());
+                                        }
+                                );
+
+
+                            }
+
+                            if(name.equals("onehot")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("input")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("input")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("axis")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("depth")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("on")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("on")
+                                                .setIsArray(false)
+                                                .setArgIndex(2)
+                                                .build()).build());
+
+
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("off")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("off")
+                                                .setIsArray(true)
+                                                .setArgIndex(3)
+                                                .build()).build());
+
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("axis")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("axis")
+                                                .setIsArray(true)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("depth")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("depth")
+                                                .setIsArray(true)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("on")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
+                                                .setName("on")
+                                                .setIsArray(true)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("off")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DOUBLE)
+                                                .setName("off")
+                                                .setIsArray(true)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                            }
+
+                            if(name.equals("non_max_suppression")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("maxOutputSize")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("maxOutputSize")
+                                                .setIsArray(false)
+                                                .setArgIndex(2)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("pad")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("mode")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("mode")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                            }
+
                             if(name.equals("range")) {
                                 //add limit since it's not parseable and is primed to be ignored
                                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
@@ -153,6 +367,129 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                         .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                                 .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
                                                 .setName("l")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("repeat")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("dimensions")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("dimensions")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                            }
+
+                            if (name.equals("decode_bitmap")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("weights")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("start")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("dilation2d")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("rates")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("rates")
+                                                .setIsArray(true)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("strides")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("strides")
+                                                .setIsArray(true)
+                                                .setArgIndex(1)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("standardize_bp")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("dimensions")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("dimensions")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("eps")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("eps")
+                                                .setIsArray(false)
+                                                .setArgIndex(2)
+                                                .build()).build());
+                            }
+
+
+                            if(name.equals("lin_space")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("start")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("start")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("finish")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("finish")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("numOfElements")
+                                        .proposalWeight(9999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("numOfElements")
+                                                .setIsArray(false)
+                                                .setArgIndex(2)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("embedding_lookup")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("input")
+                                        .proposalWeight(9999999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("input")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("indices")
+                                        .proposalWeight(9999999.0)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("indices")
                                                 .setIsArray(false)
                                                 .setArgIndex(1)
                                                 .build()).build());
@@ -236,6 +573,28 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                     .iArgs(iArgs).tArgs(tArgs);
 
                             inOpBlock = true;
+
+                            if(name.equals("split_list") || name.equals("scatter_list")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder().setArgIndex(0)
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("list").build())
+                                        .build());
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder().setArgIndex(1)
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("array").build())
+                                        .build());
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder().setArgIndex(2)
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("sizes").build())
+                                        .build());
+                            }
+
                         } else if(line.contains(LOGIC_OP_IMPL)) {
                             // LOGIC_OP_IMPL(NAME)
                             foundOp = true;
@@ -455,6 +814,19 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                     if (inOpBlock && line.contains(RETURN) && endOfBlock(currLineIdx,lines) || oneLineOp) {
                         //reset op after 1 is found and current code block ends
                         if (foundOp) {
+                            if(outArgNames.isEmpty()) {
+                                outArgNames.add("output");
+                                outArgIndices.add(0);
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgIndex(0)
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR)
+                                                .setName("output")
+                                                .build())
+                                        .sourceOfProposal("cpp").proposalWeight(999999.0)
+                                        .build());
+                            }
+
                             builder.inArgNames(inArgNames);
                             builder.outArgNames(outArgNames);
                             builder.tArgNames(tArgNames);
@@ -518,8 +890,10 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             /**
                              * Need to add case for array matching.
                              */
-                        } else if (matchesArgDeclaration(INT_ARG,line)) {
-                            processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
+                        }
+
+                        if (matchesArgDeclaration(INT_ARG,line)) {
+                            processLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64,name);
                             //hard coded case, impossible to parse from as the code exists today, and it doesn't exist anywhere in the libnd4j code base
                             if(name.contains("maxpool2d")) {
                                 if(!containsProposalWithDescriptorName("extraParam0",argDescriptorProposals)) {
@@ -550,24 +924,32 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             }
 
 
-                        } else if (matchesArgDeclaration(OUTPUT_NULLIFIED,line)
-                                || matchesArgDeclaration(OUTPUT_VARIABLE,line) && !line.contains("->rankOf()")) {
-                            processLine(outArgNames, outArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
+                        }
 
-                        } else if (matchesArgDeclaration(T_ARG,line)) {
-                            processLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.DOUBLE);
-                        } else if (!line.contains("->rankOf()") && !line.contains("->dataType()") && matchesArgDeclaration(INPUT_VARIABLE,line) || matchesArgDeclaration(INPUT_LIST,line)) {
-                            processLine(inArgNames,inArgIndices,argDescriptorProposals,line, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR);
-                        } else if (matchesArgDeclaration(B_ARG,line)) {
-                            processLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL);
-                        } else if(matchesArrayArgDeclaration(line.trim())) {
+                        if (matchesArgDeclaration(OUTPUT_NULLIFIED,line)
+                                || matchesArgDeclaration(OUTPUT_VARIABLE,line) && !line.contains("->rankOf()")) {
+                            processLine(outArgNames, outArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR,name);
+
+                        }
+                        if (matchesArgDeclaration(T_ARG,line) && !line.contains("INT")) {
+                            processLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.DOUBLE, name);
+                        }
+                        if (!line.contains("->rankOf()") && !line.contains("->dataType()") && matchesArgDeclaration(INPUT_VARIABLE,line) || matchesArgDeclaration(INPUT_LIST,line)) {
+                            processLine(inArgNames,inArgIndices,argDescriptorProposals,line, OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR, name);
+                        }
+
+                        if (matchesArgDeclaration(B_ARG,line)) {
+                            processLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL,name);
+                        }
+                        if(matchesArrayArgDeclaration(line.trim())) {
                             if(line.contains(INT_ARG))
                                 processArrayLine(iArgNames, iArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.INT64);
-                            else if(line.contains(OUTPUT_NULLIFIED) || line.contains(OUTPUT_VARIABLE)) {
+
+                            if(line.contains(OUTPUT_NULLIFIED) || line.contains(OUTPUT_VARIABLE)) {
                                 processArrayLine(outArgNames, outArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR);
-                            } else if(line.contains(T_ARG)) {
+                            }  if(line.contains(T_ARG) && !line.contains("INT")) {
                                 processArrayLine(tArgNames, tArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.DOUBLE);
-                            } else if(line.contains(B_ARG)) {
+                            }  if(line.contains(B_ARG)) {
                                 processArrayLine(bArgNames, bArgIndices, argDescriptorProposals, line, OpNamespace.ArgDescriptor.ArgType.BOOL);
 
                             }
@@ -622,12 +1004,14 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                         lines.get(i).contains("DECLARE_TYPES") ||
                         lines.get(i).contains("DECLARE_SHAPE_FN")||
                         lines.get(i).contains("DECLARE_SYN") ||
-                        lines.get(i + 1).contains("OP_")) {
+                        lines.get(i + 1).contains("OP_")
+                        || lines.get( i + 1).contains("////")) {
                     return true;
                 } else if(!lines.get(i + 1).contains("DECLARE_TYPES")
                         || !lines.get(i + 1).contains("DECLARE_SHAPE_FN")
                         || !lines.get(i + 1).contains("DECLARE_SYN")
-                        || !lines.get(i + 1).contains("OP_")) {
+                        || !lines.get(i + 1).contains("OP_")
+                        || !lines.get( i + 1).contains("////")) {
                     return false;
                 }
             }
@@ -635,6 +1019,28 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
         return true;
 
+    }
+
+    private String argDeclarationForType(OpNamespace.ArgDescriptor.ArgType argType) {
+        switch(argType) {
+            case INPUT_TENSOR:
+                return INPUT_VARIABLE;
+            case INT32:
+            case INT64:
+                return INT_ARG;
+            case FLOAT:
+            case DOUBLE:
+                return T_ARG;
+            case BOOL:
+                return B_ARG;
+            case OUTPUT_TENSOR:
+                return OUTPUT_VARIABLE;
+            case DATA_TYPE:
+            case UNRECOGNIZED:
+            default:
+                throw new IllegalArgumentException("Processing illegal type " + argType);
+
+        }
     }
 
 
@@ -650,7 +1056,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
         String[] arrSplit = split[0].split(" ");
         String name = arrSplit[0].replaceAll("\\[.*\\]","");
         Preconditions.checkState(!name.isEmpty());
-        ArgDescriptorParserUtils.addArrayNameToList(line, iArgNames, iArgIndices);
+        ArgDescriptorParserUtils.addArrayNameToList(line, iArgNames, iArgIndices, argDeclarationForType(argType));
 
 
         OpNamespace.ArgDescriptor argDescriptor = OpNamespace.ArgDescriptor.newBuilder()
@@ -673,7 +1079,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
     private void processLine(List<String> iArgNames, List<Integer> iArgIndices,
                              List<ArgDescriptorProposal> argDescriptorProposals,
-                             String line, OpNamespace.ArgDescriptor.ArgType argType) {
+                             String line, OpNamespace.ArgDescriptor.ArgType argType, String opName) {
         boolean matchesPureDeclaration = Pattern.matches(ARG_DECLARATION,line) || Pattern.matches(ARG_BOOL_EQUALS_DECLARATION,line) || Pattern.matches(ARRAY_ASSIGNMENT,line);
         String[] split = line.split("\\s*=\\s*");
         if(split.length == 1) {
@@ -683,14 +1089,25 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
         String[] arrSplit = split[0].split(" ");
         //type + name
-        Integer index = extractArgFromCpp(line);
+        Integer index = extractArgFromCpp(line, argDeclarationForType(argType));
         //guess index based on current number of indices already added
         if(index < 0) {
             index = iArgIndices.size();
         }
-        ArgDescriptorParserUtils.addNameToList(line, iArgNames, iArgIndices);
+
+
+        ArgDescriptorParserUtils.addNameToList(line, iArgNames, iArgIndices,  argDeclarationForType(argType));
         //note sometimes we have individual array entries for names, we need to strip out index indicators like [i]
         String argName = arrSplit[arrSplit.length - 1].replaceAll("\\[.*\\]","");
+        if(containsProposalWithDescriptorName(argName,argDescriptorProposals)) {
+            val descriptor = getDescriptorWithName(argName,argDescriptorProposals);
+            //don't add already encountered indices if one is already greater.
+            if(descriptor != null) {
+                return;
+            }
+        }
+
+
         Preconditions.checkState(!argName.isEmpty());
         //more than a typename variable name present
         if(arrSplit.length > 2) {
@@ -730,21 +1147,22 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
         //remove duplicate proposals and only take the max index ensuring all parameters are accounted for
         val groupedByName = argDescriptorProposals.stream().collect(Collectors.groupingBy(proposal -> proposal.getDescriptor().getName()));
         List<ArgDescriptorProposal> toRemove = new ArrayList<>();
-        for(Map.Entry<String,List<ArgDescriptorProposal>> proposals : groupedByName.entrySet()) {
-            if(proposals.getValue().size() > 1) {
-                ArgDescriptorProposal max = null;
-                for(ArgDescriptorProposal proposal : proposals.getValue()) {
-                    if(max == null)
-                        max = proposal;
-                    else if(max.getDescriptor().getArgIndex() < proposal.getDescriptor().getArgIndex()) {
-                        //slate for removal and set new max
-                        toRemove.add(max);
-                        max = proposal;
+        if(!bannedMaxIndexOps.contains(opName))
+            for(Map.Entry<String,List<ArgDescriptorProposal>> proposals : groupedByName.entrySet()) {
+                if(proposals.getValue().size() > 1) {
+                    ArgDescriptorProposal max = null;
+                    for(ArgDescriptorProposal proposal : proposals.getValue()) {
+                        if(max == null)
+                            max = proposal;
+                        else if(max.getDescriptor().getArgIndex() < proposal.getDescriptor().getArgIndex()) {
+                            //slate for removal and set new max
+                            toRemove.add(max);
+                            max = proposal;
+                        }
                     }
-                }
 
+                }
             }
-        }
 
         argDescriptorProposals.removeAll(toRemove);
 

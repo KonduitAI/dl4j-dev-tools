@@ -35,10 +35,6 @@ fun mappingNDArrayInputs(inputs: MutableMap<String,String>) : NDArrayMappingRule
 
 
 
-
-
-
-
 class OnnxConditionalFieldValueIntIndexNDArrayRule
     (mappingNamesToPerform: MutableMap<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
     ConditionalFieldValueIntIndexNDArrayRule<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>
