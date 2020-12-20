@@ -891,9 +891,15 @@ class TestTensorflowIR {
             "digamma",
             "depth_to_space",
             "in_top_k",
+            "lu",
+            "matrix_inverse",
+            "matrix_determinant",
             "reshape",
             "noop",
             "nth_element",
+            "non_max_suppression_overlaps",
+            "non_max_suppression",
+            "non_max_suppression_v3",
             "onehot",
             "pad",
             "pow",
@@ -922,6 +928,7 @@ class TestTensorflowIR {
 
 
 
+
         //Skipping due to using references rather than tensors
         //"scatter_nd_add",
         //"scatter_nd_sub",
@@ -930,7 +937,7 @@ class TestTensorflowIR {
         //            //"scatter_mul",)
 
         val singularReduceNames = singularReduceOps.keys
-
+        val testedOps = HashSet<String>()
         tensorflowOpRegistry.mappingProcessNames().map {
             tensorflowOpRegistry.lookupOpMappingProcess(it)
         }.forEach {
@@ -976,6 +983,7 @@ class TestTensorflowIR {
                 val nd4jOutput = results["output"]!!
                 assertTrue(nd4jOutput.isScalar)
                 assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",nd4jOutput.getDouble(0), tfOutput.getDouble(0),1e-3)
+                testedOps.add(nd4jOpDef.name)
             }
 
             else if(singularReduceNames.contains(nd4jOpDef.name)) {
@@ -1045,6 +1053,9 @@ class TestTensorflowIR {
                     }
 
                 }
+
+                testedOps.add(nd4jOpDef.name)
+
             }
 
 
@@ -1103,6 +1114,7 @@ class TestTensorflowIR {
                 val results = mappedGraph.output(inputs,"output")
                 val tfResults = tensorflowRunner.run(inputs)
                 assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",tfResults["output"]!!.reshape(1,1), results["output"]!!.reshape(1,1))
+                testedOps.add(nd4jOpDef.name)
 
             }
 
@@ -1157,6 +1169,7 @@ class TestTensorflowIR {
                 val results = mappedGraph.output(inputs,"output")
                 val tfResults = tensorflowRunner.run(inputs)
                 assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",tfResults["output"]!!.reshape(1,1), results["output"]!!.reshape(1,1))
+                testedOps.add(nd4jOpDef.name)
 
             } else if(mappedOps.contains(mappingProcess.opName())) {
                 val graphInputList = graphForOp(nd4jOpName = mappingProcess.opName(),inputFrameworkOpName = mappingProcess.inputFrameworkOpName())
@@ -1165,7 +1178,7 @@ class TestTensorflowIR {
                     val dynamicOpsMap = if(dynamicOps.containsKey(mappingProcess.opName())) dynamicOps[mappingProcess.opName()]!! else emptyMap()
                     val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)!!
                     val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
-                    val bannedOps = setOf("noop","unique","unique_with_counts")
+                    val bannedOps = setOf("noop","unique","unique_with_counts","matrix_determinant")
                     if(!bannedOps.contains(mappingProcess.opName())) {
                         val tfResults = tensorflowRunner.run(graphInput.inputArrays)
                         val results = mappedGraph.output(graphInput.inputArrays,graphInput.outputNames)
@@ -1175,12 +1188,24 @@ class TestTensorflowIR {
                         val results = mappedGraph.output(graphInput.inputArrays,graphInput.outputNames)
                         val tfResults = tensorflowRunner.run(graphInput.inputArrays)
                         assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults["output"]!!.ravel(), results["output"]!!.ravel())
+                    }//slight difference in scalar result, doesn't matter in practice
+                    else if(mappingProcess.opName() == "matrix_determinant" ) {
+                        //note: this is a separate case since the results are equal, minus dimensions
+                        val results = mappedGraph.output(graphInput.inputArrays,graphInput.outputNames)
+                        val tfResults = tensorflowRunner.run(graphInput.inputArrays)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults["output"]!!.ravel().getDouble(0), results["output"]!!.ravel().getDouble(0),1e-3)
                     }
 
                 }
 
+                testedOps.add(nd4jOpDef.name)
+
             }
         }
+
+        val differenceOfSet = tensorflowOpRegistry.mappedNd4jOpNames() - testedOps
+        print("Ops left to test is ${differenceOfSet.size} and ops are $differenceOfSet")
+
     }
 
 
@@ -1190,6 +1215,378 @@ class TestTensorflowIR {
     fun graphForOp(nd4jOpName: String,inputFrameworkOpName: String): List<GraphInput> {
         val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(inputFrameworkOpName)
         when (nd4jOpName) {
+
+            "non_max_suppression","non_max_suppression_v3" -> {
+                if(inputFrameworkOpName == "NonMaxSuppression") {
+                    val overlaps = NodeDef {
+                        name = "overlaps"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val scores = NodeDef {
+                        name = "scores"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val maxOutputSize = NodeDef {
+                        name = "maxOutputSize"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                Int32Data(listOf(1))
+                                dtype = DataType.DT_INT32
+
+                            }
+                        })
+                    }
+
+
+
+                    val opNode = NodeDef {
+                        Input("overlaps")
+                        Input("scores")
+                        Input("maxOutputSize")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("iou_threshold",AttrValue {
+                            f = 0.5f
+                        })
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(overlaps)
+                        Node(scores)
+                        Node(maxOutputSize)
+                        Node(opNode)
+                    }
+
+
+
+                    val overlapsVal = Nd4j.create(arrayOf(
+                        floatArrayOf(0f,0f,1f,1f),
+                        floatArrayOf(0f,0.1f,1f,1.1f),
+                        floatArrayOf(0f,-0.1f,1f,0.9f),
+                        floatArrayOf(0f,10f,1f,11f)
+                    )).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val scoresVal = Nd4j.create(listOf(0.9f,0.75f,0.6f,0.95f).toFloatArray())
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val inputs = mapOf("overlaps" to overlapsVal,"scores" to scoresVal)
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("overlaps","scores"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs
+                    ))
+                }
+                else if(inputFrameworkOpName == "NonMaxSuppressionV2") {
+                    val overlaps = NodeDef {
+                        name = "overlaps"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val scores = NodeDef {
+                        name = "scores"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val maxOutputSize = NodeDef {
+                        name = "maxOutputSize"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                Int32Data(listOf(1))
+                                dtype = DataType.DT_INT32
+
+                            }
+                        })
+                    }
+
+                    val iouThreshold = NodeDef {
+                        name = "iouThreshold"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                FloatData(listOf(0.5f))
+                                dtype = DataType.DT_FLOAT
+
+                            }
+                        })
+                    }
+
+
+
+                    val opNode = NodeDef {
+                        Input("overlaps")
+                        Input("scores")
+                        Input("maxOutputSize")
+                        Input("iouThreshold")
+                        op = tensorflowOpDef.name
+                        name = "output"
+
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(overlaps)
+                        Node(scores)
+                        Node(iouThreshold)
+                        Node(maxOutputSize)
+                        Node(opNode)
+                    }
+
+
+
+                    val overlapsVal = Nd4j.create(arrayOf(
+                        floatArrayOf(0f,0f,1f,1f),
+                        floatArrayOf(0f,0.1f,1f,1.1f),
+                        floatArrayOf(0f,-0.1f,1f,0.9f),
+                        floatArrayOf(0f,10f,1f,11f)
+                    )).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val scoresVal = Nd4j.create(listOf(0.9f,0.75f,0.6f,0.95f).toFloatArray())
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val inputs = mapOf("overlaps" to overlapsVal,"scores" to scoresVal)
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("overlaps","scores"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs
+                    ))
+                } else {
+                    //V3 and later
+                    val overlaps = NodeDef {
+                        name = "overlaps"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val scores = NodeDef {
+                        name = "scores"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val maxOutputSize = NodeDef {
+                        name = "maxOutputSize"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                Int32Data(listOf(1))
+                                dtype = DataType.DT_INT32
+
+                            }
+                        })
+                    }
+
+                    val overlapThreshold = NodeDef {
+                        name = "iouThreshold"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                FloatData(listOf(0.5f))
+                                dtype = DataType.DT_FLOAT
+
+                            }
+                        })
+                    }
+
+                    val scoreThreshold = NodeDef {
+                        name = "scoreThreshold"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                FloatData(listOf(0.5f))
+                                dtype = DataType.DT_FLOAT
+
+                            }
+                        })
+                    }
+
+                    val opNode = NodeDef {
+                        Input("overlaps")
+                        Input("scores")
+                        Input("maxOutputSize")
+                        Input("iouThreshold")
+                        Input("scoreThreshold")
+                        op = tensorflowOpDef.name
+                        name = "output"
+
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(overlaps)
+                        Node(scores)
+                        Node(scoreThreshold)
+                        Node(overlapThreshold)
+                        Node(maxOutputSize)
+                        Node(opNode)
+                    }
+
+
+
+                    val overlapsVal = Nd4j.create(arrayOf(
+                        floatArrayOf(0f,0f,1f,1f),
+                        floatArrayOf(0f,0.1f,1f,1.1f),
+                        floatArrayOf(0f,-0.1f,1f,0.9f),
+                        floatArrayOf(0f,10f,1f,11f)
+                    )).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val scoresVal = Nd4j.create(listOf(0.9f,0.75f,0.6f,0.95f).toFloatArray())
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val inputs = mapOf("overlaps" to overlapsVal,"scores" to scoresVal)
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("overlaps","scores"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs
+                    ))
+                }
+            }
+
+            "non_max_suppression_overlaps" -> {
+                val overlaps = NodeDef {
+                    name = "overlaps"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val scores = NodeDef {
+                    name = "scores"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val maxOutputSize = NodeDef {
+                    name = "maxOutputSize"
+                    op = "Const"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("value",AttrValue {
+                        tensor = TensorProto {
+                            Int32Data(listOf(1))
+                            dtype = DataType.DT_INT32
+
+                        }
+                    })
+                }
+
+                val overlapThreshold = NodeDef {
+                    name = "overlapThreshold"
+                    op = "Const"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("value",AttrValue {
+                        tensor = TensorProto {
+                            FloatData(listOf(2.0f))
+                            dtype = DataType.DT_FLOAT
+
+                        }
+                    })
+                }
+
+                val scoreThreshold = NodeDef {
+                    name = "scoreThreshold"
+                    op = "Const"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("value",AttrValue {
+                        tensor = TensorProto {
+                            FloatData(listOf(0.5f))
+                            dtype = DataType.DT_FLOAT
+
+                        }
+                    })
+                }
+
+                val opNode = NodeDef {
+                    Input("overlaps")
+                    Input("scores")
+                    Input("maxOutputSize")
+                    Input("overlapThreshold")
+                    Input("scoreThreshold")
+                    op = tensorflowOpDef.name
+                    name = "output"
+
+                }
+
+                val graphDef = GraphDef {
+                    Node(overlaps)
+                    Node(scores)
+                    Node(scoreThreshold)
+                    Node(overlapThreshold)
+                    Node(maxOutputSize)
+                    Node(opNode)
+                }
+
+
+
+                val overlapsVal = Nd4j.create(arrayOf(
+                    floatArrayOf(0f,0f,1f,1f),
+                    floatArrayOf(0f,0.1f,1f,1.1f),
+                    floatArrayOf(0f,-0.1f,1f,0.9f),
+                    floatArrayOf(0f,10f,1f,11f)
+                )).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val scoresVal = Nd4j.create(listOf(0.9f,0.75f,0.6f,0.95f).toFloatArray())
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val inputs = mapOf("overlaps" to overlapsVal,"scores" to scoresVal)
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("overlaps","scores"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs
+                ))
+            }
+
             "nth_element" -> {
                 val ret = ArrayList<GraphInput>()
                 listOf(true,false).forEach { reverse ->
@@ -1254,6 +1651,128 @@ class TestTensorflowIR {
 
                 return ret
             }
+
+            "matrix_determinant" -> {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+                val opNode = NodeDef {
+                    Input("x")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+
+                }
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(opNode)
+                }
+
+
+                val xVal = Nd4j.linspace(1, 4, 4)
+                    .reshape(2, 2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("x" to xVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("x"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs
+                ))
+            }
+
+
+            "lu" -> {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+                val opNode = NodeDef {
+                    Input("x")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+
+                }
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(opNode)
+                }
+
+
+                val xVal = Nd4j.linspace(1, 4, 4)
+                    .reshape(2, 2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("x" to xVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("x"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs
+                ))
+            }
+
+            "matrix_inverse" -> {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+                val opNode = NodeDef {
+                    Input("x")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+
+                }
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(opNode)
+                }
+
+
+                val xVal = Nd4j.linspace(1, 4, 4)
+                    .reshape(2, 2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("x" to xVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("x"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs
+                ))
+            }
+
             "in_top_k" -> {
                 if(tensorflowOpDef.name == "InTopK") {
                     val tensorNode = NodeDef {

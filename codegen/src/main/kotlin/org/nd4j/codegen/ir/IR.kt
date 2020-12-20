@@ -1316,7 +1316,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         If we can build the graph incrementally, we can make sure that the added variables are set up with the correct
         datatype and (once implemented) greedy shape inference
          */
-    val variableTracker = VariableStateTracker()
     val availableToAddSet: MutableSet<String> = HashSet() //TODO maybe unnecessary?
     val availableToAdd: Queue<IRNode<NODE_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>> = LinkedList()
     val remainingNodes: MutableMap<String, IRNode<NODE_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>> = HashMap() //All other nodes, not in availableToAdd
@@ -1328,16 +1327,14 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
     val opRegistryHolder = if(irGraph.frameworkName() == "tensorflow")  OpRegistryHolder.tensorflow() else  OpRegistryHolder.onnx()
     irGraph.nodeList().forEach { node ->
         val nd4jOpName = opRegistryHolder.lookupOpMappingProcess(node.opName()).opName()
-        variableTracker.addOp(nd4jOpName)
         val opDescriptor = opRegistryHolder.lookupNd4jOpDef(nd4jOpName)
         val opInputs = opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR  }
         val numInputs = node.numInputs()
-        variableTracker.addOp(nd4jOpName)
         val nodeInputs = ArrayList<String>()
         val name = node.nodeName()
 
         for(inputIdx in 0 until numInputs) {
-            var inOpName = if(inputIdx < numInputs) stripVarSuffix(stripControl(node.inputAt(inputIdx))) else variableTracker.generateNewVarName(opInputs[inputIdx].name,inputIdx)
+            var inOpName =  stripVarSuffix(stripControl(node.inputAt(inputIdx)))
             nodeInputs.add(inOpName)
             if (!nodeInputTo.containsKey(inOpName)) {
                 nodeInputTo[inOpName!!] = ArrayList()
@@ -1345,7 +1342,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
             }
 
             nodeInputTo[inOpName]!!.add(name)
-            variableTracker.addVariable(name)
         }
 
 
@@ -1355,7 +1351,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         val nd = irGraph.nodeList()[i]
         val op = nd.opName()
         val nd4jOpName = opRegistryHolder.lookupOpMappingProcess(op).opName()
-        variableTracker.addOp(nd4jOpName)
         val opDescriptor = opRegistryHolder.lookupNd4jOpDef(nd4jOpName)
         val opInputs = opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR  }
         val numInputs = nd.numInputs()
@@ -1365,24 +1360,16 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         if (irGraph.isConstantOpName(op)|| numInputs == 0) {
             availableToAdd.add(nd)
             availableToAddSet.add(name)
-            variableTracker.addVariable(name!!)
         } else {
             remainingNodes[name] = nd
 
             for (inputIdx in 0 until numInputs) {
-                /**
-                 * Sometimes import and nd4j might not map 1 to 1.
-                 * This handles the edge case where extra inputs may exist in nd4j
-                 * but not from the input framework.
-                 */
-                var inOpName = if(inputIdx < numInputs) stripVarSuffix(stripControl(nd.inputAt(inputIdx))) else variableTracker.generateNewVarName(opInputs[i].name,i)
-                variableTracker.addVariable(inOpName!!)
+                var inOpName =  stripVarSuffix(stripControl(nd.inputAt(inputIdx)))
 
                 if (!nodeInputTo.containsKey(inOpName)) {
                     nodeInputTo[inOpName!!] = ArrayList()
                 }
                 nodeInputTo[inOpName]!!.add(name)
-                variableTracker.addVariable(name)
             }
         }
     }
@@ -1427,7 +1414,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                     val tfTensor = nd.getAttribute("value").tensorValue()
                     val arr = tfTensor.toNd4jNDArray()
                     sd.constant(name, arr)
-                    variableTracker.addVariable(name)
                     val inputCount = nd.numInputs()
                     if (inputCount > 0) {
                         //Very likely control dependency. i.e., "we must execute op X before the constant is really available to be used"
@@ -1443,7 +1429,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 } else if (irGraph.isPlaceHolder(opName)) {
                     var shape = irGraph.shapeOfInput(nd.nodeName())
 
-                    variableTracker.addVariable(name)
 
                     val dt = irGraph.dataTypeForVariable(nd.nodeName()).nd4jDataType()
                     if(shape != null)
@@ -1453,7 +1438,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 } else if(opName.equals("Variable") || opName.equals("VariableV2")) {
                     var shape = irGraph.shapeOfInput(nd.nodeName())
 
-                    variableTracker.addVariable(name)
 
                     val dt = irGraph.dataTypeForVariable(nd.nodeName()).nd4jDataType()
                     if(shape != null)
@@ -1502,7 +1486,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         //use input name if it exists and matches, otherwise if the input names do not map 1 to 1 for import
                         //use samediff to generate a unique name
                         val origInName = nd.inputAt(i)
-                        variableTracker.addVariable(origInName)
                         var inName = stripControl(origInName)
                         if (inName.endsWith(":0")) {
                             //Strip ":0" suffix. Some ops can depend on placeholders, like "image_tensor:0" but in SameDiff this is a variable called "image_tensor"

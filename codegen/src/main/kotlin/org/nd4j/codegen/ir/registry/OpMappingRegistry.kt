@@ -33,6 +33,11 @@ class OpMappingRegistry<GRAPH_TYPE: GeneratedMessageV3,
     val opDefList = HashMap<String,OP_DEF_TYPE>()
     val nd4jOpDefs = HashMap<String,OpNamespace.OpDescriptor>()
 
+
+    fun mappedNd4jOpNames(): Set<String> {
+        return registeredOps.values().map { input -> input.opName() }.toSortedSet()!!
+    }
+
     fun mappingProcessNames(): MultiSet<String> {
         return registeredOps.keys()!!
     }

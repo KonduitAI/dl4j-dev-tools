@@ -1069,9 +1069,12 @@ val matrixInverse = multipleNameMapping(inputFrameworkOpNames = listOf("MatrixIn
         attributeMappingRules = booleanConstant(inputName = "inPlace",constantValue = true,argumentIndex = 0),
         tensorNames = mutableMapOf("input" to "input"))
 
+//TODO: There might be a subtle difference in the way max threshold is interpreted.
+//Tensorflow gives exact number back, whereas we may give back less.
+//See the non_max_suppression_overlaps test case in TestTensorflowIR
 val nonMaxSuppressionOverlaps = multipleNameMapping(inputFrameworkOpNames = listOf("NonMaxSuppressionWithOverlaps"),
         opName = "non_max_suppression_overlaps",
-        tensorNames = mutableMapOf("scales" to "scores"),
+        tensorNames = mutableMapOf("scales" to "scores","boxes" to "overlaps"),
         attributeMappingRules = listOf(
                 convertNDArrayInputToNumericalAttr(mutableMapOf("maxOutputSize" to "max_output_size","overlapThreshold" to "overlap_threshold",
                         "scoreThreshold" to "score_threshold"))))
