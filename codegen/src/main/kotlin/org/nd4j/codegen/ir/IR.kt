@@ -1159,6 +1159,9 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
                     }
 
                 }
+
+                //set any left over fields if they're found
+                setNameForFunctionFromDescriptors(listOfArgsSortedByIndex,df)
             }
 
 
@@ -1239,8 +1242,57 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
 }
 
 
+fun descriptorForName(name: String,argDescriptors: Collection<OpNamespace.ArgDescriptor>): OpNamespace.ArgDescriptor {
+    return argDescriptors.first { argDescriptor -> argDescriptor.name == name }!!
+}
+
+fun setNameForFunctionFromDescriptors(argDescriptors: Collection<OpNamespace.ArgDescriptor>,func: DifferentialFunction) {
+    func.javaClass.declaredFields.forEach { field ->
+        if(hasArgDescriptorWithNameAndType(argDescriptors,field.name)) {
+            val descriptor = descriptorForName(field.name,argDescriptors)
+            when(descriptor.argType) {
+                OpNamespace.ArgDescriptor.ArgType.BOOL -> {
+                    if(Boolean.javaClass.isAssignableFrom(field.type) || Boolean::class.javaPrimitiveType!!.isAssignableFrom(field.type)) {
+                        field.isAccessible = true
+                        ReflectionUtils.setField(field,func,descriptor.boolValue)
+                    }
+                }
+                OpNamespace.ArgDescriptor.ArgType.INT64, OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                    if(Int.javaClass.isAssignableFrom(field.type) || Int::class.javaPrimitiveType!!.isAssignableFrom(field.type)) {
+                        field.isAccessible = true
+                        ReflectionUtils.setField(field,func,descriptor.int64Value.toInt())
+                    }
+
+                    if(Long.javaClass.isAssignableFrom(field.type) || Long::class.javaPrimitiveType!!.isAssignableFrom(field.type)) {
+                        field.isAccessible = true
+                        ReflectionUtils.setField(field,func,descriptor.int64Value)
+                    }
+
+                }
+                OpNamespace.ArgDescriptor.ArgType.FLOAT, OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
+                    if(Float.javaClass.isAssignableFrom(field.type) || Float::class.javaPrimitiveType!!.isAssignableFrom(field.type)) {
+                        field.isAccessible = true
+                        ReflectionUtils.setField(field,func,descriptor.doubleValue.toFloat())
+                    }
+
+                    if(Double.javaClass.isAssignableFrom(field.type) || Double::class.javaPrimitiveType!!.isAssignableFrom(field.type)) {
+                        field.isAccessible = true
+                        ReflectionUtils.setField(field,func,descriptor.doubleValue)
+                    }
+                }
+
+            }
+
+        }
+    }
+
+}
+fun hasArgDescriptorWithNameAndType(argDescriptors: Collection<OpNamespace.ArgDescriptor>, name: String): Boolean {
+    return argDescriptors.map { input -> input.name}.contains(name)
+}
+
 /**
- * Import a TensorFlow model from a GraphDef, with optional import overrides
+ * Import a Graph based on a {@link IRGraph} model from a GraphDef, with optional import overrides
  *
  * @param irGraph        TensorFlow model GraphDef
  * @param importOverride Optional import override for specific ops, keyed by op name

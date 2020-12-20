@@ -521,11 +521,10 @@ abstract class ValueMapping<
             val descriptorBuilder = ArgDescriptor.newBuilder()
             descriptorBuilder.name = k
             val op = nd4jOpDescriptors.findOp(mappingCtx.nd4jOpName())
-            val relevantFinalDescriptor = op.argDescriptorList.first { argDescriptor -> argDescriptor.name == k }
             val irAttribute = mappingCtx.irAttributeValueForNode(v)
             when(irAttribute.attributeValueType()) {
                 AttributeValueType.INT -> {
-                    descriptorBuilder.argType = relevantFinalDescriptor.argType
+                    descriptorBuilder.argType = ArgDescriptor.ArgType.INT64
                     descriptorBuilder.int64Value = irAttribute.intValue()
                     descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
@@ -536,7 +535,7 @@ abstract class ValueMapping<
                 }
 
                 AttributeValueType.FLOAT -> {
-                    descriptorBuilder.argType = relevantFinalDescriptor.argType
+                    descriptorBuilder.argType = ArgDescriptor.ArgType.DOUBLE
                     descriptorBuilder.floatValue = irAttribute.floatValue()
                     descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
@@ -547,7 +546,7 @@ abstract class ValueMapping<
                 }
 
                 AttributeValueType.BOOL -> {
-                    descriptorBuilder.argType = relevantFinalDescriptor.argType
+                    descriptorBuilder.argType =  ArgDescriptor.ArgType.BOOL
                     descriptorBuilder.boolValue = irAttribute.boolValue()
                     descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
@@ -557,7 +556,7 @@ abstract class ValueMapping<
                 }
 
                 AttributeValueType.STRING -> {
-                    descriptorBuilder.argType = relevantFinalDescriptor.argType
+                    descriptorBuilder.argType =  ArgDescriptor.ArgType.STRING
                     descriptorBuilder.stringValue = irAttribute.stringValue()
                     descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,

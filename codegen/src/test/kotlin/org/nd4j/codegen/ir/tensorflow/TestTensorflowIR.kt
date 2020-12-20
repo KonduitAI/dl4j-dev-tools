@@ -893,6 +893,7 @@ class TestTensorflowIR {
             "in_top_k",
             "reshape",
             "noop",
+            "nth_element",
             "onehot",
             "pad",
             "pow",
@@ -1190,59 +1191,68 @@ class TestTensorflowIR {
         val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(inputFrameworkOpName)
         when (nd4jOpName) {
             "nth_element" -> {
-                val input = NodeDef {
-                    name = "input"
-                    op = "Placeholder"
-                    Attribute("dtype",AttrValue {
-                        type = DataType.DT_FLOAT
-                    })
+                val ret = ArrayList<GraphInput>()
+                listOf(true,false).forEach { reverse ->
+                    val input = NodeDef {
+                        name = "input"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                    }
+
+                    val n = NodeDef {
+                        name = "n"
+                        op = "Const"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                        Attribute("value",AttrValue {
+                            tensor = TensorProto {
+                                Int32Data(listOf(2))
+                                dtype = DataType.DT_INT32
+
+                            }
+                        })
+                    }
+
+                    val opNode = NodeDef {
+                        Input("input")
+                        Input("n")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+
+                        Attribute("reverse",AttrValue {
+                            type = DataType.DT_BOOL
+                            b = reverse
+                        })
+
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(input)
+                        Node(n)
+                        Node(opNode)
+                    }
+
+
+                    val xVal = Nd4j.linspace(1, 6, 6)
+                        .reshape(2, 3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                    val inputs = mapOf("input" to xVal)
+
+                    ret.add(GraphInput(
+                        graphDef =graphDef, inputNames = listOf("input"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs
+                    ))
                 }
 
-                val n = NodeDef {
-                    name = "n"
-                    op = "Placeholder"
-                    Attribute("dtype",AttrValue {
-                        type = DataType.DT_INT32
-                    })
-                }
-
-                val opNode = NodeDef {
-                    Input("input")
-                    Input("n")
-                    op = tensorflowOpDef.name
-                    name = "output"
-                    Attribute("T",AttrValue {
-                        type = DataType.DT_INT32
-                    })
-                    Attribute("k",AttrValue {
-                        i = 2
-                    })
-                }
-
-                val graphDef = GraphDef {
-                    Node(input)
-                    Node(n)
-                    Node(opNode)
-                }
-
-
-                val xVal = Nd4j.linspace(1, 4, 4)
-                    .reshape(2, 2)
-                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
-
-                val predictionsArr = Nd4j.linspace(1, 2, 2)
-                    .reshape(2)
-                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
-
-
-                val inputs = mapOf("x" to xVal,"predictions" to predictionsArr)
-
-
-                return listOf(GraphInput(
-                    graphDef =graphDef, inputNames = listOf("x","predictions"),
-                    outputNames = listOf("output"),
-                    inputArrays = inputs
-                ))
+                return ret
             }
             "in_top_k" -> {
                 if(tensorflowOpDef.name == "InTopK") {

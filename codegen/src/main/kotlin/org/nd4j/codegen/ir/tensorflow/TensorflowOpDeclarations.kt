@@ -1078,7 +1078,7 @@ val nonMaxSuppressionOverlaps = multipleNameMapping(inputFrameworkOpNames = list
 
 val nthElement = mapTensorNamesWithOp(inputFrameworkOpName = "NthElement",opName = "nth_element",
         tensorNames = mutableMapOf("n" to "n","input" to "input"),
-        attributeMappingRules = listOf(valueMapping(mapOf("reverse" to "reverse"))))
+        attributeMappingRules = listOf(booleanToNumber(mapOf("reverse" to "reverse"))))
 
 val oneHot = mapTensorNamesWithOp(inputFrameworkOpName = "OneHot",opName = "onehot",
         tensorNames = mutableMapOf("input" to "indices"),
