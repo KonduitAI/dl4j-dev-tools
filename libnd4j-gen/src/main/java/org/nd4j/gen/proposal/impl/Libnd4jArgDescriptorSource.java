@@ -136,6 +136,93 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                             .build()).build());
 
 
+                            if(name.equals("split")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("numSplit")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("numSplit")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                            }
+
+
+                            if(name.equals("split_v")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("numSplit")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("numSplit")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("concat")) {
+                                //isAxisInLastArr
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("isAxisInLastArr")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                                .setName("isDynamicAxis")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("concatDimension")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("concatDimension")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("dynamic_partition") || name.equals("dynamic_stitch")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("numPartitions")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("numPartitions")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                            }
+
+
+                            if(name.equals("reshape")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("shape")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("shape")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                            }
+
+                            if(name.equals("lin_space")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("dataType")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DATA_TYPE)
+                                                .setName("dataType")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                            }
+
                             if(name.equals("eye")) {
                                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
                                         .sourceOfProposal("numRows")
@@ -772,7 +859,9 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             line = removeBracesFromDeclarationMacro(line, PLATFORM_IMPL);
                             String[] split = line.trim().split(",");
                             name = split[0];
-                            opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.PLATFORM_IMPL);
+                            //sometimes ops can appear more than once per platform, only keep original specification in this case
+                            if(name != null && !opTypes.containsKey(name))
+                                opTypes.put(name, OpNamespace.OpDescriptor.OpDeclarationType.PLATFORM_IMPL);
 
                             builder.name(name)
                                     .opDeclarationType(OpDeclarationDescriptor.OpDeclarationType.PLATFORM_IMPL);

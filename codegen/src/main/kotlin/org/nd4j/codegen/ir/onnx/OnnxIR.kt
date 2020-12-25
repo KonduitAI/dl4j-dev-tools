@@ -4,6 +4,7 @@ import onnx.Onnx
 import org.apache.commons.io.FileUtils
 import org.nd4j.codegen.ir.*
 import org.nd4j.common.io.ClassPathResource
+import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
 import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
@@ -11,7 +12,6 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.onnxruntime.runner.OnnxRuntimeRunner
-import org.tensorflow.framework.TensorProto
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.util.*
@@ -106,7 +106,7 @@ class OnnxIRTensor(input: Onnx.TensorProto): IRTensor<Onnx.TensorProto, Onnx.Ten
     }
 
     override fun toNd4jNDArray(): INDArray {
-       return ndarrayFromNameSpaceTensor(toArgTensor())
+        return ndarrayFromNameSpaceTensor(toArgTensor())
     }
 
 
@@ -218,7 +218,7 @@ class OnnxIRAttr(inputAttributeDef: Onnx.AttributeProto, inputAttributeValue: On
     }
 
     override fun boolValue(): Boolean {
-       return attributeValue.i > 0
+        return attributeValue.i > 0
     }
 
     override fun listBoolValue(): List<Boolean> {
@@ -410,6 +410,39 @@ class OnnxIRNode(inputNode: Onnx.NodeProto, inputOpDef: Onnx.NodeProto): IRNode<
         return nodeDef.outputCount
     }
 
+    override fun inputs(): List<String> {
+        return nodeDef.inputList
+    }
+
+    override fun outputs(): List<String> {
+        return nodeDef.outputList
+    }
+
+    override fun numInputsForListOfTensors(name: String): Int {
+        return nodeDef.inputCount
+    }
+
+    override fun inputNamesForListOfInputValues(inputListName: String): List<String> {
+        return nodeDef.inputList
+    }
+
+    override fun computeAdjustedOffsetForInput(
+        nd4jName: String,
+        inputFrameworkName: String,
+        tensorInputMappings: Map<String, String>
+    ): Int {
+        //onnx doesn't have lists of values like this
+        return lookupIndexForArgDescriptor(
+            argDescriptorName = nd4jName,
+            opDescriptorName = this.opName(),
+            argDescriptorType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
+        )
+    }
+
+    override fun nd4jInputs(tensorMappings: Map<String, String>): List<String> {
+        return nodeDef.inputList
+    }
+
 }
 
 
@@ -512,7 +545,7 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
     }
 
     override fun shapeOfInput(varName: String): LongArray? {
-     return graphDef.initializerList.first { inputNode -> inputNode.name == varName }.dimsList.toLongArray()
+        return graphDef.initializerList.first { inputNode -> inputNode.name == varName }.dimsList.toLongArray()
     }
 
     override fun dataTypeForVariable(varName: String): IRDataType<Onnx.TensorProto.DataType> {
@@ -547,14 +580,7 @@ IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
                 index,argDef -> if(argDef == name) foundIndex = index
         }
 
-        val castedGraph = graph as OnnxIRGraph
-        val graphDef = castedGraph.graphDef()
-        //value nodes are the values of attributes that are input nodes in a frozen graph
-        val attemptedTensor = graphDef.initializerList.firstOrNull { it.name == name }
-        if(attemptedTensor == null) {
-            throw IllegalArgumentException("Name $name not found in initializer list.")
-        }
-        return OnnxIRTensor(attemptedTensor!!)
+        return tensorInputFromInputFrameworkName(name)
     }
 
     override fun opName(): String {
@@ -582,6 +608,21 @@ IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
 
     override fun tensorAttributeFor(name: String): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
         return irAttributeValueForNode(name).tensorValue()
+    }
+
+    override fun irNode(): IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType> {
+        return OnnxIRNode(node, onnxops.first { input -> input.name == node.opType })
+    }
+
+    override fun tensorInputFromInputFrameworkName(name: String): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        val castedGraph = graph as OnnxIRGraph
+        val graphDef = castedGraph.graphDef()
+        //value nodes are the values of attributes that are input nodes in a frozen graph
+        val attemptedTensor = graphDef.initializerList.firstOrNull { it.name == name }
+        if(attemptedTensor == null) {
+            throw IllegalArgumentException("Name $name not found in initializer list.")
+        }
+        return OnnxIRTensor(attemptedTensor!!)
     }
 
 }

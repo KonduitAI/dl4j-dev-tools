@@ -7,6 +7,7 @@ import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
+import kotlin.collections.ArrayList
 
 abstract class BaseAttributeExtractionRule<
         GRAPH_DEF: GeneratedMessageV3,
@@ -52,11 +53,6 @@ abstract class BaseAttributeExtractionRule<
         builder.ruleName = name()
         builder.functionName = name()
         val descriptorList = opDescriptor!!.argDescriptorList
-        /**
-         * TODO: add index mapping by doing a list lookup of what value
-         * is present in the key. Each final arg descriptor can be used to
-         * look up the intended index of the argument.
-         */
         for ((k, v) in transformerArgs) {
             val filteredList = descriptorList.filter { input -> input.name == k }
             require(filteredList.isNotEmpty()) { "Output attribute " + k + " was not found in op descriptor " + name() + " list of attribtues was " + descriptorList.map { input -> input.name } }
@@ -74,11 +70,11 @@ abstract class BaseAttributeExtractionRule<
 
             for (associatedInput in v) {
                 when (associatedInput.argType) {
-                    AttributeValueType.STRING -> builder.addInputStringAttrName(associatedInput.name)
-                    AttributeValueType.BOOL -> builder.addInputBooleanName(associatedInput.name)
-                    AttributeValueType.FLOAT -> builder.addInputFloatName(associatedInput.name)
-                    AttributeValueType.INT -> builder.addInputIntName(associatedInput.name)
-                    AttributeValueType.TENSOR -> builder.addInputTensorName(associatedInput.name)
+                    ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(associatedInput.name)
+                    ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(associatedInput.name)
+                    ArgDescriptor.ArgType.DOUBLE, ArgDescriptor.ArgType.FLOAT -> builder.addInputFloatName(associatedInput.name)
+                    ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
+                    ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
                 }
             }
 
@@ -1214,6 +1210,9 @@ abstract class NDArrayAttributeToNDArrayInput<
 }
 
 
+
+
+
 abstract class NDArrayInputToNumericalAttribute<
         GRAPH_DEF : GeneratedMessageV3,
         OP_DEF_TYPE : GeneratedMessageV3,
@@ -1263,7 +1262,7 @@ abstract class NDArrayInputToNumericalAttribute<
                                     name = nameToUse
                                     argType = ArgDescriptor.ArgType.DOUBLE
                                     doubleValue = inputTensor.getDouble(i)
-                                    argIndex = baseIndex + i.toInt()
+                                    argIndex = baseIndex + i
                                 })
                             }
 
@@ -1272,13 +1271,116 @@ abstract class NDArrayInputToNumericalAttribute<
                                     name = nameToUse
                                     argType = ArgDescriptor.ArgType.INT64
                                     int64Value = inputTensor.getInt(i).toLong()
-                                    argIndex = baseIndex + i.toInt()
+                                    argIndex = baseIndex + i
                                 })
                             }
                         }
 
                     }
                 }
+
+        }
+
+        return ret
+    }
+}
+
+//source:  https://github.com/eclipse/deeplearning4j/blob/63fa3c2ef3c4e5e33cdb99bb4804997b40ad4590/libnd4j/include/array/DataType.h#L39
+
+/**
+ * Referenced from https://github.com/eclipse/deeplearning4j/blob/63fa3c2ef3c4e5e33cdb99bb4804997b40ad4590/libnd4j/include/array/DataType.h
+ * Used to convert ints to data types. These ints are used in certain ops where an int is taken in for expressing a data type.
+ */
+fun dataTypeFromInt(inputInt: Int): TensorNamespace.DataType {
+    when(inputInt) {
+        1 -> return TensorNamespace.DataType.BOOL
+        2 -> return TensorNamespace.DataType.BFLOAT16
+        3 -> return TensorNamespace.DataType.FLOAT16
+        4 -> return TensorNamespace.DataType.FLOAT
+        5 -> return TensorNamespace.DataType.FLOAT
+        6 -> return TensorNamespace.DataType.DOUBLE
+        7 -> return TensorNamespace.DataType.INT8
+        8 -> return TensorNamespace.DataType.INT16
+        9 -> return TensorNamespace.DataType.INT32
+        10 -> return TensorNamespace.DataType.INT64
+        11 -> return TensorNamespace.DataType.UINT8
+        12 -> return TensorNamespace.DataType.UINT16
+        13 -> return TensorNamespace.DataType.UINT32
+        14 -> return TensorNamespace.DataType.UINT64
+        17 -> return TensorNamespace.DataType.BFLOAT16
+        50,51,52 -> return TensorNamespace.DataType.STRING
+        else -> return TensorNamespace.DataType.UNDEFINED
+
+    }
+}
+
+/**
+ * Reverse of [dataTypeFromInt]
+ * converts an int argument to a [TensorNamespace.DataType]
+ */
+fun intArgFromDataType(inputDataType: TensorNamespace.DataType): Int {
+    when(inputDataType) {
+        TensorNamespace.DataType.BOOL -> return 1
+        TensorNamespace.DataType.BFLOAT16 -> return 2
+        TensorNamespace.DataType.FLOAT16 -> return 3
+        TensorNamespace.DataType.FLOAT -> return 4
+        TensorNamespace.DataType.FLOAT -> return 5
+        TensorNamespace.DataType.DOUBLE -> return 6
+        TensorNamespace.DataType.INT8 -> return 7
+        TensorNamespace.DataType.INT16 -> return 8
+        TensorNamespace.DataType.INT32 -> return 9
+        TensorNamespace.DataType.INT64 -> return 10
+        TensorNamespace.DataType.UINT8 -> return 11
+        TensorNamespace.DataType.UINT16 -> return 12
+        TensorNamespace.DataType.UINT32 -> return 13
+        TensorNamespace.DataType.UINT64 -> return 14
+        TensorNamespace.DataType.BFLOAT16 -> return 17
+        TensorNamespace.DataType.STRING -> return 50
+        else -> return  -1
+
+    }
+}
+
+
+abstract class DataTypeToInt<
+        GRAPH_DEF : GeneratedMessageV3,
+        OP_DEF_TYPE : GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE : ProtocolMessageEnum>(
+    mappingNamesToPerform: Map<String, String>,
+    transformerArgs: Map<String, List<ArgDescriptor>>
+) :
+    BaseAttributeExtractionRule<GRAPH_DEF, OP_DEF_TYPE, NODE_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (
+        name = "attributendarraytoscalarattribute",
+        mappingNamesToPerform = mappingNamesToPerform,
+        transformerArgs = transformerArgs
+    ) {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.DATA_TYPE
+    }
+
+    override fun outputsType(argDescriptorType: List<ArgDescriptor.ArgType>): Boolean {
+        return argDescriptorType.contains(ArgDescriptor.ArgType.INT64)
+    }
+
+    override fun convertAttributes(mappingCtx: MappingContext<GRAPH_DEF, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
+        val ret = ArrayList<ArgDescriptor>()
+        for ((k, v) in mappingNamesToPerform()) {
+            val irAttribute = mappingCtx.irAttributeValueForNode(v).dataTataTypeValue()
+            ret.add(ArgDescriptor {
+                argType = ArgDescriptor.ArgType.INT64
+                name = k
+                int64Value = intArgFromDataType(irAttribute.nameSpaceDataType()).toLong()
+                argIndex = lookupIndexForArgDescriptor(
+                    argDescriptorName = k,
+                    opDescriptorName = mappingCtx.nd4jOpName(),
+                    argDescriptorType = ArgDescriptor.ArgType.INT64
+                )
+            })
 
         }
 
@@ -1569,11 +1671,11 @@ abstract class BaseNDArrayMappingRule<
 
             for (associatedInput in v) {
                 when (associatedInput.argType) {
-                    AttributeValueType.STRING -> builder.addInputStringAttrName(associatedInput.name)
-                    AttributeValueType.BOOL -> builder.addInputBooleanName(associatedInput.name)
-                    AttributeValueType.FLOAT -> builder.addInputFloatName(associatedInput.name)
-                    AttributeValueType.INT -> builder.addInputIntName(associatedInput.name)
-                    AttributeValueType.TENSOR -> builder.addInputTensorName(associatedInput.name)
+                    ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(associatedInput.name)
+                    ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(associatedInput.name)
+                    ArgDescriptor.ArgType.DOUBLE,ArgDescriptor.ArgType.FLOAT -> builder.addInputFloatName(associatedInput.name)
+                   ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
+                   ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
                 }
             }
 
@@ -1586,6 +1688,122 @@ abstract class BaseNDArrayMappingRule<
 
 }
 
+
+abstract class MultiInputIndexMappingRule<
+        GRAPH_DEF : GeneratedMessageV3,
+        OP_DEF_TYPE : GeneratedMessageV3, NODE_DEF_TYPE : GeneratedMessageV3, ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3,
+        DATA_TYPE>(
+    mappingNamesToPerform: MutableMap<String, String> = mutableMapOf(),
+    transformerArgs: Map<String, List<ArgDescriptor>> = emptyMap()
+) :
+    TensorMappingRule<GRAPH_DEF, OP_DEF_TYPE, NODE_DEF_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        where DATA_TYPE : ProtocolMessageEnum {
+
+    protected var opDescriptor: OpDescriptor? = null
+    protected val mappingNamesToPerform = mappingNamesToPerform
+    protected val transformerArgs = transformerArgs
+    protected var mappingProcess: MappingProcess<GRAPH_DEF, OP_DEF_TYPE, NODE_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>? =
+        null
+
+
+    override fun initWithMappingProcess(mappingProcess: MappingProcess<GRAPH_DEF, OP_DEF_TYPE, NODE_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>) {
+        val opDescriptorList = nd4jOpDescriptors
+        if (!opDescriptorList.opListList.map { it -> it.name }.contains(mappingProcess.opName())) {
+            throw java.lang.IllegalArgumentException("Op name ${mappingProcess.opName()} not found!")
+        }
+        opDescriptor = opDescriptorList.opListList.first { input ->
+            input.name == mappingProcess.opName()
+        } ?: error("")
+        this.mappingProcess = mappingProcess
+    }
+
+
+    operator fun set(outputAttribute: String, inputAttribute: String) {
+        mappingNamesToPerform[outputAttribute] = inputAttribute
+    }
+
+    override fun name(): String {
+        return "multiinputindex"
+    }
+
+
+    override fun mappingNamesToPerform(): Map<String, String> {
+        return mappingNamesToPerform
+    }
+
+
+    override fun convertInput(mappingContext: MappingContext<GRAPH_DEF, NODE_DEF_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
+        val ret = ArrayList<ArgDescriptor>()
+        val mappingsToPerform = inputArgumentMappings()
+        mappingsToPerform.forEach { (k, v) ->
+            val relevantInputs = mappingContext.irNode().inputNamesForListOfInputValues(v)
+            //get the base index of the key value and use that as the offset for the array initialization
+            val baseIndex = mappingContext.irNode().computeAdjustedOffsetForInput(k, v,mappingsToPerform)
+            //note this looks up node names from the input framework perspective, so these are not variable names present
+            //in the outputs yet
+            relevantInputs.forEachIndexed {index,inputName ->
+                ret.add(ArgDescriptor {
+                    name = "$k:$index"
+                    argType = ArgDescriptor.ArgType.INPUT_TENSOR
+                    inputValue = mappingContext.tensorInputFromInputFrameworkName(inputName).toArgTensor()
+                    argIndex = baseIndex + index
+                })
+            }
+        }
+
+
+        return ret
+    }
+
+    abstract fun createTensorProto(input: TENSOR_TYPE): TensorNamespace.TensorProto
+
+
+    override fun convertInputsReverse(toReverse: List<ArgDescriptor>): List<TENSOR_TYPE> {
+        for (argument in toReverse) {
+            require(argument.argType == ArgDescriptor.ArgType.INPUT_TENSOR) { "Type to reverse must be an input tensor." }
+        }
+        TODO("Not yet implemented")
+    }
+
+    override fun inputArgumentMappings(): Map<String, String> {
+        return mappingNamesToPerform
+    }
+
+    override fun serialize(): MapperNamespace.MappingRule {
+        val builder = MapperNamespace.MappingRule.newBuilder()
+        builder.ruleName = name()
+        builder.functionName = name()
+        for ((k, v) in transformerArgs) {
+            val descriptor = opDescriptor!!.argDescriptorList.filter { input -> input.name == k }[0]
+            when (descriptor.argType) {
+                ArgDescriptor.ArgType.BOOL -> builder.addOutputBooleanName(k)
+                ArgDescriptor.ArgType.INT64 -> builder.addOutputIntName(k)
+                ArgDescriptor.ArgType.FLOAT -> builder.addOutputFloatName(k)
+                ArgDescriptor.ArgType.DOUBLE -> builder.addOutputDoubleName(k)
+                ArgDescriptor.ArgType.INT64 -> builder.addOutputIntName(k)
+                ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(k)
+                ArgDescriptor.ArgType.OUTPUT_TENSOR -> builder.addOutputTensorName(k)
+            }
+
+            for (associatedInput in v) {
+                when (associatedInput.argType) {
+                    ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(associatedInput.name)
+                    ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(associatedInput.name)
+                    ArgDescriptor.ArgType.FLOAT, ArgDescriptor.ArgType.DOUBLE -> builder.addInputFloatName(associatedInput.name)
+                   ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
+                    ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
+                }
+            }
+
+
+        }
+
+
+        return builder.build()
+    }
+
+}
 
 abstract class ArgDescriptorConstant<
         GRAPH_DEF : GeneratedMessageV3,
@@ -1626,6 +1844,7 @@ abstract class ArgDescriptorConstant<
                         argDescriptorType = descriptor.argType
                     )
                     argType = descriptor.argType
+                    boolValue = descriptor.boolValue
                     floatValue = descriptor.floatValue
                     doubleValue = descriptor.doubleValue
                     int32Value = descriptor.int32Value

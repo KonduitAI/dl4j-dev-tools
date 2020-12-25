@@ -108,6 +108,10 @@ fun AttrValue.Builder.ListInts(listInts: List<Long>) {
     this.listBuilder.addAllI(listInts)
 }
 
+fun AttrValue.Builder.LongVal(intVal: Long) {
+    this.i = intVal
+}
+
 fun AttrValue.Builder.ListFloats(listFloats: List<Float>) {
     this.listBuilder.addAllF(listFloats)
 }

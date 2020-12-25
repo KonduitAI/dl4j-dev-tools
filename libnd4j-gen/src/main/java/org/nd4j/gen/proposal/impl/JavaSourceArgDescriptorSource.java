@@ -558,6 +558,64 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                                 .build()).build());
             }
 
+            if(name.equals("gather")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("axis")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                .setName("axis")
+                                .setIsArray(false)
+                                .setArgIndex(0)
+                                .build()).build());
+            }
+
+            if(name.equals("pow")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("pow")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                .setName("pow")
+                                .setIsArray(false)
+                                .setArgIndex(1)
+                                .build()).build());
+            }
+
+            if(name.equals("concat")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("isDynamicAxis")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                .setName("isDynamicAxis")
+                                .setIsArray(false)
+                                .setArgIndex(0)
+                                .build()).build());
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("concatDimension")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                .setName("isDynamicAxis")
+                                .setIsArray(false)
+                                .setArgIndex(1)
+                                .build()).build());
+            }
+
+            if(name.equals("split") || name.equals("split_v")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("numSplit")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                .setName("numSplit")
+                                .setIsArray(false)
+                                .setArgIndex(0)
+                                .build()).build());
+            }
+
+
             if(name.equals("eye")) {
                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
                         .sourceOfProposal("numRows")

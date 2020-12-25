@@ -389,7 +389,7 @@ class TensorflowIRNode(inputNode: NodeDef, inputOpDef: OpDef): IRNode<NodeDef, T
     }
 
     override fun outputAt(index: Int): String {
-        return ""
+        return opDef.outputArgList[index].name
     }
 
 
@@ -423,7 +423,85 @@ class TensorflowIRNode(inputNode: NodeDef, inputOpDef: OpDef): IRNode<NodeDef, T
     }
 
     override fun numOutputs(): Int {
-        return 0
+        return opDef.outputArgCount
+    }
+
+    override fun inputs(): List<String> {
+        return nodeDef.inputList
+    }
+
+    override fun outputs(): List<String> {
+        return opDef.outputArgList.map { input -> input.name }
+    }
+
+    /**
+     * Get the list of tensors given an OpDef name (note: this is no tthe name of the input, but instead the op name, we use this to look up
+     * the number attribute value and thus the number of inputs for a particular definition name.)
+     * Tensorflow also allows multiple sets of lists of tensors as inputs, so we need to make sure to disambiguate which list of inputs we are looking up.
+     */
+    override fun numInputsForListOfTensors(name: String): Int {
+        return nodeDef.getAttrOrThrow(opDef.inputArgList.first { input -> input.name == name }.numberAttr).i.toInt()
+    }
+
+    override fun inputNamesForListOfInputValues(inputListName: String): List<String> {
+        val inputArgNames = opDef.inputArgList.map { argDef -> argDef.name }
+        val indexOfDef = inputArgNames.indexOf(inputListName)
+        if(indexOfDef < 0)
+            return emptyList()
+        var totalAmount: Long = 0
+        for(i in 0 .. indexOfDef) {
+            if(opDef.getInputArg(i).numberAttr.isNotEmpty()) {
+                val numToAdd = nodeDef.getAttrOrDefault(opDef.getInputArg(i).numberAttr, AttrValue {
+                    LongVal(1)
+                }).i
+                totalAmount += numToAdd
+            }
+            else
+                totalAmount++
+        }
+        //note: this is inclusive
+        return nodeDef.inputList.subList(indexOfDef,totalAmount.toInt())
+    }
+
+    override fun computeAdjustedOffsetForInput(
+        nd4jName: String,
+        inputFrameworkName: String,
+        tensorInputMappings: Map<String, String>
+    ): Int {
+        val baseIndex = lookupIndexForArgDescriptor(
+            argDescriptorName = nd4jName,
+            opDescriptorName = this.opDescriptor.name,
+            argDescriptorType = OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR
+        )
+
+        val inputs = opDescriptor.argDescriptorList.filter { input -> input.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }
+        var totalAmount: Long = 0
+        for(i in 0 until baseIndex) {
+            val nd4jNameAtIndex = inputs.first {descriptor -> descriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR && descriptor.argIndex == i}.name
+            val inputFrameworkName = tensorInputMappings[nd4jNameAtIndex]!!
+            val totalNames = inputNamesForListOfInputValues(inputFrameworkName).size
+            totalAmount += totalNames
+        }
+
+        if(totalAmount < 1)
+            return baseIndex
+        return (baseIndex + totalAmount.toInt()) - 1
+    }
+
+    override fun nd4jInputs(tensorMappings: Map<String, String>): List<String> {
+        val ret = ArrayList<String>()
+        val indicesToNames = HashMap<Int,List<String>>()
+        tensorMappings.forEach { (nd4jName,inputFrameworkName) ->
+            val idx = computeAdjustedOffsetForInput(nd4jName,inputFrameworkName,tensorMappings)
+            val inputNamesForCurrInput = inputNamesForListOfInputValues(inputFrameworkName)
+            indicesToNames[idx] = inputNamesForCurrInput
+        }
+
+        indicesToNames.toSortedMap().forEach { idx, names ->
+            ret.addAll(names.filter {!ret.contains(it)})
+        }
+
+        return ret
     }
 
 }
@@ -614,21 +692,7 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<Graph
         }
 
         val graphNode = node.getInput(foundIndex)
-        val searchedNode = graph.nodeByName(graphNode)
-        //no value to be found on placeholder, return default instance
-        //if no value exists it's an output from another node
-        if("Placeholder" in searchedNode.op || !searchedNode.containsAttr("value")) {
-            println("Value for node $graphNode is not a constant! This method only works for constants. Consider replacing the Placeholder node with a Constant node. This will return an empty tensor.")
-            if(!dynamicVariables.containsKey(graphNode))
-                return TensorflowIRTensor(TensorProto.getDefaultInstance())
-            else {
-                val toConvert = dynamicVariables[graphNode]!!
-                return TensorflowIRTensor(toConvert)
-            }
-        }
-
-        //value nodes are the values of attributes that are input nodes in a frozen graph
-        return TensorflowIRTensor(searchedNode.getAttrOrThrow("value").tensor)
+        return tensorInputFromInputFrameworkName(graphNode)
     }
 
     override fun opName(): String {
@@ -655,6 +719,28 @@ class TensorflowMappingContext(opDef: OpDef, node: NodeDef, graph: IRGraph<Graph
 
     override fun tensorAttributeFor(name: String): IRTensor<TensorProto, DataType> {
         return TensorflowIRTensor(node.getAttrOrThrow(name).tensor)
+    }
+
+    override fun irNode(): IRNode<NodeDef, TensorProto, AttrDef, AttrValue, DataType> {
+        return TensorflowIRNode(node, tensorflowOps.findOp(node.op))
+    }
+
+    override fun tensorInputFromInputFrameworkName(name: String): IRTensor<TensorProto, DataType> {
+        val searchedNode = graph.nodeByName(stripVarSuffix(name))
+        //no value to be found on placeholder, return default instance
+        //if no value exists it's an output from another node
+        if("Placeholder" in searchedNode.op || !searchedNode.containsAttr("value")) {
+            println("Value for node $name is not a constant! This method only works for constants. Consider replacing the Placeholder node with a Constant node. This will return an empty tensor.")
+            if(!dynamicVariables.containsKey(name))
+                return TensorflowIRTensor(TensorProto.getDefaultInstance())
+            else {
+                val toConvert = dynamicVariables[name]!!
+                return TensorflowIRTensor(toConvert)
+            }
+        }
+
+        //value nodes are the values of attributes that are input nodes in a frozen graph
+        return TensorflowIRTensor(searchedNode.getAttrOrThrow("value").tensor)
     }
 
 
