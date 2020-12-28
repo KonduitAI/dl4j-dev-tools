@@ -197,10 +197,124 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                             }
 
 
+                            if(name.equals("dilation2d")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("isSameMode")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("isSameMode")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("rates")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("rates")
+                                                .setIsArray(true)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("strides")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("strides")
+                                                .setIsArray(true)
+                                                .setArgIndex(2)
+                                                .build()).build());
+
+                            }
+
+
+
+                            if(name.equals("extract_image_patches")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("isSameMode")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.BOOL)
+                                                .setName("isSameMode")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                            }
+
+
+                            if(name.equals("bincount")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DATA_TYPE)
+                                                .setName("outputType")
+                                                .setIsArray(true)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.POSITIVE_INFINITY)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("values")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.POSITIVE_INFINITY)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("weights")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.POSITIVE_INFINITY)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("min")
+                                                .setIsArray(false)
+                                                .setArgIndex(2)
+                                                .build()).build());
+
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.POSITIVE_INFINITY)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                                .setName("max")
+                                                .setIsArray(false)
+                                                .setArgIndex(3)
+                                                .build()).build());
+
+                            }
+
+
                             if(name.equals("reshape")) {
                                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                        .sourceOfProposal("shape")
-                                        .proposalWeight(Double.MAX_VALUE)
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.POSITIVE_INFINITY)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("shapeArr")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.POSITIVE_INFINITY)
                                         .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                                 .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
                                                 .setName("shape")
@@ -221,6 +335,50 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                                 .setArgIndex(0)
                                                 .build()).build());
 
+                            }
+
+
+                            if(name.equals("create")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("java")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DATA_TYPE)
+                                                .setName("outputType")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("java")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("order")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("java")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("outputType")
+                                                .setIsArray(false)
+                                                .setArgIndex(1)
+                                                .build()).build());
+                            }
+
+                            if(name.equals("extract_image_patches")) {
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("isSameMode")
+                                                .setIsArray(false)
+                                                .setArgIndex(6)
+                                                .build()).build());
                             }
 
                             if(name.equals("eye")) {
@@ -473,7 +631,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
                             if (name.equals("decode_bitmap")) {
                                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                        .sourceOfProposal("weights")
+                                        .sourceOfProposal("cpp")
                                         .proposalWeight(9999.0)
                                         .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                                 .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
@@ -485,13 +643,23 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
 
                             if(name.equals("dilation2d")) {
                                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
-                                        .sourceOfProposal("rates")
+                                        .sourceOfProposal("cpp")
+                                        .proposalWeight(Double.MAX_VALUE)
+                                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                                .setName("isSameMode")
+                                                .setIsArray(false)
+                                                .setArgIndex(0)
+                                                .build()).build());
+
+                                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                                        .sourceOfProposal("cpp")
                                         .proposalWeight(Double.MAX_VALUE)
                                         .descriptor(OpNamespace.ArgDescriptor.newBuilder()
                                                 .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
                                                 .setName("rates")
                                                 .setIsArray(true)
-                                                .setArgIndex(0)
+                                                .setArgIndex(1)
                                                 .build()).build());
 
                                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
@@ -501,7 +669,7 @@ public class Libnd4jArgDescriptorSource implements ArgDescriptorSource {
                                                 .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
                                                 .setName("strides")
                                                 .setIsArray(true)
-                                                .setArgIndex(1)
+                                                .setArgIndex(2)
                                                 .build()).build());
                             }
 

@@ -8,6 +8,8 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.tensorflow.framework.*
 
 fun convertNDArrayToTensorflowTensor(arrayToConvert: INDArray): TensorProto {
+    if(arrayToConvert.data() == null)
+        return TensorProto.getDefaultInstance()
     when(arrayToConvert.dataType()) {
         org.nd4j.linalg.api.buffer.DataType.FLOAT -> {
             return TensorProto {
@@ -202,20 +204,3 @@ fun defineTensorflowPairwiseTransforms(opName: String, inputFrameworkOpName: Str
     )
 }
 
-fun defineBoundingBoxes(listOfNames: List<String> = listOf("DrawBoundingBoxes")) {
-    listOfNames.forEach {
-        val drawBoundingBoxes = TensorflowMappingProcess(
-            inputFrameworkOpName = it,
-            opName = "draw_bounding_boxes",
-            tensorMappingRules = listOf(
-                mappingNDArrayInputs(
-                    mutableMapOf(
-                        "images" to "images",
-                        "boxes" to "boxes"
-                    )
-                )
-            ),
-            opMappingRegistry = tensorflowOpRegistry
-        )
-    }
-}

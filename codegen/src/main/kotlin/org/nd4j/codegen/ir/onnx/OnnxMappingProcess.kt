@@ -16,17 +16,22 @@ open class OnnxMappingProcess(inputFramework: String = "onnx",
                                       Onnx.TensorProto.DataType,
                                       Onnx.AttributeProto,
                                       Onnx.AttributeProto>,
-                              tensorMappingRules: List<TensorMappingRule<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto,Onnx.TensorProto,Onnx.TensorProto.DataType>> = emptyList(),
+                              tensorMappingRules: List<TensorMappingRule<Onnx.GraphProto,
+                                      Onnx.NodeProto, Onnx.NodeProto,
+                                      Onnx.AttributeProto, Onnx.AttributeProto,
+                                      Onnx.TensorProto,Onnx.TensorProto.DataType>> = emptyList(),
+                              inputIndexOverrides: Map<Int,Int> = emptyMap(),
                               attributeMappingRules: List<out AttributeMappingRule<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto,Onnx.AttributeProto, Onnx.AttributeProto,
                                       Onnx.TensorProto, Onnx.TensorProto.DataType>> = emptyList())
     : AbstractMappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>(
-        inputFramework,
-        frameworkVersion,
-        inputFrameworkOpName,
-        opName,
-        opMappingRegistry,
-        tensorMappingRules,
-        attributeMappingRules) {
+    inputFramework,
+    frameworkVersion,
+    inputFrameworkOpName,
+    inputIndexOverrides,
+    opName,
+    opMappingRegistry,
+    tensorMappingRules,
+    attributeMappingRules) {
 
 }
 

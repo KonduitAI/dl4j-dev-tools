@@ -348,12 +348,13 @@ class TensorflowIRNode(inputNode: NodeDef, inputOpDef: OpDef): IRNode<NodeDef, T
     private val attrDefsMap = attrDefsByName(inputOpDef.attrList)
     private val attrMap: Map<String, IRAttribute<AttrDef, AttrValue, TensorProto, DataType>> = initAttrMapFromNode(inputNode)
     private val opDescriptor: OpNamespace.OpDescriptor
+    private val mappingProcess: MappingProcess<GraphDef,OpDef, NodeDef, TensorProto, OpDef.AttrDef,
+    AttrValue, DataType> = tensorflowOpRegistry.lookupOpMappingProcess(inputNode.op)
     //private val inputs: List<OpNamespace.ArgDescriptor>
     //private val outputs: List<OpNamespace.ArgDescriptor>
 
     init {
-        val nd4jOp = tensorflowOpRegistry.lookupOpMappingProcess(inputNode.op)
-        opDescriptor = nd4jOpDescriptors.findOp(nd4jOp.opName())
+        opDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
         // inputs = opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }
         // outputs = opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR }
 
@@ -385,6 +386,8 @@ class TensorflowIRNode(inputNode: NodeDef, inputOpDef: OpDef): IRNode<NodeDef, T
     }
 
     override fun inputAt(index: Int): String {
+        if(mappingProcess.indexOverrides().containsKey(index))
+            return nodeDef.getInput(mappingProcess.indexOverrides()[index]!!)
         return nodeDef.getInput(index)
     }
 
@@ -616,6 +619,10 @@ class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
         }
 
         return TensorflowIRDataType(DataType.DT_INVALID)
+    }
+
+    override fun importInfoForEachNode(dynamicVariables: Map<String, TensorProto>): Map<String, Pair<MappingContext<GraphDef, NodeDef, OpDef, TensorProto, AttrDef, AttrValue, DataType>, OpNamespace.OpDescriptor>> {
+        return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
     }
 
 

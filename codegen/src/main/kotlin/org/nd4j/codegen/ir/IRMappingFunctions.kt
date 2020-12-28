@@ -125,30 +125,34 @@ abstract class StringEqualsAdapterRule<
 
         for((k, v) in mappingNamesToPerform()) {
             val descriptorForName = transformerArgs[k]
+            val argDescriptorTypeList =  mappingCtx.argDescriptorTypeForName(k)
+
             val compString = descriptorForName!![0].stringValue
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
-            val descriptorBuilder = ArgDescriptor.newBuilder()
-            descriptorBuilder.name = v
-            val argDescriptorType =  mappingCtx.argDescriptorTypeForName(k)
-            descriptorBuilder.argType = argDescriptorType
-            descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
-                argDescriptorName = k,
-                opDescriptorName = mappingCtx.nd4jOpName(),
-                argDescriptorType = argDescriptorType
-            )
+            argDescriptorTypeList.forEach {  argDescriptorType ->
+                val descriptorBuilder = ArgDescriptor.newBuilder()
+                descriptorBuilder.name = v
+                descriptorBuilder.argType = argDescriptorType
+                descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
+                    argDescriptorName = k,
+                    opDescriptorName = mappingCtx.nd4jOpName(),
+                    argDescriptorType = argDescriptorType
+                )
 
-            when(argDescriptorType) {
-                ArgDescriptor.ArgType.BOOL -> {
-                    descriptorBuilder.boolValue = testValue == compString
+                when(argDescriptorType) {
+                    ArgDescriptor.ArgType.BOOL -> {
+                        descriptorBuilder.boolValue = testValue == compString
+                    }
+
+                    ArgDescriptor.ArgType.INT64 -> {
+                        descriptorBuilder.int64Value = if (testValue == compString) 1 else 0
+
+                    }
                 }
 
-                ArgDescriptor.ArgType.INT64 -> {
-                    descriptorBuilder.int64Value = if (testValue == compString) 1 else 0
-
-                }
+                ret.add(descriptorBuilder.build())
             }
 
-            ret.add(descriptorBuilder.build())
 
         }
         return ret
@@ -181,31 +185,34 @@ abstract class StringContainsAdapterRule<
         val ret = ArrayList<ArgDescriptor>()
 
         for((k, v) in mappingNamesToPerform()) {
+            val argDescriptorTypeList =  mappingCtx.argDescriptorTypeForName(k)
             val descriptorForName = transformerArgs[k]
             val compString = descriptorForName!![0].stringValue
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
-            val descriptorBuilder = ArgDescriptor.newBuilder()
-            val argDescriptorType =  mappingCtx.argDescriptorTypeForName(k)
-            descriptorBuilder.name = k
-            descriptorBuilder.argType =  mappingCtx.argDescriptorTypeForName(k)
-            descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
-                argDescriptorName = k,
-                opDescriptorName = mappingCtx.nd4jOpName(),
-                argDescriptorType = argDescriptorType
-            )
+            argDescriptorTypeList.forEach { argDescriptorType ->
+                val descriptorBuilder = ArgDescriptor.newBuilder()
+                descriptorBuilder.name = k
+                descriptorBuilder.argType =  argDescriptorType
+                descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
+                    argDescriptorName = k,
+                    opDescriptorName = mappingCtx.nd4jOpName(),
+                    argDescriptorType = argDescriptorType
+                )
 
-            when(argDescriptorType) {
-                ArgDescriptor.ArgType.BOOL -> {
-                    descriptorBuilder.boolValue = compString.contains(testValue)
+                when(argDescriptorType) {
+                    ArgDescriptor.ArgType.BOOL -> {
+                        descriptorBuilder.boolValue = compString.contains(testValue)
+                    }
+
+                    ArgDescriptor.ArgType.INT64 -> {
+                        descriptorBuilder.int64Value = if (compString.contains(testValue)) 1 else 0
+
+                    }
+
                 }
-
-                ArgDescriptor.ArgType.INT64 -> {
-                    descriptorBuilder.int64Value = if (compString.contains(testValue)) 1 else 0
-
-                }
-
+                ret.add(descriptorBuilder.build())
             }
-            ret.add(descriptorBuilder.build())
+
 
         }
         return ret
@@ -228,44 +235,43 @@ abstract class StringNotEqualsAdapterRule<
 
     override fun convertAttributes(mappingCtx: MappingContext<GRAPH_DEF,NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
-        /**
-         * TODO: add index mapping by doing a list lookup of what value
-         * is present in the key. Each final arg descriptor can be used to
-         * look up the intended index of the argument.
-         */
         for((k, v) in mappingNamesToPerform()) {
             val descriptorForName = transformerArgs[k]
             val compString = descriptorForName!![0].stringValue
             val testValue = mappingCtx.irAttributeValueForNode(v).stringValue()
-            when(mappingCtx.argDescriptorTypeForName(k)) {
-                ArgDescriptor.ArgType.INT64 -> {
-                    ret.add(ArgDescriptor {
-                        name = k
-                        argType = mappingCtx.argDescriptorTypeForName(k)
-                        int64Value = if(testValue != compString) 1 else 0
-                        argIndex = lookupIndexForArgDescriptor(
-                            argDescriptorName = k,
-                            opDescriptorName = mappingCtx.nd4jOpName(),
-                            argDescriptorType = ArgDescriptor.ArgType.INT64
-                        )
+            val argDescriptorTypeList = mappingCtx.argDescriptorTypeForName(k)
+            argDescriptorTypeList.forEach { argDescriptorType ->
+                when(argDescriptorType) {
+                    ArgDescriptor.ArgType.INT64 -> {
+                        ret.add(ArgDescriptor {
+                            name = k
+                            argType = argDescriptorType
+                            int64Value = if(testValue != compString) 1 else 0
+                            argIndex = lookupIndexForArgDescriptor(
+                                argDescriptorName = k,
+                                opDescriptorName = mappingCtx.nd4jOpName(),
+                                argDescriptorType = ArgDescriptor.ArgType.INT64
+                            )
 
-                    })
-                }
+                        })
+                    }
 
-                ArgDescriptor.ArgType.BOOL -> {
-                    ret.add(ArgDescriptor {
-                        name = k
-                        argType = mappingCtx.argDescriptorTypeForName(k)
-                        boolValue = testValue != compString
-                        argIndex = lookupIndexForArgDescriptor(
-                            argDescriptorName = k,
-                            opDescriptorName = mappingCtx.nd4jOpName(),
-                            argDescriptorType = ArgDescriptor.ArgType.BOOL
-                        )
+                    ArgDescriptor.ArgType.BOOL -> {
+                        ret.add(ArgDescriptor {
+                            name = k
+                            argType = argDescriptorType
+                            boolValue = testValue != compString
+                            argIndex = lookupIndexForArgDescriptor(
+                                argDescriptorName = k,
+                                opDescriptorName = mappingCtx.nd4jOpName(),
+                                argDescriptorType = ArgDescriptor.ArgType.BOOL
+                            )
 
-                    })
+                        })
+                    }
                 }
             }
+
 
         }
         return ret
@@ -296,11 +302,7 @@ abstract class SizeThresholdIntArrayIntIndexRule<
 
     override fun convertAttributes(mappingCtx: MappingContext<GRAPH_DEF,NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
         val ret = ArrayList<ArgDescriptor>()
-        /**
-         * TODO: add index mapping by doing a list lookup of what value
-         * is present in the key. Each final arg descriptor can be used to
-         * look up the intended index of the argument.
-         */
+
         for((k, v) in mappingNamesToPerform()) {
             val descriptorForName = transformerArgs[k]
             val inputArr = mappingCtx.irAttributeValueForNode(v).listIntValue()
@@ -487,6 +489,49 @@ abstract class NDArraySizeAtRule<
 }
 
 
+abstract class NDArrayExtractScalarValue<
+        GRAPH_DEF: GeneratedMessageV3,
+        OP_DEF_TYPE: GeneratedMessageV3,
+        NODE_TYPE: GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE>(mappingNamesToPerform: Map<String, String>,
+                                                     transformerArgs: Map<String, List<ArgDescriptor>>):
+    BaseAttributeExtractionRule<GRAPH_DEF,OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (name = "ndarrayextractscalarvalue", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs)
+        where  DATA_TYPE: ProtocolMessageEnum {
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.TENSOR
+    }
+
+    override fun outputsType(argDescriptorType: List<ArgDescriptor.ArgType>): Boolean {
+        return argDescriptorType.contains(ArgDescriptor.ArgType.INPUT_TENSOR)
+    }
+
+    override fun convertAttributes(mappingCtx: MappingContext<GRAPH_DEF,NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE,DATA_TYPE>): List<ArgDescriptor> {
+        val ret = ArrayList<ArgDescriptor>()
+        mappingNamesToPerform().forEach { (k, v) ->
+            val indexValueToAbstract = transformerArgs[k]!![0].int64Value
+            val ndarrayInput = mappingCtx.tensorInputFor(v).toNd4jNDArray()
+            val argDescriptor = ArgDescriptor {
+                name = k
+                argType = ArgDescriptor.ArgType.INPUT_TENSOR
+                inputValue = nameSpaceTensorFromNDarray(Nd4j.scalar(ndarrayInput.getDouble(indexValueToAbstract)))
+                argIndex = lookupIndexForArgDescriptor(
+                    argDescriptorName = k,
+                    opDescriptorName = mappingCtx.nd4jOpName(),
+                    argDescriptorType = ArgDescriptor.ArgType.INPUT_TENSOR
+                )
+            }
+            ret.add(argDescriptor)
+        }
+
+        return ret
+    }
+}
+
+
 /**
  * Need to implement tensor size extraction value at index
  */
@@ -532,7 +577,9 @@ abstract class ValueMapping<
 
                 AttributeValueType.FLOAT -> {
                     descriptorBuilder.argType = ArgDescriptor.ArgType.DOUBLE
-                    descriptorBuilder.floatValue = irAttribute.floatValue()
+                   //DO NOT REMOVE work around for numerical underflow that happens at the JVM level, this does a safe cast allowing us to get the real value out
+                   val realValue = Nd4j.scalar(irAttribute.floatValue()).castTo(DataType.DOUBLE)
+                    descriptorBuilder.doubleValue =  realValue.getDouble(0)
                     descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
                         opDescriptorName = mappingCtx.nd4jOpName(),

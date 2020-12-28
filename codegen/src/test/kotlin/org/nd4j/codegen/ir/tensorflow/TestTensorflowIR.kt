@@ -10,7 +10,11 @@ import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.OpNamespace
 import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4j.linalg.api.ops.DynamicCustomOp
+import org.nd4j.linalg.api.ops.impl.transforms.BinCount
+import org.nd4j.linalg.api.ops.impl.transforms.floating.RSqrt
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.linalg.profiler.ProfilerConfig
 import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.tensorflow.conversion.graphrunner.GraphRunner
 import org.tensorflow.framework.*
@@ -743,6 +747,7 @@ class TestTensorflowIR {
             "atan" to 1.0,
             "atanh" to 0.5,
             "ceil" to 1.0,
+            "copy" to 1.0,
             "cos" to 1.0,
             "cosh" to 1.0,
             "erf" to 1.0,
@@ -883,6 +888,45 @@ class TestTensorflowIR {
 
         val mappedOps = setOf(
             "Assert",
+            "reverse_sequence",
+            "depthwise_conv2d",
+            "resize_nearest_neighbor",
+            "scatter_nd",
+            "resize_area",
+            "rgb_to_hsv",
+            "resize_bicubic",
+            "resize_bilinear",
+            "listdiff",
+            "mirror_pad",
+            "histogram_fixed_width",
+            "extract_image_patches",
+            "ClipByValue",
+            "crop_and_resize",
+            "broadcast_dynamic_shape",
+            "broadcastgradientargs",
+            "lrn",
+            "batch_to_space_nd",
+            "space_to_batch_nd",
+            "draw_bounding_boxes",
+            "fused_batch_norm",
+            "conv3dnew",
+            "avgpool3dnew",
+            "maxpool3dnew",
+            "create",
+            "slice",
+            "strided_slice",
+            "select",
+            "compare_and_bitpack",
+            "bincount",
+            "broadcast_to",
+            "biasadd",
+            "condition",
+            "avgpool2d",
+            "maxpool2d",
+            "conv2d",
+            "dilation2d",
+            "batch_to_space",
+            "space_to_batch",
             "dynamic_partition",
             "dynamic_stitch",
             "softmax",
@@ -984,6 +1028,8 @@ class TestTensorflowIR {
         val controlFlowOps = setOf("Switch","While","placeholder","next_iteration","enter","exit","loop_cond")
         val resourceOps = setOf("stack_list","size_list","scatter_list","read_list","split_list","gather_list")
         val refOps = setOf("assign","scatter_add","scatter_sub","scatter_update")
+        val randomOps = setOf("random_gamma","random_crop","random_normal","random_poisson","random_shuffle","randomuniform")
+        testedOps.addAll(randomOps)
         testedOps.addAll(controlFlowOps)
         testedOps.addAll(resourceOps)
         testedOps.addAll(refOps)
@@ -1019,7 +1065,9 @@ class TestTensorflowIR {
                     Node(opNode)
                 }
                 val tensorflowGraph = TensorflowIRGraph(graphDef, tensorflowOps)
-                val mappedGraph = importGraph(tensorflowGraph,null,null)!!
+                val mappedGraph = importGraph(tensorflowGraph,null,null).enableDebugMode()!!
+                Nd4j.getExecutioner().setProfilingConfig(ProfilerConfig.builder()
+                    .stackTrace(true).build())
                 val xVal =  Nd4j.scalar(scalarInputs[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
                 val tensorflowRunner = TensorflowIRGraphRunner(irGraph =   tensorflowGraph,inputNames = listOf("x"),outputNames = listOf("output"))
                 val inputs = mapOf("x" to xVal)
@@ -1288,55 +1336,105 @@ class TestTensorflowIR {
                         dynamicOpsMap[k] = convertNDArrayToTensorflowTensor(v)
                     }
 
-                    /**
-                     * TODO: change the output to use different keys. Currently, we assert assuming every output is the same name.
-                     * THe initial idea is if the output is of size 1 to just use the first name of the output auto inferred from the op definition.
-                     * Otherwise, we need to pick which one to use per op.
-                     *
-                     * The equivalent arrays from nd4j should then be asserted against for equality.
-                     */
                     //NOTE: The output name here is different than the output names from samediff because we want every array from tensorflow for assertion purposes.
-                    //The output sfrom samediff might be slightly different (eg: not have every output tensorflow does or more)
-                    val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+                    //The outputs from samediff might be slightly different (eg: not have every output tensorflow does or more)
 
-
-                    val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
-                    assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
-
-                    val bannedOps = setOf("noop","unique","unique_with_counts","matrix_determinant","log_matrix_determinant","Assert","split_v","identity_n","dynamic_partition","dynamic_stitch")
+                    val bannedOps = setOf("noop","unique","unique_with_counts","matrix_determinant","log_matrix_determinant","Assert","split_v","identity_n","dynamic_partition","dynamic_stitch","draw_bounding_boxes","fused_batch_norm")
                     if(!bannedOps.contains(mappingProcess.opName())) {
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+
+
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+
                         val tfResults = tensorflowRunner.run(graphInput.inputArrays)
                         val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
+                        if(mappingProcess.opName() == "bincount") {
+                            val inputVal = Nd4j.create(doubleArrayOf(1.0, 2.0, 0.0, 1.0, 2.0, 2.0, 1.0, 2.0))
+                                .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                            val sizeVal = Nd4j.create(doubleArrayOf(3.0))
+                                .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                            val weightVal = Nd4j.create(doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0))
+                                .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                            println(Nd4j.getExecutioner().exec(DynamicCustomOp.builder("bincount").addInputs(inputVal,weightVal).addIntegerArguments(0,3).build())[0])
+                            println()
+                        }
                         assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames} " +
                                 "with tfValue of shape ${tfResults.values.first().shapeInfoToString()} and nd4j ${results.values.first().shapeInfoToString()} and ${graphInput}"
                             ,tfResults.values.first(), results.values.first())
                     } else if(mappingProcess.opName() == "unique_with_counts" || mappingProcess.opName() == "unique") {
                         //note: this is a separate case since the results are equal, minus dimensions
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+
+
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+
                         val tfResults = tensorflowRunner.run(graphInput.inputArrays)
                         val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
                         assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults.values.first().ravel(), results.values.first().ravel())
                     }//slight difference in scalar result, doesn't matter in practice
                     else if(mappingProcess.opName() == "matrix_determinant" || mappingProcess.opName() == "log_matrix_determinant") {
                         //note: this is a separate case since the results are equal, minus dimensions
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+
+
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+
                         if(mappingProcess.opName() == "matrix_determinant") {
                             val tfResults = tensorflowRunner.run(graphInput.inputArrays)
                             val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
                             assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults["output"]!!.ravel().getDouble(0), results["output"]!!.ravel().getDouble(0),1e-3)
 
-                        } else if(mappingProcess.opName() == "split_v" || mappingProcess.opName() == "identity_n" || mappingProcess.opName() == "dynamic_partition"|| mappingProcess.opName() == "dynamic_stitch") {
-                            val tfResults = tensorflowRunner.run(graphInput.inputArrays)
-                            val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
-                            assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults, results)
-
                         }
+                    }
+                    else if(mappingProcess.opName() == "split_v" || mappingProcess.opName() == "identity_n" || mappingProcess.opName() == "dynamic_partition"|| mappingProcess.opName() == "dynamic_stitch") {
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
 
-                        else {
-                            //note that log outputs 2 results and the 2nd one is the one we need. The first result is a sign.
-                            val tfResults = tensorflowRunner.run(graphInput.inputArrays)
-                            val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
-                            assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults["finalResult"]!!.ravel().getDouble(0), results["finalResult"]!!.ravel().getDouble(0),1e-3)
 
-                        }
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+
+                        val tfResults = tensorflowRunner.run(graphInput.inputArrays)
+                        val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults, results)
+
+                    } else if(mappingProcess.opName() == "draw_bounding_boxes") {
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+                        val tfResults = tensorflowRunner.run(graphInput.inputArrays)
+                        val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults, results)
+
+                    }
+                    else if(mappingProcess.opName() == "fused_batch_norm") {
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+
+
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+
+                        val tfResults = tensorflowRunner.run(graphInput.inputArrays)
+                        val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults["y"], results["y"])
+
+                    }
+
+                    else  if(!bannedOps.contains(mappingProcess.opName())) {
+                        //note that log outputs 2 results and the 2nd one is the one we need. The first result is a sign.
+                        val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
+
+
+                        val mappedGraph = importGraph(tensorflowGraph,null,null,dynamicOpsMap)
+                        assertEquals("Input name mismatch with input array elements",graphInput.inputArrays.keys,graphInput.inputNames.toSet())
+
+                        val tfResults = tensorflowRunner.run(graphInput.inputArrays)
+                        val results = mappedGraph!!.output(graphInput.inputArrays,graphInput.outputNames)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input ${graphInput.inputNames}",tfResults["finalResult"]!!.ravel().getDouble(0), results["finalResult"]!!.ravel().getDouble(0),1e-3)
+
                     }
 
                 }
@@ -1351,6 +1449,7 @@ class TestTensorflowIR {
         println("Note we skipped ${controlFlowOps.size} testing control flow ops named $controlFlowOps")
         println("Note we skipped ${resourceOps.size} testing resource ops named $resourceOps due to resources being handled differently than normal tensors")
         println("Note we skipped ${refOps.size} testing resource ops named $refOps due to references being handled differently than normal tensors")
+        println("Note we skipped ${randomOps.size} testing resource ops named $randomOps due to random not being consistently testable. This may change in the short term.")
 
     }
 
@@ -1361,6 +1460,2441 @@ class TestTensorflowIR {
     fun graphForOp(nd4jOpName: String,inputFrameworkOpName: String): List<GraphInput> {
         val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(inputFrameworkOpName)
         when (nd4jOpName) {
+            "rgb_to_hsv" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.zeros(3,3,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val inputs = mapOf("input" to xVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "reverse_sequence" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val seqLengths = NodeDef {
+                    name = "seq_lengths"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("seq_lengths")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("Tlen",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("seq_dim",AttrValue {
+                        i = 2
+                    })
+                    Attribute("batch_dim",AttrValue {
+                        i = 1
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(seqLengths)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.linspace(1,60,60).reshape(3,4,5)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val yVal = Nd4j.create(floatArrayOf(4f,4f,4f,4f))
+                    .reshape(4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                val inputs = mapOf("input" to xVal,"seq_lengths" to yVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","seq_lengths"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+            "resize_nearest_neighbor" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val size = NodeDef {
+                    name = "size"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("images")
+                    Input("size")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(size)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.linspace(1,36,36).reshape(1,3,3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val yVal = Nd4j.create(floatArrayOf(6f,6f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                val inputs = mapOf("images" to xVal,"size" to yVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images","size"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+            "resize_bilinear" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val size = NodeDef {
+                    name = "size"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("images")
+                    Input("size")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(size)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.linspace(1,36,36).reshape(1,3,3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val yVal = Nd4j.create(floatArrayOf(6f,6f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                val inputs = mapOf("images" to xVal,"size" to yVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images","size"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "resize_bicubic" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val size = NodeDef {
+                    name = "size"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("images")
+                    Input("size")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(size)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.linspace(1,36,36).reshape(1,3,3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val yVal = Nd4j.create(floatArrayOf(6f,6f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                val inputs = mapOf("images" to xVal,"size" to yVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images","size"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "resize_area" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val size = NodeDef {
+                    name = "size"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("images")
+                    Input("size")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(size)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.linspace(1,36,36).reshape(1,3,3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val yVal = Nd4j.create(floatArrayOf(6f,6f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                val inputs = mapOf("images" to xVal,"size" to yVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images","size"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "mirror_pad" -> {
+                val mirrorPadRet = ArrayList<GraphInput>()
+                listOf("REFLECT","SYMMETRIC").forEach { mode ->
+                    val input = NodeDef {
+                        name = "input"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                    }
+
+                    val paddings = NodeDef {
+                        name = "paddings"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                    }
+
+                    println("Running test import process for op ${tensorflowOpDef.name}")
+                    val opNode = NodeDef {
+                        Input("input")
+                        Input("paddings")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("mode",AttrValue {
+                            s = ByteString.copyFrom(mode.toByteArray(Charset.defaultCharset()))
+                        })
+                        Attribute("Tpaddings",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(input)
+                        Node(paddings)
+                        Node(opNode)
+                    }
+
+
+
+                    val xVal = Nd4j.linspace(1,5,5).reshape(5)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                    val yVal = Nd4j.create(floatArrayOf(1f,1f))
+                        .reshape(1,2)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                    val inputs = mapOf("input" to xVal,"paddings" to yVal)
+
+
+                    mirrorPadRet.add(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("input","paddings"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs,
+                        dynamicArrays = inputs
+                    ))
+                }
+
+                return mirrorPadRet
+            }
+
+            "listdiff" -> {
+                val x = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val y = NodeDef {
+                    name = "y"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("y")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(x)
+                    Node(y)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.linspace(1,4,4).reshape(4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val yVal = Nd4j.create(floatArrayOf(3f,1f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+
+                val inputs = mapOf("x" to xVal,"y" to yVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("x","y"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+
+            "histogram_fixed_width" -> {
+                val values = NodeDef {
+                    name = "values"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val valueRange = NodeDef {
+                    name = "value_range"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val nBins = NodeDef {
+                    name = "nbins"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("values")
+                    Input("value_range")
+                    Input("nbins")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(values)
+                    Node(valueRange)
+                    Node(nBins)
+                    Node(opNode)
+                }
+
+
+
+                val valuesVal = Nd4j.ones(2,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val valueRangeVal = Nd4j.create(floatArrayOf(0f,5f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val nbinsVal = Nd4j.scalar(5f)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val inputs = mapOf("values" to valuesVal,"value_range" to valueRangeVal,"nbins" to nbinsVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("values","value_range","nbins"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+
+            "extract_image_patches" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                val opNode = NodeDef {
+                    Input("images")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("ksizes",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("strides",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("rates",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("padding",AttrValue {
+                        s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(opNode)
+                }
+
+                //1,2,5,4
+
+                //3,2,2,2
+
+
+                val imagesVal = Nd4j.ones(2,4,3,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+
+
+                val inputs = mapOf("images" to imagesVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "crop_and_resize" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val boxes = NodeDef {
+                    name = "boxes"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val boxesI = NodeDef {
+                    name = "boxesI"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val cropSize = NodeDef {
+                    name = "cropSize"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("images")
+                    Input("boxes")
+                    Input("boxesI")
+                    Input("cropSize")
+
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(boxes)
+                    Node(boxesI)
+                    Node(cropSize)
+                    Node(opNode)
+                }
+
+
+
+                val imagesVal = Nd4j.create(floatArrayOf(1f,2f,3f,4f))
+                    .reshape(1,2,2,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val boxesVal = Nd4j.create(floatArrayOf(0f,0f,1f,1f))
+                    .reshape(1,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val boxesIVal = Nd4j.create(floatArrayOf(0f))
+                    .reshape(1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val cropSizeVal = Nd4j.create(floatArrayOf(1f,1f))
+                    .reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val inputs = mapOf("images" to imagesVal,"boxes" to boxesVal,"boxesI" to boxesIVal,"cropSize" to cropSizeVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images","boxes","boxesI","cropSize"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "broadcastgradientargs" -> {
+                val s0 = NodeDef {
+                    name = "s0"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val s1 = NodeDef {
+                    name = "s1"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("s0")
+                    Input("s1")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(s0)
+                    Node(s1)
+                    Node(opNode)
+                }
+
+
+
+                val s0Val = Nd4j.create(floatArrayOf(2f,2f,2f))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val s1Val = Nd4j.create(floatArrayOf(2f,1f,2f))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val inputs = mapOf("s0" to s0Val,"s1" to s1Val)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("s0","s1"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "broadcast_dynamic_shape" -> {
+                val s0 = NodeDef {
+                    name = "s0"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val s1 = NodeDef {
+                    name = "s1"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("s0")
+                    Input("s1")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(s0)
+                    Node(s1)
+                    Node(opNode)
+                }
+
+
+
+                val s0Val = Nd4j.create(floatArrayOf(2f,2f,2f))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val s1Val = Nd4j.create(floatArrayOf(2f,1f,2f))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val inputs = mapOf("s0" to s0Val,"s1" to s1Val)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("s0","s1"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "lrn" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                val opNode = NodeDef {
+                    Input("input")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("depth_radius",AttrValue {
+                        i = 5
+                    })
+                    Attribute("bias",AttrValue {
+                        f = 1f
+                    })
+                    Attribute("alpha",AttrValue {
+                        f = 0.5f
+                    })
+                    Attribute("beta",AttrValue {
+                        f = 0.5f
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(opNode)
+                }
+
+                //1,2,5,4
+
+                //3,2,2,2
+
+                //1, 1,2,2,1, 1,2,2,1
+
+                val inputVal = Nd4j.linspace(1,16,16).reshape(2,2,2,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val inputs = mapOf("input" to inputVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "fused_batch_norm" -> {
+                val x = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val scale = NodeDef {
+                    name = "scale"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val offset = NodeDef {
+                    name = "offset"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val mean = NodeDef {
+                    name = "mean"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val variance = NodeDef {
+                    name = "variance"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+
+                val epsilon = 0.0001f
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("scale")
+                    Input("offset")
+                    Input("mean")
+                    Input("variance")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("U",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("is_training",AttrValue {
+                        b = false
+                    })
+                    Attribute("data_format",AttrValue {
+                        s = ByteString.copyFrom("NHWC".toByteArray(Charset.defaultCharset()))
+                    })
+                    Attribute("epsilon",AttrValue {
+                        f = epsilon
+                    })
+                }
+
+
+                val y = NodeDef {
+                    name = "y"
+                    Input("output:0")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val batchMean = NodeDef {
+                    name = "batch_mean"
+                    Input("output:1")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val batchVariance = NodeDef {
+                    name = "batch_variance"
+                    Input("output:2")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(x)
+                    Node(scale)
+                    Node(mean)
+                    Node(offset)
+                    Node(variance)
+                    Node(opNode)
+                    Node(y)
+                    Node(batchMean)
+                    Node(batchVariance)
+                }
+
+
+
+                val xVal = Nd4j.ones(2,2,2,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val scaleVal = Nd4j.zeros(2).addi(0.5)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val offsetVal = Nd4j.zeros(2).addi(2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                //    xAffected *= (*variance + epsilon).transform(transform::RSqrt) * (*scale) + (*offset);
+                val testResult = Nd4j.ones(8,2).muli(Nd4j.exec(RSqrt(Nd4j.scalar(epsilon)))).muli(scaleVal).addi(offsetVal)
+                val meanVal = Nd4j.zeros(2)
+                val varianceVal = Nd4j.zeros(2)
+                val otherResult = xVal.sub(meanVal).div(varianceVal.add(epsilon)).mul(scaleVal).add(offsetVal)
+                // (batch - self.moving_mean) / (self.moving_var + epsilon) * gamma + beta.
+
+                val inputs = mapOf("x" to xVal,"scale" to scaleVal,"mean" to meanVal,"offset" to offsetVal,"variance" to varianceVal)
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("x","scale","offset","mean","variance"),
+                    outputNames = listOf("y","batch_mean","batch_variance"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+
+            "conv3dnew" -> {
+                // int bS=2, iD=3,iH=4,iW=3,  iC=4,oC=3,  kD=2,kH=3,kW=2,  sD=1,sH=1,sW=1,  pD=0,pH=0,pW=0,  dD=1,dH=1,dW=1;
+                // int paddingMode = 1;             // 1-SAME,  0-VALID;
+                //int dataFormat  = 1;             // 1-NDHWC, 0-NCDHW
+                //2,3,4,3,4
+                //2,3,2,4,3
+                //auto input    = NDArrayFactory::create<TypeParam>('c', {bS, iD, iH, iW, iC});
+                //auto weights  = NDArrayFactory::create<TypeParam>('c', {kD, kH, kW, iC, oC});
+//, {kD,kH,kW,  sD,sH,sW,  pD,pH,pW, dD,dH,dW, paddingMode, 1, dataFormat}
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val filter = NodeDef {
+                    name = "filter"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                //, {kD,kH,kW,  sD,sH,sW,  pD,pH,pW, dD,dH,dW, paddingMode, 1, dataFormat}
+
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("filter")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("strides",AttrValue {
+                        ListInts(listOf(1,1,1,1,1))
+                    })
+                    Attribute("padding",AttrValue {
+                        s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                    })
+                    Attribute("data_format",AttrValue {
+                        s = ByteString.copyFrom("NDHWC".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(filter)
+                    Node(opNode)
+                }
+
+                //1,2,5,4
+
+                //3,2,2,2
+
+
+                val inputVal = Nd4j.ones(2,3,4,3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val filterVal = Nd4j.ones(2,3,2,4,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"filter" to filterVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","filter"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "avgpool3dnew","maxpool3dnew" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                val opNode = NodeDef {
+                    Input("input")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("ksize",AttrValue {
+                        ListInts(listOf(1,1,1,1,1))
+                    })
+                    Attribute("strides",AttrValue {
+                        ListInts(listOf(1,1,1,1,1))
+                    })
+                    Attribute("padding",AttrValue {
+                        s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                    })
+                    Attribute("data_format",AttrValue {
+                        s = ByteString.copyFrom("NDHWC".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(opNode)
+                }
+
+                //2,3,3,43
+                val inputVal = Nd4j.ones(2,3,3,4,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val inputs = mapOf("input" to inputVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "draw_bounding_boxes" -> {
+                val images = NodeDef {
+                    name = "images"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val boxes = NodeDef {
+                    name = "boxes"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val colors = NodeDef {
+                    name = "colors"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("images")
+                    Input("boxes")
+                    Input("colors")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(images)
+                    Node(boxes)
+                    Node(colors)
+                    Node(opNode)
+                }
+
+
+
+                val imagesVal = Nd4j.linspace(1,120,120).reshape(2,4,5,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val boxesVal = Nd4j.linspace(1,16,16).reshape(2,2,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val colorVal = Nd4j.create(floatArrayOf(201f, 202f, 203f, 127f, 128f, 129f)).reshape(2,3)
+
+                val inputs = mapOf("images" to imagesVal,"boxes" to boxesVal,"colors" to colorVal)
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("images","boxes","colors"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+
+            "create" -> {
+                val shape = NodeDef {
+                    name = "shape"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("shape")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("init",AttrValue {
+                        b = true
+                    })
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(shape)
+                    Node(opNode)
+                }
+
+
+
+                val shapeVal = Nd4j.create(doubleArrayOf(1.0,2.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                val inputs = mapOf("shape" to shapeVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("shape"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+
+            "select" -> {
+                val condition = NodeDef {
+                    name = "condition"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_BOOL
+                    })
+                }
+
+                val t = NodeDef {
+                    name = "t"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+                val e = NodeDef {
+                    name = "e"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("condition")
+                    Input("t")
+                    Input("e")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(condition)
+                    Node(t)
+                    Node(e)
+                    Node(opNode)
+                }
+
+
+
+                val conditionVal = Nd4j.create(booleanArrayOf(true,false,false))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+
+                val tVal = Nd4j.linspace(1,9,9).reshape(3,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val eVal = Nd4j.create(doubleArrayOf(9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0))
+                    .reshape(3,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("condition" to conditionVal,"t" to tVal,"e" to eVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("condition","t","e"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+
+            "compare_and_bitpack" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val threshold = NodeDef {
+                    name = "threshold"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("threshold")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(threshold)
+                    Node(opNode)
+                }
+
+
+
+                val inputVal = Nd4j.create(floatArrayOf(-12f, -11f, -10f, -9f, -8f, -7f, -6f, -5f, -4f, -3f, -2f, -1f, 0f, 1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 11f)).reshape(2,3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val thresholdVal = Nd4j.scalar(2.0)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"threshold" to thresholdVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","threshold"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "strided_slice" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val begin = NodeDef {
+                    name = "begin"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val end = NodeDef {
+                    name = "end"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val strides = NodeDef {
+                    name = "strides"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("begin")
+                    Input("end")
+                    Input("strides")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Index",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("shrink_axis_mask",AttrValue {
+                        i = 1
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(begin)
+                    Node(end)
+                    Node(strides)
+                    Node(opNode)
+                }
+
+
+
+                val inputVal = Nd4j.linspace(1,10,10).reshape(5,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val beginVal = Nd4j.create(doubleArrayOf(0.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val endVal = Nd4j.create(doubleArrayOf(1.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val strideVal = Nd4j.create(doubleArrayOf(1.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val inputs = mapOf("input" to inputVal,"begin" to beginVal, "end" to endVal,"strides" to strideVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","begin","end","strides"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+            "bincount" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val size = NodeDef {
+                    name = "size"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val weights = NodeDef {
+                    name = "weights"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("size")
+                    Input("weights")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(size)
+                    Node(weights)
+                    Node(opNode)
+                }
+
+
+
+                val inputVal = Nd4j.create(doubleArrayOf(1.0, 2.0, 0.0, 1.0, 2.0, 2.0, 1.0, 2.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+                val sizeVal = Nd4j.create(doubleArrayOf(3.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val weightVal = Nd4j.create(doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"size" to sizeVal, "weights" to weightVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","size","weights"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "broadcast_to" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val shape = NodeDef {
+                    name = "shape"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("shape")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Tidx",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(shape)
+                    Node(opNode)
+                }
+
+
+
+                val inputVal = Nd4j.create(doubleArrayOf(2.0))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val shapeVal = Nd4j.zeros(2).addi(4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+                val inputs = mapOf("input" to inputVal,"shape" to shapeVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","shape"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "condition" -> {
+                val condition = NodeDef {
+                    name = "condition"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_BOOL
+                    })
+                }
+
+                val t = NodeDef {
+                    name = "t"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val e = NodeDef {
+                    name = "e"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("condition")
+                    Input("t")
+                    Input("e")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(condition)
+                    Node(t)
+                    Node(e)
+                    Node(opNode)
+                }
+
+
+
+                val conditionVal = Nd4j.create(booleanArrayOf(true,true,false,false)).reshape(2,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+
+                val tVal = Nd4j.linspace(1,4,4).reshape(2,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val eVal = Nd4j.linspace(1,4,4).reshape(2,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("condition" to conditionVal,"t" to tVal,"e" to eVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("condition","t","e"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "biasadd" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val bias = NodeDef {
+                    name = "bias"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("bias")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(bias)
+                    Node(opNode)
+                }
+
+
+
+                val inputVal = Nd4j.linspace(1,2 * 3 * 3 * 2,2 * 3 * 3 * 2).reshape(2,3,3,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val biasVal = Nd4j.linspace(1,2,2).reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"bias" to biasVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","bias"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+            "dilation2d" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val filter = NodeDef {
+                    name = "filter"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("filter")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("strides",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("rates",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("padding",AttrValue {
+                        s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(filter)
+                    Node(opNode)
+                }
+
+                //1,2,5,4
+
+                //3,2,2,2
+
+                //1, 1,2,2,1, 1,2,2,1
+
+                val inputVal = Nd4j.linspace(1,2 * 6 * 6 * 3,2 * 6 * 6 * 3).reshape(2,6,6,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val filterVal = Nd4j.linspace(1,3 * 2 * 3,3 * 2 * 3).reshape(3,2,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"filter" to filterVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","filter"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "depthwise_conv2d" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val filter = NodeDef {
+                    name = "filter"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("filter")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("strides",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("padding",AttrValue {
+                        s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                    })
+                    Attribute("data_format",AttrValue {
+                        s = ByteString.copyFrom("NHWC".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(filter)
+                    Node(opNode)
+                }
+
+                //1,2,5,4
+
+                //3,2,2,2
+
+
+                val inputVal = Nd4j.ones(2,4,3,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val filterVal = Nd4j.ones(3,2,2,2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"filter" to filterVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","filter"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "conv2d" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val filter = NodeDef {
+                    name = "filter"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("filter")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("strides",AttrValue {
+                        ListInts(listOf(1,1,1,1))
+                    })
+                    Attribute("padding",AttrValue {
+                        s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                    })
+                    Attribute("data_format",AttrValue {
+                        s = ByteString.copyFrom("NHWC".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(filter)
+                    Node(opNode)
+                }
+
+                //1,2,5,4
+
+                //3,2,2,2
+
+
+                val inputVal = Nd4j.ones(1,4,1,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val filterVal = Nd4j.ones(1,1,1,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("input" to inputVal,"filter" to filterVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","filter"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
+            "avgpool2d","maxpool2d" -> {
+                if(tensorflowOpDef.name == "AvgPool" || tensorflowOpDef.name == "MaxPool") {
+                    val input = NodeDef {
+                        name = "input"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                    }
+
+                    println("Running test import process for op ${tensorflowOpDef.name}")
+                    // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                    val opNode = NodeDef {
+                        Input("input")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                        Attribute("ksize",AttrValue {
+                            ListInts(listOf(1,1,1,1))
+                        })
+                        Attribute("strides",AttrValue {
+                            ListInts(listOf(1,1,1,1))
+                        })
+                        Attribute("padding",AttrValue {
+                            s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                        })
+                        Attribute("data_format",AttrValue {
+                            s = ByteString.copyFrom("NHWC".toByteArray(Charset.defaultCharset()))
+                        })
+                    }
+
+
+                    val graphDef = GraphDef {
+                        Node(input)
+                        Node(opNode)
+                    }
+
+                    val inputVal = Nd4j.ones(2,4,4,2)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+
+                    val inputs = mapOf("input" to inputVal)
+
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("input"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs,
+                        dynamicArrays = inputs
+                    ))
+                } else { //MaxPoolV2
+                    val input = NodeDef {
+                        name = "input"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+                    }
+
+                    val ksize = NodeDef {
+                        name = "ksize"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                    }
+
+                    val stride = NodeDef {
+                        name = "stride"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT32
+                        })
+                    }
+
+
+                    println("Running test import process for op ${tensorflowOpDef.name}")
+                    // {2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1}
+                    val opNode = NodeDef {
+                        Input("input")
+                        Input("ksize")
+                        Input("stride")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_DOUBLE
+                        })
+
+                        Attribute("padding",AttrValue {
+                            s = ByteString.copyFrom("SAME".toByteArray(Charset.defaultCharset()))
+                        })
+                        Attribute("data_format",AttrValue {
+                            s = ByteString.copyFrom("NHWC".toByteArray(Charset.defaultCharset()))
+                        })
+                    }
+
+
+                    val graphDef = GraphDef {
+                        Node(input)
+                        Node(ksize)
+                        Node(stride)
+                        Node(opNode)
+                    }
+
+                    val inputVal = Nd4j.ones(2,4,4,2)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                    val ksizeVal = Nd4j.create(floatArrayOf(1.0f,2.0f,2.0f,1.0f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                    val strideVal = Nd4j.create(floatArrayOf(1.0f,2.0f,2.0f,1.0f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                    val inputs = mapOf("input" to inputVal,"ksize" to ksizeVal,"stride" to strideVal)
+
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("input","ksize","stride"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs,
+                        dynamicArrays = inputs
+                    ))
+                }
+
+            }
+
+
+            "space_to_batch" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val paddings = NodeDef {
+                    name = "paddings"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("paddings")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Tpaddings",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                    Attribute("block_size",AttrValue {
+                        i = 2
+                    })
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(paddings)
+                    Node(opNode)
+                }
+
+                val inputVal = Nd4j.linspace(1,12,12).reshape(1,2,2,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val paddingsVal = Nd4j.zeros(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+
+                val inputs = mapOf("input" to inputVal,"paddings" to paddingsVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("input","paddings"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+
+            }
+
+
+            "batch_to_space_nd" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val blockShape = NodeDef {
+                    name = "block_shape"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("shape",AttrValue {
+                        shape = TensorShapeProto {
+                            Dims(listOf(3))
+                        }
+                    })
+                }
+
+                val crops = NodeDef {
+                    name = "crops"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("block_shape")
+                    Input("crops")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Tblock_shape",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("Tcrops",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(blockShape)
+                    Node(crops)
+                    Node(opNode)
+                }
+
+                val tVal = Nd4j.linspace(1,24,24).reshape(8,1,1,1,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val blockShapeVal = Nd4j.zeros(3).addi(2).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val cropsVal = Nd4j.zeros(3,2).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val inputs = mapOf("input" to tVal,"block_shape" to blockShapeVal,"crops" to cropsVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("input","block_shape","crops"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+
+            }
+
+            "space_to_batch_nd" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val blockShape = NodeDef {
+                    name = "block_shape"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("shape",AttrValue {
+                        shape = TensorShapeProto {
+                            Dims(listOf(3))
+                        }
+                    })
+                }
+
+                val paddings = NodeDef {
+                    name = "paddings"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("block_shape")
+                    Input("paddings")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Tblock_shape",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("Tpaddings",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(blockShape)
+                    Node(paddings)
+                    Node(opNode)
+                }
+
+                val tVal = Nd4j.linspace(1,48,48).reshape(2,2,4,3,1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val blockShapeVal = Nd4j.create(floatArrayOf(2.0f,2.0f,3f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val paddingsVal = Nd4j.create(floatArrayOf(0f,0f,0f,2f,2f,1f)).reshape(3,2).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                val inputs = mapOf("input" to tVal,"block_shape" to blockShapeVal,"paddings" to paddingsVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("input","block_shape","paddings"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+
+            }
+
+
+            "batch_to_space" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val crops = NodeDef {
+                    name = "crops"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("crops")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Tidx",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                    Attribute("block_size",AttrValue {
+                        i = 2
+                    })
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(crops)
+                    Node(opNode)
+                }
+
+                val tVal = Nd4j.linspace(1,12,12).reshape(4,1,1,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val cropsVal = Nd4j.zeros(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+
+                val inputs = mapOf("input" to tVal,"crops" to cropsVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("input","crops"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+
+            }
+
+
+            "slice" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val begin = NodeDef {
+                    name = "begin"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+
+                val size = NodeDef {
+                    name = "size"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("begin")
+                    Input("size")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Index",AttrValue {
+                        type = DataType.DT_INT64
+                    })
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(begin)
+                    Node(size)
+                    Node(opNode)
+                }
+
+                val tVal = Nd4j.linspace(1,12,12).reshape(3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val beginVal = Nd4j.create(doubleArrayOf(0.0,1.0)).reshape(2).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                val sizeVal = Nd4j.create(doubleArrayOf(0.0,1.0)).reshape(2).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+
+                val inputs = mapOf("input" to tVal,"begin" to beginVal,"size" to sizeVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("input","begin","size"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+
+            }
+
+
+            "ClipByValue" -> {
+                val t = NodeDef {
+                    name = "t"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val clipValueMin = NodeDef {
+                    name = "clip_value_min"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val clipValueMax = NodeDef {
+                    name = "clip_value_max"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("t")
+                    Input("clip_value_min")
+                    Input("clip_value_max")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(t)
+                    Node(clipValueMin)
+                    Node(clipValueMax)
+                    Node(opNode)
+                }
+
+                val tVal = Nd4j.linspace(1,12,12).reshape(3,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val clipValueMinVal = Nd4j.scalar(0.0).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                val clipValueMaxVal = Nd4j.scalar(1.0).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+
+                val inputs = mapOf("t" to tVal,"clip_value_min" to clipValueMinVal,"clip_value_max" to clipValueMaxVal)
+
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("t","clip_value_min","clip_value_max"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+
+            }
+
+
+
+
             "squeeze" -> {
                 val value = NodeDef {
                     name = "value"
@@ -1692,6 +4226,7 @@ class TestTensorflowIR {
                     })
                 }
 
+
                 val out1 = NodeDef {
                     name = "out1"
                     Input("output:1")
@@ -1713,8 +4248,8 @@ class TestTensorflowIR {
 
                 val testGraph = GraphRunner.builder().graphBytes(graphDef.toByteArray()).build()
 
-                val dataVal = Nd4j.create(floatArrayOf(2.0f,1.0f,2.0f,0.0f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
-                val partitionsVal = Nd4j.create(floatArrayOf(0.0f,2.0f,1.0f,0.0f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                val partitionsVal = Nd4j.create(floatArrayOf(0f,0f,1f,1f,0f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                val dataVal = Nd4j.create(floatArrayOf(10f, 20f, 30f, 40f, 50f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
 
                 val inputs = mapOf("data" to dataVal,"partitions" to partitionsVal)
 
@@ -1765,7 +4300,7 @@ class TestTensorflowIR {
                     op = tensorflowOpDef.name
                     name = "output"
                     Attribute("num_split",AttrValue {
-                        i = 3
+                        i = 2
                     })
                     Attribute("Tlen",AttrValue {
                         type = DataType.DT_INT64
@@ -1794,14 +4329,6 @@ class TestTensorflowIR {
                     })
                 }
 
-                val out2 = NodeDef {
-                    name = "out2"
-                    Input("output:2")
-                    op = "Identity"
-                    Attribute("T",AttrValue {
-                        type = DataType.DT_INT64
-                    })
-                }
 
                 val graphDef = GraphDef {
                     Node(value)
@@ -1810,14 +4337,13 @@ class TestTensorflowIR {
                     Node(opNode)
                     Node(out0)
                     Node(out1)
-                    Node(out2)
                 }
 
-                val splitDimVal = Nd4j.scalar(0.0).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
-                val sizeSplitsVal = Nd4j.create(floatArrayOf(4f,11f,15f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                val splitDimVal = Nd4j.scalar(-2.0).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                val sizeSplitsVal = Nd4j.create(floatArrayOf(5f,3f)).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
 
-                val valuesVal = Nd4j.linspace(1,150,150)
-                    .reshape(5,30).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                val valuesVal = Nd4j.linspace(1,56,56)
+                    .reshape(8,7).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
 
 
                 val inputs = mapOf("split_dim" to splitDimVal,"value" to valuesVal,"size_splits" to sizeSplitsVal)
@@ -1825,7 +4351,7 @@ class TestTensorflowIR {
 
                 return listOf(GraphInput(
                     graphDef =graphDef, inputNames = listOf("value","size_splits","split_dim"),
-                    outputNames = listOf("out0","out1","out2"),
+                    outputNames = listOf("out0","out1"),
                     inputArrays = inputs,
                     dynamicArrays = inputs
                 ))
@@ -5243,10 +7769,10 @@ class TestTensorflowIR {
                 val ret = ArrayList<GraphInput>()
                 listOf(true,false).forEach { lock ->
                     val xRef = NodeDef {
-                        name = "x"
+                        name = "shape"
                         op = "Placeholder"
                         Attribute("dtype",AttrValue {
-                            type = DataType.DT_DOUBLE
+                            type = DataType.DT_INT32
                         })
                     }
 
@@ -5264,18 +7790,18 @@ class TestTensorflowIR {
                         op = "Placeholder"
                         name = "updates"
                         Attribute("dtype",AttrValue {
-                            type = DataType.DT_DOUBLE
+                            type = DataType.DT_INT32
                         })
                     }
 
                     val opNode = NodeDef {
-                        Input("x")
                         Input("indices")
                         Input("updates")
+                        Input("shape")
                         op = tensorflowOpDef.name
                         name = "output"
                         Attribute("T",AttrValue {
-                            type = DataType.DT_DOUBLE
+                            type = DataType.DT_INT32
                         })
                         Attribute("Tindices",AttrValue {
                             type = DataType.DT_INT32
@@ -5292,14 +7818,17 @@ class TestTensorflowIR {
 
 
                     //from testScatterOpGradients.
-                    val xVal = Nd4j.ones(org.nd4j.linalg.api.buffer.DataType.DOUBLE, 20, 10)
-                    val indices = Nd4j.createFromArray(3, 4, 5, 10, 18)
-                    val updates = Nd4j.ones(org.nd4j.linalg.api.buffer.DataType.DOUBLE, 5, 10)
+                    val shape = Nd4j.scalar(8).reshape(1).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+                    val indices = Nd4j.create(floatArrayOf(4f,3f,1f,7f)).reshape(4,1)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
 
-                    val inputs = mapOf("x" to xVal,"indices" to indices,"updates" to updates)
+                    val updates = Nd4j.linspace(1,4,4).reshape(4).castTo(org.nd4j.linalg.api.buffer.DataType.INT32)
+
+
+                    val inputs = mapOf("shape" to shape,"updates" to updates,"indices" to indices)
 
                     ret.add(GraphInput(
-                        graphDef =graphDef, inputNames = listOf("x","indices","updates"),
+                        graphDef =graphDef, inputNames = listOf("indices","updates","shape"),
                         outputNames = listOf("output"),
                         inputArrays = inputs,
                         dynamicArrays = inputs

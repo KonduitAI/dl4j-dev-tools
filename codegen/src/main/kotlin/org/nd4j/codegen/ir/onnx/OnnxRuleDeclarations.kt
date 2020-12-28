@@ -33,8 +33,11 @@ fun mappingNDArrayInputs(inputs: MutableMap<String,String>) : NDArrayMappingRule
         mappingNamesToPerform = inputs)
 }
 
+
+
+
 class OnnxMultiInputIndexMappingRule(mappingNamesToPerform: MutableMap<String,String>,
-                         transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
+                                     transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
     MultiInputIndexMappingRule<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto,
             Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
 
@@ -129,6 +132,67 @@ fun conditionalFieldValueIntIndexNDArrayRule(outputAttribute: String,
                 argIndex = argumentIndex
             }))
     )
+}
+
+
+class OnnxNDArrayExtractScalarValue(mappingNamesToPerform: MutableMap<String,String>,
+                                    transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>> = emptyMap()):
+    NDArrayExtractScalarValue<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto,
+            Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+
+
+    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        return OnnxIRAttr(attrDef, attributeValueType)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
+        return isOnnxTensorName(name,onnxOp)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
+        return isOnnxAttributeName(name,onnxOp)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): AttributeValueType {
+        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
+        return onnxAttributeTypeFor(name,onnxOp)
+    }
+
+}
+
+fun ndarrayExtractScalarValue(outputAttribute: String,
+                              inputFrameworkAttributeName: String,
+                              argumentIndex: Int,
+                              scalarIndex: Int) : OnnxNDArrayExtractScalarValue {
+    return OnnxNDArrayExtractScalarValue(
+        mappingNamesToPerform = mutableMapOf(outputAttribute to inputFrameworkAttributeName),
+        transformerArgs = mapOf(outputAttribute to listOf(
+            ArgDescriptor {
+                name = inputFrameworkAttributeName
+                int64Value = scalarIndex.toLong()
+                argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                argIndex = argumentIndex
+            })))
 }
 
 

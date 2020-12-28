@@ -12,6 +12,16 @@ object OpRegistryHolder {
     private val registeredOps = HashSetValuedHashMap<String, OpMappingRegistry<out GeneratedMessageV3,out GeneratedMessageV3, out GeneratedMessageV3, out GeneratedMessageV3, out ProtocolMessageEnum, out GeneratedMessageV3, out GeneratedMessageV3>>()
 
 
+    fun <GRAPH_TYPE: GeneratedMessageV3,
+            NODE_TYPE: GeneratedMessageV3,
+            OP_DEF_TYPE: GeneratedMessageV3,
+            TENSOR_TYPE: GeneratedMessageV3,
+            ATTRIBUTE_TYPE: GeneratedMessageV3,
+            ATTRIBUTE_VALUE_TYPE: GeneratedMessageV3,
+            DATA_TYPE : ProtocolMessageEnum> opMappingRegistryForName(name: String) : OpMappingRegistry<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, DATA_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE>{
+        return registeredOps[name].first() as  OpMappingRegistry<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, DATA_TYPE, ATTRIBUTE_TYPE, ATTRIBUTE_VALUE_TYPE>
+
+    }
     fun onnx(): OpMappingRegistry<Onnx.GraphProto,Onnx.NodeProto,Onnx.NodeProto,Onnx.TensorProto,Onnx.TensorProto.DataType,Onnx.AttributeProto,Onnx.AttributeProto> {
         return registeredOps["onnx"].first() as OpMappingRegistry<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.TensorProto.DataType, Onnx.AttributeProto, Onnx.AttributeProto>
     }

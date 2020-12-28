@@ -338,9 +338,9 @@ class OnnxIRNode(inputNode: Onnx.NodeProto, inputOpDef: Onnx.NodeProto): IRNode<
     private val attrDefsMap = attrDefsByName(inputOpDef.attributeList)
     private val attrMap: Map<String, IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto,Onnx.TensorProto.DataType>> =
         initAttrMapFromNode(inputNode)
-
+    private val mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>
     init {
-
+        mappingProcess = onnxOpRegistry.lookupOpMappingProcess(inputNode.opType)
     }
 
     private fun attrDefsByName(input: List<Onnx.AttributeProto>): Map<String,Onnx.AttributeProto> {
@@ -369,6 +369,8 @@ class OnnxIRNode(inputNode: Onnx.NodeProto, inputOpDef: Onnx.NodeProto): IRNode<
     }
 
     override fun inputAt(index: Int): String {
+        if(mappingProcess.indexOverrides().containsKey(index))
+            return nodeDef.getInput(mappingProcess.indexOverrides()[index]!!)
         return nodeDef.getInput(index)
     }
 
@@ -551,6 +553,10 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
     override fun dataTypeForVariable(varName: String): IRDataType<Onnx.TensorProto.DataType> {
         return OnnxIRDataType(Onnx.TensorProto.DataType.values()[graphDef.initializerList.first {
                 inputNode -> inputNode.name == varName }.dataType.ordinal])
+    }
+
+    override fun importInfoForEachNode(dynamicVariables: Map<String, Onnx.TensorProto>): Map<String, Pair<MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, OpNamespace.OpDescriptor>> {
+        return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
     }
 }
 

@@ -615,6 +615,59 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                                 .build()).build());
             }
 
+            if(name.equals("reshape")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("shape")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                .setName("shape")
+                                .setIsArray(false)
+                                .setArgIndex(0)
+                                .build()).build());
+
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("shape")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR)
+                                .setName("shape")
+                                .setIsArray(false)
+                                .setArgIndex(1)
+                                .build()).build());
+
+            }
+
+            if(name.equals("create")) {
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("java")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.DATA_TYPE)
+                                .setName("outputType")
+                                .setIsArray(false)
+                                .setArgIndex(0)
+                                .build()).build());
+
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("java")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                .setName("order")
+                                .setIsArray(false)
+                                .setArgIndex(0)
+                                .build()).build());
+                argDescriptorProposals.add(ArgDescriptorProposal.builder()
+                        .sourceOfProposal("java")
+                        .proposalWeight(Double.MAX_VALUE)
+                        .descriptor(OpNamespace.ArgDescriptor.newBuilder()
+                                .setArgType(OpNamespace.ArgDescriptor.ArgType.INT64)
+                                .setName("outputType")
+                                .setIsArray(false)
+                                .setArgIndex(1)
+                                .build()).build());
+            }
 
             if(name.equals("eye")) {
                 argDescriptorProposals.add(ArgDescriptorProposal.builder()
@@ -668,7 +721,6 @@ public class JavaSourceArgDescriptorSource implements ArgDescriptorSource {
                                 .setArgIndex(0)
                                 .build()).build());
             }
-
 
 
 
