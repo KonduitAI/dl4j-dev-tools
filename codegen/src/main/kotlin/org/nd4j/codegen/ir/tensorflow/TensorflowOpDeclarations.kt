@@ -470,7 +470,7 @@ val concatv2 = TensorflowMappingProcess(
                 booleanConstant(inputName = "isDynamicAxis",constantValue = true,argumentIndex = 0)[0]))
 
 
-val parallelConcat = TensorflowMappingProcess(
+/*val parallelConcat = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry,
         opName = "concat",
         inputFrameworkOpName = "ParallelConcat",
@@ -478,7 +478,7 @@ val parallelConcat = TensorflowMappingProcess(
         attributeMappingRules = listOf(
                 intConstant(inputName = "concatDimension",constantValue = 0 as Integer,argumentIndex = 0)[0],
                 booleanConstant(inputName = "isDynamicAxis",constantValue = true,argumentIndex = 0)[0])
-)
+)*/
 
 //TODO Reference ImportClassMapping.java
 //TODO: ParallelDynamicStitch, map to dynamic stitch

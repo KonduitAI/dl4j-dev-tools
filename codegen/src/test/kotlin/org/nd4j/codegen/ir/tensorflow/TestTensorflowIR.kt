@@ -1461,7 +1461,7 @@ class TestTensorflowIR {
         }
 
         val differenceOfSet = tensorflowOpRegistry.mappedNd4jOpNames() - testedOps
-        println("Ops left to test is ${differenceOfSet.size} and ops are $differenceOfSet")
+        println("Ops left to test is ${differenceOfSet.size} and ops are $differenceOfSet with total ops ran ${testedOps.size}")
         println("Note we skipped ${controlFlowOps.size} testing control flow ops named $controlFlowOps")
         println("Note we skipped ${resourceOps.size} testing resource ops named $resourceOps due to resources being handled differently than normal tensors")
         println("Note we skipped ${refOps.size} testing resource ops named $refOps due to references being handled differently than normal tensors")
