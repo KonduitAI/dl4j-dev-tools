@@ -183,6 +183,18 @@ fun defineSingularReduce(inputFrameworkOpName: String, inputOpName: String): Ten
     )
 }
 
+fun definePairWiseReduce(inputFrameworkOpName: String, inputOpName: String): TensorflowMappingProcess {
+    return mapTensorNamesWithOp(
+        inputFrameworkOpName = inputFrameworkOpName,
+        opName = inputOpName,
+        attributeMappingRules = listOf(
+            valueMapping(mutableMapOf("keepDims" to "keep_dims")),
+            ndarrayToIntList(mutableMapOf("dimensions" to "reduction_indices"))
+        ),
+        tensorNames = mutableMapOf("input" to "input")
+    )
+}
+
 fun defineTensorflowPairwiseTransforms(opName: String, inputFrameworkOpName: String,
                                        firstOutputName: String = "input",
                                        secondOutputName: String = "y",

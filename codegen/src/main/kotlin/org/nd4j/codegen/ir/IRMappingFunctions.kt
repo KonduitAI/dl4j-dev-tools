@@ -982,6 +982,62 @@ abstract class ListAttributeValueLookupToIndex<
 }
 
 
+abstract class StringAttributeToNDArray<
+        GRAPH_DEF : GeneratedMessageV3,
+        OP_DEF_TYPE : GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        ATTR_DEF : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE : ProtocolMessageEnum>(
+    mappingNamesToPerform: Map<String, String>,
+    transformerArgs: Map<String, List<ArgDescriptor>>
+) :
+    BaseAttributeExtractionRule<GRAPH_DEF, OP_DEF_TYPE, NODE_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
+        (
+        name = "convertinputstringtondarray",
+        mappingNamesToPerform = mappingNamesToPerform,
+        transformerArgs = transformerArgs
+    ) {
+
+
+    override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
+        return argDescriptorType == AttributeValueType.STRING
+    }
+
+    override fun outputsType(argDescriptorType: List<ArgDescriptor.ArgType>): Boolean {
+        return argDescriptorType.contains(ArgDescriptor.ArgType.INPUT_TENSOR)
+    }
+
+    override fun convertAttributes(mappingCtx: MappingContext<GRAPH_DEF, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
+        val ret = ArrayList<ArgDescriptor>()
+        for ((k, v) in mappingNamesToPerform()) {
+            val irAttribute = mappingCtx.irAttributeValueForNode(v)
+            when (irAttribute.attributeValueType()) {
+                AttributeValueType.STRING -> {
+                    val listArr = irAttribute.stringValue()
+                    val ndarray = Nd4j.create(listArr)
+                    ret.add(ArgDescriptor {
+                        argType = ArgDescriptor.ArgType.INPUT_TENSOR
+                        name = k
+                        inputValue = nameSpaceTensorFromNDarray(ndarray)
+                        argIndex = lookupIndexForArgDescriptor(
+                            argDescriptorName = k,
+                            opDescriptorName = mappingCtx.nd4jOpName(),
+                            argDescriptorType = ArgDescriptor.ArgType.INPUT_TENSOR
+                        )
+                    })
+                }
+            }
+
+        }
+
+        return ret
+    }
+}
+
+
+
+
 abstract class AttributeNumberListNDArray<
         GRAPH_DEF : GeneratedMessageV3,
         OP_DEF_TYPE : GeneratedMessageV3,
@@ -1013,12 +1069,6 @@ abstract class AttributeNumberListNDArray<
         val ret = ArrayList<ArgDescriptor>()
         for ((k, v) in mappingNamesToPerform()) {
             val irAttribute = mappingCtx.irAttributeValueForNode(v)
-            /**
-             * TODO: add index mapping by doing a list lookup of what value
-             * is present in the key. Each final arg descriptor can be used to
-             * look up the intended index of the argument.
-             */
-
             when (irAttribute.attributeValueType()) {
                 AttributeValueType.LIST_FLOAT -> {
                     val listArr = irAttribute.listFloatValue().toFloatArray()

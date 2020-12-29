@@ -29,6 +29,7 @@ import org.nd4j.linalg.api.ops.DynamicCustomOp
 import org.nd4j.linalg.api.ops.Op
 import org.nd4j.linalg.api.ops.impl.controlflow.compat.Merge
 import org.nd4j.linalg.api.ops.impl.shape.Concat
+import org.nd4j.linalg.cpu.nativecpu.buffer.Utf8Buffer
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.shade.protobuf.ByteString
 import org.nd4j.shade.protobuf.GeneratedMessageV3
@@ -847,6 +848,10 @@ fun TensorNamespace.TensorProto.Builder.DoubleData(doubleData: List<Double>) {
     this.addAllDoubleData(doubleData)
 }
 
+fun TensorNamespace.TensorProto.Builder.StringData(stringData: List<String>) {
+    this.addAllStringData(stringData.map { input -> ByteString.copyFrom(input.toByteArray(Charset.defaultCharset())) })
+}
+
 fun TensorNamespace.TensorProto.Builder.Int64Data(intData: List<Long>) {
     this.addAllInt64Data(intData)
 }
@@ -936,6 +941,14 @@ fun ndarrayFromNameSpaceTensor(inputTensor: TensorNamespace.TensorProto): INDArr
             val dataBuffer = Nd4j.createBuffer(intArray)
             return Nd4j.create(dataBuffer).reshape(*shape)
         }
+
+        DataType.UTF8 -> {
+            val stringList = inputTensor.stringDataList.map { input -> input.toStringUtf8() }
+            if(stringList.isEmpty())
+                return loadDataBufferFromRawData(inputTensor)
+
+            return Nd4j.create(stringList).reshape(*shape)
+        }
         DataType.UNKNOWN -> {
             val ret =  Nd4j.empty()
             return ret
@@ -995,6 +1008,19 @@ fun nameSpaceTensorFromNDarray(ndarray:INDArray): TensorNamespace.TensorProto {
             return NameSpaceTensor {
                 dataType = nameSpaceDataType
                 FloatData(ndarray.data().asFloat().toList())
+                Dims(ndarray.shape().asList())
+            }
+        }
+
+        DataType.UTF8 -> {
+            val stringList = ArrayList<String>()
+            for(i in 0 until ndarray.length()) {
+                stringList.add(ndarray.getString(i))
+            }
+
+            return NameSpaceTensor {
+                dataType = nameSpaceDataType
+                StringData(stringList)
                 Dims(ndarray.shape().asList())
             }
         }
@@ -1430,11 +1456,13 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
     //First, add any constants, placeholders, and zero-input ops
     val sd = SameDiff.create()
     val opRegistryHolder = if(irGraph.frameworkName() == "tensorflow")  OpRegistryHolder.tensorflow() else  OpRegistryHolder.onnx()
+    val nodeInputOverrides = HashMap<String,List<String>>()
     irGraph.nodeList().forEach { node ->
         val importInfoForNode = importInfo[node.nodeName()]!!
         val numInputs = node.numInputs()
         val nodeInputs = ArrayList<String>()
         val name = node.nodeName()
+
         for(inputIdx in 0 until numInputs) {
             var inOpName =  stripVarSuffix(stripControl(node.inputAt(inputIdx)))
             nodeInputs.add(inOpName)
@@ -1443,6 +1471,17 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
             }
 
             nodeInputTo[inOpName]!!.add(name)
+        }
+
+        val inputs = importInfoForNode.second.argDescriptorList.filter { input -> input.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }
+        if(numInputs < inputs.size) {
+            for(i in numInputs until inputs.size) {
+                val newName = name + "-" + inputs[i].name
+                nodeInputTo[newName!!] = ArrayList()
+                nodeInputTo[newName]!!.add(name)
+                sd.constant(newName, ndarrayFromNameSpaceTensor(inputs[i].inputValue))
+            }
+
         }
 
 
@@ -1468,6 +1507,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 }
                 nodeInputTo[inOpName]!!.add(name)
             }
+
         }
     }
 
@@ -1480,7 +1520,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         val nd = availableToAdd.remove()
         val name = nd.nodeName()
         val opName = nd.opName()
-
+        val importInfoForNode = importInfo[name]
         /**
          * How do we handle flexible inputs here?
          * Things may not map 1 to 1.
@@ -1656,6 +1696,20 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                                 v.controlDepsForOp.add(name)
                             }
                         }
+                    }
+
+
+                    val inputs = importInfoForNode!!.second.argDescriptorList.filter { input -> input.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR }
+                    if(numInputs < inputs.size) {
+                        for(i in numInputs until inputs.size) {
+                            val newName = name + "-" + inputs[i].name
+                            val v = sd.variables[newName]!!
+                            if (v.inputsForOp == null) v.inputsForOp = java.util.ArrayList()
+                            v.inputsForOp.add(newName)
+                            inNames.add(newName)
+                        }
+
+
                     }
 
                     val inputNames = nd.nd4jInputs(tensorInputMappings)

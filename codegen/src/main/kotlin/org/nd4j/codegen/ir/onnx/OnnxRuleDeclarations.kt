@@ -979,7 +979,7 @@ fun listAttributeValueLookup(outputAttributeValue: String, inputAttributeValue: 
     return OnnxListAttributeValueLookupToIndex(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),
         transformerArgs = mapOf(outputAttributeValue to listOf(ArgDescriptor {
             name = inputAttributeValue
-            int32Value = indexValue
+            int64Value = indexValue.toLong()
             argIndex = argumentIndex
         })
         ))
@@ -1031,6 +1031,57 @@ fun listNumberToListNumber(outputAttributeValue: String, inputAttributeValue: St
     return OnnxListNumberToListNumber(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = emptyMap())
 }
 
+
+
+
+//StringAttributeToNDArray
+
+class OnnxStringAttributeToNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
+    StringAttributeToNDArray<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
+
+    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        return OnnxIRAttr(inputAttributeValue = attributeValueType,inputAttributeDef = attrDef)
+    }
+
+    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
+        TODO("Not yet implemented")
+    }
+
+
+
+    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
+        return isOnnxTensorName(name,onnxOp)
+    }
+
+    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isNd4jTensorName(name,nd4jOpDescriptor)
+    }
+
+    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
+        return isOnnxAttributeName(name,onnxOp)
+    }
+
+    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)    }
+
+    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): OpNamespace.ArgDescriptor.ArgType {
+        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        return argDescriptorType(name,nd4jOpDescriptor)
+    }
+
+    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): AttributeValueType {
+        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
+        return onnxAttributeTypeFor(name,onnxOp)
+    }
+}
+
+fun convertStringToNDArray(outputAttributeValue: String, inputAttributeValue: String): OnnxStringAttributeToNDArray {
+    return OnnxStringAttributeToNDArray(mappingNamesToPerform = mapOf(outputAttributeValue to inputAttributeValue),transformerArgs = emptyMap())
+}
 
 
 class OnnxAttributeNumberListNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :

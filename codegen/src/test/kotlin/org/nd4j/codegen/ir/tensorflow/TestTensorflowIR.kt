@@ -886,8 +886,20 @@ class TestTensorflowIR {
 
 
 
+
         val mappedOps = setOf(
             "Assert",
+            "gather_nd",
+            "lstmBlock",
+            "lstmBlockCell",
+            "gruCell",
+            "igamma",
+            "igammac",
+            "lgamma",
+            "reduce_logsumexp",
+            "check_numerics",
+            "adjust_hue",
+            "adjust_saturation",
             "reverse_sequence",
             "depthwise_conv2d",
             "resize_nearest_neighbor",
@@ -1081,7 +1093,8 @@ class TestTensorflowIR {
                 assertTrue(nd4jOutput.isScalar)
                 assertEquals("Function ${nd4jOpDef.name} failed with input $xVal",nd4jOutput.getDouble(0), tfOutput.getDouble(0),1e-3)
                 testedOps.add(nd4jOpDef.name)
-            } else if(singularReduceNames.contains(nd4jOpDef.name)) {
+            }
+            else if(singularReduceNames.contains(nd4jOpDef.name)) {
                 listOf(listOf(0),listOf(-1),listOf(0,1)).forEach { dimensions ->
                     listOf(true,false).forEach { keepDim ->
                         val tensorNode = NodeDef {
@@ -1339,8 +1352,11 @@ class TestTensorflowIR {
                     //NOTE: The output name here is different than the output names from samediff because we want every array from tensorflow for assertion purposes.
                     //The outputs from samediff might be slightly different (eg: not have every output tensorflow does or more)
 
+                    //tf2 ops don't currently work in nd4j-tensorflow and can't be verified
+                    val tf2Ops = setOf("CheckNumericsV2","FusedBatchNormV3")
+                    //these ops reflect ops that should generally be tested other ways and are usually tested down below
                     val bannedOps = setOf("noop","unique","unique_with_counts","matrix_determinant","log_matrix_determinant","Assert","split_v","identity_n","dynamic_partition","dynamic_stitch","draw_bounding_boxes","fused_batch_norm")
-                    if(!bannedOps.contains(mappingProcess.opName())) {
+                    if(!bannedOps.contains(mappingProcess.opName()) && !tf2Ops.contains(mappingProcess.inputFrameworkOpName())) {
                         val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
 
 
@@ -1423,7 +1439,7 @@ class TestTensorflowIR {
 
                     }
 
-                    else  if(!bannedOps.contains(mappingProcess.opName())) {
+                    else  if(!bannedOps.contains(mappingProcess.opName()) && !tf2Ops.contains(mappingProcess.inputFrameworkOpName())) {
                         //note that log outputs 2 results and the 2nd one is the one we need. The first result is a sign.
                         val tensorflowRunner = TensorflowIRGraphRunner(irGraph =  tensorflowGraph,inputNames = graphInput.inputNames,outputNames = graphInput.outputNames)
 
@@ -1460,6 +1476,915 @@ class TestTensorflowIR {
     fun graphForOp(nd4jOpName: String,inputFrameworkOpName: String): List<GraphInput> {
         val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(inputFrameworkOpName)
         when (nd4jOpName) {
+            "check_numerics" -> {
+                val tensor = NodeDef {
+                    name = "tensor"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("tensor")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("message",AttrValue {
+                        s = ByteString.copyFrom("test message".toByteArray(Charset.defaultCharset()))
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(tensor)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.create(floatArrayOf(1.0f,2.0f,3.0f))
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val inputs = mapOf("tensor" to xVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("tensor"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "gruCell" -> {
+                val x = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val hPrev = NodeDef {
+                    name = "h_prev"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val wRu = NodeDef {
+                    name = "w_ru"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val wC = NodeDef {
+                    name = "w_c"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val bRu = NodeDef {
+                    name = "b_ru"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val bc = NodeDef {
+                    name = "b_c"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("h_prev")
+                    Input("w_ru")
+                    Input("w_c")
+                    Input("b_ru")
+                    Input("b_c")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val r = NodeDef {
+                    name = "r"
+                    Input("output:0")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val u = NodeDef {
+                    name = "u"
+                    Input("output:1")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val c = NodeDef {
+                    name = "c"
+                    Input("output:2")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val h = NodeDef {
+                    name = "h"
+                    Input("output:3")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val graphDef = GraphDef {
+                    Node(x)
+                    Node(hPrev)
+                    Node(wRu)
+                    Node(wC)
+                    Node(bRu)
+                    Node(bc)
+                    Node(opNode)
+                    Node(r)
+                    Node(u)
+                    Node(c)
+                    Node(h)
+                }
+
+
+
+
+                val xVal = Nd4j.linspace(1,20,20).reshape(2,10)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val hPrevVal = Nd4j.linspace(1,8,8).reshape(2,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val wRuVal = Nd4j.linspace(1,112,112).reshape(14,8)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val wcVal = Nd4j.linspace(1,56,56).reshape(14,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val bRuVal = Nd4j.linspace(1,8,8).reshape(8)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val bcVal = Nd4j.linspace(1,4,4).reshape(4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val inputs = mapOf("x" to xVal,"h_prev" to hPrevVal,"w_ru" to wRuVal,"w_c" to wcVal,"b_ru" to bRuVal,"b_c" to bcVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("x","h_prev","w_ru","w_c","b_ru","b_c"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "lstmBlockCell" -> {
+                val x = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val csPrev = NodeDef {
+                    name = "cs_prev"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val hPrev = NodeDef {
+                    name = "h_prev"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val w = NodeDef {
+                    name = "w"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val wci = NodeDef {
+                    name = "wci"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val wcf = NodeDef {
+                    name = "wcf"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val wco = NodeDef {
+                    name = "wco"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val bias = NodeDef {
+                    name = "b"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("cs_prev")
+                    Input("h_prev")
+                    Input("w")
+                    Input("wci")
+                    Input("wcf")
+                    Input("wco")
+                    Input("b")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                    Attribute("forget_bias",AttrValue {
+                        f = 2.0f
+                    })
+
+                    Attribute("use_peephole",AttrValue {
+                        b = false
+                    })
+                }
+
+
+                val i = NodeDef {
+                    name = "i"
+                    Input("output:0")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val cs = NodeDef {
+                    name = "cs"
+                    Input("output:1")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val f = NodeDef {
+                    name = "f"
+                    Input("output:2")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val o = NodeDef {
+                    name = "o"
+                    Input("output:3")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val ci = NodeDef {
+                    name = "ci"
+                    Input("output:4")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val h = NodeDef {
+                    name = "h"
+                    Input("output:5")
+                    op = "Identity"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(x)
+                    Node(csPrev)
+                    Node(hPrev)
+                    Node(w)
+                    Node(wci)
+                    Node(wcf)
+                    Node(wco)
+                    Node(bias)
+                    Node(opNode)
+                    Node(i)
+                    Node(cs)
+                    Node(f)
+                    Node(o)
+                    Node(ci)
+                    Node(h)
+                }
+
+
+
+
+                val xVal = Nd4j.linspace(1,5,5).reshape(1,5)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val csPrevVal = Nd4j.linspace(1,3,3).reshape(1,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val hPrevVal = Nd4j.linspace(1,3,3).reshape(1,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val wVal = Nd4j.linspace(1,96,96).reshape(8,12)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val wciVal = Nd4j.linspace(1,3,3).reshape(3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val wcfVal = Nd4j.linspace(1,3,3).reshape(3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val wcoVal = Nd4j.linspace(1,3,3).reshape(3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                val bVal = Nd4j.zeros(12)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+
+
+                val inputs = mapOf("x" to xVal,"cs_prev" to csPrevVal,"h_prev" to hPrevVal,"w" to wVal,"wci" to wciVal,"wcf" to wcfVal,"wco" to wcoVal,"b" to bVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("x","cs_prev","h_prev","w","wci","wcf","wco","b"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+            "lstmBlock" -> {
+                if(inputFrameworkOpName == "BlockLSTM") {
+                    val seqLenMax = NodeDef {
+                        name = "seq_len_max"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT64
+                        })
+                    }
+
+                    val x = NodeDef {
+                        name = "x"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val csPrev = NodeDef {
+                        name = "cs_prev"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val hPrev = NodeDef {
+                        name = "h_prev"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val w = NodeDef {
+                        name = "w"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val wci = NodeDef {
+                        name = "wci"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val wcf = NodeDef {
+                        name = "wcf"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val wco = NodeDef {
+                        name = "wco"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val bias = NodeDef {
+                        name = "b"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+                    println("Running test import process for op ${tensorflowOpDef.name}")
+                    val opNode = NodeDef {
+                        Input("seq_len_max")
+                        Input("x")
+                        Input("cs_prev")
+                        Input("h_prev")
+                        Input("w")
+                        Input("wci")
+                        Input("wcf")
+                        Input("wco")
+                        Input("b")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                        Attribute("forget_bias",AttrValue {
+                            f = 2.0f
+                        })
+                        Attribute("forget_bias",AttrValue {
+                            f = 3.0f
+                        })
+                        Attribute("use_peephole",AttrValue {
+                            b = false
+                        })
+                    }
+
+
+                    val i = NodeDef {
+                        name = "i"
+                        Input("output:0")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val cs = NodeDef {
+                        name = "cs"
+                        Input("output:1")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val f = NodeDef {
+                        name = "f"
+                        Input("output:2")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val o = NodeDef {
+                        name = "o"
+                        Input("output:3")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val ci = NodeDef {
+                        name = "ci"
+                        Input("output:4")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val h = NodeDef {
+                        name = "h"
+                        Input("output:5")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(seqLenMax)
+                        Node(x)
+                        Node(csPrev)
+                        Node(hPrev)
+                        Node(w)
+                        Node(wci)
+                        Node(wcf)
+                        Node(wco)
+                        Node(bias)
+                        Node(opNode)
+                        Node(i)
+                        Node(cs)
+                        Node(f)
+                        Node(o)
+                        Node(ci)
+                        Node(h)
+                    }
+
+
+
+                    val seqLenVal = Nd4j.scalar(5.0)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+                    val xVal = Nd4j.linspace(1,20,20).reshape(5,1,4)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val csPrevVal = Nd4j.linspace(1,3,3).reshape(1,3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val hPrevVal = Nd4j.linspace(1,3,3).reshape(1,3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val wVal = Nd4j.linspace(1,84,84).reshape(7,12)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val wciVal = Nd4j.linspace(1,3,3).reshape(3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val wcfVal = Nd4j.linspace(1,3,3).reshape(3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                    val wcoVal = Nd4j.linspace(1,3,3).reshape(3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                    val bVal = Nd4j.zeros(12)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+
+
+                    val inputs = mapOf("seq_len_max" to seqLenVal,"x" to xVal,"cs_prev" to csPrevVal,"h_prev" to hPrevVal,"w" to wVal,"wci" to wciVal,"wcf" to wcfVal,"wco" to wcoVal,"b" to bVal)
+
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("seq_len_max","x","cs_prev","h_prev","w","wci","wcf","wco","b"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs,
+                        dynamicArrays = inputs
+                    ))
+                } else { //BlockLSTMV2
+                    val seqLenMax = NodeDef {
+                        name = "seq_len_max"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_INT64
+                        })
+                    }
+
+                    val x = NodeDef {
+                        name = "x"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val csPrev = NodeDef {
+                        name = "cs_prev"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val hPrev = NodeDef {
+                        name = "h_prev"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val w = NodeDef {
+                        name = "w"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val wci = NodeDef {
+                        name = "wci"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val wcf = NodeDef {
+                        name = "wcf"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val wco = NodeDef {
+                        name = "wco"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val bias = NodeDef {
+                        name = "b"
+                        op = "Placeholder"
+                        Attribute("dtype",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+                    println("Running test import process for op ${tensorflowOpDef.name}")
+                    val opNode = NodeDef {
+                        Input("seq_len_max")
+                        Input("x")
+                        Input("cs_prev")
+                        Input("h_prev")
+                        Input("w")
+                        Input("wci")
+                        Input("wcf")
+                        Input("wco")
+                        Input("b")
+                        op = tensorflowOpDef.name
+                        name = "output"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+
+                        Attribute("use_peephole",AttrValue {
+                            b = false
+                        })
+                    }
+
+
+                    val i = NodeDef {
+                        name = "i"
+                        Input("output:0")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val cs = NodeDef {
+                        name = "cs"
+                        Input("output:1")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val f = NodeDef {
+                        name = "f"
+                        Input("output:2")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val o = NodeDef {
+                        name = "o"
+                        Input("output:3")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+
+                    val ci = NodeDef {
+                        name = "ci"
+                        Input("output:4")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val h = NodeDef {
+                        name = "h"
+                        Input("output:5")
+                        op = "Identity"
+                        Attribute("T",AttrValue {
+                            type = DataType.DT_FLOAT
+                        })
+                    }
+
+                    val graphDef = GraphDef {
+                        Node(seqLenMax)
+                        Node(x)
+                        Node(csPrev)
+                        Node(hPrev)
+                        Node(w)
+                        Node(wci)
+                        Node(wcf)
+                        Node(wco)
+                        Node(bias)
+                        Node(opNode)
+                        Node(i)
+                        Node(cs)
+                        Node(f)
+                        Node(o)
+                        Node(ci)
+                        Node(h)
+                    }
+
+
+
+                    val seqLenVal = Nd4j.scalar(5.0)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+                    val xVal = Nd4j.linspace(1,20,20).reshape(5,1,4)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val csPrevVal = Nd4j.linspace(1,3,3).reshape(1,3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val hPrevVal = Nd4j.linspace(1,3,3).reshape(1,3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val wVal = Nd4j.linspace(1,84,84).reshape(7,12)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val wciVal = Nd4j.linspace(1,3,3).reshape(3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                    val wcfVal = Nd4j.linspace(1,3,3).reshape(3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                    val wcoVal = Nd4j.linspace(1,3,3).reshape(3)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                    val bVal = Nd4j.zeros(12)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+
+
+                    val inputs = mapOf("seq_len_max" to seqLenVal,"x" to xVal,"cs_prev" to csPrevVal,"h_prev" to hPrevVal,"w" to wVal,"wci" to wciVal,"wcf" to wcfVal,"wco" to wcoVal,"b" to bVal)
+
+
+                    return listOf(GraphInput(
+                        graphDef = graphDef,
+                        inputNames = listOf("seq_len_max","x","cs_prev","h_prev","w","wci","wcf","wco","b"),
+                        outputNames = listOf("output"),
+                        inputArrays = inputs,
+                        dynamicArrays = inputs
+                    ))
+                }
+            }
+
+
+
+            "adjust_hue","adjust_saturation" -> {
+                val input = NodeDef {
+                    name = "input"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val delta = NodeDef {
+                    name = "delta"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                println("Running test import process for op ${tensorflowOpDef.name}")
+                val opNode = NodeDef {
+                    Input("input")
+                    Input("delta")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(input)
+                    Node(delta)
+                    Node(opNode)
+                }
+
+
+
+                val xVal = Nd4j.zeros(2,2,3)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val deltaVal = Nd4j.scalar(0.5).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val inputs = mapOf("input" to xVal,"delta" to deltaVal)
+
+
+                return listOf(GraphInput(
+                    graphDef = graphDef,
+                    inputNames = listOf("input","delta"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
+            }
+
+
             "rgb_to_hsv" -> {
                 val input = NodeDef {
                     name = "input"
@@ -4621,7 +5546,7 @@ class TestTensorflowIR {
 
             }
 
-            "gather" -> {
+            "gather","gather_nd" -> {
                 val params = NodeDef {
                     name = "params"
                     op = "Placeholder"
@@ -7021,7 +7946,7 @@ class TestTensorflowIR {
                 ))
             }
 
-            "softmax","digamma","diag","diag_part" -> {
+            "softmax","digamma","diag","diag_part","lgamma" -> {
                 val tensorNode = NodeDef {
                     name = "x"
                     op = "Placeholder"
@@ -7310,6 +8235,55 @@ class TestTensorflowIR {
                     dynamicArrays = inputs))
             }
 
+
+            "igamma","igammac" -> {
+                println("Running op def for op ${tensorflowOpDef.name}")
+                val a = NodeDef {
+                    name = "a"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+                val x = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+
+                val opNode = NodeDef {
+                    Input("a")
+                    Input("x")
+                    name = "igamma"
+                    op = tensorflowOpDef.name
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_FLOAT
+                    })
+                }
+
+
+                val inputs = mapOf("a" to Nd4j.ones(2,2).castTo(
+                    org.nd4j.linalg.api.buffer.DataType.FLOAT
+                ),"x" to Nd4j.ones(2,2).castTo(
+                    org.nd4j.linalg.api.buffer.DataType.FLOAT
+                ))
+
+                val graphDef = GraphDef {
+                    Node(a)
+                    Node(x)
+                    Node(opNode)
+                }
+
+                return listOf(GraphInput(graphDef = graphDef,inputNames = listOf("a","x"),
+                    outputNames = listOf("igamma"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs))
+            }
 
             "boolean_not" -> {
                 println("Running op def for op ${tensorflowOpDef.name}")
@@ -7631,6 +8605,70 @@ class TestTensorflowIR {
                 return listOf(GraphInput(graphDef = graphDef,inputNames = listOf("x","shape"),outputNames = listOf("output"),
                     inputArrays = inputs,
                     dynamicArrays = inputs))
+            }
+
+            "reduce_logsumexp" -> {
+                val tensorNode = NodeDef {
+                    name = "x"
+                    op = "Placeholder"
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                }
+
+                val opNode = NodeDef {
+                    Input("x")
+                    Input("dimensions")
+                    op = tensorflowOpDef.name
+                    name = "output"
+                    Attribute("T",AttrValue {
+                        type = DataType.DT_DOUBLE
+                    })
+                    Attribute("Tidx",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                    Attribute("exclusive",AttrValue {
+                        b = false
+                    })
+                }
+
+                val dimensions = listOf(0)
+                val tensorNode2 = NodeDef {
+                    op = "Const"
+                    name = "dimensions"
+                    Attribute("value",AttrValue {
+                        tensor = TensorProto {
+                            Int32Data(dimensions)
+                            dtype = DataType.DT_INT32
+                            tensorShape = TensorShapeProto {
+                                Dims(listOf())
+                            }
+                        }
+                    })
+                    Attribute("dtype",AttrValue {
+                        type = DataType.DT_INT32
+                    })
+                }
+
+                val graphDef = GraphDef {
+                    Node(tensorNode)
+                    Node(tensorNode2)
+                    Node(opNode)
+                }
+
+
+                val xVal = Nd4j.linspace(1, 4, 4)
+                    .reshape(2, 2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                val inputs = mapOf("x" to xVal)
+
+                return listOf(GraphInput(
+                    graphDef =graphDef, inputNames = listOf("x"),
+                    outputNames = listOf("output"),
+                    inputArrays = inputs,
+                    dynamicArrays = inputs
+                ))
             }
 
             "argmin", "argmax" -> {

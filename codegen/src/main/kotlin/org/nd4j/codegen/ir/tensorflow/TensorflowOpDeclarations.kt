@@ -3,7 +3,7 @@ package org.nd4j.codegen.ir.tensorflow
 import org.nd4j.codegen.ir.ArgDescriptor
 import org.nd4j.codegen.ir.nameSpaceTensorFromNDarray
 import org.nd4j.codegen.ir.nd4jOpDescriptors
-import org.nd4j.codegen.ir.onnx.valueMappings
+import org.nd4j.codegen.ir.onnx.*
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.ir.OpNamespace
@@ -74,8 +74,13 @@ val reduceOps = mapOf(
         "Prod" to "reduce_prod",
         "Sum" to "reduce_sum",
         "Min" to "reduce_min",
-        "Max" to "reduce_max"
+        "Max" to "reduce_max",
 
+        )
+
+
+val pairwiseReduceOps = mapOf(
+        "EuclideanNorm" to "euclidean"
 )
 
 
@@ -135,6 +140,17 @@ val argMinRule = TensorflowMappingProcess(
                 booleanConstant(inputName = "keepDims",constantValue = false,argumentIndex = 0)[0])
 
 )
+/*
+val reduceLogSumExp = TensorflowMappingProcess(
+        inputFrameworkOpName = "CumulativeLogsumexp",
+        opName = "reduce_logsumexp",
+        opMappingRegistry = tensorflowOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x"))),
+        attributeMappingRules = listOf(
+                ndarrayToIntList(mutableMapOf("dimensions" to "axis")),
+                booleanConstant(inputName = "keepDims",constantValue = true,argumentIndex = 0)[0])
+
+)*/
 
 /**
  * Note: Assign uses variables, not tensors. We will not test this.
@@ -144,6 +160,22 @@ val assignOp = TensorflowMappingProcess(
         opName = "assign",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "ref","y" to "value")))
+)
+
+val adjustHue = TensorflowMappingProcess(
+        inputFrameworkOpName = "AdjustHue",
+        opName = "adjust_hue",
+        opMappingRegistry = tensorflowOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "images","delta" to "delta"))),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("factor" to "delta")))
+)
+
+val adjustSaturation = TensorflowMappingProcess(
+        inputFrameworkOpName = "AdjustSaturation",
+        opName = "adjust_saturation",
+        opMappingRegistry = tensorflowOpRegistry,
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "images","factor" to "scale"))),
+        attributeMappingRules = listOf(convertNDArrayInputToNumericalAttr(mutableMapOf("factor" to "scale")))
 )
 
 
@@ -343,6 +375,24 @@ val copy2 = multipleNameMapping(
         tensorNames = mutableMapOf("input" to "input")
 )
 
+val checkNumerics = TensorflowMappingProcess(
+        opName = "check_numerics",
+        inputFrameworkOpName = "CheckNumerics",
+        opMappingRegistry = tensorflowOpRegistry,
+        attributeMappingRules = listOf(convertStringToInputNDArray(mutableMapOf("message" to "message"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "tensor")))
+)
+
+//only exists in tf2, tf-java can't run it
+
+val checkNumericsV2 = TensorflowMappingProcess(
+        opName = "check_numerics",
+        inputFrameworkOpName = "CheckNumericsV2",
+        opMappingRegistry = tensorflowOpRegistry,
+        attributeMappingRules = listOf(convertStringToInputNDArray(mutableMapOf("message" to "message"))),
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "tensor")))
+)
+
 
 val variable = mapTensorNamesWithOp(inputFrameworkOpName = "Variable",
         opName = "identity",
@@ -420,6 +470,21 @@ val concatv2 = TensorflowMappingProcess(
                 booleanConstant(inputName = "isDynamicAxis",constantValue = true,argumentIndex = 0)[0]))
 
 
+val parallelConcat = TensorflowMappingProcess(
+        opMappingRegistry = tensorflowOpRegistry,
+        opName = "concat",
+        inputFrameworkOpName = "ParallelConcat",
+        tensorMappingRules = listOf(mappingListNDArrays(mutableMapOf("input" to "values"))),
+        attributeMappingRules = listOf(
+                intConstant(inputName = "concatDimension",constantValue = 0 as Integer,argumentIndex = 0)[0],
+                booleanConstant(inputName = "isDynamicAxis",constantValue = true,argumentIndex = 0)[0])
+)
+
+//TODO Reference ImportClassMapping.java
+//TODO: ParallelDynamicStitch, map to dynamic stitch
+//TODO: PollyGamma, map to pairwise transforms
+//TODO: map QR
+
 val cropAndResize = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry,
         opName = "crop_and_resize",
@@ -444,7 +509,7 @@ val cumProd = TensorflowMappingProcess(
 
 
 
-val cumSum= TensorflowMappingProcess(
+val cumSum = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry,
         opName = "cumsum",
         inputFrameworkOpName = "Cumsum",
@@ -536,6 +601,12 @@ val diagPart = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry
 )
 
+val lGamma = TensorflowMappingProcess(
+        inputFrameworkOpName = "Lgamma",
+        opName = "lgamma",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x"))),
+        opMappingRegistry = tensorflowOpRegistry
+)
 
 
 val diGamma = TensorflowMappingProcess(
@@ -545,6 +616,19 @@ val diGamma = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry
 )
 
+val iGamma = TensorflowMappingProcess(
+        inputFrameworkOpName = "Igamma",
+        opName = "igamma",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "a","y" to "x"))),
+        opMappingRegistry = tensorflowOpRegistry
+)
+
+val iGammaC = TensorflowMappingProcess(
+        inputFrameworkOpName = "Igamma",
+        opName = "igamma",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "a","y" to "x"))),
+        opMappingRegistry = tensorflowOpRegistry
+)
 
 val dilation2D = TensorflowMappingProcess(
         opName = "dilation2d",
@@ -695,6 +779,14 @@ val equal = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry
 )
 
+val approxEqual = TensorflowMappingProcess(
+        opName = "equals",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x","y" to "y"))),
+        inputFrameworkOpName = "ApproximateEqual",
+        attributeMappingRules = listOf(booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0)[0]),
+        opMappingRegistry = tensorflowOpRegistry
+)
+
 val exit = TensorflowMappingProcess(
         opName = "exit",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "data"))),
@@ -739,6 +831,18 @@ val fusedBatchnormV2 = TensorflowMappingProcess(
                 stringEqualsRule(outputAttribute = "dataFormat",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW",argumentIndex = 0))
 )
 
+//tf2 op
+val fusedBatchnormV3 = TensorflowMappingProcess(
+        opName = "fused_batch_norm",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x","scale" to "scale",
+                "offset" to "offset","mean" to "mean","variance" to "variance"))),
+        inputFrameworkOpName = "FusedBatchNormV3",
+        opMappingRegistry = tensorflowOpRegistry,
+        attributeMappingRules = listOf(valueMapping(mutableMapOf("epsilon" to "epsilon")),
+                booleanToNumber(mutableMapOf("isTraining" to "is_training")),
+                stringEqualsRule(outputAttribute = "dataFormat",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW",argumentIndex = 0))
+)
+
 
 
 val gather = TensorflowMappingProcess(
@@ -751,6 +855,14 @@ val gather = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry
 )
 
+val gatherNd = TensorflowMappingProcess(
+        opName = "gather_nd",
+        tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "params","indices" to "indices"))),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf()),
+                booleanConstant(inputName = "checkIndices",constantValue = false,argumentIndex = 0)[0]),
+        inputFrameworkOpName = "GatherNd",
+        opMappingRegistry = tensorflowOpRegistry
+)
 
 val histogramFixedWidth = TensorflowMappingProcess(
         opName = "histogram_fixed_width",
@@ -843,6 +955,102 @@ val linspace = mapTensorNamesWithOp(inputFrameworkOpName = "LinSpace",opName = "
                         "stop" to "stop")),
                 valueMapping(mutableMapOf("dataType" to "T"))
         ))
+
+//0=tanh, 1=relu, 2=sigmoid, 3=affine, 4=leaky relu, 5= thresholded relu, 6=scaled tanh, 7=hard sigmoid, 8=ELU, 9=softsign, 10=softplus
+
+val lstmActivationMap = mapOf(
+        "Relu" to 1,
+        "Tanh" to 0,
+        "Sigmoid" to 2,
+        "Affine" to 3,
+        "LeakyRelu" to 4,
+        "ThresholdedRelu" to 5,
+        "ScaledTanh" to 6,
+        "HardSigmoid" to 7,
+        "Elu" to 8,
+        "Softsign" to 9,
+        "Softplus" to 10
+)
+
+val lstmBlock = TensorflowMappingProcess(
+        opMappingRegistry = tensorflowOpRegistry,
+        inputFrameworkOpName = "BlockLSTM",
+        opName = "lstmBlock",
+        tensorMappingRules = listOf(
+                mappingNDArrayInputs(mutableMapOf(
+                        "maxTSLength" to "seq_len_max",
+                        "input" to "x",
+                        "cLast" to "cs_prev",
+                        "yLast" to "h_prev",
+                        "W" to "w",
+                        "Wci" to "wci",
+                        "Wcf" to "wcf",
+                        "Wco" to "wco",
+                        "b" to "b"))
+        ),
+        attributeMappingRules =  listOf(
+                valueMapping(mutableMapOf("forgetBias" to "forget_bias","clippingCellValue" to "cell_clip")),
+                booleanToNumber(mutableMapOf("peephole" to "use_peephole")),
+                intConstant(inputName = "dataFormat",constantValue = 0 as Integer,argumentIndex = 0)[0])
+)
+
+val lstmBlockV2 = TensorflowMappingProcess(
+        opMappingRegistry = tensorflowOpRegistry,
+        inputFrameworkOpName = "BlockLSTMV2",
+        opName = "lstmBlock",
+        tensorMappingRules = listOf(
+                mappingNDArrayInputs(mutableMapOf(
+                        "maxTSLength" to "seq_len_max",
+                        "input" to "x",
+                        "cLast" to "cs_prev",
+                        "yLast" to "h_prev",
+                        "W" to "w",
+                        "Wci" to "wci",
+                        "Wcf" to "wcf",
+                        "Wco" to "wco",
+                        "b" to "b"))
+        ),
+        attributeMappingRules =  listOf(
+                valueMapping(mutableMapOf("clippingCellValue" to "cell_clip")),
+                booleanToNumber(mutableMapOf("peephole" to "use_peephole")),
+                doubleConstant(inputName = "forgetBias",constantValue = 3.0,argumentIndex = 0)[0],
+                intConstant(inputName = "dataFormat",constantValue = 0 as Integer,argumentIndex = 0)[0])
+)
+
+val lstmBlockCell = TensorflowMappingProcess(
+        opMappingRegistry = tensorflowOpRegistry,
+        inputFrameworkOpName = "LSTMBlockCell",
+        opName = "lstmBlockCell",
+        tensorMappingRules = listOf(
+                mappingNDArrayInputs(mutableMapOf(
+                        "xt" to "x",
+                        "cLast" to "cs_prev",
+                        "yLast" to "h_prev",
+                        "W" to "w",
+                        "Wci" to "wci",
+                        "Wcf" to "wcf",
+                        "Wco" to "wco",
+                        "b" to "b"))
+        ),
+        attributeMappingRules =  listOf(
+                valueMapping(mutableMapOf("forgetBias" to "forget_bias","clippingCellValue" to "cell_clip")),
+                booleanToNumber(mutableMapOf("peephole" to "use_peephole")))
+)
+
+val gruCell = TensorflowMappingProcess(
+        opMappingRegistry = tensorflowOpRegistry,
+        inputFrameworkOpName = "GRUBlockCell",
+        opName = "gruCell",
+        tensorMappingRules = listOf(
+                mappingNDArrayInputs(mutableMapOf(
+                        "input" to "x",
+                        "hLast" to "h_prev",
+                        "Wru" to "w_ru",
+                        "Wc" to "w_c",
+                        "bru" to "b_ru",
+                        "bc" to "b_c"))
+        )
+)
 
 val listDiff = mapTensorNamesWithOp(inputFrameworkOpName = "ListDiff",opName = "listdiff",tensorNames = mutableMapOf("values" to "x","keep" to "y"))
 val logMatrixDeterminant = mapTensorNamesWithOp(
@@ -1170,7 +1378,6 @@ val padV2 = multipleNameMapping(inputFrameworkOpNames = listOf("PadV2"),
                 ))))
 
 
-//val parallelConcat = mapTensorNamesWithOp(inputFrameworkOpName = "ParallelConcat",opName = "ParallelConcat",tensorNames = mutableMapOf("input" to "values"))
 val randomCrop = mapTensorNamesWithOp(inputFrameworkOpName = "RandomCrop",opName = "random_crop",tensorNames = mutableMapOf("input" to "image","shape" to "size"),
         attributeMappingRules = listOf(valueMapping(mutableMapOf("seed" to "seed"))))
 
@@ -1664,6 +1871,8 @@ object TensorflowOpDeclarations {
                 reduceOps.forEach { tensorflowOpName, nd4jOpName ->
                         defineSingularReduce(inputFrameworkOpName = tensorflowOpName,inputOpName = nd4jOpName)
                 }
+
+
                 singleTransformArgs.forEach {
                         defineTensorflowSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
                 }
