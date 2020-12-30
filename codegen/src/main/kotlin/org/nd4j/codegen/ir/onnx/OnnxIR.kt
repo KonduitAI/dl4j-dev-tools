@@ -1,8 +1,11 @@
 package org.nd4j.codegen.ir.onnx
 
 import onnx.Onnx
+import onnx.OnnxMl
 import org.apache.commons.io.FileUtils
 import org.nd4j.codegen.ir.*
+import org.nd4j.codegen.ir.tensorflow.AttrValue
+import org.nd4j.codegen.ir.tensorflow.TensorflowIRTensor
 import org.nd4j.common.io.ClassPathResource
 import org.nd4j.ir.OpNamespace
 import org.nd4j.ir.TensorNamespace
@@ -12,10 +15,14 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import kotlin.collections.HashMap
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.onnxruntime.runner.OnnxRuntimeRunner
+import org.nd4j.shade.protobuf.ByteString
+import org.tensorflow.framework.TensorProto
 import java.io.File
 import java.lang.IllegalArgumentException
+import java.nio.charset.Charset
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.min
 
 fun loadOnnxOps(): List<Onnx.NodeProto> {
     val graphProto = Onnx.GraphProto.parseFrom(ClassPathResource("onnx-op-defs.pb").inputStream)
@@ -466,7 +473,17 @@ class OnnxIRGraphRunner(graphDef: OnnxIRGraph,inputNames: List<String>,outputNam
     init {
         val uuid = UUID.randomUUID().toString()
         val tempFile = File("tempFile-$uuid.proto")
-        FileUtils.writeByteArrayToFile(tempFile,graph().internalValue().toByteArray())
+
+        val modelProto = ModelProto {
+            OpSetImport(OperatorSetIdProto {
+                version = 12
+            })
+
+            irVersion = 7
+            graph = graph().internalValue()
+        }
+
+        FileUtils.writeByteArrayToFile(tempFile,modelProto.toByteArray())
         graphRunner = OnnxRuntimeRunner.builder()
             .modelUri(tempFile.absolutePath)
             .inputs(inputNames)
@@ -493,15 +510,56 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
 
     val graphDef = graphDef
     val opList = graphDef.nodeList
+    var cachedNodeList = nodeList()
     override fun nodeByName(input: String): Onnx.NodeProto {
-        return graphDef.nodeByName(input)
+        return cachedNodeList.first { inputNode -> inputNode.nodeName() == input }.internalValue()
     }
 
     override fun nodeList(): List<IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>> {
         val ret2 = ArrayList<IRNode<Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>>()
+        //add all inputs, outputs, initializers together as "nodes" similar to TF
+        val identityOp = onnxops.first { op -> op.name == "Constant" }
+        //for model import purposes, add identity ops as dummies similar to how tensorflow does placeholders/constants
+        graphDef.inputList.forEach { input ->
+            //note: this is not a real op name in onnx, this is purely for flagging for import to grab the node from the initializer
+            //add dummy values for placeholders
+            val nodeToAdd = NodeProto {
+                opType = "Constant"
+                name = input.name
+                Attribute(Onnx.AttributeProto.newBuilder().setName("value").
+                addTensors(Onnx.TensorProto.getDefaultInstance()).build())
+            }
+
+            ret2.add(OnnxIRNode(nodeToAdd,identityOp))
+        }
+
         graphDef.nodeList.forEach {
             val opDef = onnxops.first { opDef -> opDef.name == it.opType }
             ret2.add(OnnxIRNode(it,opDef))
+        }
+
+        /*    graphDef.outputList.forEach { output ->
+                //note: this is not a real op name in onnx, this is purely for flagging for import to grab the node from the initializer
+                val nodeToAdd = NodeProto {
+                    opType = "Constant"
+                    name = output.name
+                    Attribute(Onnx.AttributeProto.newBuilder().setName("value").
+                    addTensors(Onnx.TensorProto.getDefaultInstance()).build())
+                }
+
+                ret2.add(OnnxIRNode(nodeToAdd,identityOp))
+            }
+    */
+        graphDef.initializerList.forEach { initializer ->
+            //note: this is not a real op name in onnx, this is purely for flagging for import to grab the node from the initializer
+            val nodeToAdd = NodeProto {
+                opType = "Constant"
+                name = initializer.name
+                Attribute(Onnx.AttributeProto.newBuilder().setName("value").
+                addTensors(Onnx.TensorProto.getDefaultInstance()).build())
+            }
+
+            ret2.add(OnnxIRNode(nodeToAdd,identityOp))
         }
 
         return ret2
@@ -547,16 +605,32 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
     }
 
     override fun shapeOfInput(varName: String): LongArray? {
-        return graphDef.initializerList.first { inputNode -> inputNode.name == varName }.dimsList.toLongArray()
+        val firstOrNull = graphDef.initializerList.firstOrNull { inputNode -> inputNode.name == varName }
+        if(firstOrNull != null)
+            return firstOrNull.dimsList.toLongArray()
+        return null
     }
 
     override fun dataTypeForVariable(varName: String): IRDataType<Onnx.TensorProto.DataType> {
-        return OnnxIRDataType(Onnx.TensorProto.DataType.values()[graphDef.initializerList.first {
-                inputNode -> inputNode.name == varName }.dataType.ordinal])
+        val firstOrNull = graphDef.initializerList.firstOrNull {
+                inputNode -> inputNode.name == varName }
+        val input = graphDef.inputList.firstOrNull { input2 ->
+            input2.name == varName
+        }
+        if(firstOrNull != null)
+            return OnnxIRDataType(Onnx.TensorProto.DataType.values()[firstOrNull!!.dataType.ordinal])
+        else if(input != null)
+            return OnnxIRDataType(input.type.tensorType.elemType)
+        else
+            return OnnxIRDataType(Onnx.TensorProto.DataType.UNDEFINED)
     }
 
     override fun importInfoForEachNode(dynamicVariables: Map<String, Onnx.TensorProto>): Map<String, Pair<MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, OpNamespace.OpDescriptor>> {
         return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
+    }
+
+    override fun nodeIsPlaceHolder(nodeName: String): Boolean {
+        return graphDef.inputList.map { input -> input.name }.contains(nodeName)
     }
 }
 
@@ -575,8 +649,14 @@ IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
 
     override fun irAttributeValueForNode(valueName: String): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
         val attrDef = attrDef(valueName)
-        val attrValue = node.attributeList.first { it.name == valueName }
-        return OnnxIRAttr(inputAttributeDef = attrDef,inputAttributeValue = attrValue)
+        var attrValue = node.attributeList.firstOrNull { it.name == valueName }
+        if(attrValue == null && attrDef.name == "value" && opDef.opType == "Constant")
+        //allow dummy values
+            attrValue = Onnx.AttributeProto.newBuilder().setName("value").addTensors(Onnx.TensorProto.getDefaultInstance())
+                .build()
+        else if(attrValue == null)
+            throw IllegalArgumentException("Unable to resolve attribute for name $valueName for node ${nodeName()} for op type ${opName()}")
+        return OnnxIRAttr(inputAttributeDef = attrDef,inputAttributeValue = attrValue!!)
 
     }
 
@@ -601,15 +681,8 @@ IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
         return input.dataType().nd4jDataType()
     }
 
-    override fun createIRTensorFromNDArray(ndaray: INDArray): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
-        val ret = OnnxTensorProto {
-            Shape(ndaray.shape().toList())
-            OnnxRawData(ndaray.data().asBytes())
-            OnnxDataType(convertToOnnxDataType(ndaray.dataType()))
-
-        }
-
-        return OnnxIRTensor(ret)
+    override fun createIRTensorFromNDArray(ndarray: INDArray): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
+        return OnnxIRTensor(convertToOnnxTensor(ndarray,"tensor"))
     }
 
     override fun tensorAttributeFor(name: String): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
@@ -623,8 +696,41 @@ IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
     override fun tensorInputFromInputFrameworkName(name: String): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
         val castedGraph = graph as OnnxIRGraph
         val graphDef = castedGraph.graphDef()
+        var foundIndex = -1
+
+        var baseIndexOffset: Int = 0
+        opDef.inputList.forEachIndexed { index, argDef ->
+            if(argDef == name)
+                foundIndex = min(index + baseIndexOffset,node.inputCount - 1)
+        }
+
+
+        if(foundIndex < 0) {
+            throw java.lang.IllegalArgumentException("Node with name ${nodeName()} for opdef with name ${opDef.name} did not contain a tensor with name ${name}")
+        }
+
+        /**
+         * Use op definition name as 1 unified reference name in rules for static purposes, but
+         * look up via index for specific node mappings.
+         *
+         * This is equivalent to the tf input position attribute value in the previous tensorflow import.
+         */
+        val graphNode = if(node.opType == "Constant") name else node.getInput(foundIndex)
+        val attemptedTensor = graphDef.initializerList.firstOrNull { it.name == graphNode }
+
+        //no value to be found on placeholder, return default instance
+        //if no value exists it's an output from another node
+        if(attemptedTensor == null) {
+            println("Value for node $graphNode is not a constant! This method only works for constants. Consider replacing the Placeholder node with a Constant node. This will return an empty tensor.")
+            if(!dynamicVariables.containsKey(graphNode))
+                return OnnxIRTensor(Onnx.TensorProto.getDefaultInstance())
+            else {
+                val toConvert = dynamicVariables[graphNode]!!
+                return OnnxIRTensor(toConvert)
+            }
+        }
+
         //value nodes are the values of attributes that are input nodes in a frozen graph
-        val attemptedTensor = graphDef.initializerList.firstOrNull { it.name == name }
         if(attemptedTensor == null) {
             throw IllegalArgumentException("Name $name not found in initializer list.")
         }
@@ -653,23 +759,66 @@ fun isOnnxAttributeName(name: String, opDef: Onnx.NodeProto): Boolean {
 }
 
 
-fun convertToOnnxDataType(dataType: org.nd4j.linalg.api.buffer.DataType): Onnx.TensorProto.DataType {
+fun convertToOnnxDataType(dataType: DataType): Onnx.TensorProto.DataType {
     return when (dataType) {
-        org.nd4j.linalg.api.buffer.DataType.UINT16 -> Onnx.TensorProto.DataType.UINT16
-        org.nd4j.linalg.api.buffer.DataType.UINT32 ->  Onnx.TensorProto.DataType.UINT32
-        org.nd4j.linalg.api.buffer.DataType.UINT64 ->  Onnx.TensorProto.DataType.UINT64
+        DataType.UINT16 -> Onnx.TensorProto.DataType.UINT16
+        DataType.UINT32 ->  Onnx.TensorProto.DataType.UINT32
+        DataType.UINT64 ->  Onnx.TensorProto.DataType.UINT64
         DataType.BOOL ->  Onnx.TensorProto.DataType.BOOL
         DataType.FLOAT ->  Onnx.TensorProto.DataType.FLOAT
-        org.nd4j.linalg.api.buffer.DataType.INT ->  Onnx.TensorProto.DataType.INT32
-        org.nd4j.linalg.api.buffer.DataType.LONG ->  Onnx.TensorProto.DataType.INT64
-        org.nd4j.linalg.api.buffer.DataType.BYTE ->  Onnx.TensorProto.DataType.INT8
-        org.nd4j.linalg.api.buffer.DataType.SHORT -> Onnx.TensorProto.DataType.INT16
+        DataType.INT ->  Onnx.TensorProto.DataType.INT32
+        DataType.LONG ->  Onnx.TensorProto.DataType.INT64
+        DataType.BYTE ->  Onnx.TensorProto.DataType.INT8
+        DataType.SHORT -> Onnx.TensorProto.DataType.INT16
         DataType.DOUBLE -> Onnx.TensorProto.DataType.DOUBLE
-        org.nd4j.linalg.api.buffer.DataType.UBYTE ->  Onnx.TensorProto.DataType.UINT8
-        org.nd4j.linalg.api.buffer.DataType.HALF ->  Onnx.TensorProto.DataType.FLOAT16
+        DataType.UBYTE ->  Onnx.TensorProto.DataType.UINT8
+        DataType.HALF ->  Onnx.TensorProto.DataType.FLOAT16
         DataType.UTF8 ->  Onnx.TensorProto.DataType.STRING
-        else -> throw UnsupportedOperationException("Unknown TF data type: [" + dataType.name + "]")
+        else -> throw UnsupportedOperationException("Unknown Onnx data type: [" + dataType.name + "]")
     }
+}
+
+
+fun convertToOnnxTensor(inputArray: INDArray, name: String): Onnx.TensorProto {
+    val dtype = convertToOnnxDataType(inputArray.dataType())
+    val newBuilder = Onnx.TensorProto.newBuilder()
+    newBuilder.dataType = dtype
+    newBuilder.addAllDims(inputArray.shape().toList())
+    newBuilder.name = name
+    when(dtype) {
+        Onnx.TensorProto.DataType.STRING -> {
+            return OnnxTensorProto {
+                val stringList = ArrayList<String>()
+                for (i in 0 until inputArray.length()) {
+                    stringList.add(inputArray.getString(i))
+                }
+
+                newBuilder.addAllStringData(stringList.map { input -> ByteString.copyFrom(input.toByteArray(Charset.defaultCharset())) })
+            }
+        }
+
+        Onnx.TensorProto.DataType.DOUBLE -> {
+            newBuilder.addAllDoubleData(inputArray.data().asDouble().asList())
+        }
+
+        Onnx.TensorProto.DataType.FLOAT -> {
+            newBuilder.addAllFloatData(inputArray.data().asFloat().asList())
+        }
+
+        Onnx.TensorProto.DataType.INT32 -> {
+            newBuilder.addAllInt32Data(inputArray.data().asInt().asList())
+        }
+
+        Onnx.TensorProto.DataType.INT64 -> {
+            newBuilder.addAllInt64Data(inputArray.data().asLong().asList())
+        }
+
+        else -> {
+            newBuilder.rawData = ByteString.copyFrom(inputArray.data().asBytes())
+        }
+    }
+    return newBuilder.build()
+
 }
 
 

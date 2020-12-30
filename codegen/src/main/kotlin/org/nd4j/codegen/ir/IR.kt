@@ -438,6 +438,8 @@ interface IRGraph<
 
     fun isConstant(opName: String): Boolean
 
+    fun nodeIsPlaceHolder(nodeName: String): Boolean
+
     fun isPlaceHolder(opName: String): Boolean
 
     fun isConstantOpName(name: String): Boolean
@@ -1546,7 +1548,18 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         } else {
             if (importOverride == null || !importOverride.containsKey(name)) {
                 //Standard case
-                if (irGraph.isConstant(opName)) {
+               //note, ordering matters here for onnx
+                if (irGraph.nodeIsPlaceHolder(nd.nodeName())) {
+                    var shape = irGraph.shapeOfInput(nd.nodeName())
+
+
+                    val dt = irGraph.dataTypeForVariable(nd.nodeName()).nd4jDataType()
+                    if(shape != null)
+                        sd.placeHolder(name, dt, *shape)
+                    else
+                        sd.placeHolder(name, dt)
+                }
+                else if (irGraph.isConstant(opName)) {
                     //Get array, create a constant
                     val tfTensor = nd.getAttribute("value").tensorValue()
                     val arr = tfTensor.toNd4jNDArray()
@@ -1563,16 +1576,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         }
                         constControlDeps[name] = l
                     }
-                } else if (irGraph.isPlaceHolder(opName)) {
-                    var shape = irGraph.shapeOfInput(nd.nodeName())
-
-
-                    val dt = irGraph.dataTypeForVariable(nd.nodeName()).nd4jDataType()
-                    if(shape != null)
-                        sd.placeHolder(name, dt, *shape)
-                    else
-                        sd.placeHolder(name, dt)
-                } else if(opName.equals("Variable") || opName.equals("VariableV2")) {
+                }  else if(opName.equals("Variable") || opName.equals("VariableV2")) {
                     var shape = irGraph.shapeOfInput(nd.nodeName())
 
 

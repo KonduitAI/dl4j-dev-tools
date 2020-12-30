@@ -625,6 +625,10 @@ class TensorflowIRGraph(graphDef: GraphDef, opDef: OpList): IRGraph<
         return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
     }
 
+    override fun nodeIsPlaceHolder(nodeName: String): Boolean {
+        return isPlaceHolder(nodeByName(nodeName).op)
+    }
+
 
 }
 

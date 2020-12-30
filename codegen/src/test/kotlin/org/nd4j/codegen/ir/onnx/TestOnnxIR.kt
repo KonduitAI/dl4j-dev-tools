@@ -3,17 +3,15 @@ package org.nd4j.codegen.ir.onnx
 import junit.framework.Assert
 import junit.framework.Assert.*
 import onnx.Onnx
-import onnx.OnnxMl
+import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.nd4j.codegen.ir.importGraph
-import org.nd4j.codegen.ir.registry.OpRegistryHolder
-import org.nd4j.codegen.ir.tensorflow.*
 import org.nd4j.ir.OpNamespace
+import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.onnxruntime.runner.OnnxRuntimeRunner
 import org.nd4j.shade.protobuf.ByteString
-import org.tensorflow.framework.DataType
+import java.io.File
 import java.nio.charset.Charset
-import kotlin.math.exp
-import kotlin.math.max
 import kotlin.test.assertTrue
 
 class TestOnnxIR {
@@ -453,7 +451,163 @@ class TestOnnxIR {
 
     @Test
     fun testOpExecution() {
+        val scalarInputs = mapOf(
+            "abs" to -1.0,
+            "acos" to 1.0,
+            "acosh" to 1.0,
+            "asin" to 1.0,
+            "asinh" to 1.0,
+            "atan" to 1.0,
+            "atanh" to 0.5,
+            "ceil" to 1.0,
+            "copy" to 1.0,
+            "cos" to 1.0,
+            "cosh" to 1.0,
+            //"erf" to 1.0,
+            //"elu" to 1.0,
+            "erfc" to 1.0,
+            "exp" to 1.0,
+            //"floor" to 1.0,
+            "identity" to 1.0,
+            //"log" to 1.0,
+            "neg" to 1.0,
+            "ones_as" to 1.0,
+            "relu6" to 1.0,
+            "round" to 1.0,
+            //"sigmoid" to 1.0,
+            "sign" to 1.0,
+            "sin" to 1.0,
+            //"sinh" to 1.0,
+            "square" to 1.0,
+            "sqrt" to 1.0,
+            //"tan" to 1.0,
+            //"tanh" to 1.0,
+            //"selu" to 1.0,
+            "softsign" to 1.0)
+            //"softplus" to 1.0)
 
+
+        val singleInputOps = scalarInputs.keys
+        val singleOutputBooleanOps = mapOf(
+            "isfinite" to 1.0,
+            "isinf" to 1.0,
+            "isnan" to 1.0,
+        )
+
+        val pairwise = mapOf(
+            "add" to listOf(1.0,1.0),
+            "subtract" to listOf(2.0,1.0),
+            "multiply" to listOf(2.0,1.0),
+            "divide" to listOf(2.0,1.0)
+        )
+        /**
+         * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
+         * java.lang.RuntimeException: Could not find an implementation for the node output:Cos(7)
+         *
+         * Check the supported data types for each op here:
+         * https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md
+         */
+
+        onnxOpRegistry.mappingProcessNames()
+            .filter { onnxOpRegistry.hasMappingOpProcess(it) }
+            .map { onnxOpRegistry.lookupOpMappingProcess(it) }.forEach { mappingProcess ->
+                val nd4jOpDef = onnxOpRegistry.lookupNd4jOpDef(mappingProcess.opName())
+                val onnxOpDef = onnxOpRegistry.lookupInputFrameworkOpDef(mappingProcess.inputFrameworkOpName())
+                if(scalarInputs.containsKey(nd4jOpDef.name)) {
+                    print("Running op $nd4jOpDef.name")
+                    val input = Nd4j.scalar(scalarInputs[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                    val convertedTensor = convertToOnnxTensor(input,"input")
+                    val convertedOutputTensor = convertToOnnxTensor(input,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(input,"input"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("input")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(input,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val inputs = mapOf("input" to input)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+
+                } else if(singleOutputBooleanOps.containsKey(nd4jOpDef.name)) {
+                    print("Running op $nd4jOpDef.name")
+                    val input = Nd4j.scalar(singleOutputBooleanOps[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                    val convertedTensor = convertToOnnxTensor(input,"input")
+                    val convertedOutputTensor = convertToOnnxTensor(input,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(input,"input"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("input")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(Nd4j.create(booleanArrayOf(true)).reshape(),"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val inputs = mapOf("input" to input)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+                }
+
+
+                else if(pairwise.containsKey(nd4jOpDef.name)) {
+                    print("Running op def $nd4jOpDef.name")
+                    val x = Nd4j.scalar(pairwise[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                    val y = Nd4j.scalar(pairwise[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+
+                    val convertedTensor = convertToOnnxTensor(x,"x")
+                    val convertedTensor2 = convertToOnnxTensor(y,"y")
+                    val convertedOutputTensor = convertToOnnxTensor(x,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(x,"x"))
+                        Input(createValueInfoFromTensor(y,"y"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("x")
+                            Input("y")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(x,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val inputs = mapOf("x" to x,"y" to y)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                }
+            }
     }
 
 

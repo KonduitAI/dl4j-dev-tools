@@ -1032,10 +1032,6 @@ fun listNumberToListNumber(outputAttributeValue: String, inputAttributeValue: St
 }
 
 
-
-
-//StringAttributeToNDArray
-
 class OnnxStringAttributeToNDArray(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) :
     StringAttributeToNDArray<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
 
@@ -1066,7 +1062,8 @@ class OnnxStringAttributeToNDArray(mappingNamesToPerform: Map<String, String>, t
 
     override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
-        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)    }
+        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)
+    }
 
     override fun argDescriptorType(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): OpNamespace.ArgDescriptor.ArgType {
         val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())

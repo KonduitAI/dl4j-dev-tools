@@ -727,17 +727,6 @@ class TestTensorflowIR {
     @Test
     fun testOpExecution() {
         Nd4j.getRandom().setSeed(12345)
-        val tensorflowOpNames = tensorflowOpRegistry.inputFrameworkOpNames()
-        val nd4jOpNames = tensorflowOpRegistry.nd4jOpNames()
-        val dynamicOps = mapOf(
-            "pow" to mapOf("y" to TensorProto {
-                DoubleData(listOf(1.0))
-                dtype = DataType.DT_DOUBLE
-                tensorShape = TensorShapeProto {
-                    Dims(listOf(1,1))
-                }
-            })
-        )
         val scalarInputs = mapOf(
             "abs" to -1.0,
             "acos" to 1.0,
@@ -813,15 +802,6 @@ class TestTensorflowIR {
 
 
 
-
-        /**
-         * Conv and Pooling2d ops
-         */
-
-
-        /**
-         * Conv3d and Pooling3d ops
-         */
 
 
         /**
@@ -1050,7 +1030,6 @@ class TestTensorflowIR {
         }.forEach { mappingProcess ->
             val nd4jOpDef = tensorflowOpRegistry.lookupNd4jOpDef(mappingProcess.opName())
             val tensorflowOpDef = tensorflowOpRegistry.lookupInputFrameworkOpDef(mappingProcess.inputFrameworkOpName())
-            val mappingProcess = tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpDef.name)
 
             if(singleInputOps.contains(nd4jOpDef.name) && tensorflowOpDef.name != "Variable" && tensorflowOpDef.name != "VariableV2" && tensorflowOpDef.name != "Const") {
                 val tensorNode = NodeDef {
@@ -1322,7 +1301,6 @@ class TestTensorflowIR {
                     Node(tensorNode2)
                 }
 
-                val mappingProcess = tensorflowOpRegistry.lookupOpMappingProcess(tensorflowOpDef.name)
                 val tensorflowGraph = TensorflowIRGraph(graphDef, tensorflowOps)
                 val mappedGraph = importGraph(tensorflowGraph,null,null)!!
                 val xVal =  Nd4j.scalar(pairWiseIntOps[mappingProcess.opName()]!![0])
