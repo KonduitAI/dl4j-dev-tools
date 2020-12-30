@@ -944,6 +944,15 @@ fun ndarrayFromNameSpaceTensor(inputTensor: TensorNamespace.TensorProto): INDArr
             return Nd4j.create(dataBuffer).reshape(*shape)
         }
 
+        DataType.BOOL -> {
+            val intArray = inputTensor.int32DataList.toIntArray()
+            if(intArray.isEmpty())
+                return loadDataBufferFromRawData(inputTensor)
+
+            val dataBuffer = Nd4j.createBuffer(intArray)
+            return Nd4j.create(dataBuffer).reshape(*shape)
+        }
+
         DataType.UTF8 -> {
             val stringList = inputTensor.stringDataList.map { input -> input.toStringUtf8() }
             if(stringList.isEmpty())
@@ -969,7 +978,8 @@ fun loadDataBufferFromRawData(inputTensor: TensorNamespace.TensorProto): INDArra
     val shape = inputTensor.dimsList.toLongArray()
     val dtype = convertNd4jDataTypeFromNameSpaceTensorDataType(TensorNamespace.DataType.values()[inputTensor.dataType])
     val byteArray = inputTensor.rawData.toByteArray()
-    val totalLen = ArrayUtil.prod(*shape)
+    //note: scalar can be zero
+    val totalLen = Math.max(ArrayUtil.prod(*shape),1)
     val byteBuffer = ByteBuffer.allocateDirect(totalLen * dtype.width())
     byteBuffer.put(byteArray)
     byteBuffer.rewind()

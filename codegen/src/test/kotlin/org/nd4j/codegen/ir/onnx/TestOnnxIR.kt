@@ -478,8 +478,11 @@ class TestOnnxIR {
             "cos" to 1.0f,
             //  "elu" to 1.0f,
             "erf" to 1.0f,
+            "hard_sigmoid" to 1.0f,
             "floor" to 1.0f,
             "log" to 1.0f,
+            //"mod" to 1.0f,
+            "round" to 1.0f,
             "selu" to 1.0f,
             "sinh" to 1.0f,
             "sigmoid" to 1.0f,
@@ -498,12 +501,29 @@ class TestOnnxIR {
             "isnan" to 1.0f,
         )
 
+        val pairWiseBooleanOps = mapOf(
+            "equals" to listOf(2.0,2.0),
+            "greater" to listOf(2.0,1.0),
+            "greater_equal" to listOf(2.0,1.0),
+            "less" to listOf(2.0,1.0),
+            "less_equal" to listOf(2.0,1.0))
+
+
+        val pairWiseBooleanInputs = mapOf(
+            "or" to listOf(true,false),
+            "and" to listOf(false,false),
+            "xor" to listOf(false,true)
+        )
+
+
+
         val pairwise = mapOf(
             "add" to listOf(1.0,1.0),
             "subtract" to listOf(2.0,1.0),
             "multiply" to listOf(2.0,1.0),
-            "divide" to listOf(2.0,1.0)
-        )
+            "divide" to listOf(2.0,1.0),
+
+            )
         /**
          * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
          * java.lang.RuntimeException: Could not find an implementation for the node output:Cos(7)
@@ -641,7 +661,110 @@ class TestOnnxIR {
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                }  else if(pairWiseBooleanInputs.containsKey(nd4jOpDef.name)) {
+                    print("Running op def $nd4jOpDef.name")
+                    val x = Nd4j.scalar(pairWiseBooleanInputs[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+                    val y = Nd4j.scalar(pairWiseBooleanInputs[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+
+                    val convertedTensor = convertToOnnxTensor(x,"x")
+                    val convertedTensor2 = convertToOnnxTensor(y,"y")
+                    val convertedOutputTensor = convertToOnnxTensor(x,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(x,"x"))
+                        Input(createValueInfoFromTensor(y,"y"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("x")
+                            Input("y")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(x,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val inputs = mapOf("x" to x,"y" to y)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                } else if(pairWiseBooleanOps.containsKey(nd4jOpDef.name)) {
+                    print("Running op def $nd4jOpDef.name")
+                    val x = Nd4j.scalar(pairWiseBooleanOps[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                    val y = Nd4j.scalar(pairWiseBooleanOps[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                    val output = Nd4j.scalar(pairWiseBooleanOps[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+
+                    val convertedTensor = convertToOnnxTensor(x,"x")
+                    val convertedTensor2 = convertToOnnxTensor(y,"y")
+                    val convertedOutputTensor = convertToOnnxTensor(x,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(x,"x"))
+                        Input(createValueInfoFromTensor(y,"y"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("x")
+                            Input("y")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(output,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val inputs = mapOf("x" to x,"y" to y)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
                 }
+
+             /*   else if(pairwiseIntOps.containsKey(nd4jOpDef.name)) {
+                    print("Running op def $nd4jOpDef.name")
+                    val x = Nd4j.scalar(pairwiseIntOps[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                    val y = Nd4j.scalar(pairwiseIntOps[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                    val output = Nd4j.scalar(pairwiseIntOps[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+
+                    val convertedTensor = convertToOnnxTensor(x,"x")
+                    val convertedTensor2 = convertToOnnxTensor(y,"y")
+                    val convertedOutputTensor = convertToOnnxTensor(x,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(x,"x"))
+                        Input(createValueInfoFromTensor(y,"y"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("x")
+                            Input("y")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(output,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val inputs = mapOf("x" to x,"y" to y)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                }*/
             }
     }
 
