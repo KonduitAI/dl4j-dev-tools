@@ -453,45 +453,49 @@ class TestOnnxIR {
     fun testOpExecution() {
         val scalarInputs = mapOf(
             "abs" to -1.0,
-            "acos" to 1.0,
-            "acosh" to 1.0,
-            "asin" to 1.0,
-            "asinh" to 1.0,
-            "atan" to 1.0,
-            "atanh" to 0.5,
-            "ceil" to 1.0,
             "copy" to 1.0,
-            "cos" to 1.0,
-            "cosh" to 1.0,
-            //"erf" to 1.0,
-            //"elu" to 1.0,
             "erfc" to 1.0,
             "exp" to 1.0,
-            //"floor" to 1.0,
             "identity" to 1.0,
-            //"log" to 1.0,
             "neg" to 1.0,
             "ones_as" to 1.0,
             "relu6" to 1.0,
             "round" to 1.0,
-            //"sigmoid" to 1.0,
             "sign" to 1.0,
             "sin" to 1.0,
-            //"sinh" to 1.0,
             "square" to 1.0,
-            "sqrt" to 1.0,
-            //"tan" to 1.0,
-            //"tanh" to 1.0,
-            //"selu" to 1.0,
-            "softsign" to 1.0)
-            //"softplus" to 1.0)
+            "sqrt" to 1.0)
+
+        val scalarFloatOps = mapOf(
+            "acos" to 1.0f,
+            "asin" to 1.0f,
+            "acosh" to 1.0f,
+            "asinh" to 1.0f,
+            "atan" to 1.0f,
+            "atanh" to 0.5f,
+            "ceil" to 1.0f,
+            "cosh" to 1.0f,
+            "cos" to 1.0f,
+            //  "elu" to 1.0f,
+            "erf" to 1.0f,
+            "floor" to 1.0f,
+            "log" to 1.0f,
+            "selu" to 1.0f,
+            "sinh" to 1.0f,
+            "sigmoid" to 1.0f,
+            "softplus" to 1.0f,
+            "softsign" to 1.0f,
+            "tan" to 1.0f,
+            "tanh" to 1.0f
+        )
 
 
         val singleInputOps = scalarInputs.keys
+
         val singleOutputBooleanOps = mapOf(
-            "isfinite" to 1.0,
-            "isinf" to 1.0,
-            "isnan" to 1.0,
+            "isfinite" to 1.0f,
+            "isinf" to 1.0f,
+            "isnan" to 1.0f,
         )
 
         val pairwise = mapOf(
@@ -542,9 +546,40 @@ class TestOnnxIR {
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
 
-                } else if(singleOutputBooleanOps.containsKey(nd4jOpDef.name)) {
+                } else if(scalarFloatOps.containsKey(nd4jOpDef.name)) {
                     print("Running op $nd4jOpDef.name")
-                    val input = Nd4j.scalar(singleOutputBooleanOps[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.DOUBLE)
+                    val input = Nd4j.scalar(scalarFloatOps[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                    val convertedTensor = convertToOnnxTensor(input,"input")
+                    val convertedOutputTensor = convertToOnnxTensor(input,"output")
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(input,"input"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("input")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(input,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val inputs = mapOf("input" to input)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+
+                }
+
+                else if(singleOutputBooleanOps.containsKey(nd4jOpDef.name)) {
+                    print("Running op $nd4jOpDef.name")
+                    val input = Nd4j.scalar(singleOutputBooleanOps[mappingProcess.opName()]).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                     val convertedTensor = convertToOnnxTensor(input,"input")
                     val convertedOutputTensor = convertToOnnxTensor(input,"output")
 
