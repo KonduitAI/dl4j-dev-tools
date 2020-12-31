@@ -626,7 +626,7 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
     }
 
     override fun importInfoForEachNode(dynamicVariables: Map<String, Onnx.TensorProto>): Map<String, Pair<MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, OpNamespace.OpDescriptor>> {
-        return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
+         return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
     }
 
     override fun nodeIsPlaceHolder(nodeName: String): Boolean {

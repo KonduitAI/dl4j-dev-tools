@@ -577,8 +577,8 @@ abstract class ValueMapping<
 
                 AttributeValueType.FLOAT -> {
                     descriptorBuilder.argType = ArgDescriptor.ArgType.DOUBLE
-                   //DO NOT REMOVE work around for numerical underflow that happens at the JVM level, this does a safe cast allowing us to get the real value out
-                   val realValue = Nd4j.scalar(irAttribute.floatValue()).castTo(DataType.DOUBLE)
+                    //DO NOT REMOVE work around for numerical underflow that happens at the JVM level, this does a safe cast allowing us to get the real value out
+                    val realValue = Nd4j.scalar(irAttribute.floatValue()).castTo(DataType.DOUBLE)
                     descriptorBuilder.doubleValue =  realValue.getDouble(0)
                     descriptorBuilder.argIndex = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
@@ -689,8 +689,11 @@ abstract class NumberToBoolean<
 }
 
 
-
-abstract class BooleanToNumber<
+/**
+ * Change a boolean to an int
+ * or an int or double to a boolean
+ */
+abstract class InvertBooleanNumber<
         GRAPH_DEF: GeneratedMessageV3,
         OP_DEF_TYPE: GeneratedMessageV3,
         NODE_TYPE: GeneratedMessageV3,
@@ -699,7 +702,7 @@ abstract class BooleanToNumber<
         TENSOR_TYPE : GeneratedMessageV3, DATA_TYPE: ProtocolMessageEnum>(mappingNamesToPerform: Map<String, String>,
                                                                           transformerArgs: Map<String, List<ArgDescriptor>>):
     BaseAttributeExtractionRule<GRAPH_DEF,OP_DEF_TYPE,NODE_TYPE,ATTR_DEF, ATTR_VALUE_TYPE, TENSOR_TYPE, DATA_TYPE>
-        (name = "booleantonumber", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
+        (name = "invertbooleannumber", mappingNamesToPerform = mappingNamesToPerform, transformerArgs = transformerArgs) {
 
     override fun acceptsInputType(argDescriptorType: AttributeValueType): Boolean {
         return argDescriptorType == AttributeValueType.INT || argDescriptorType == AttributeValueType.BOOL
@@ -707,7 +710,8 @@ abstract class BooleanToNumber<
 
     override fun outputsType(argDescriptorType: List<ArgDescriptor.ArgType>): Boolean {
         return argDescriptorType.contains(ArgDescriptor.ArgType.INT64) ||
-                argDescriptorType.contains(ArgDescriptor.ArgType.DOUBLE)
+                argDescriptorType.contains(ArgDescriptor.ArgType.DOUBLE) ||
+                argDescriptorType.contains(ArgDescriptor.ArgType.BOOL)
     }
 
     override fun convertAttributes(mappingCtx: MappingContext<GRAPH_DEF, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>): List<ArgDescriptor> {
@@ -717,39 +721,69 @@ abstract class BooleanToNumber<
             val descriptorBuilder = ArgDescriptor.newBuilder()
             descriptorBuilder.name = k
             val irAttribute = mappingCtx.irAttributeValueForNode(v)
-
-            listOf(ArgDescriptor.ArgType.INT64, ArgDescriptor.ArgType.DOUBLE)
-                .forEach { argDescriptorType ->
+            when(irAttribute.attributeValueType()) {
+                AttributeValueType.INT -> {
                     val targetIdx = lookupIndexForArgDescriptor(
                         argDescriptorName = k,
                         opDescriptorName = mappingCtx.nd4jOpName(),
-                        argDescriptorType = argDescriptorType
+                        argDescriptorType = ArgDescriptor.ArgType.BOOL
                     )
 
-                    if (targetIdx >= 0) {
-                        when (argDescriptorType) {
-                            ArgDescriptor.ArgType.DOUBLE -> {
-                                descriptorBuilder.argType = argDescriptorType
-                                descriptorBuilder.doubleValue = if (irAttribute.boolValue()) 1.0 else 0.0
-                                descriptorBuilder.argIndex = targetIdx
-                            }
-                            ArgDescriptor.ArgType.INT64 -> {
-                                descriptorBuilder.argType = argDescriptorType
-                                descriptorBuilder.int64Value = if (irAttribute.boolValue()) 1 else 0
-                                descriptorBuilder.argIndex = targetIdx
-                            }
-
-                            else -> {
-                                throw IllegalArgumentException("Illegal type passed in $argDescriptorType")
-                            }
-                        }
-
-                        ret.add(descriptorBuilder.build())
-
-                    }
-
+                    descriptorBuilder.argType = ArgDescriptor.ArgType.BOOL
+                    descriptorBuilder.boolValue = irAttribute.intValue() > 0
+                    descriptorBuilder.argIndex = targetIdx
+                    ret.add(descriptorBuilder.build())
 
                 }
+                AttributeValueType.FLOAT -> {
+                    val targetIdx = lookupIndexForArgDescriptor(
+                        argDescriptorName = k,
+                        opDescriptorName = mappingCtx.nd4jOpName(),
+                        argDescriptorType = ArgDescriptor.ArgType.BOOL
+                    )
+
+                    descriptorBuilder.argType = ArgDescriptor.ArgType.BOOL
+                    descriptorBuilder.boolValue = irAttribute.floatValue() > 0
+                    descriptorBuilder.argIndex = targetIdx
+                    ret.add(descriptorBuilder.build())
+
+                }
+                else -> {
+                    listOf(ArgDescriptor.ArgType.INT64, ArgDescriptor.ArgType.DOUBLE)
+                        .forEach { argDescriptorType ->
+                            val targetIdx = lookupIndexForArgDescriptor(
+                                argDescriptorName = k,
+                                opDescriptorName = mappingCtx.nd4jOpName(),
+                                argDescriptorType = argDescriptorType
+                            )
+
+                            if (targetIdx >= 0) {
+                                when (argDescriptorType) {
+                                    ArgDescriptor.ArgType.DOUBLE -> {
+                                        descriptorBuilder.argType = argDescriptorType
+                                        descriptorBuilder.doubleValue = if (irAttribute.boolValue()) 1.0 else 0.0
+                                        descriptorBuilder.argIndex = targetIdx
+                                    }
+                                    ArgDescriptor.ArgType.INT64 -> {
+                                        descriptorBuilder.argType = argDescriptorType
+                                        descriptorBuilder.int64Value = if (irAttribute.boolValue()) 1 else 0
+                                        descriptorBuilder.argIndex = targetIdx
+                                    }
+
+                                    else -> {
+                                        throw IllegalArgumentException("Illegal type passed in $argDescriptorType")
+                                    }
+                                }
+
+                                ret.add(descriptorBuilder.build())
+
+                            }
+
+
+                        }
+                }
+            }
+
 
 
         }
@@ -1771,8 +1805,8 @@ abstract class BaseNDArrayMappingRule<
                     ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(associatedInput.name)
                     ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(associatedInput.name)
                     ArgDescriptor.ArgType.DOUBLE,ArgDescriptor.ArgType.FLOAT -> builder.addInputFloatName(associatedInput.name)
-                   ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
-                   ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
+                    ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
+                    ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
                 }
             }
 
@@ -1888,7 +1922,7 @@ abstract class MultiInputIndexMappingRule<
                     ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(associatedInput.name)
                     ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(associatedInput.name)
                     ArgDescriptor.ArgType.FLOAT, ArgDescriptor.ArgType.DOUBLE -> builder.addInputFloatName(associatedInput.name)
-                   ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
+                    ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
                     ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
                 }
             }

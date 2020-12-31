@@ -494,6 +494,9 @@ class TestOnnxIR {
 
 
         val singleInputOps = scalarInputs.keys
+        val singleInputBooleanOps = mapOf(
+            "not" to false
+        )
 
         val singleOutputBooleanOps = mapOf(
             "isfinite" to 1.0f,
@@ -502,6 +505,8 @@ class TestOnnxIR {
         )
 
         val pairWiseBooleanOps = mapOf(
+            "min" to listOf(1.0,2.0),
+            "max" to listOf(1.0,2.0),
             "equals" to listOf(2.0,2.0),
             "greater" to listOf(2.0,1.0),
             "greater_equal" to listOf(2.0,1.0),
@@ -515,6 +520,15 @@ class TestOnnxIR {
             "xor" to listOf(false,true)
         )
 
+
+        val singleReduceOps = mapOf(
+            "reduce_mean" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_max" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_sum" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_prod" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_norm1" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "reduce_norm2" to Nd4j.linspace(1,4,4).reshape(2,2)
+            )
 
 
         val pairwise = mapOf(
@@ -730,25 +744,21 @@ class TestOnnxIR {
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
                 }
 
-             /*   else if(pairwiseIntOps.containsKey(nd4jOpDef.name)) {
+                else if(singleInputBooleanOps.containsKey(nd4jOpDef.name)) {
                     print("Running op def $nd4jOpDef.name")
-                    val x = Nd4j.scalar(pairwiseIntOps[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
-                    val y = Nd4j.scalar(pairwiseIntOps[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
-                    val output = Nd4j.scalar(pairwiseIntOps[mappingProcess.opName()]!![1]!!).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+                    val x = Nd4j.create(booleanArrayOf(singleInputBooleanOps[mappingProcess.opName()]!!)).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
+                    val output = Nd4j.create(booleanArrayOf(singleInputBooleanOps[mappingProcess.opName()]!!)).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
 
                     val convertedTensor = convertToOnnxTensor(x,"x")
-                    val convertedTensor2 = convertToOnnxTensor(y,"y")
                     val convertedOutputTensor = convertToOnnxTensor(x,"output")
 
                     val graphToRun = GraphProto {
                         Input(createValueInfoFromTensor(x,"x"))
-                        Input(createValueInfoFromTensor(y,"y"))
                         //Initializer(convertedTensor)
                         Node(NodeProto {
                             name = "output"
                             opType = onnxOpDef.opType
                             Input("x")
-                            Input("y")
                             Output("output")
 
                         })
@@ -758,13 +768,50 @@ class TestOnnxIR {
 
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
-                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
-                    val inputs = mapOf("x" to x,"y" to y)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x")))
+                    val inputs = mapOf("x" to x)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
-                    assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
-                }*/
+                    //assertEquals("Function ${nd4jOpDef.name} failed with input $x",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+                }
+
+                else if(singleReduceOps.containsKey(nd4jOpDef.name)) {
+                    print("Running op def $nd4jOpDef.name")
+                    val x = singleReduceOps[mappingProcess.opName()]!!.castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                    val output = x.mean(0).reshape(2)
+                        .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(x,"x"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("x")
+                            Output("output")
+                            Attribute(Onnx.AttributeProto.newBuilder()
+                                .setType(Onnx.AttributeProto.AttributeType.INTS)
+                                .setName("axes").addInts(0).build())
+                            Attribute(Onnx.AttributeProto.newBuilder()
+                                .setType(Onnx.AttributeProto.AttributeType.INT)
+                                .setI(0)
+                                .setName("keepdims").build())
+                        })
+
+                        Output(createValueInfoFromTensor(output,"output"))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val inputs = mapOf("x" to x)
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x")))
+                    val result = importedGraph.output(inputs,"output")
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x"),listOf("output"))
+                    val assertion = onnxGraphRunner.run(inputs)
+                    assertEquals("Function ${nd4jOpDef.name} failed with input $x",assertion["output"]!!.reshape(1,2),result["output"]!!.reshape(1,2))
+                }
             }
     }
 

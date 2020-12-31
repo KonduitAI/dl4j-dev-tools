@@ -354,7 +354,7 @@ fun ndarrayAttributeToNDArrayInput(mappings: Map<String,String>): OnnxNDArrayAtt
     return OnnxNDArrayAttributeToNDArrayInput(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
 }
 
-class OnnxBooleanToNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : BooleanToNumber<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
+class OnnxInvertBooleanNumber(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : InvertBooleanNumber<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
     override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
         return OnnxIRAttr(attrDef,attributeValueType)
     }
@@ -394,53 +394,11 @@ class OnnxBooleanToNumber(mappingNamesToPerform: Map<String, String>, transforme
     }
 }
 
-fun booleanToNumber(mappings: Map<String,String>): OnnxBooleanToNumber {
-    return OnnxBooleanToNumber(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
-}
-
-
-class OnnxNumberToBoolean(mappingNamesToPerform: Map<String, String>, transformerArgs: Map<String, List<OpNamespace.ArgDescriptor>>) : NumberToBoolean<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>(mappingNamesToPerform, transformerArgs) {
-    override fun createIRAttribute(name: String, attrDef: Onnx.AttributeProto, attributeValueType: Onnx.AttributeProto): IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType> {
-        return OnnxIRAttr(attrDef,attributeValueType)
-    }
-
-    override fun convertAttributesReverse(allInputArguments: List<OpNamespace.ArgDescriptor>, inputArgumentsToProcess: List<OpNamespace.ArgDescriptor>): List<IRAttribute<Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto, Onnx.TensorProto.DataType>> {
-        TODO("Not yet implemented")
-    }
-
-
-    override fun isInputFrameworkTensorName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
-        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
-        return isOnnxTensorName(name,onnxOp)
-    }
-
-    override fun isNd4jTensorName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
-        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
-        return isNd4jTensorName(name,nd4jOpDescriptor)
-    }
-
-    override fun isInputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
-        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
-        return isOnnxAttributeName(name,onnxOp)
-    }
-
-    override fun isOutputFrameworkAttributeName(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): Boolean {
-        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
-        return isOutputFrameworkAttributeName(name,nd4jOpDescriptor)    }
-
-    override fun argDescriptorType(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): OpNamespace.ArgDescriptor.ArgType {
-        val nd4jOpDescriptor = nd4jOpDescriptors.findOp(mappingProcess.opName())
-        return argDescriptorType(name,nd4jOpDescriptor)
-    }
-
-    override fun attributeValueTypeFor(name: String, mappingProcess: MappingProcess<Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>): AttributeValueType {
-        val onnxOp = onnxops.find { op -> op.name == mappingProcess.inputFrameworkOpName() }!!
-        return onnxAttributeTypeFor(name,onnxOp)
-    }
-}
-
-fun numberToBoolean(mappings: Map<String,String>): OnnxNumberToBoolean {
-    return OnnxNumberToBoolean(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
+/**
+ * This will change a boolean to a number and a number to a boolean
+ */
+fun invertBooleanNumber(mappings: Map<String,String>): OnnxInvertBooleanNumber {
+    return OnnxInvertBooleanNumber(mappingNamesToPerform = mappings,transformerArgs = emptyMap())
 }
 
 

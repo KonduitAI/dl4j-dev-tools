@@ -1343,7 +1343,10 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
             }
         }
         else -> {
+            var hasDimensions = false
             applied.second.argDescriptorList.forEach { argDescriptor ->
+                if(argDescriptor.name == "dimensions")
+                    hasDimensions = true
                 val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
                 if (field != null) {
                     field.isAccessible = true
@@ -1359,8 +1362,31 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
                         else -> {
                         }
                     }
-
                 }
+            }
+
+            if(hasDimensions) {
+                //dimensions sorted by index
+                val dimArgs = applied.second.argDescriptorList.filter { argDescriptor -> argDescriptor.name.contains("dimensions") }.sortedBy { argDescriptor -> argDescriptor.argIndex }
+                    .map { argDescriptor -> argDescriptor.int64Value.toInt() }.toIntArray()
+                val dimensionsField = ReflectionUtils.findField(df.javaClass,"dimensions")
+                val dimensionzField = ReflectionUtils.findField(df.javaClass,"dimensionz")
+                if(dimensionsField != null) {
+                    dimensionsField.isAccessible = true
+                    if(intArrayOf(0).javaClass.isAssignableFrom(dimensionsField.type)) {
+                        ReflectionUtils.setField(dimensionsField,df,dimArgs)
+                    }
+                }
+
+                if(dimensionzField != null) {
+                    dimensionzField.isAccessible = true
+                    if(INDArray::class.java.isAssignableFrom(dimensionzField.type)) {
+                        val buffer = Nd4j.createBuffer(dimArgs)
+                        val createdArr = Nd4j.create(buffer)
+                        ReflectionUtils.setField(dimensionzField,df,createdArr)
+                    }
+                }
+
             }
 
         }

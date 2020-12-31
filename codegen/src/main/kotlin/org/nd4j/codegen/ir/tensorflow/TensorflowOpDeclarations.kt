@@ -504,7 +504,7 @@ val cumProd = TensorflowMappingProcess(
         opName = "cumprod",
         inputFrameworkOpName = "Cumprod",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x","dimensions" to "axis"))),
-        attributeMappingRules = listOf(booleanToNumber(mutableMapOf("exclusive" to "exclusive","reverse" to "reverse"))))
+        attributeMappingRules = listOf(invertBooleanNumber(mutableMapOf("exclusive" to "exclusive","reverse" to "reverse"))))
 
 
 
@@ -515,7 +515,7 @@ val cumSum = TensorflowMappingProcess(
         inputFrameworkOpName = "Cumsum",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "x","dimensions" to "axis"))),
         attributeMappingRules = listOf(
-                booleanToNumber(mutableMapOf("exclusive" to "exclusive",
+                invertBooleanNumber(mutableMapOf("exclusive" to "exclusive",
                         "reverse" to "reverse"))))
 
 
@@ -827,7 +827,7 @@ val fusedBatchnormV2 = TensorflowMappingProcess(
         inputFrameworkOpName = "FusedBatchNormV2",
         opMappingRegistry = tensorflowOpRegistry,
         attributeMappingRules = listOf(valueMapping(mutableMapOf("epsilon" to "epsilon")),
-                booleanToNumber(mutableMapOf("isTraining" to "is_training")),
+                invertBooleanNumber(mutableMapOf("isTraining" to "is_training")),
                 stringEqualsRule(outputAttribute = "dataFormat",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW",argumentIndex = 0))
 )
 
@@ -839,7 +839,7 @@ val fusedBatchnormV3 = TensorflowMappingProcess(
         inputFrameworkOpName = "FusedBatchNormV3",
         opMappingRegistry = tensorflowOpRegistry,
         attributeMappingRules = listOf(valueMapping(mutableMapOf("epsilon" to "epsilon")),
-                booleanToNumber(mutableMapOf("isTraining" to "is_training")),
+                invertBooleanNumber(mutableMapOf("isTraining" to "is_training")),
                 stringEqualsRule(outputAttribute = "dataFormat",inputFrameworkAttributeName = "data_format",valueToTest = "NCHW",argumentIndex = 0))
 )
 
@@ -990,7 +990,7 @@ val lstmBlock = TensorflowMappingProcess(
         ),
         attributeMappingRules =  listOf(
                 valueMapping(mutableMapOf("forgetBias" to "forget_bias","clippingCellValue" to "cell_clip")),
-                booleanToNumber(mutableMapOf("peephole" to "use_peephole")),
+                invertBooleanNumber(mutableMapOf("peephole" to "use_peephole")),
                 intConstant(inputName = "dataFormat",constantValue = 0 as Integer,argumentIndex = 0)[0])
 )
 
@@ -1012,7 +1012,7 @@ val lstmBlockV2 = TensorflowMappingProcess(
         ),
         attributeMappingRules =  listOf(
                 valueMapping(mutableMapOf("clippingCellValue" to "cell_clip")),
-                booleanToNumber(mutableMapOf("peephole" to "use_peephole")),
+                invertBooleanNumber(mutableMapOf("peephole" to "use_peephole")),
                 doubleConstant(inputName = "forgetBias",constantValue = 3.0,argumentIndex = 0)[0],
                 intConstant(inputName = "dataFormat",constantValue = 0 as Integer,argumentIndex = 0)[0])
 )
@@ -1034,7 +1034,7 @@ val lstmBlockCell = TensorflowMappingProcess(
         ),
         attributeMappingRules =  listOf(
                 valueMapping(mutableMapOf("forgetBias" to "forget_bias","clippingCellValue" to "cell_clip")),
-                booleanToNumber(mutableMapOf("peephole" to "use_peephole")))
+                invertBooleanNumber(mutableMapOf("peephole" to "use_peephole")))
 )
 
 val gruCell = TensorflowMappingProcess(
@@ -1068,7 +1068,7 @@ val gemm = multipleNameMapping(inputFrameworkOpNames = listOf("MatMul"),opName =
         attributeMappingRules =
         listOf(doubleConstant(inputName = "alpha",constantValue = 1.0,argumentIndex = 0)[0],
                 doubleConstant(inputName = "beta",constantValue = 1.0,argumentIndex = 1)[0],
-                booleanToNumber(mutableMapOf("transX" to "transpose_a","transY" to "transpose_b")),
+                invertBooleanNumber(mutableMapOf("transX" to "transpose_a","transY" to "transpose_b")),
                 intConstant(inputName = "transZ",constantValue = 0 as Integer,argumentIndex = 2)[0]))
 
 
@@ -1269,7 +1269,7 @@ val nonMaxSuppressionOverlaps = multipleNameMapping(inputFrameworkOpNames = list
 
 val nthElement = mapTensorNamesWithOp(inputFrameworkOpName = "NthElement",opName = "nth_element",
         tensorNames = mutableMapOf("n" to "n","input" to "input"),
-        attributeMappingRules = listOf(booleanToNumber(mapOf("reverse" to "reverse"))))
+        attributeMappingRules = listOf(invertBooleanNumber(mapOf("reverse" to "reverse"))))
 
 val oneHot = mapTensorNamesWithOp(inputFrameworkOpName = "OneHot",opName = "onehot",
         tensorNames = mutableMapOf("input" to "indices"),
