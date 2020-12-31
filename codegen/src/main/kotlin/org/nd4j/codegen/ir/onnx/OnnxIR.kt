@@ -534,8 +534,12 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
         }
 
         graphDef.nodeList.forEach {
-            val opDef = onnxops.first { opDef -> opDef.name == it.opType }
-            ret2.add(OnnxIRNode(it,opDef))
+            val opDefOrNull = onnxops.firstOrNull { opDef -> opDef.name == it.opType  }
+            if(opDefOrNull == null) {
+                throw IllegalArgumentException("Op def name ${it.opType} not found!")
+            }
+
+            ret2.add(OnnxIRNode(it,opDefOrNull!!))
         }
 
         /*    graphDef.outputList.forEach { output ->
@@ -626,7 +630,7 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
     }
 
     override fun importInfoForEachNode(dynamicVariables: Map<String, Onnx.TensorProto>): Map<String, Pair<MappingContext<Onnx.GraphProto, Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto, Onnx.AttributeProto, Onnx.AttributeProto, Onnx.TensorProto.DataType>, OpNamespace.OpDescriptor>> {
-         return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
+        return importInfoForEachNodeInGraph(graph = this,dynamicVariables = dynamicVariables)
     }
 
     override fun nodeIsPlaceHolder(nodeName: String): Boolean {

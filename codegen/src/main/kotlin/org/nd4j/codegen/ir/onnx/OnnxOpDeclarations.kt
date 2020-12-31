@@ -127,32 +127,6 @@ val argMin = OnnxMappingProcess(
 )
 
 
-//TODO:
-/**
- * input: "X"
-input: "Y"
-output: "Z"
-name: "ArrayFeatureExtractor"
-op_type: "ArrayFeatureExtractor"
-attribute {
-name: "X-types"
-strings: "int64"
-strings: "string"
-strings: "double"
-strings: "float"
-strings: "int32"
-type: STRINGS
-}
-attribute {
-name: "Y-types"
-strings: "int64"
-type: STRINGS
-}
-doc_string: "\n    Select elements of the input tensor based on the indices passed.<br>\n    The indices are applied to the last axes of the tensor.\n"
---
-
- */
-
 //Note:  weight formats are NCHW in ONNX
 val avgPool = OnnxMappingProcess(
         inputFrameworkOpName = "AveragePool",
@@ -734,12 +708,12 @@ val not = OnnxMappingProcess(
 
 
 val pow = OnnxMappingProcess(
-        opName = "pow",
+        opName = "pow_pairwise",
         inputFrameworkOpName = "Pow",
         opMappingRegistry = onnxOpRegistry,
-        attributeMappingRules = listOf(convertNDArrayInputToScalarAttr(outputAttributeValue = "pow",inputAttributeValue = "Y"),
+        attributeMappingRules = listOf(
                 booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0)[0]),
-        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X"))))
+        tensorMappingRules = listOf(mappingNDArrayInputs((mutableMapOf("input" to "X","y" to "Y"))))
 )
 
 val size = OnnxMappingProcess(

@@ -1316,24 +1316,28 @@ fun <GRAPH_TYPE: GeneratedMessageV3,
                             OpNamespace.ArgDescriptor.ArgType.FLOAT)) {
                         val scalarField = ReflectionUtils.findField(df.javaClass,"scalarValue")
                         scalarField.isAccessible = true
+                        //access the first input (should have been set) and make sure the scalar type is the
+                        //the same
+                        val firstValue = sd.variables().first()
+                        val dtype = firstValue.dataType()
                         when(argDescriptor.argType) {
                             OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.doubleValue)
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.doubleValue).castTo(dtype)
                                 ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
 
                             }
                             OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.floatValue)
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.floatValue).castTo(dtype)
                                 ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
 
                             }
                             OpNamespace.ArgDescriptor.ArgType.INT32 -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int32Value)
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int32Value).castTo(dtype)
                                 ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
 
                             }
                             OpNamespace.ArgDescriptor.ArgType.INT64 -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int64Value)
+                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int64Value).castTo(dtype)
                                 ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
 
                             }
