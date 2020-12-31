@@ -217,7 +217,7 @@ class TestTensorflowRuleDeclarations {
 
         val tfGraph = TensorflowIRGraph(graphDef, tensorflowOps)
         val mappingContext = TensorflowMappingContext(opDef = opDef,node = valueNodeDef,graph = tfGraph,dynamicVariables = emptyMap())
-        val booleanToInt = booleanToNumber(mapOf("output" to "is_training"))
+        val booleanToInt = invertBooleanNumber(mapOf("output" to "is_training"))
         val booleanToIntResult = booleanToInt.convertAttributes(mappingContext)
         assertEquals(1,booleanToIntResult.size)
         val boolValue = booleanToIntResult[0].int64Value
