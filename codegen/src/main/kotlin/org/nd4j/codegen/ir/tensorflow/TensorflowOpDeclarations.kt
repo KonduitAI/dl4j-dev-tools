@@ -126,7 +126,7 @@ val argMaxRule = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
         attributeMappingRules = listOf(
-                ndarrayToIntList(mutableMapOf("dimensions" to "dimension")),
+                ndarrayToIntList(mutableMapOf("dimensions" to "axis")),
                 booleanConstant(inputName = "keepDims",constantValue = false,argumentIndex = 0)[0])
 
 )
@@ -136,7 +136,7 @@ val argMinRule = TensorflowMappingProcess(
         opName = "argmin",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("dimensions" to "dimension")),
+        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("dimensions" to "axis")),
                 booleanConstant(inputName = "keepDims",constantValue = false,argumentIndex = 0)[0])
 
 )

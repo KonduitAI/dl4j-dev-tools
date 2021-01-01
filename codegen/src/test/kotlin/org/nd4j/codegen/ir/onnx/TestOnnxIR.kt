@@ -552,7 +552,7 @@ class TestOnnxIR {
             "pow" to listOf(2.0,1.0)
         )
 
-        val mappedOps = setOf("elu","transpose")//,"top_k")
+        val mappedOps = setOf("elu","transpose","argmin","argmax")//,"top_k")
 
         /**
          * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
@@ -891,6 +891,41 @@ class TestOnnxIR {
 
     fun graphForOp(opName: String): List<OnnxGraphInput> {
         when(opName) {
+            "argmin","argmax" -> {
+                print("Running op def $opName")
+                val x = Nd4j.linspace(1,4,4).reshape(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val output = x.mean(0).reshape(2)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+
+                val graphToRun = GraphProto {
+                    Input(createValueInfoFromTensor(x,"x"))
+                    //Initializer(convertedTensor)
+                    Node(NodeProto {
+                        name = "output"
+                        opType = if(opName == "argmin") "ArgMin" else "ArgMax"
+                        Input("x")
+                        Output("output")
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INT)
+                            .setName("axis").setI(0).build())
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INT)
+                            .setI(0)
+                            .setName("keepdims").build())
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INT)
+                            .setI(1)
+                            .setName("select_last_index").build())
+
+                    })
+
+                    Output(createValueInfoFromTensor(output,"output",false))
+                }
+
+                val inputMap = mapOf("x" to x)
+                return listOf(OnnxGraphInput(graphToRun,listOf("x"),listOf("output"),inputMap,inputMap))
+            }
             "top_k" -> {
                 val input = Nd4j.linspace(1,4,4).reshape(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                 val k = Nd4j.scalar(2.0).castTo(DataType.INT64).reshape(1)

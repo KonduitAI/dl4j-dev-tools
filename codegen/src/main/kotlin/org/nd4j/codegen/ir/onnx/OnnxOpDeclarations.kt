@@ -111,7 +111,7 @@ val argMax = OnnxMappingProcess(
         tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(
                 invertBooleanNumber(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue = "dimensions" ,inputAttributeValue = "axis")),
+                valueMappings(mutableMapOf("dimensions" to "axis"))),
         opMappingRegistry = onnxOpRegistry
 )
 
@@ -122,7 +122,7 @@ val argMin = OnnxMappingProcess(
         tensorMappingRules = listOf(NDArrayMappingRule(mappingNamesToPerform = mutableMapOf("input" to "data"))),
         attributeMappingRules = listOf(
                 invertBooleanNumber(mapOf("keepDims" to "keepdims")),
-                listNumberToListNumber(outputAttributeValue = "dimensions",inputAttributeValue = "axis")),
+                valueMappings(mutableMapOf("dimensions" to "axis"))),
         opMappingRegistry = onnxOpRegistry
 )
 
