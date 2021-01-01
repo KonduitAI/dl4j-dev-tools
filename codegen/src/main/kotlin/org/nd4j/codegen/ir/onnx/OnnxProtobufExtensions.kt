@@ -149,17 +149,28 @@ fun Onnx.TensorProto.Builder.BoolData(boolData: List<Boolean>) {
 }
 
 
-fun createValueInfoFromTensor(arr: INDArray,valueInfoName: String): Onnx.ValueInfoProto {
-    return ValueInfoProto {
-        name = valueInfoName
-        type = TypeProto {
-            tensorType =  TensorDefinition {
-                elemType = convertToOnnxDataType(arr.dataType())
-                shape = OnnxShapeProto {
-                    OnnxShape(arr.shape().toList())
+fun createValueInfoFromTensor(arr: INDArray,valueInfoName: String,useShape: Boolean = true): Onnx.ValueInfoProto {
+    if(useShape)
+        return ValueInfoProto {
+            name = valueInfoName
+            type = TypeProto {
+                tensorType =  TensorDefinition {
+                    elemType = convertToOnnxDataType(arr.dataType())
+                    shape = OnnxShapeProto {
+                        OnnxShape(arr.shape().toList())
+                    }
                 }
-            }
 
+            }
         }
-    }
+    else
+        return ValueInfoProto {
+            name = valueInfoName
+            type = TypeProto {
+                tensorType =  TensorDefinition {
+                    elemType = convertToOnnxDataType(arr.dataType())
+                }
+
+            }
+        }
 }

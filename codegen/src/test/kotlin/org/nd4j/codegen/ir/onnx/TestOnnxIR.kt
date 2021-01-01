@@ -520,6 +520,11 @@ class TestOnnxIR {
             "less_equal" to listOf(2.0,1.0))
 
 
+        val singleInputIntOutput = mapOf(
+            "size" to Nd4j.linspace(1,4,4).reshape(2,2),
+            "shape_of" to Nd4j.linspace(1,4,4).reshape(2,2)
+        )
+
         val pairWiseBooleanInputs = mapOf(
             "or" to listOf(true,false),
             "and" to listOf(false,false),
@@ -534,6 +539,7 @@ class TestOnnxIR {
             "reduce_prod" to Nd4j.linspace(1,4,4).reshape(2,2),
             "reduce_norm1" to Nd4j.linspace(1,4,4).reshape(2,2),
             "reduce_norm2" to Nd4j.linspace(1,4,4).reshape(2,2)
+           // "reduce_logsumexp" to Nd4j.linspace(1,4,4).reshape(2,2)
         )
 
 
@@ -544,6 +550,9 @@ class TestOnnxIR {
             "divide" to listOf(2.0,1.0),
             "pow" to listOf(2.0,1.0)
         )
+
+        val mappedOps = setOf("elu","transpose")
+
         /**
          * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
          * java.lang.RuntimeException: Could not find an implementation for the node output:Cos(7)
@@ -796,7 +805,7 @@ class TestOnnxIR {
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x"),listOf("output"))
                     val assertion = onnxGraphRunner.run(inputs)
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x",assertion["output"]!!.reshape(1,2),result["output"]!!.reshape(1,2))
-                } else if(nd4jOpDef.name == "elu"){
+                } else if(mappedOps.contains(nd4jOpDef.name)){
                     val graphForOp = graphForOp(nd4jOpDef.name)
                     graphForOp.forEach { graph ->
                         val onnxIRGraph = OnnxIRGraph(graph.graphDef)
@@ -822,6 +831,35 @@ class TestOnnxIR {
                     }
 
 
+                } else   if(singleInputIntOutput.containsKey(nd4jOpDef.name)) {
+                    print("Running op $nd4jOpDef.name")
+                    val input = singleInputIntOutput[mappingProcess.opName()]!!.castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                    val graphToRun = GraphProto {
+                        Input(createValueInfoFromTensor(input,"input"))
+                        //Initializer(convertedTensor)
+                        Node(NodeProto {
+                            name = "output"
+                            opType = onnxOpDef.opType
+                            Input("input")
+                            Output("output")
+
+                        })
+
+                        Output(createValueInfoFromTensor(input,"output",false ))
+                    }
+
+
+                    val onnxIRGraph = OnnxIRGraph(graphToRun)
+                    val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
+                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val inputs = mapOf("input" to input)
+                    val assertion = onnxGraphRunner.run(inputs)
+                    val result = importedGraph.output(inputs,"output")
+                    if(assertion["output"]!!.length() == 1L)
+                        assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+                    else
+                        assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.ravel(),result["output"]!!.ravel())
+
                 }
             }
     }
@@ -830,6 +868,32 @@ class TestOnnxIR {
 
     fun graphForOp(opName: String): List<OnnxGraphInput> {
         when(opName) {
+            "transpose" -> {
+                val input = Nd4j.linspace(1,6,6).reshape(3,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val output = Nd4j.linspace(1,6,6).reshape(2,3).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val graphToRun = GraphProto {
+                    Input(createValueInfoFromTensor(input,"input"))
+                    //Initializer(convertedTensor)
+                    Node(NodeProto {
+                        name = "output"
+                        opType = "Transpose"
+                        Input("input")
+                        Output("output")
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INTS)
+                            .addInts(1).addInts(0)
+                            .setName("perm").build())
+
+                    })
+
+                    Output(createValueInfoFromTensor(output,"output"))
+                }
+
+                val inputMap = mapOf("input" to input)
+                return listOf(OnnxGraphInput(graphToRun,listOf("input"),listOf("output"),inputMap,inputMap))
+
+            }
             "elu" -> {
                 val input = Nd4j.scalar(1.0f).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                 val graphToRun = GraphProto {
