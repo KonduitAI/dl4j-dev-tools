@@ -542,18 +542,37 @@ class OnnxIRGraph(graphDef: Onnx.GraphProto): IRGraph<
             ret2.add(OnnxIRNode(it,opDefOrNull!!))
         }
 
-        /*    graphDef.outputList.forEach { output ->
-                //note: this is not a real op name in onnx, this is purely for flagging for import to grab the node from the initializer
-                val nodeToAdd = NodeProto {
-                    opType = "Constant"
-                    name = output.name
-                    Attribute(Onnx.AttributeProto.newBuilder().setName("value").
-                    addTensors(Onnx.TensorProto.getDefaultInstance()).build())
-                }
-
-                ret2.add(OnnxIRNode(nodeToAdd,identityOp))
+        //create dummy nodes by inferring which nodes have outputs
+        //setup identity nodes that reflect the output to automatically
+        //map index outputs to nodes that actually have outputs
+        val outputNames = graphDef.outputList.map { input -> input.name }.toSet()
+        val outputNodes = ArrayList<Onnx.NodeProto>()
+        graphDef.nodeList.forEach { nodeProto ->
+            val outputList = nodeProto.outputList.map { input -> input.toString() }.toSet()
+            val containsAny = outputNames.intersect(outputList)
+            if(containsAny.isNotEmpty()) {
+                outputNodes.add(nodeProto)
             }
-    */
+        }
+
+        outputNodes.forEach { nodeProto ->
+            nodeProto.outputList.forEachIndexed { index, outputName ->
+                val indexOfOutput = if(index < 1) "" else ":$index"
+                if(!ret2.map { node -> node.nodeName() }.contains(outputName)) {
+                    val nodeToAdd = NodeProto {
+                        opType = "Identity"
+                        name = outputName
+                        Input("${nodeProto.name}$indexOfOutput")
+                    }
+
+                    ret2.add(OnnxIRNode(nodeToAdd, identityOp))
+                }
+            }
+
+        }
+
+
+
         graphDef.initializerList.forEach { initializer ->
             //note: this is not a real op name in onnx, this is purely for flagging for import to grab the node from the initializer
             val nodeToAdd = NodeProto {

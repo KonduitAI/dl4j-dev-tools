@@ -806,7 +806,7 @@ val topK = OnnxMappingProcess(
         inputFrameworkOpName = "TopK",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
         attributeMappingRules = listOf(
-                valueMappings(mutableMapOf("needSort" to "sorted")),
+                invertBooleanNumber(mutableMapOf("needSort" to "sorted")),
                 convertNDArrayInputToScalarAttr(outputAttributeValue = "k",inputAttributeValue = "K")),
         opMappingRegistry = onnxOpRegistry
 )

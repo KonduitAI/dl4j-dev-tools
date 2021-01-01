@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.nd4j.codegen.ir.importGraph
 import org.nd4j.codegen.ir.tensorflow.GraphInput
 import org.nd4j.ir.OpNamespace
+import org.nd4j.linalg.api.buffer.DataType
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.onnxruntime.runner.OnnxRuntimeRunner
@@ -551,7 +552,7 @@ class TestOnnxIR {
             "pow" to listOf(2.0,1.0)
         )
 
-        val mappedOps = setOf("elu","transpose")
+        val mappedOps = setOf("elu","transpose","top_k")
 
         /**
          * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
@@ -792,6 +793,7 @@ class TestOnnxIR {
                                 .setType(Onnx.AttributeProto.AttributeType.INT)
                                 .setI(0)
                                 .setName("keepdims").build())
+
                         })
 
                         Output(createValueInfoFromTensor(output,"output"))
@@ -817,7 +819,7 @@ class TestOnnxIR {
                         val importedGraph = importGraph(onnxIRGraph,null,null,convertedArrays)
                         val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,graph.inputNames,graph.outputNames)
                         val assertion = onnxGraphRunner.run(inputs)
-                        val result = importedGraph.output(inputs,"output")
+                        val result = importedGraph.output(inputs,graph.outputNames)
                         assertEquals(assertion.keys,result.keys)
                         result.forEach { name,arr ->
                             if(arr.length().toInt() == 1) {
@@ -868,6 +870,45 @@ class TestOnnxIR {
 
     fun graphForOp(opName: String): List<OnnxGraphInput> {
         when(opName) {
+            "top_k" -> {
+                val input = Nd4j.linspace(1,6,6).reshape(3,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val k = Nd4j.scalar(2.0).castTo(DataType.INT64).reshape(1)
+                val output = Nd4j.linspace(1,6,6).reshape(2,3).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+                val graphToRun = GraphProto {
+                    Input(createValueInfoFromTensor(input,"input"))
+                    Input(createValueInfoFromTensor(k,"k"))
+                    Node(NodeProto {
+                        name = "output"
+                        opType = "TopK"
+                        Input("input")
+                        Input("k")
+                        Output("output")
+                        Output("indices")
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INT)
+                            .setI(0)
+                            .setName("axis").build())
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INT)
+                            .setI(1)
+                            .setName("sorted").build())
+                        Attribute(Onnx.AttributeProto.newBuilder()
+                            .setType(Onnx.AttributeProto.AttributeType.INT)
+                            .setI(1)
+                            .setName("largest").build())
+
+                    })
+
+
+                    Output(createValueInfoFromTensor(input,"output",false))
+                    Output(createValueInfoFromTensor(output,"indices",false))
+                }
+
+                val inputMap = mapOf("input" to input,"k" to k)
+                return listOf(OnnxGraphInput(graphToRun,listOf("input","k"),listOf("output","indices"),inputMap,inputMap))
+
+            }
             "transpose" -> {
                 val input = Nd4j.linspace(1,6,6).reshape(3,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                 val output = Nd4j.linspace(1,6,6).reshape(2,3).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
