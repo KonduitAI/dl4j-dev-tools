@@ -1157,242 +1157,265 @@ fun createVariable(varName: String,varType: VariableType,sameDiff: SameDiff,shap
     return SDVariable(varName,varType, sameDiff, shape.toLongArray(), dataType)
 }
 
-/**
- * TODO: Refactor to make agnostic to TF or onnx
- * TODO: implement test reflecting this behavior
- * Focus on making testable version of this allowing for quick creation of all op
- * instances and verify that the number of expected parameters are present in each op list
- * as well as relative to op type ensuring at least input fields are implemented.
- * Also check for certain common attributes like dimensions, axis keepDims
- * and check those are set properly
- *
- * There are also different parameter type assertions we could do such as
- * list int -> int conversion having the right ints in place
- * int -> ndarray ensuring input is present
- * etc
- * Relative to the mappings we also need to ensure that each arg descriptor mapped
- * has the right name and right index mapped and it each arg descriptor is mapped to 1 to 1
- * in the tests. This would be different for each op type, but for custom ops maps 1 to 1 for each arg descriptor
- * mapping to 1 argument
- *
- * For certain classes of ops this means making sure that certain default values are preset to their correct values (eg: x,y, inPlace, keepDims,..)
- */
-fun <GRAPH_TYPE: GeneratedMessageV3,
+
+interface ImportRunner<GRAPH_TYPE: GeneratedMessageV3,
         NODE_TYPE : GeneratedMessageV3,
         OP_DEF_TYPE : GeneratedMessageV3,
         TENSOR_TYPE : GeneratedMessageV3,
         ATTR_DEF_TYPE : GeneratedMessageV3,
         ATTR_VALUE_TYPE : GeneratedMessageV3,
-        DATA_TYPE: ProtocolMessageEnum> initAttributes(
-    df: DifferentialFunction,
-    frameworkName: String,
-    mappingContext: MappingContext<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF_TYPE, ATTR_VALUE_TYPE, DATA_TYPE>,
-    sd: SameDiff,
-    inputFrameworkOpName: String) {
+        DATA_TYPE: ProtocolMessageEnum> {
+    fun <GRAPH_TYPE: GeneratedMessageV3,
+            NODE_TYPE : GeneratedMessageV3,
+            OP_DEF_TYPE : GeneratedMessageV3,
+            TENSOR_TYPE : GeneratedMessageV3,
+            ATTR_DEF_TYPE : GeneratedMessageV3,
+            ATTR_VALUE_TYPE : GeneratedMessageV3,
+            DATA_TYPE: ProtocolMessageEnum> initAttributes(
+        df: DifferentialFunction,
+        frameworkName: String,
+        mappingContext: MappingContext<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF_TYPE, ATTR_VALUE_TYPE, DATA_TYPE>,
+        sd: SameDiff,
+        inputFrameworkOpName: String)
+}
 
-    val opMappingProcess =  OpRegistryHolder.lookupOpMappingProcess<
-            GRAPH_TYPE,
-            NODE_TYPE,
-            OP_DEF_TYPE,
-            TENSOR_TYPE,
-            DATA_TYPE,
-            ATTR_DEF_TYPE,
-            ATTR_VALUE_TYPE>(inputFrameworkOpName = inputFrameworkOpName, inputFrameworkName = frameworkName)
 
-    val applied = opMappingProcess.applyProcess(mappingContext)
 
-    when (df.opType()) {
-        Op.Type.CUSTOM -> {
-            val dynamicCustomOp = df as DynamicCustomOp
-            val grouped = applied.second.argDescriptorList.groupBy { descriptor ->
-                descriptor.argType
-            }
 
-            val sortedMap = HashMap<OpNamespace.ArgDescriptor.ArgType, List<OpNamespace.ArgDescriptor>>()
-            grouped.forEach { (argType, list) ->
-                sortedMap[argType] = list.sortedBy { arg -> arg.argIndex }
-            }
+class DefaultImportRunner<GRAPH_TYPE: GeneratedMessageV3,
+        NODE_TYPE : GeneratedMessageV3,
+        OP_DEF_TYPE : GeneratedMessageV3,
+        TENSOR_TYPE : GeneratedMessageV3,
+        ATTR_DEF_TYPE : GeneratedMessageV3,
+        ATTR_VALUE_TYPE : GeneratedMessageV3,
+        DATA_TYPE: ProtocolMessageEnum> : ImportRunner<GRAPH_TYPE,
+        NODE_TYPE ,
+        OP_DEF_TYPE,
+        TENSOR_TYPE,
+        ATTR_DEF_TYPE,
+        ATTR_VALUE_TYPE,
+        DATA_TYPE> {
+    override fun <GRAPH_TYPE : GeneratedMessageV3, NODE_TYPE : GeneratedMessageV3, OP_DEF_TYPE : GeneratedMessageV3, TENSOR_TYPE : GeneratedMessageV3, ATTR_DEF_TYPE : GeneratedMessageV3, ATTR_VALUE_TYPE : GeneratedMessageV3, DATA_TYPE : ProtocolMessageEnum> initAttributes(
+        df: DifferentialFunction,
+        frameworkName: String,
+        mappingContext: MappingContext<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, ATTR_DEF_TYPE, ATTR_VALUE_TYPE, DATA_TYPE>,
+        sd: SameDiff,
+        inputFrameworkOpName: String
+    ) {
 
-            sortedMap.forEach { (argType, listOfArgsSortedByIndex) ->
-                when (argType) {
-                    OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
-                        val args = dynamicCustomOp.args()
-                        val arraysToAdd = ArrayList<INDArray>()
-                        listOfArgsSortedByIndex.forEachIndexed { index, argDescriptor ->
-                            val convertedTensor = ndarrayFromNameSpaceTensor(argDescriptor.inputValue)
-                            if(index < args.size) {
-                                val arg = args[index]
-                                if (arg.variableType != VariableType.ARRAY) {
-                                    if (arg.shape == null) {
-                                        val emptyLongArray = LongArray(0)
-                                        arg.setShape(*emptyLongArray)
+        val opMappingProcess = OpRegistryHolder.lookupOpMappingProcess<
+                GRAPH_TYPE,
+                NODE_TYPE,
+                OP_DEF_TYPE,
+                TENSOR_TYPE,
+                DATA_TYPE,
+                ATTR_DEF_TYPE,
+                ATTR_VALUE_TYPE>(inputFrameworkOpName = inputFrameworkOpName, inputFrameworkName = frameworkName)
+
+        val applied = opMappingProcess.applyProcess(mappingContext)
+
+        when (df.opType()) {
+            Op.Type.CUSTOM -> {
+                val dynamicCustomOp = df as DynamicCustomOp
+                val grouped = applied.second.argDescriptorList.groupBy { descriptor ->
+                    descriptor.argType
+                }
+
+                val sortedMap = HashMap<OpNamespace.ArgDescriptor.ArgType, List<OpNamespace.ArgDescriptor>>()
+                grouped.forEach { (argType, list) ->
+                    sortedMap[argType] = list.sortedBy { arg -> arg.argIndex }
+                }
+
+                sortedMap.forEach { (argType, listOfArgsSortedByIndex) ->
+                    when (argType) {
+                        OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR -> {
+                            val args = dynamicCustomOp.args()
+                            val arraysToAdd = ArrayList<INDArray>()
+                            listOfArgsSortedByIndex.forEachIndexed { index, argDescriptor ->
+                                val convertedTensor = ndarrayFromNameSpaceTensor(argDescriptor.inputValue)
+                                if (index < args.size) {
+                                    val arg = args[index]
+                                    if (arg.variableType != VariableType.ARRAY) {
+                                        if (arg.shape == null) {
+                                            val emptyLongArray = LongArray(0)
+                                            arg.setShape(*emptyLongArray)
+                                        }
+
+                                        arraysToAdd.add(convertedTensor)
+
                                     }
-
+                                } else {
+                                    sd.constant(sd.generateNewVarName(argDescriptor.name, 0), convertedTensor)
                                     arraysToAdd.add(convertedTensor)
-
                                 }
-                            } else {
-                                sd.constant(sd.generateNewVarName(argDescriptor.name,0),convertedTensor)
-                                arraysToAdd.add(convertedTensor)
+
                             }
 
+                            //note we don't add arrays one at a time because addInputArgument requires all the input arrays to be added at once
+                            //dynamicCustomOp.addInputArgument(*arraysToAdd.toTypedArray())
+
+
                         }
 
-                        //note we don't add arrays one at a time because addInputArgument requires all the input arrays to be added at once
-                        //dynamicCustomOp.addInputArgument(*arraysToAdd.toTypedArray())
 
-
-                    }
-
-
-                    OpNamespace.ArgDescriptor.ArgType.INT64, OpNamespace.ArgDescriptor.ArgType.INT32 -> {
-                        listOfArgsSortedByIndex.forEach { dynamicCustomOp.addIArgument(it.int64Value) }
-                    }
-
-                    OpNamespace.ArgDescriptor.ArgType.DOUBLE, OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
-                        listOfArgsSortedByIndex.forEach { dynamicCustomOp.addTArgument(it.doubleValue) }
-                    }
-
-                    OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR -> {
-                        listOfArgsSortedByIndex.forEach {
-                            val convertedTensor = ndarrayFromNameSpaceTensor(it.inputValue)
-                            dynamicCustomOp.addOutputArgument(convertedTensor)
+                        OpNamespace.ArgDescriptor.ArgType.INT64, OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                            listOfArgsSortedByIndex.forEach { dynamicCustomOp.addIArgument(it.int64Value) }
                         }
-                    }
 
-                    OpNamespace.ArgDescriptor.ArgType.BOOL -> {
-                        listOfArgsSortedByIndex.forEach {
-                            dynamicCustomOp.addBArgument(it.boolValue)
+                        OpNamespace.ArgDescriptor.ArgType.DOUBLE, OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
+                            listOfArgsSortedByIndex.forEach { dynamicCustomOp.addTArgument(it.doubleValue) }
                         }
-                    }
 
-                    OpNamespace.ArgDescriptor.ArgType.DATA_TYPE -> {
-                        listOfArgsSortedByIndex.forEach {
-                            val dtype = convertNd4jDataTypeFromNameSpaceTensorDataType(it.dataTypeValue!!)
-                            val dtypeJavaClass = Class.forName("org.nd4j.linalg.api.buffer.DataType")
-                            dynamicCustomOp.addDArgument(dtype)
-                            df.javaClass.declaredFields.forEach { field ->
-                                if(!Modifier.isStatic(field.modifiers) && !Modifier.isFinal(field.modifiers)
-                                    && dtypeJavaClass.isAssignableFrom(field.type)) {
-                                    field.isAccessible = true
-                                    ReflectionUtils.setField(field,df,dtype)
+                        OpNamespace.ArgDescriptor.ArgType.OUTPUT_TENSOR -> {
+                            listOfArgsSortedByIndex.forEach {
+                                val convertedTensor = ndarrayFromNameSpaceTensor(it.inputValue)
+                                dynamicCustomOp.addOutputArgument(convertedTensor)
+                            }
+                        }
+
+                        OpNamespace.ArgDescriptor.ArgType.BOOL -> {
+                            listOfArgsSortedByIndex.forEach {
+                                dynamicCustomOp.addBArgument(it.boolValue)
+                            }
+                        }
+
+                        OpNamespace.ArgDescriptor.ArgType.DATA_TYPE -> {
+                            listOfArgsSortedByIndex.forEach {
+                                val dtype = convertNd4jDataTypeFromNameSpaceTensorDataType(it.dataTypeValue!!)
+                                val dtypeJavaClass = Class.forName("org.nd4j.linalg.api.buffer.DataType")
+                                dynamicCustomOp.addDArgument(dtype)
+                                df.javaClass.declaredFields.forEach { field ->
+                                    if (!Modifier.isStatic(field.modifiers) && !Modifier.isFinal(field.modifiers)
+                                        && dtypeJavaClass.isAssignableFrom(field.type)
+                                    ) {
+                                        field.isAccessible = true
+                                        ReflectionUtils.setField(field, df, dtype)
+                                    }
                                 }
                             }
                         }
-                    }
-                    else -> {
-                        throw IllegalArgumentException("Illegal type")
-                    }
-
-                }
-
-                //set any left over fields if they're found
-                setNameForFunctionFromDescriptors(listOfArgsSortedByIndex,df)
-            }
-
-
-        }
-        Op.Type.SCALAR -> {
-            applied.second.argDescriptorList.forEach { argDescriptor ->
-                val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
-                if (field != null) {
-                    field.isAccessible = true
-                    when (argDescriptor.name) {
-                        "x", "y", "z" -> {
-                            val tensorName = opMappingProcess.tensorMappingRules().filter { mappingRule -> mappingRule.mappingNamesToPerform()
-                                .containsKey(argDescriptor.name)}
-                                .map { rule -> rule.mappingNamesToPerform()[argDescriptor.name] }.first()!!
-                            val createdNDArray = mappingContext.tensorInputFor(tensorName).toNd4jNDArray()
-                            ReflectionUtils.setField(field, df, createdNDArray)
-                        }
                         else -> {
+                            throw IllegalArgumentException("Illegal type")
                         }
+
                     }
 
+                    //set any left over fields if they're found
+                    setNameForFunctionFromDescriptors(listOfArgsSortedByIndex, df)
                 }
-                else {
-                    if(argDescriptor.argType in listOf(OpNamespace.ArgDescriptor.ArgType.INT64,
-                            OpNamespace.ArgDescriptor.ArgType.DOUBLE,OpNamespace.ArgDescriptor.ArgType.INT32,
-                            OpNamespace.ArgDescriptor.ArgType.FLOAT)) {
-                        val scalarField = ReflectionUtils.findField(df.javaClass,"scalarValue")
-                        scalarField.isAccessible = true
-                        //access the first input (should have been set) and make sure the scalar type is the
-                        //the same
-                        val firstValue = sd.variables().first()
-                        val dtype = firstValue.dataType()
-                        when(argDescriptor.argType) {
-                            OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.doubleValue).castTo(dtype)
-                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
 
+
+            }
+            Op.Type.SCALAR -> {
+                applied.second.argDescriptorList.forEach { argDescriptor ->
+                    val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
+                    if (field != null) {
+                        field.isAccessible = true
+                        when (argDescriptor.name) {
+                            "x", "y", "z" -> {
+                                val tensorName = opMappingProcess.tensorMappingRules().filter { mappingRule ->
+                                    mappingRule.mappingNamesToPerform()
+                                        .containsKey(argDescriptor.name)
+                                }
+                                    .map { rule -> rule.mappingNamesToPerform()[argDescriptor.name] }.first()!!
+                                val createdNDArray = mappingContext.tensorInputFor(tensorName).toNd4jNDArray()
+                                ReflectionUtils.setField(field, df, createdNDArray)
                             }
-                            OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.floatValue).castTo(dtype)
-                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
-
+                            else -> {
                             }
-                            OpNamespace.ArgDescriptor.ArgType.INT32 -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int32Value).castTo(dtype)
-                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
+                        }
 
-                            }
-                            OpNamespace.ArgDescriptor.ArgType.INT64 -> {
-                                val nd4jScalarValue = Nd4j.scalar(argDescriptor.int64Value).castTo(dtype)
-                                ReflectionUtils.setField(scalarField,df,nd4jScalarValue)
+                    } else {
+                        if (argDescriptor.argType in listOf(
+                                OpNamespace.ArgDescriptor.ArgType.INT64,
+                                OpNamespace.ArgDescriptor.ArgType.DOUBLE, OpNamespace.ArgDescriptor.ArgType.INT32,
+                                OpNamespace.ArgDescriptor.ArgType.FLOAT
+                            )
+                        ) {
+                            val scalarField = ReflectionUtils.findField(df.javaClass, "scalarValue")
+                            scalarField.isAccessible = true
+                            //access the first input (should have been set) and make sure the scalar type is the
+                            //the same
+                            val firstValue = sd.variables().first()
+                            val dtype = firstValue.dataType()
+                            when (argDescriptor.argType) {
+                                OpNamespace.ArgDescriptor.ArgType.DOUBLE -> {
+                                    val nd4jScalarValue = Nd4j.scalar(argDescriptor.doubleValue).castTo(dtype)
+                                    ReflectionUtils.setField(scalarField, df, nd4jScalarValue)
 
+                                }
+                                OpNamespace.ArgDescriptor.ArgType.FLOAT -> {
+                                    val nd4jScalarValue = Nd4j.scalar(argDescriptor.floatValue).castTo(dtype)
+                                    ReflectionUtils.setField(scalarField, df, nd4jScalarValue)
+
+                                }
+                                OpNamespace.ArgDescriptor.ArgType.INT32 -> {
+                                    val nd4jScalarValue = Nd4j.scalar(argDescriptor.int32Value).castTo(dtype)
+                                    ReflectionUtils.setField(scalarField, df, nd4jScalarValue)
+
+                                }
+                                OpNamespace.ArgDescriptor.ArgType.INT64 -> {
+                                    val nd4jScalarValue = Nd4j.scalar(argDescriptor.int64Value).castTo(dtype)
+                                    ReflectionUtils.setField(scalarField, df, nd4jScalarValue)
+
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        else -> {
-            var hasDimensions = false
-            applied.second.argDescriptorList.forEach { argDescriptor ->
-                if(argDescriptor.name == "dimensions")
-                    hasDimensions = true
-                val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
-                if (field != null) {
-                    field.isAccessible = true
-                    when (argDescriptor.name) {
-                        "x", "y", "z" -> {
-                            val tensorName = opMappingProcess.tensorMappingRules().filter { mappingRule -> mappingRule.mappingNamesToPerform()
-                                .containsKey(argDescriptor.name)}
-                                .map { rule -> rule.mappingNamesToPerform()[argDescriptor.name] }.first()!!
-                            val createdNDArray = mappingContext.tensorInputFor(tensorName).toNd4jNDArray()
-                            ReflectionUtils.setField(field, df, createdNDArray)
+            else -> {
+                var hasDimensions = false
+                applied.second.argDescriptorList.forEach { argDescriptor ->
+                    if (argDescriptor.name == "dimensions")
+                        hasDimensions = true
+                    val field = ReflectionUtils.findField(df.javaClass, argDescriptor.name)
+                    if (field != null) {
+                        field.isAccessible = true
+                        when (argDescriptor.name) {
+                            "x", "y", "z" -> {
+                                val tensorName = opMappingProcess.tensorMappingRules().filter { mappingRule ->
+                                    mappingRule.mappingNamesToPerform()
+                                        .containsKey(argDescriptor.name)
+                                }
+                                    .map { rule -> rule.mappingNamesToPerform()[argDescriptor.name] }.first()!!
+                                val createdNDArray = mappingContext.tensorInputFor(tensorName).toNd4jNDArray()
+                                ReflectionUtils.setField(field, df, createdNDArray)
+                            }
+                            "keepDims" -> ReflectionUtils.setField(field, df, argDescriptor.boolValue)
+                            else -> {
+                            }
                         }
-                        "keepDims" -> ReflectionUtils.setField(field, df, argDescriptor.boolValue)
-                        else -> {
+                    }
+                }
+
+                if (hasDimensions) {
+                    //dimensions sorted by index
+                    val dimArgs =
+                        applied.second.argDescriptorList.filter { argDescriptor -> argDescriptor.name.contains("dimensions") }
+                            .sortedBy { argDescriptor -> argDescriptor.argIndex }
+                            .map { argDescriptor -> argDescriptor.int64Value.toInt() }.toIntArray()
+                    val dimensionsField = ReflectionUtils.findField(df.javaClass, "dimensions")
+                    val dimensionzField = ReflectionUtils.findField(df.javaClass, "dimensionz")
+                    if (dimensionsField != null) {
+                        dimensionsField.isAccessible = true
+                        if (intArrayOf(0).javaClass.isAssignableFrom(dimensionsField.type)) {
+                            ReflectionUtils.setField(dimensionsField, df, dimArgs)
                         }
                     }
-                }
-            }
 
-            if(hasDimensions) {
-                //dimensions sorted by index
-                val dimArgs = applied.second.argDescriptorList.filter { argDescriptor -> argDescriptor.name.contains("dimensions") }.sortedBy { argDescriptor -> argDescriptor.argIndex }
-                    .map { argDescriptor -> argDescriptor.int64Value.toInt() }.toIntArray()
-                val dimensionsField = ReflectionUtils.findField(df.javaClass,"dimensions")
-                val dimensionzField = ReflectionUtils.findField(df.javaClass,"dimensionz")
-                if(dimensionsField != null) {
-                    dimensionsField.isAccessible = true
-                    if(intArrayOf(0).javaClass.isAssignableFrom(dimensionsField.type)) {
-                        ReflectionUtils.setField(dimensionsField,df,dimArgs)
+                    if (dimensionzField != null) {
+                        dimensionzField.isAccessible = true
+                        if (INDArray::class.java.isAssignableFrom(dimensionzField.type)) {
+                            val buffer = Nd4j.createBuffer(dimArgs)
+                            val createdArr = Nd4j.create(buffer)
+                            ReflectionUtils.setField(dimensionzField, df, createdArr)
+                        }
                     }
-                }
 
-                if(dimensionzField != null) {
-                    dimensionzField.isAccessible = true
-                    if(INDArray::class.java.isAssignableFrom(dimensionzField.type)) {
-                        val buffer = Nd4j.createBuffer(dimArgs)
-                        val createdArr = Nd4j.create(buffer)
-                        ReflectionUtils.setField(dimensionzField,df,createdArr)
-                    }
                 }
 
             }
-
         }
     }
 }
@@ -1480,7 +1503,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         ATTR_VALUE_TYPE : GeneratedMessageV3,
         DATA_TYPE: ProtocolMessageEnum>
         importGraph(irGraph: IRGraph<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>,
-                    importOverride: Map<String?, OpImportOverride<GRAPH_TYPE, NODE_TYPE, ATTR_VALUE_TYPE>?>?,
+                    importOverride: Map<String?, ImportRunner<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>?>?,
                     opFilter: OpImportFilter<GRAPH_TYPE,NODE_TYPE,ATTR_VALUE_TYPE>?,
                     dynamicVariables: Map<String, TENSOR_TYPE> = emptyMap()): SameDiff {
 
@@ -1555,7 +1578,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
 
 
     val mergeOpsPostProcess: MutableMap<String, String> = HashMap()
-
+    val defaultRunner = DefaultImportRunner<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>()
     //Go through ops in order, and add to the graph
     val constControlDeps: MutableMap<String, List<String>> = HashMap() //Key: constant name. Value: control dependencies
     while (!availableToAdd.isEmpty()) {
@@ -1588,7 +1611,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         } else {
             if (importOverride == null || !importOverride.containsKey(name)) {
                 //Standard case
-               //note, ordering matters here for onnx
+                //note, ordering matters here for onnx
                 if (irGraph.nodeIsPlaceHolder(nd.nodeName())) {
                     var shape = irGraph.shapeOfInput(nd.nodeName())
 
@@ -1767,7 +1790,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         .controlDeps(controlDeps)
                         .build()
                     sd.ops[name] = op
-                    initAttributes(df, irGraph.frameworkName(), mappingContext, sd,opName)
+                    defaultRunner.initAttributes(df, irGraph.frameworkName(), mappingContext, sd,opName)
 
 
                     //DType calculate for output variables (set/correct if necessary)
@@ -1840,6 +1863,39 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                     println("Imported op: $opName (name=$name)")
                 }
             } else {
+
+                val opMappingProcess =  OpRegistryHolder.lookupOpMappingProcess<
+                        GRAPH_TYPE,
+                        NODE_TYPE,
+                        OP_DEF_TYPE,
+                        TENSOR_TYPE,
+                        DATA_TYPE,
+                        ATTR_DEF_TYPE,
+                        ATTR_VALUE_TYPE>(inputFrameworkOpName = opName, inputFrameworkName = irGraph.frameworkName())
+
+
+
+                val dfInstance = if( DifferentialFunctionClassHolder.getInstance().hasName(opName))DifferentialFunctionClassHolder.getInstance().getInstance(opName)
+                else DynamicCustomOp.builder(opName).build()
+                Preconditions.checkState(dfInstance != null, "Could not find class for ${opMappingProcess.opName()}", opName)
+                var df: DifferentialFunction
+                df = try {
+                    dfInstance.javaClass.newInstance()
+                } catch (t: Throwable) {
+                    //Should never happen because function was already created via no-arg constructor earlier
+                    throw RuntimeException(t)
+                }
+
+                df.sameDiff = sd
+                df.ownName = name
+
+                val opDefLookup = opRegistryHolder.lookupInputFrameworkOpDef(opName) as OP_DEF_TYPE
+                val mappingContext = irGraph.createMappingContext(
+                    opDef = opDefLookup,
+                    node = irGraph.nodeByName(name),
+                    dynamicVariables = dynamicVariables
+                )
+
                 //Import override case
                 val o = importOverride[name]
                 println("Importing op $opName using override $importOverride")
@@ -1852,6 +1908,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 val opInputs = opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR  }
                 val numInputs = opInputs.size
 
+
                 for (i in 0 until numInputs) {
                     val inName = nodeInputTo[nd.nodeName()]!![i]!!
                     val controlDep = isControlDep(inName)
@@ -1863,7 +1920,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                         inputs.add(v)
                     }
 
-                    //o!!.initFromTensorFlow(inputs, controlDeps, nd, sd, nd.attributeMap(), irGraph)
+                    o!!.initAttributes(df,irGraph.frameworkName(),mappingContext,sd,opName)
                 }
             }
         }

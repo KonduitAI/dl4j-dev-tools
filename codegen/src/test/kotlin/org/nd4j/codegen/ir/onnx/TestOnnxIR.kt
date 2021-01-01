@@ -552,7 +552,7 @@ class TestOnnxIR {
             "pow" to listOf(2.0,1.0)
         )
 
-        val mappedOps = setOf("elu","transpose","top_k")
+        val mappedOps = setOf("elu","transpose")//,"top_k")
 
         /**
          * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
@@ -562,6 +562,7 @@ class TestOnnxIR {
          * https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md
          */
 
+        val finishedOps = HashSet<String>()
         onnxOpRegistry.mappingProcessNames()
             .filter { onnxOpRegistry.hasMappingOpProcess(it) }
             .map { onnxOpRegistry.lookupOpMappingProcess(it) }.forEach { mappingProcess ->
@@ -592,6 +593,7 @@ class TestOnnxIR {
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+                    finishedOps.add(nd4jOpDef.name)
 
                 } else if(scalarFloatOps.containsKey(nd4jOpDef.name)) {
                     print("Running op $nd4jOpDef.name")
@@ -619,6 +621,7 @@ class TestOnnxIR {
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+                    finishedOps.add(nd4jOpDef.name)
 
                 }
 
@@ -650,6 +653,8 @@ class TestOnnxIR {
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
+                    finishedOps.add(nd4jOpDef.name)
+
                 }
 
 
@@ -682,6 +687,8 @@ class TestOnnxIR {
                     val result = importedGraph.output(inputs,"output")
                     val assertion = onnxGraphRunner.run(inputs)
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                    finishedOps.add(nd4jOpDef.name)
+
                 }  else if(pairWiseBooleanInputs.containsKey(nd4jOpDef.name)) {
                     print("Running op def $nd4jOpDef.name")
                     val x = Nd4j.scalar(pairWiseBooleanInputs[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.BOOL)
@@ -710,6 +717,8 @@ class TestOnnxIR {
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                    finishedOps.add(nd4jOpDef.name)
+
                 } else if(pairWiseBooleanOps.containsKey(nd4jOpDef.name)) {
                     print("Running op def $nd4jOpDef.name")
                     val x = Nd4j.scalar(pairWiseBooleanOps[mappingProcess.opName()]!![0]!!).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
@@ -740,6 +749,8 @@ class TestOnnxIR {
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x $y",assertion["output"]!!.getDouble(0),result["output"]!!.getDouble(0))
+                    finishedOps.add(nd4jOpDef.name)
+
                 }
 
                 else if(singleInputBooleanOps.containsKey(nd4jOpDef.name)) {
@@ -768,6 +779,8 @@ class TestOnnxIR {
                     val inputs = mapOf("x" to x)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
+                    finishedOps.add(nd4jOpDef.name)
+
                     //assertEquals("Function ${nd4jOpDef.name} failed with input $x",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
                 }
 
@@ -807,6 +820,8 @@ class TestOnnxIR {
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x"),listOf("output"))
                     val assertion = onnxGraphRunner.run(inputs)
                     assertEquals("Function ${nd4jOpDef.name} failed with input $x",assertion["output"]!!.reshape(1,2),result["output"]!!.reshape(1,2))
+                    finishedOps.add(nd4jOpDef.name)
+
                 } else if(mappedOps.contains(nd4jOpDef.name)){
                     val graphForOp = graphForOp(nd4jOpDef.name)
                     graphForOp.forEach { graph ->
@@ -829,6 +844,9 @@ class TestOnnxIR {
                                 assertEquals("Function ${nd4jOpDef.name} failed with input ${graph.inputNames}",assertion[name],arr)
                             }
                         }
+
+                        finishedOps.add(nd4jOpDef.name)
+
 
                     }
 
@@ -861,9 +879,12 @@ class TestOnnxIR {
                         assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.reshape(1,1),result["output"]!!.reshape(1,1))
                     else
                         assertEquals("Function ${nd4jOpDef.name} failed with input $input",assertion["output"]!!.ravel(),result["output"]!!.ravel())
+                    finishedOps.add(nd4jOpDef.name)
 
                 }
             }
+
+        println("Finished ops totaling ${finishedOps.size} out of ${onnxOpRegistry.mappedNd4jOpNames().size}")
     }
 
 
@@ -873,7 +894,7 @@ class TestOnnxIR {
             "top_k" -> {
                 val input = Nd4j.linspace(1,4,4).reshape(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                 val k = Nd4j.scalar(2.0).castTo(DataType.INT64).reshape(1)
-                val output = Nd4j.linspace(1,4,4).reshape(2,4).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                val output = Nd4j.linspace(1,4,4).reshape(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
 
                 val graphToRun = GraphProto {
                     Input(createValueInfoFromTensor(input,"input"))
