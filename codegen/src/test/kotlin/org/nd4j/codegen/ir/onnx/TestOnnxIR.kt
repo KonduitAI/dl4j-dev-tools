@@ -871,9 +871,9 @@ class TestOnnxIR {
     fun graphForOp(opName: String): List<OnnxGraphInput> {
         when(opName) {
             "top_k" -> {
-                val input = Nd4j.linspace(1,6,6).reshape(3,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val input = Nd4j.linspace(1,4,4).reshape(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                 val k = Nd4j.scalar(2.0).castTo(DataType.INT64).reshape(1)
-                val output = Nd4j.linspace(1,6,6).reshape(2,3).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+                val output = Nd4j.linspace(1,4,4).reshape(2,4).castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
 
                 val graphToRun = GraphProto {
                     Input(createValueInfoFromTensor(input,"input"))
