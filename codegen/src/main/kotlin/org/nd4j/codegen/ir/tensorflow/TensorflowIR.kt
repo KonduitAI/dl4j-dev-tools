@@ -894,6 +894,22 @@ fun mapTensorProto(tfTensor: TensorProto): INDArray {
     return m.toNDArray()
 }
 
+fun attributeValueTypeForTensorflowAttribute(attributeDef: AttrDef): AttributeValueType {
+    when(attributeDef.type) {
+        "list(bool)" -> return AttributeValueType.LIST_BOOL
+        "bool" -> return AttributeValueType.BOOL
+        "string" -> return AttributeValueType.STRING
+        "list(string)" -> return AttributeValueType.LIST_STRING
+        "int" -> return AttributeValueType.INT
+        "list(int)" -> return AttributeValueType.LIST_INT
+        "float" -> return AttributeValueType.FLOAT
+        "list(float)" -> return AttributeValueType.LIST_FLOAT
+        "tensor" -> return AttributeValueType.TENSOR
+        "list(tensor)" -> return AttributeValueType.LIST_TENSOR
+        "type" -> return AttributeValueType.DATA_TYPE
+    }
 
+    return AttributeValueType.INVALID
+}
 
 

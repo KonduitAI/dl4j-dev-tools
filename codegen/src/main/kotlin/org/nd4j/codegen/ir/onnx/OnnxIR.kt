@@ -719,13 +719,8 @@ IRGraph< Onnx.GraphProto,Onnx.NodeProto, Onnx.NodeProto, Onnx.TensorProto,
     override fun tensorInputFromInputFrameworkName(name: String): IRTensor<Onnx.TensorProto, Onnx.TensorProto.DataType> {
         val castedGraph = graph as OnnxIRGraph
         val graphDef = castedGraph.graphDef()
-        var foundIndex = -1
+        var foundIndex = opDef.inputList.map { input -> input.toString() }.indexOf(name)
 
-        var baseIndexOffset: Int = 0
-        opDef.inputList.forEachIndexed { index, argDef ->
-            if(argDef == name)
-                foundIndex = min(index + baseIndexOffset,node.inputCount - 1)
-        }
 
 
         if(foundIndex < 0) {
@@ -844,6 +839,21 @@ fun convertToOnnxTensor(inputArray: INDArray, name: String): Onnx.TensorProto {
 
 }
 
+
+fun attributeValueTypeForOnnxAttribute(attributeDef: Onnx.AttributeProto) : AttributeValueType {
+    when(attributeDef.type) {
+        Onnx.AttributeProto.AttributeType.STRING -> return AttributeValueType.STRING
+        Onnx.AttributeProto.AttributeType.STRINGS -> return AttributeValueType.LIST_STRING
+        Onnx.AttributeProto.AttributeType.INT-> return AttributeValueType.INT
+        Onnx.AttributeProto.AttributeType.INTS -> return AttributeValueType.LIST_INT
+        Onnx.AttributeProto.AttributeType.FLOAT -> return AttributeValueType.FLOAT
+        Onnx.AttributeProto.AttributeType.FLOATS -> return AttributeValueType.LIST_FLOAT
+        Onnx.AttributeProto.AttributeType.TENSOR -> return AttributeValueType.TENSOR
+        Onnx.AttributeProto.AttributeType.TENSORS -> return AttributeValueType.LIST_TENSOR
+    }
+
+    return AttributeValueType.INVALID
+}
 
 
 

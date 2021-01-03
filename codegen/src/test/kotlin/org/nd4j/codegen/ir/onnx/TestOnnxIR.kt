@@ -6,6 +6,7 @@ import onnx.Onnx
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.nd4j.codegen.ir.importGraph
+import org.nd4j.codegen.ir.registry.OpRegistryHolder
 import org.nd4j.codegen.ir.tensorflow.GraphInput
 import org.nd4j.ir.OpNamespace
 import org.nd4j.linalg.api.buffer.DataType
@@ -343,7 +344,7 @@ class TestOnnxIR {
                         }
                     }
                         //SameDiff.importFrozenTF(irGraph.graphDef)
-                        val sameDiffResult = importGraph(irGraph = irGraph,importOverride = null,opFilter = null)
+                        val sameDiffResult = importGraph(irGraph = irGraph,importOverride = null,opFilter = null,opMappingRegistry = OpRegistryHolder.onnx())
                         println("Processed op name $opName")
 
                     }
@@ -552,7 +553,7 @@ class TestOnnxIR {
             "pow" to listOf(2.0,1.0)
         )
 
-        val mappedOps = setOf("elu","transpose","argmin","argmax")//,"top_k")
+        val mappedOps = setOf("elu","transpose","argmin","argmax","leakyrelu","prelu","non_max_suppression_v3")//,"top_k")
 
         /**
          * NOTE WHEN WRITING TESTS, IF YOU SEE AN ERROR like:
@@ -588,7 +589,7 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val importedGraph = importGraph(onnxIRGraph,null,null,emptyMap(),OpRegistryHolder.onnx())
                     val inputs = mapOf("input" to input)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -616,7 +617,7 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val importedGraph = importGraph(onnxIRGraph,null,null,emptyMap(),OpRegistryHolder.onnx())
                     val inputs = mapOf("input" to input)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -648,7 +649,7 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val importedGraph = importGraph(onnxIRGraph,null,null,emptyMap(),OpRegistryHolder.onnx())
                     val inputs = mapOf("input" to input)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -682,7 +683,8 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,
+                        mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")),OpRegistryHolder.onnx())
                     val inputs = mapOf("x" to x,"y" to y)
                     val result = importedGraph.output(inputs,"output")
                     val assertion = onnxGraphRunner.run(inputs)
@@ -712,7 +714,8 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,
+                        mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")),OpRegistryHolder.onnx())
                     val inputs = mapOf("x" to x,"y" to y)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -744,7 +747,8 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x","y"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,
+                        mapOf("x" to convertToOnnxTensor(x,"x"),"y" to convertToOnnxTensor(y,"y")),OpRegistryHolder.onnx())
                     val inputs = mapOf("x" to x,"y" to y)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -775,7 +779,7 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x")))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x")),OpRegistryHolder.onnx())
                     val inputs = mapOf("x" to x)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -815,7 +819,7 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val inputs = mapOf("x" to x)
-                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x")))
+                    val importedGraph = importGraph(onnxIRGraph,null,null,mapOf("x" to convertToOnnxTensor(x,"x")),OpRegistryHolder.onnx())
                     val result = importedGraph.output(inputs,"output")
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("x"),listOf("output"))
                     val assertion = onnxGraphRunner.run(inputs)
@@ -831,7 +835,7 @@ class TestOnnxIR {
                         graph.inputArrays.forEach { name, arr ->
                             convertedArrays[name] = convertToOnnxTensor(arr,name)
                         }
-                        val importedGraph = importGraph(onnxIRGraph,null,null,convertedArrays)
+                        val importedGraph = importGraph(onnxIRGraph,null,null,convertedArrays,OpRegistryHolder.onnx())
                         val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,graph.inputNames,graph.outputNames)
                         val assertion = onnxGraphRunner.run(inputs)
                         val result = importedGraph.output(inputs,graph.outputNames)
@@ -871,7 +875,7 @@ class TestOnnxIR {
 
                     val onnxIRGraph = OnnxIRGraph(graphToRun)
                     val onnxGraphRunner = OnnxIRGraphRunner(onnxIRGraph,listOf("input"),listOf("output"))
-                    val importedGraph = importGraph(onnxIRGraph,null,null)
+                    val importedGraph = importGraph(onnxIRGraph,null,null,emptyMap(),OpRegistryHolder.onnx())
                     val inputs = mapOf("input" to input)
                     val assertion = onnxGraphRunner.run(inputs)
                     val result = importedGraph.output(inputs,"output")
@@ -891,6 +895,61 @@ class TestOnnxIR {
 
     fun graphForOp(opName: String): List<OnnxGraphInput> {
         when(opName) {
+            "non_max_suppression_v3" -> {
+                /**
+                 * TODO: Add pre and post processing for each node.
+                 * Our NMS requires 2d, but onnx is 3d. Attempt to see
+                 * if generalized pre/post processing node additions as part of a mapping process can work.
+                 *
+                 */
+                print("Running op def $opName")
+                val boxesVal = Nd4j.create(arrayOf(
+                    floatArrayOf(0f,0f,1f,1f),
+                    floatArrayOf(0f,0.1f,1f,1.1f),
+                    floatArrayOf(0f,-0.1f,1f,0.9f),
+                    floatArrayOf(0f,10f,1f,11f)
+                )).reshape(1,4,4).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+
+                val scoresVal = Nd4j.create(listOf(0.9f,0.75f,0.6f,0.95f).toFloatArray())
+                    .reshape(1,1,4)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val maxOutputSize = Nd4j.scalar(4.0).castTo(DataType.INT64)
+                val iouThreshold = Nd4j.scalar(0.5).castTo(DataType.FLOAT)
+                val scoreThreshold = Nd4j.scalar(0.0).castTo(DataType.FLOAT)
+
+                val inputs = mapOf("boxes" to boxesVal,"scores" to scoresVal,"max_output_boxes_per_class" to maxOutputSize,
+                    "iou_threshold" to iouThreshold,"score_threshold" to scoreThreshold)
+                val output = Nd4j.scalar(1)
+                    .castTo(org.nd4j.linalg.api.buffer.DataType.INT64)
+
+
+                val graphToRun = GraphProto {
+                    Input(createValueInfoFromTensor(boxesVal,"boxes",false))
+                    Input(createValueInfoFromTensor(scoresVal,"scores",false))
+                    Input(createValueInfoFromTensor(maxOutputSize,"max_output_boxes_per_class",false))
+                    Input(createValueInfoFromTensor(iouThreshold,"iou_threshold",false))
+                    Input(createValueInfoFromTensor(scoreThreshold,"score_threshold",false))
+
+                    //Initializer(convertedTensor)
+                    Node(NodeProto {
+                        Input("boxes")
+                        Input("scores")
+                        Input("max_output_boxes_per_class")
+                        Input("iou_threshold")
+                        Input("score_threshold")
+                        Output("output")
+                        name = "output"
+                        opType = "NonMaxSuppression"
+
+
+
+                    })
+
+                    Output(createValueInfoFromTensor(output,"output",false))
+                }
+
+                return listOf(OnnxGraphInput(graphToRun,listOf("boxes","scores","max_output_boxes_per_class","iou_threshold","score_threshold"),listOf("output"),inputs,inputs))
+            }
             "argmin","argmax" -> {
                 print("Running op def $opName")
                 val x = Nd4j.linspace(1,4,4).reshape(2,2).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
@@ -991,14 +1050,37 @@ class TestOnnxIR {
                 return listOf(OnnxGraphInput(graphToRun,listOf("input"),listOf("output"),inputMap,inputMap))
 
             }
-            "elu" -> {
+            "prelu" -> {
+                val input = Nd4j.randn(3,4,5).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
+                val alpha = Nd4j.zeros(1,1,5).addi(0.1).castTo(DataType.FLOAT)
+                val graphToRun = GraphProto {
+                    Input(createValueInfoFromTensor(input,"input",false))
+                    Input(createValueInfoFromTensor(input,"slope",false))
+                    //Initializer(convertedTensor)
+                    Node(NodeProto {
+                        name = "output"
+                        opType = "PRelu"
+                        Input("input")
+                        Input("slope")
+                        Output("output")
+
+                    })
+
+                    Output(createValueInfoFromTensor(input,"output",false))
+                }
+
+                val inputMap = mapOf("input" to input,"slope" to alpha)
+                return listOf(OnnxGraphInput(graphToRun,listOf("input","slope"),listOf("output"),inputMap,inputMap))
+
+            }
+            "elu","leakyrelu" -> {
                 val input = Nd4j.scalar(1.0f).castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT)
                 val graphToRun = GraphProto {
                     Input(createValueInfoFromTensor(input,"input"))
                     //Initializer(convertedTensor)
                     Node(NodeProto {
                         name = "output"
-                        opType = "Elu"
+                        opType = if(name == "elu") "Elu" else "LeakyRelu"
                         Input("input")
                         Output("output")
                         Attribute(Onnx.AttributeProto.newBuilder()

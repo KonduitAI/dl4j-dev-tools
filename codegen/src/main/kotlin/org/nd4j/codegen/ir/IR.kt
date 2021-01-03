@@ -181,6 +181,8 @@ interface MappingProcess<
 
 
 
+    fun inputOpDefValueTypes(): Map<String,AttributeValueType>
+
     fun opName(): String
 
     fun frameworkVersion(): String
@@ -809,12 +811,21 @@ abstract  class AbstractMappingProcess<
         retBuilder.frameworkName = inputFramework()
         retBuilder.opName = opName()
 
+
+        /**
+         * TODO: add input index overrides
+         */
+
+        indexOverrides().forEach { indexToOverride, replacementIndex ->
+            retBuilder.putIndexOverrides(indexToOverride.toLong(),replacementIndex.toLong())
+        }
+
         tensorMappingRules.forEach {
-            retBuilder.ruleBuilderList.add(it.serialize().toBuilder())
+            retBuilder.addRule(it.serialize().toBuilder())
         }
 
         attributeMappingRules.forEach {
-            retBuilder.ruleBuilderList.add(it.serialize().toBuilder())
+            retBuilder.addRule(it.serialize().toBuilder())
         }
 
         return retBuilder.build()
@@ -1505,14 +1516,15 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         importGraph(irGraph: IRGraph<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>,
                     importOverride: Map<String?, ImportRunner<GRAPH_TYPE,NODE_TYPE,OP_DEF_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>?>?,
                     opFilter: OpImportFilter<GRAPH_TYPE,NODE_TYPE,ATTR_VALUE_TYPE>?,
-                    dynamicVariables: Map<String, TENSOR_TYPE> = emptyMap()): SameDiff {
+                    dynamicVariables: Map<String, TENSOR_TYPE> = emptyMap(),
+                    opMappingRegistry: OpMappingRegistry<GRAPH_TYPE, NODE_TYPE, OP_DEF_TYPE, TENSOR_TYPE, DATA_TYPE, ATTR_DEF_TYPE, ATTR_VALUE_TYPE>): SameDiff {
 
     /*
         First, build an in-memory representation of the graph that allows us to build the graph incrementally
         If we can build the graph incrementally, we can make sure that the added variables are set up with the correct
         datatype and (once implemented) greedy shape inference
          */
-    val availableToAddSet: MutableSet<String> = HashSet() //TODO maybe unnecessary?
+    val availableToAddSet = HashSet<String>() //TODO maybe unnecessary?
     val availableToAdd: Queue<IRNode<NODE_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>> = LinkedList()
     val remainingNodes: MutableMap<String, IRNode<NODE_TYPE,TENSOR_TYPE,ATTR_DEF_TYPE,ATTR_VALUE_TYPE,DATA_TYPE>> = HashMap() //All other nodes, not in availableToAdd
     val nodeInputTo: MutableMap<String, MutableList<String>> = HashMap() // For op x -> y, x is key, y is value. Note that these are OP names not VARIABLE names
@@ -1520,8 +1532,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
     val importInfo = irGraph.importInfoForEachNode(dynamicVariables = dynamicVariables)
     //First, add any constants, placeholders, and zero-input ops
     val sd = SameDiff.create()
-    val opRegistryHolder = if(irGraph.frameworkName() == "tensorflow")  OpRegistryHolder.tensorflow() else  OpRegistryHolder.onnx()
-    val nodeInputOverrides = HashMap<String,List<String>>()
     irGraph.nodeList().forEach { node ->
         val importInfoForNode = importInfo[node.nodeName()]!!
         val numInputs = node.numInputs()
@@ -1586,12 +1596,6 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
         val name = nd.nodeName()
         val opName = nd.opName()
         val importInfoForNode = importInfo[name]
-        /**
-         * How do we handle flexible inputs here?
-         * Things may not map 1 to 1.
-         * We can optionally add attributes or
-         * inputs, sometimes we might try to do both.
-         */
 
         availableToAddSet.remove(name)
         println("Adding operation to graph: $opName (name=$name)")
@@ -1673,7 +1677,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                             ATTR_VALUE_TYPE>(inputFrameworkOpName = opName, inputFrameworkName = irGraph.frameworkName())
 
 
-                    val nd4jOpName = opRegistryHolder.lookupOpMappingProcess(opName).opName()
+                    val nd4jOpName = opMappingRegistry.lookupOpMappingProcess(opName).opName()
 
                     val dfInstance = if( DifferentialFunctionClassHolder.getInstance().hasName(nd4jOpName))DifferentialFunctionClassHolder.getInstance().getInstance(nd4jOpName)
                     else DynamicCustomOp.builder(nd4jOpName).build()
@@ -1698,7 +1702,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                      * We should potentially run the import process sooner and compute the input name
                      * ordering from that instead.
                      */
-                    val opDefLookup = opRegistryHolder.lookupInputFrameworkOpDef(opName) as OP_DEF_TYPE
+                    val opDefLookup = opMappingRegistry.lookupInputFrameworkOpDef(opName)
                     val mappingContext = irGraph.createMappingContext(
                         opDef = opDefLookup,
                         node = irGraph.nodeByName(name),
@@ -1782,6 +1786,11 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                     val inputNames = nd.nd4jInputs(tensorInputMappings)
 
 
+                    /**
+                     * TODO: evaluate if pre/post processing is needed.
+                     * May need to add new input names before and after each op.
+                     * We coudl also modularize this part of the process in general.
+                     */
                     //Create SameDiffOp instance and add to graph
                     val op = SameDiffOp.builder()
                         .name(name)
@@ -1793,6 +1802,10 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                     defaultRunner.initAttributes(df, irGraph.frameworkName(), mappingContext, sd,opName)
 
 
+                    /**
+                     * TODO: Figure out if post processing is needed.
+                     *
+                     */
                     //DType calculate for output variables (set/correct if necessary)
                     val newInNames = sd.ops[name]!!.inputsToOp //Just in case import has modified this, like for concat case
                     val newInDtypes: MutableList<DataType> =
@@ -1889,7 +1902,7 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 df.sameDiff = sd
                 df.ownName = name
 
-                val opDefLookup = opRegistryHolder.lookupInputFrameworkOpDef(opName) as OP_DEF_TYPE
+                val opDefLookup = opMappingRegistry.lookupInputFrameworkOpDef(opName) as OP_DEF_TYPE
                 val mappingContext = irGraph.createMappingContext(
                     opDef = opDefLookup,
                     node = irGraph.nodeByName(name),
@@ -1903,8 +1916,8 @@ fun  <GRAPH_TYPE: GeneratedMessageV3,
                 //First, get inputs:
                 val inputs: MutableList<SDVariable> = java.util.ArrayList()
                 var controlDeps: MutableList<SDVariable?>? = null
-                val nd4jOpName = opRegistryHolder.lookupOpMappingProcess(opName).opName()
-                val opDescriptor = opRegistryHolder.lookupNd4jOpDef(nd4jOpName)
+                val nd4jOpName = opMappingRegistry.lookupOpMappingProcess(opName).opName()
+                val opDescriptor = opMappingRegistry.lookupNd4jOpDef(nd4jOpName)
                 val opInputs = opDescriptor.argDescriptorList.filter { argDescriptor -> argDescriptor.argType == OpNamespace.ArgDescriptor.ArgType.INPUT_TENSOR  }
                 val numInputs = opInputs.size
 

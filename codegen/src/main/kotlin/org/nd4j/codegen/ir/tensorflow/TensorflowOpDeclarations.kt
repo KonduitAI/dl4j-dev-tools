@@ -126,7 +126,12 @@ val argMaxRule = TensorflowMappingProcess(
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
         attributeMappingRules = listOf(
-                ndarrayToIntList(mutableMapOf("dimensions" to "axis")),
+                argDescriptorConstant(listOf(ArgDescriptor {
+                        argIndex = 0
+                        argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                        name = "dimensions"
+                        int64Value = -1
+                })),
                 booleanConstant(inputName = "keepDims",constantValue = false,argumentIndex = 0)[0])
 
 )
@@ -136,7 +141,13 @@ val argMinRule = TensorflowMappingProcess(
         opName = "argmin",
         opMappingRegistry = tensorflowOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "input"))),
-        attributeMappingRules = listOf(ndarrayToIntList(mutableMapOf("dimensions" to "axis")),
+        attributeMappingRules = listOf(
+                argDescriptorConstant(listOf(ArgDescriptor {
+                        argIndex = 0
+                        argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                        name = "dimensions"
+                        int64Value = -1
+                })),
                 booleanConstant(inputName = "keepDims",constantValue = false,argumentIndex = 0)[0])
 
 )
@@ -1867,7 +1878,21 @@ val zeta = mapTensorNamesWithOp(inputFrameworkOpName = "Zeta",opName = "zeta",
 
 object TensorflowOpDeclarations {
         init {
-                OpRegistryHolder.registerOpMappingRegistry("tensorflow", tensorflowOpRegistry)
+                val groupedOps = tensorflowOps.opList.groupBy { input -> input.name }
+                val singleGroupedOps = HashMap<String,OpDef>()
+                groupedOps.forEach { name, node ->
+                        singleGroupedOps[name] = node[0]
+                }
+
+                OpRegistryHolder.registerOpList("tensorflow", singleGroupedOps)
+                tensorflowOps.opList.forEach {
+                        tensorflowOpRegistry.registerInputFrameworkOpDef(it.name,it)
+                }
+
+                nd4jOpDescriptors.opListList.forEach {
+                        tensorflowOpRegistry.registerNd4jOpDef(it.name,it)
+                }
+
                 reduceOps.forEach { tensorflowOpName, nd4jOpName ->
                         defineSingularReduce(inputFrameworkOpName = tensorflowOpName,inputOpName = nd4jOpName)
                 }
@@ -1881,13 +1906,9 @@ object TensorflowOpDeclarations {
                         defineTensorflowPairwiseTransforms(opName = it.value,inputFrameworkOpName = it.key)
                 }
 
-                tensorflowOps.opList.forEach {
-                        tensorflowOpRegistry.registerInputFrameworkOpDef(it.name,it)
-                }
+                OpRegistryHolder.registerOpMappingRegistry("tensorflow", tensorflowOpRegistry)
 
-                nd4jOpDescriptors.opListList.forEach {
-                        tensorflowOpRegistry.registerNd4jOpDef(it.name,it)
-                }
+
 
         }
 }

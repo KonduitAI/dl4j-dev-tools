@@ -24,12 +24,18 @@ abstract class BaseAttributeExtractionRule<
 
     protected var opDescriptor: OpDescriptor? = null
     protected val mappingNamesToPerform = mappingNamesToPerform
+    protected var frameworkName: String?  = null
+    protected var inputFrameworkOpName: String? = null
     protected val transformerArgs = transformerArgs
     protected val name = name
+    protected var inputOpDefTypes: Map<String,AttributeValueType>? = null
 
 
     override fun initWithMappingProcess(mappingProcess: MappingProcess<GRAPH_DEF,OP_DEF_TYPE, NODE_TYPE, TENSOR_TYPE, ATTR_DEF, ATTR_VALUE_TYPE, DATA_TYPE>) {
-
+        this.opDescriptor  = nd4jOpDescriptors.findOp(mappingProcess.opName())
+        this.frameworkName = mappingProcess.inputFramework()
+        this.inputFrameworkOpName = mappingProcess.inputFrameworkOpName()
+        this.inputOpDefTypes = mappingProcess.inputOpDefValueTypes()
     }
 
     override fun mappingNamesToPerform(): Map<String, String> {
@@ -52,31 +58,51 @@ abstract class BaseAttributeExtractionRule<
         val builder = MapperNamespace.MappingRule.newBuilder()
         builder.ruleName = name()
         builder.functionName = name()
+        builder.ruleType = "attribute"
         val descriptorList = opDescriptor!!.argDescriptorList
+        println("Serializing op ${opDescriptor!!.name}")
         for ((k, v) in transformerArgs) {
-            val filteredList = descriptorList.filter { input -> input.name == k }
-            require(filteredList.isNotEmpty()) { "Output attribute " + k + " was not found in op descriptor " + name() + " list of attribtues was " + descriptorList.map { input -> input.name } }
-
-            val descriptor = filteredList[0]
-            when (descriptor.argType) {
-                ArgDescriptor.ArgType.BOOL -> builder.addOutputBooleanName(k)
-                ArgDescriptor.ArgType.INT64 -> builder.addOutputIntName(k)
-                ArgDescriptor.ArgType.FLOAT -> builder.addOutputFloatName(k)
-                ArgDescriptor.ArgType.DOUBLE -> builder.addOutputDoubleName(k)
-                ArgDescriptor.ArgType.INT64 -> builder.addOutputIntName(k)
-                ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(k)
-                ArgDescriptor.ArgType.OUTPUT_TENSOR -> builder.addOutputTensorName(k)
-            }
-
-            for (associatedInput in v) {
-                when (associatedInput.argType) {
-                    ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(associatedInput.name)
-                    ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(associatedInput.name)
-                    ArgDescriptor.ArgType.DOUBLE, ArgDescriptor.ArgType.FLOAT -> builder.addInputFloatName(associatedInput.name)
-                    ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(associatedInput.name)
-                    ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(associatedInput.name)
+            v.forEach { descriptor ->
+                when (descriptor.argType) {
+                    ArgDescriptor.ArgType.STRING -> builder.addInputStringAttrName(descriptor.name)
+                    ArgDescriptor.ArgType.BOOL -> builder.addInputBooleanName(descriptor.name)
+                    ArgDescriptor.ArgType.DOUBLE, ArgDescriptor.ArgType.FLOAT -> builder.addInputFloatName(descriptor.name)
+                    ArgDescriptor.ArgType.INT32, ArgDescriptor.ArgType.INT64 -> builder.addInputIntName(descriptor.name)
+                    ArgDescriptor.ArgType.INPUT_TENSOR -> builder.addInputTensorName(descriptor.name)
                 }
             }
+
+        }
+
+        /**
+         * TODO: metadata (perhaps looking up from each framework for each attribute)
+         * what each named type is.
+         */
+        mappingNamesToPerform.forEach { outputName, inputName ->
+            val descriptorForName = opDescriptor!!.argDescriptorList.first { descriptor -> descriptor.name == outputName }
+            builder.putInputToOutput(outputName,inputName)
+            when(descriptorForName.argType) {
+                ArgDescriptor.ArgType.BOOL -> { builder.addOutputBooleanName(outputName)}
+                ArgDescriptor.ArgType.INT64 -> {builder.addOutputIntName(outputName)}
+                ArgDescriptor.ArgType.DOUBLE -> {builder.addOutputDoubleName(outputName)}
+                ArgDescriptor.ArgType.DATA_TYPE -> builder.addOutputDataTypeName(outputName)
+                ArgDescriptor.ArgType.OUTPUT_TENSOR -> builder.addOutputTensorName(outputName)
+                ArgDescriptor.ArgType.STRING -> builder.addOutputStringAttrName(outputName)
+            }
+
+            //not all associated outputs will have inputs
+            if(inputOpDefTypes!!.containsKey(inputName)) {
+                when(inputOpDefTypes!![inputName]!!) {
+                    AttributeValueType.FLOAT -> builder.addInputFloatName(inputName)
+                    AttributeValueType.INT -> builder.addInputIntName(inputName)
+                    AttributeValueType.BOOL -> builder.addInputBooleanName(inputName)
+                    AttributeValueType.STRING -> builder.addInputStringAttrName(inputName)
+                    AttributeValueType.DATA_TYPE -> builder.addInputDataTypeName(inputName)
+                    AttributeValueType.TENSOR -> builder.addInputTensorName(inputName)
+                }
+
+            }
+
 
 
         }
@@ -1788,6 +1814,8 @@ abstract class BaseNDArrayMappingRule<
         val builder = MapperNamespace.MappingRule.newBuilder()
         builder.ruleName = name()
         builder.functionName = name()
+        builder.ruleType = "tensor"
+
         for ((k, v) in transformerArgs) {
             val descriptor = opDescriptor!!.argDescriptorList.filter { input -> input.name == k }[0]
             when (descriptor.argType) {
@@ -1811,6 +1839,12 @@ abstract class BaseNDArrayMappingRule<
             }
 
 
+        }
+
+        mappingNamesToPerform.forEach { outputName, inputName ->
+            builder.addInputTensorName(inputName)
+            builder.addOutputTensorName(outputName)
+            builder.putInputToOutput(outputName,inputName)
         }
 
 

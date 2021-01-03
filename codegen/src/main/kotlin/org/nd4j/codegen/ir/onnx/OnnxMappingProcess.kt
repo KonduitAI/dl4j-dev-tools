@@ -3,6 +3,7 @@ package org.nd4j.codegen.ir.onnx
 import onnx.Onnx
 import org.nd4j.codegen.ir.AbstractMappingProcess
 import org.nd4j.codegen.ir.AttributeMappingRule
+import org.nd4j.codegen.ir.AttributeValueType
 import org.nd4j.codegen.ir.TensorMappingRule
 import org.nd4j.codegen.ir.registry.OpMappingRegistry
 
@@ -32,6 +33,15 @@ open class OnnxMappingProcess(inputFramework: String = "onnx",
     opMappingRegistry,
     tensorMappingRules,
     attributeMappingRules) {
+    override fun inputOpDefValueTypes(): Map<String, AttributeValueType> {
+        val opDef = opMappingRegistry.lookupInputFrameworkOpDef(inputFrameworkOpName)
+        val ret = HashMap<String,AttributeValueType>()
+        opDef.attributeList.forEach { attributeProto ->
+              ret[attributeProto.name] = attributeValueTypeForOnnxAttribute(attributeProto)
+        }
+
+        return ret
+    }
 
 }
 

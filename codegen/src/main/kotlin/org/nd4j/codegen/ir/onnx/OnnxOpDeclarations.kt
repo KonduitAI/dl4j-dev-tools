@@ -186,7 +186,7 @@ val constantFill = OnnxMappingProcess(
         opMappingRegistry = onnxOpRegistry,
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("shapeArray" to "input"))),
         attributeMappingRules = listOf(ndarrayAttributeToScalarAttribute(outputAttributeValue = "value",inputAttributeValue = "value"),
-        intConstant(inputName = "outputDataType",constantValue = 0 as Integer,argumentIndex = 0)[0])
+                intConstant(inputName = "outputDataType",constantValue = 0 as Integer,argumentIndex = 0)[0])
 )
 
 //TODO: ConvInteger
@@ -446,8 +446,7 @@ val leakyRelu = OnnxMappingProcess(
         inputFrameworkOpName = "LeakyRelu",
         opName = "leakyrelu",
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X"))),
-        attributeMappingRules = listOf(valueMappings(mapOf("alpha" to "alpha")),
-                booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0)[0]),
+        attributeMappingRules = listOf(valueMappings(mapOf("alpha" to "alpha"))),
         opMappingRegistry = onnxOpRegistry
 )
 //TODO: LinearClassifier
@@ -516,11 +515,19 @@ val nonMaxSuppression = OnnxMappingProcess(
 //TODO: Normalizer
 //TODO: OneHot
 //TODO: OneHotEncoder
+//TODO: look at broadcasting rules between slope input
 val pRelu = OnnxMappingProcess(
         inputFrameworkOpName = "PRelu",
         opName = "prelu",
         //TODO: verify default value
-        attributeMappingRules = intConstant(inputName = "sharedAxes",constantValue = 0 as Integer,argumentIndex = 0),
+        attributeMappingRules  = listOf(argDescriptorConstant(listOf(
+                ArgDescriptor {
+                        name = "sharedAxes"
+                        argIndex = 0
+                        int64Value = -1
+                        argType = OpNamespace.ArgDescriptor.ArgType.INT64
+                }
+        ))),
         tensorMappingRules = listOf(mappingNDArrayInputs(mutableMapOf("input" to "X","alpha" to "slope"))),
         opMappingRegistry = onnxOpRegistry
 )
@@ -957,7 +964,14 @@ booleanConstant(inputName = "inPlace",constantValue = false,argumentIndex = 0))
 
 object OnnxOpDeclarations {
         init {
-                OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)
+                val groupedOps = onnxops.groupBy { input -> input.name }
+                val singleGroupedOps = HashMap<String,Onnx.NodeProto>()
+                groupedOps.forEach { name,node ->
+                        singleGroupedOps[name] = node[0]
+                }
+
+                OpRegistryHolder.registerOpList("onnx", singleGroupedOps)
+
                 names.forEach {
                         defineOnnxSingleTransform(inputFrameworkOpName = it.key,inputOpName = it.value)
                 } ?: "Error initializing single defined transforms in onnx."
@@ -973,6 +987,9 @@ object OnnxOpDeclarations {
                 nd4jOpDescriptors.opListList.forEach {
                         onnxOpRegistry.registerNd4jOpDef(it.name,it)
                 }
+
+                OpRegistryHolder.registerOpMappingRegistry("onnx", onnxOpRegistry)
+
         }
 }
 

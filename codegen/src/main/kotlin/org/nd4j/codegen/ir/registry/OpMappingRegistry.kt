@@ -5,11 +5,15 @@ import org.nd4j.shade.protobuf.GeneratedMessageV3
 import org.nd4j.shade.protobuf.ProtocolMessageEnum
 import org.apache.commons.collections4.MultiValuedMap
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap
+import org.apache.commons.io.FileUtils
 import org.nd4j.codegen.ir.MappingProcess
 import org.nd4j.codegen.ir.findOp
 import org.nd4j.codegen.ir.nd4jOpDescriptors
+import org.nd4j.ir.MapperNamespace
 import org.nd4j.ir.OpNamespace
+import java.io.File
 import java.lang.IllegalArgumentException
+import java.nio.charset.Charset
 
 
 class OpMappingRegistry<GRAPH_TYPE: GeneratedMessageV3,
@@ -32,6 +36,8 @@ class OpMappingRegistry<GRAPH_TYPE: GeneratedMessageV3,
 
     val opDefList = HashMap<String,OP_DEF_TYPE>()
     val nd4jOpDefs = HashMap<String,OpNamespace.OpDescriptor>()
+    val inputFrameworkName = inputFrameworkName
+
 
 
     fun mappedNd4jOpNames(): Set<String> {
@@ -54,12 +60,23 @@ class OpMappingRegistry<GRAPH_TYPE: GeneratedMessageV3,
         return nd4jOpDefs[name]!!
     }
 
+    fun registerOpDefs(opDefList: Map<String,OP_DEF_TYPE>) {
+        opDefList.forEach { (name,inputOpDef) ->
+            registerInputFrameworkOpDef(name,inputOpDef)
+        }
+    }
 
     fun registerNd4jOpDef(name:String, opDef: OpNamespace.OpDescriptor) {
         nd4jOpDefs[name] = opDef
     }
 
     fun lookupInputFrameworkOpDef(name:String): OP_DEF_TYPE {
+        if(opDefList.isEmpty()) {
+            val opList = OpRegistryHolder.opListForFramework<OP_DEF_TYPE>(inputFrameworkName)
+            opList.forEach {  name,opDefType ->
+                opDefList[name] = opDefType
+            }
+        }
         return opDefList[name]!!
     }
 
@@ -95,7 +112,21 @@ class OpMappingRegistry<GRAPH_TYPE: GeneratedMessageV3,
         return descriptor.opDeclarationType
     }
 
-    fun createMappingContext(frameworkName: String) {
+    fun saveProcessesAndRuleSet() {
+        val mapperDeclarations = ArrayList<MapperNamespace.MapperDeclaration>()
+        val bufferToWrite = StringBuilder()
+        registeredOps.asMap().forEach { name, listOfMappingProcesses ->
+            listOfMappingProcesses.forEach { mappingProcess ->
+                mapperDeclarations.add(mappingProcess.serialize())
+            }
+
+            mapperDeclarations.map { input -> input.toString() }.forEach { processString ->
+                bufferToWrite.append(processString + "\n")
+            }
+
+        }
+
+        FileUtils.write(File("$inputFrameworkName-processes.pbtxt"),bufferToWrite.toString(), Charset.defaultCharset())
 
     }
 
