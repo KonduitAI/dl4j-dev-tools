@@ -14,7 +14,7 @@
         <commons.lang.version>3.6</commons.lang.version>
         <commons.dbutils.version>1.7</commons.dbutils.version>
         <lombok.version>1.18.8</lombok.version>
-        <logback.version>1.1.7</logback.version>
+        <logback.version>1.2.0</logback.version>
         <junit.version>4.12</junit.version>
         <junit-jupiter.version>5.4.2</junit-jupiter.version>
         <java.version>1.8</java.version>
